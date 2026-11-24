@@ -38,8 +38,8 @@ Cada aviso en la app usa `notifications.dedupe`. Los textos están en `src/lib/e
 ## Tareas programadas (`vercel.json`, horarios en UTC)
 | Ruta | Horario | Qué hace |
 |---|---|---|
-| `/api/cron/bienvenida` | `5 * * * *` (cada hora) | Correo de bienvenida |
-| `/api/cron/pagos` | `35 * * * *` (cada hora) | Correo de pago fallido (la notificación ya la crea el aviso de Stripe) |
+| `/api/cron/bienvenida` | `0 23 * * *` (diario, 10:00 en Sydney) | Correo de bienvenida |
+| `/api/cron/pagos` | `30 23 * * *` (diario, 10:30 en Sydney) | Correo de pago fallido (la notificación ya la crea el aviso de Stripe) |
 | `/api/cron/vencimientos` | `0 20 * * *` (7:00 en Sydney en verano) | Avisos 30/7 días; prueba vencida → Gratis; alumno vencido → Gratis (o a otro acceso gratis vigente); Pro vencido sin suscripción activa en Stripe → solo lectura |
 | `/api/cron/cierre` | `0 22 * * *` (9:00 en Sydney en verano) | Recordatorio de cierre |
 | `/api/cron/borrados` | `0 16 * * *` | Borra las cuentas con solicitud de borrado vencida (`auth.admin.deleteUser`, cascada) y deja constancia en `admin_audit` (`borrado_automatico`) |
@@ -47,7 +47,7 @@ Cada aviso en la app usa `notifications.dedupe`. Los textos están en `src/lib/e
 
 Todas procesan de a 500, son idempotentes y devuelven un JSON con conteos. Ninguna lee montos.
 **Límite de Resend:** Resend limita los envíos por segundo (2 por segundo en el plan inicial). Si frena un envío, se espera y se reintenta hasta 2 veces; si aun así falla, el correo queda para la siguiente corrida. Con muchos usuarios, pedir a Resend un límite mayor.
-**Plan de Vercel:** las tareas cada hora exigen el plan Pro de Vercel (Hobby solo permite una vez al día).
+**Plan de Vercel:** todas las tareas corren una vez al día porque el plan Hobby no permite más. Con el plan Pro se pueden volver cada hora (`5 * * * *` bienvenida, `35 * * * *` pagos) para que el correo de bienvenida y el de pago fallido lleguen antes.
 
 ### Probar cada tarea en local
 Con `npm run dev` corriendo y `CRON_SECRET=local-cron-secret` en `.env.local`:

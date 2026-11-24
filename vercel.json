@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
-    { "path": "/api/cron/bienvenida", "schedule": "5 * * * *" },
-    { "path": "/api/cron/pagos", "schedule": "35 * * * *" },
+    { "path": "/api/cron/bienvenida", "schedule": "0 23 * * *" },
+    { "path": "/api/cron/pagos", "schedule": "30 23 * * *" },
     { "path": "/api/cron/vencimientos", "schedule": "0 20 * * *" },
     { "path": "/api/cron/cierre", "schedule": "0 22 * * *" },
     { "path": "/api/cron/borrados", "schedule": "0 16 * * *" },
