@@ -1,6 +1,7 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sendWelcomeNow } from "@/lib/email/events";
 
 // Llega desde los correos de confirmar cuenta, recuperar acceso y cambiar correo.
 export async function GET(request: NextRequest) {
@@ -17,5 +18,7 @@ export async function GET(request: NextRequest) {
   // Código de invitación escrito al registrarse → acceso de alumno
   const invite = data.user?.user_metadata?.invite;
   if (type === "email" && typeof invite === "string" && invite) await supabase.rpc("redeem_invite", { p_code: invite });
+  // Correo de bienvenida en el momento en que confirma su cuenta.
+  if ((type === "email" || type === "signup") && data.user) await sendWelcomeNow(data.user.id);
   return to(next);
 }

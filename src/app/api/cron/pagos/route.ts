@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**
- * GET /api/cron/pagos (cada hora). Correo "No pudimos cobrar tu suscripción" a quien tiene un pago fallido reciente
+ * GET /api/cron/pagos (diario). RED DE SEGURIDAD: el correo sale en el momento del aviso de Stripe
+ * (src/lib/email/events.ts). Esta tarea solo reintenta los que fallaron: correo a quien tiene un pago fallido reciente
  * y aún no lo recibió para ese fallo. Es un correo importante de la cuenta: no depende de las preferencias.
  * La notificación en la app ya la crea el aviso de Stripe (src/app/api/stripe/webhook): aquí solo el correo.
  */

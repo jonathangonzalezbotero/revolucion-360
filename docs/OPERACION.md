@@ -47,7 +47,11 @@ Cada aviso en la app usa `notifications.dedupe`. Los textos están en `src/lib/e
 
 Todas procesan de a 500, son idempotentes y devuelven un JSON con conteos. Ninguna lee montos.
 **Límite de Resend:** Resend limita los envíos por segundo (2 por segundo en el plan inicial). Si frena un envío, se espera y se reintenta hasta 2 veces; si aun así falla, el correo queda para la siguiente corrida. Con muchos usuarios, pedir a Resend un límite mayor.
-**Plan de Vercel:** todas las tareas corren una vez al día porque el plan Hobby no permite más. Con el plan Pro se pueden volver cada hora (`5 * * * *` bienvenida, `35 * * * *` pagos) para que el correo de bienvenida y el de pago fallido lleguen antes.
+**Cuándo sale cada correo:**
+- **Bienvenida:** en el momento en que el usuario confirma su correo (`/auth/confirm`) o entra por primera vez con Google/Apple (`/auth/callback`).
+- **Pago fallido:** en el momento en que llega el aviso `invoice.payment_failed` de Stripe (`/api/stripe/webhook`).
+- **Recordatorio de cierre** y **acceso por vencer:** dependen de la fecha, no de una acción; por eso sí son tareas diarias.
+- Las tareas `bienvenida` y `pagos` quedan solo como **red de seguridad** diaria: reintentan los correos que no salieron en su momento. `email_log` impide que alguien reciba el mismo correo dos veces.
 
 ### Probar cada tarea en local
 Con `npm run dev` corriendo y `CRON_SECRET=local-cron-secret` en `.env.local`:

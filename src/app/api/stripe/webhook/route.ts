@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import { asLocale } from "@/i18n";
 import type { PlanState } from "@/lib/engine";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendPaymentFailedNow } from "@/lib/email/events";
 import { customerId, getStripe, toSubLike } from "@/lib/stripe";
 import { isStaleEvent, mapSubscription, type Grant } from "@/app/(app)/suscripcion/lib";
 import { M } from "./messages";
@@ -78,9 +79,12 @@ async function handle(stripe: Stripe, db: Admin, event: Stripe.Event) {
       // Solo se marca a quien tiene Pro (un primer pago que nunca se completó no es un "pago fallido" de Pro).
       const ent = must(await db.from("entitlements").select("state").eq("user_id", userId).maybeSingle());
       if (ent?.state !== "pro") return;
-      must(await db.from("entitlements").update({ payment_failed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("user_id", userId).is("payment_failed_at", null));
+      const failedAt = new Date().toISOString();
+      const marked = must(await db.from("entitlements").update({ payment_failed_at: failedAt, updated_at: failedAt }).eq("user_id", userId).is("payment_failed_at", null).select("payment_failed_at"));
       const t = M[await localeOf(db, userId)];
       await notify(db, userId, "pago", t.failedTitle, t.failedBody, `pago-fallido-${inv.id}`);
+      // El correo sale en este momento, una vez por fallo (si ya estaba marcado, ya se mandó).
+      if ((marked ?? []).length > 0) await sendPaymentFailedNow(userId, failedAt);
       return;
     }
     default:

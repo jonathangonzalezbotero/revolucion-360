@@ -12,7 +12,8 @@ export const maxDuration = 300;
 const WINDOW_DAYS = 14;
 
 /**
- * GET /api/cron/bienvenida (cada hora). Correo de bienvenida a quien ya confirmó su correo y aún no lo recibió (email_log kind welcome).
+ * GET /api/cron/bienvenida (diario). RED DE SEGURIDAD: la bienvenida sale en el momento de confirmar la cuenta
+ * (src/lib/email/events.ts). Esta tarea solo reintenta las que fallaron (Resend caído, clave no configurada aún).
  * Idempotente: email_log (user_id, kind, ref) es único y la notificación lleva dedupe.
  */
 export async function GET(request: Request) {
