@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Acceso</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; width: 100%"><div style="display: flex; flex-wrap: wrap; min-height: 1000px">
+    <aside style="background: radial-gradient(120% 150% at 100% 100%, rgba(242,205,0,.20) 0%, rgba(242,205,0,0) 55%), linear-gradient(135deg, #0B0C0A 0%, #1C1E19 100%); color: #FFFFFF; flex: 1 1 520px; padding: 48px 56px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; gap: 40px; min-height: 1000px">
+      <img src="/_blob/9ab9d789ae6bcaf9323c4bf548b6e00c" alt="Revolución 360 · Revolución del Dinero" style="height: 48px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; align-self: flex-start; display: block; flex: none">
+      <div style="display: flex; flex-direction: column; gap: 22px; max-width: 480px">
+        <p style="margin: 0; font-size: 40px; font-weight: 600; line-height: 1.12; letter-spacing: -0.03em">Tu año entero de plata, <span style="color: #F2CD00">en un solo lugar.</span></p>
+        <figure style="margin: 0; display: flex; gap: 14px; align-items: flex-start">
+          <div aria-label="Foto de Jonathan (por agregar)" role="img" style="width: 56px; height: 56px; border-radius: 50%; flex: none; background: rgba(255,255,255,.12); border: 1px dashed rgba(255,255,255,.5); display: flex; align-items: center; justify-content: center; font-size: 10px; color: #D9D6CC; text-align: center">[foto]</div>
+          <blockquote style="margin: 0; display: flex; flex-direction: column; gap: 8px"><p style="margin: 0; font-size: 16px; color: #E6E4DC; line-height: 1.55">"[Frase tuya en tus palabras. Ej.: Esta es la misma hoja con la que yo ordené mi plata en Australia, ahora en tu celular.]"</p><figcaption style="font-size: 13px; color: #A3A69C">Jonathan · Revolución del Dinero</figcaption></blockquote>
+        </figure>
+      </div>
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px"><li style="display: flex; gap: 12px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #F2CD00; margin-top: 7px; flex: none"></span><span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 14px">Cifrado de punta a punta</strong><span style="font-size: 13px; color: #CFCCC2">Tus datos viajan y se guardan cifrados, en servidores en Sydney.</span></span></li><li style="display: flex; gap: 12px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #F2CD00; margin-top: 7px; flex: none"></span><span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 14px">Nunca entramos a tu banco</strong><span style="font-size: 13px; color: #CFCCC2">Tú escribes o importas tus movimientos. Nadie más los ve.</span></span></li><li style="display: flex; gap: 12px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #F2CD00; margin-top: 7px; flex: none"></span><span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 14px">Verificación en 2 pasos</strong><span style="font-size: 13px; color: #CFCCC2">Un código en tu celular cada vez que entras desde un equipo nuevo.</span></span></li></ul>
+      <div style="display: flex; align-items: center; gap: 10px"><img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 40px; height: 40px"><span style="font-size: 12px; color: #CFCCC2">Una herramienta de <strong style="color: #FFFFFF">Revolución del Dinero</strong></span></div>
+    </aside>
+    <main style="flex: 1 1 520px; padding: 40px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 32px; background: #FBFCFA">
+      <nav aria-label="Estados de la pantalla (solo en el mockup)" style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px; background: #FFFFFF; border: 1px dashed #CFCCC2; border-radius: 14px">
+      <span style="font-size: 11px; font-weight: 600; color: #5F6359; text-transform: uppercase; letter-spacing: .06em; padding: 0 6px">Mockup · ver</span>
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6"><button type="button" aria-pressed="{{ t.cur }}" onClick="{{ t.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 34px; padding: 0 10px; border-radius: 999px; border: 0; background: {{ t.bg }}; color: {{ t.fg }}; cursor: pointer">{{ t.name }}</button></sc-for>
+    </nav>
+      <div style="width: 100%; max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; padding-top: 24px">
+      <sc-if value="{{ isReg }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.03em">Crea tu cuenta</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">Gratis. Sin tarjeta. Tu plan del año listo en 10 minutos.</p></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 48px; border: 1px solid #D9D6CC; background: #FFFFFF; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px"><span aria-hidden="true" style="font-weight: 600; color: #2D5C8A">G</span>Google</button>
+          <button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 48px; border: 1px solid #D9D6CC; background: #FFFFFF; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px">Apple</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: #5F6359"><span style="flex: 1; height: 1px; background: #E6E4DC"></span>o con tu correo<span style="flex: 1; height: 1px; background: #E6E4DC"></span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="nmd" style="font-size: 12px; font-weight: 500; color: #5F6359">Tu nombre</label><input id="nmd" type="text" value="{{ name }}" onChange="{{ setName }}" placeholder="Como quieres que te llamemos" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="emd" style="font-size: 12px; font-weight: 500; color: #5F6359">Correo</label><input id="emd" type="email" value="{{ email }}" onChange="{{ setEmail }}" placeholder="tu@correo.com" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box" autocomplete="email"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: center"><label for="pwd" style="font-size: 12px; font-weight: 500; color: #5F6359">Contraseña</label><button type="button" onClick="{{ togShow }}" style="font: inherit; font-size: 12px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; min-height: 32px">{{ showLabel }}</button></div>
+          <input id="pwd" type="{{ pwType }}" value="{{ pw }}" onChange="{{ setPw }}" autocomplete="new-password" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box">
+          <div aria-live="polite" style="display: flex; align-items: center; gap: 10px"><div aria-hidden="true" style="flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px"><sc-for list="{{ bars }}" as="b" hint-placeholder-count="4"><span style="height: 5px; border-radius: 3px; background: {{ b.bg }}"></span></sc-for></div><span style="font-size: 12px; font-weight: 600; color: {{ pwColor }}; min-width: 80px; text-align: right">{{ pwLabel }}</span></div>
+          <span style="font-size: 12px; color: #5F6359">Mínimo 8 caracteres. Mejor si es una frase larga, ej. "mi-viaje-a-cali-2027".</span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start"><button type="button" role="checkbox" aria-checked="{{ terms }}" aria-labelledby="tld" onClick="{{ togTerms }}" style="font: inherit; width: 24px; height: 24px; flex: none; border-radius: 7px; border: 2px solid #141612; background: {{ termsBg }}; color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; margin-top: 1px">{{ termsMark }}</button><span id="tld" style="font-size: 13px; color: #3A3D36; line-height: 1.5">Acepto los <a href="Legal.dc.html">términos</a> y la <a href="Legal.dc.html">política de privacidad</a>. Tus datos son tuyos: nunca los vendemos.</span></div>
+        <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><p role="alert" style="margin: 0; font-size: 13px; font-weight: 600; color: #A1401A; background: #FCEDE6; border-radius: 10px; padding: 10px 12px">{{ err }}</p></sc-if>
+        <button type="button" onClick="{{ doReg }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; width: 100%; min-height: 52px; font-size: 15px">Crear mi cuenta</button>
+        <p style="margin: 0; font-size: 14px; color: #5F6359; text-align: center">¿Ya tienes cuenta? <button type="button" onClick="{{ toIn }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">Entrar</button></p>
+      </div></sc-if>
+      <sc-if value="{{ isIn }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.03em">Hola de nuevo</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">Entra para seguir con tu plan.</p></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 48px; border: 1px solid #D9D6CC; background: #FFFFFF; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px"><span aria-hidden="true" style="font-weight: 600; color: #2D5C8A">G</span>Google</button>
+          <button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 48px; border: 1px solid #D9D6CC; background: #FFFFFF; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px">Apple</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: #5F6359"><span style="flex: 1; height: 1px; background: #E6E4DC"></span>o con tu correo<span style="flex: 1; height: 1px; background: #E6E4DC"></span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="eid" style="font-size: 12px; font-weight: 500; color: #5F6359">Correo</label><input id="eid" type="email" value="{{ email }}" onChange="{{ setEmail }}" placeholder="tu@correo.com" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box" autocomplete="email"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: center"><label for="pwdi" style="font-size: 12px; font-weight: 500; color: #5F6359">Contraseña</label><button type="button" onClick="{{ togShow }}" style="font: inherit; font-size: 12px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; min-height: 32px">{{ showLabel }}</button></div>
+          <input id="pwdi" type="{{ pwType }}" value="{{ pw }}" onChange="{{ setPw }}" autocomplete="current-password" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box">
+          
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin-top: -8px"><button type="button" onClick="{{ toRec }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">Olvidé mi contraseña</button></div>
+        <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><p role="alert" style="margin: 0; font-size: 13px; font-weight: 600; color: #A1401A; background: #FCEDE6; border-radius: 10px; padding: 10px 12px">{{ err }}</p></sc-if>
+        <button type="button" onClick="{{ doIn }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; width: 100%; min-height: 52px; font-size: 15px">Entrar</button>
+        <p style="margin: 0; font-size: 14px; color: #5F6359; text-align: center">¿Primera vez? <button type="button" onClick="{{ toReg }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">Crea tu cuenta gratis</button></p>
+      </div></sc-if>
+      <sc-if value="{{ isRec }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.03em">Recupera tu acceso</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">Escribe tu correo y te mandamos un enlace para crear una contraseña nueva.</p></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="erd" style="font-size: 12px; font-weight: 500; color: #5F6359">Correo</label><input id="erd" type="email" value="{{ email }}" onChange="{{ setEmail }}" placeholder="tu@correo.com" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+        <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><p role="alert" style="margin: 0; font-size: 13px; font-weight: 600; color: #A1401A; background: #FCEDE6; border-radius: 10px; padding: 10px 12px">{{ err }}</p></sc-if>
+        <button type="button" onClick="{{ doRec }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; width: 100%; min-height: 52px; font-size: 15px">Enviar enlace</button>
+        <p style="margin: 0; font-size: 14px; color: #5F6359; text-align: center"><button type="button" onClick="{{ toIn }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">‹ Volver a entrar</button></p>
+      </div></sc-if>
+      <sc-if value="{{ isMail }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start">
+        <span aria-hidden="true" style="width: 64px; height: 64px; border-radius: 14px; background: #E3F1E8; display: flex; align-items: center; justify-content: center"><span style="width: 30px; height: 22px; border: 3px solid #141612; border-radius: 4px; position: relative; display: block"></span></span>
+        <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.03em">{{ mailTitle }}</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">{{ mailText }}</p></div>
+        <p style="margin: 0; font-size: 14px; background: #F6F5F0; border-radius: 12px; padding: 12px 14px">Enviado a <strong>{{ mailTo }}</strong></p>
+        <span style="font-size: 13px; color: #5F6359; line-height: 1.5">¿No llega? Revisa spam o promociones. Puedes pedir otro en 60 segundos.</span>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap"><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Reenviar correo</button><button type="button" onClick="{{ toNew }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Abrí el enlace</button></div>
+        <button type="button" onClick="{{ toReg }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">‹ Usar otro correo</button>
+      </div></sc-if>
+      <sc-if value="{{ isCode }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.03em">Escribe tu código</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">Abre tu app de autenticación (Google Authenticator, 1Password, Authy) y escribe los 6 números.</p></div>
+        <div style="position: relative">
+          <label for="cdd" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Código de 6 números</label>
+          <input id="cdd" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="{{ code }}" onChange="{{ setCode }}" style="position: absolute; inset: 0; opacity: 0; font-size: 16px; width: 100%; cursor: text">
+          <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; pointer-events: none"><sc-for list="{{ boxes }}" as="b" hint-placeholder-count="6"><span class="num" style="height: 62px; border-radius: 12px; border: 2px solid {{ b.bd }}; background: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600">{{ b.d }}</span></sc-for></div>
+        </div>
+        <sc-if value="{{ codeOk }}" hint-placeholder-val="{{ false }}"><a href="Main.dc.html" style="text-decoration: none; text-align: center; font-size: 15px; font-weight: 600; min-height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: #141612; color: #FFFFFF">Entrar</a></sc-if>
+        <sc-if value="{{ codeNot }}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #5F6359; text-align: center; min-height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: #EFEDE6">Escribe los 6 números</span></sc-if>
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px"><button type="button" onClick="{{ toIn }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">Usar un código de respaldo</button><button type="button" onClick="{{ toIn }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">‹ Volver</button></div>
+        <span style="font-size: 12px; color: #5F6359; line-height: 1.5">¿Perdiste tu celular? Usa uno de los 10 códigos de respaldo que guardaste al activar los 2 pasos, o escríbenos a soporte.</span>
+      </div></sc-if>
+      <sc-if value="{{ isNew }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.03em">Crea tu contraseña nueva</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">Por seguridad, cerraremos tu sesión en los demás dispositivos.</p></div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: center"><label for="pwdn" style="font-size: 12px; font-weight: 500; color: #5F6359">Contraseña nueva</label><button type="button" onClick="{{ togShow }}" style="font: inherit; font-size: 12px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; min-height: 32px">{{ showLabel }}</button></div>
+          <input id="pwdn" type="{{ pwType }}" value="{{ pw }}" onChange="{{ setPw }}" autocomplete="new-password" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box">
+          <div aria-live="polite" style="display: flex; align-items: center; gap: 10px"><div aria-hidden="true" style="flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px"><sc-for list="{{ bars }}" as="b" hint-placeholder-count="4"><span style="height: 5px; border-radius: 3px; background: {{ b.bg }}"></span></sc-for></div><span style="font-size: 12px; font-weight: 600; color: {{ pwColor }}; min-width: 80px; text-align: right">{{ pwLabel }}</span></div>
+          <span style="font-size: 12px; color: #5F6359">Mínimo 8 caracteres. Mejor si es una frase larga, ej. "mi-viaje-a-cali-2027".</span>
+        </div>
+        <button type="button" onClick="{{ toIn }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; width: 100%; min-height: 52px; font-size: 15px">Guardar y entrar</button>
+      </div></sc-if></div>
+      <p style="margin: auto 0 0; font-size: 12px; color: #5F6359; text-align: center">app.revoluciondeldinero.com · <a href="Legal.dc.html">Términos</a> · <a href="Legal.dc.html">Privacidad</a> · <a href="Ayuda.dc.html">Ayuda</a></p>
+    </main>
+  </div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { st: 'registro', name: '', email: '', pw: '', terms: false, code: '', reason: 'registro', show: false, err: '' }; }
+  renderVals() {
+    const s = this.state;
+    const go = (st, extra) => () => this.setState(Object.assign({ st, err: '' }, extra || {}));
+    const pw = s.pw;
+    let sc = 0; if (pw.length >= 8) sc++; if (pw.length >= 12) sc++; if (/[0-9]/.test(pw) && /[A-Za-z]/.test(pw)) sc++; if (/[^A-Za-z0-9]/.test(pw)) sc++;
+    const L = [['Escribe una contraseña', '#D9D6CC'], ['Muy corta', '#C2410C'], ['Débil', '#C46A2A'], ['Buena', '#3E8C7A'], ['Muy segura', '#141612']];
+    const bars = [0, 1, 2, 3].map((i) => ({ bg: pw && i < sc ? L[sc][1] : '#E6E4DC' }));
+    const T = [['registro', 'Crear cuenta'], ['entrar', 'Entrar'], ['recuperar', 'Recuperar'], ['correo', 'Revisa tu correo'], ['codigo', 'Código 2 pasos'], ['nueva', 'Nueva contraseña']];
+    const tabs = T.map((t) => ({ name: t[1], cur: s.st === t[0] ? 'true' : 'false', bg: s.st === t[0] ? '#141612' : 'transparent', fg: s.st === t[0] ? '#FFFFFF' : '#3A3D36', pick: go(t[0]) }));
+    const code = s.code.replace(/[^0-9]/g, '').slice(0, 6);
+    const boxes = [0, 1, 2, 3, 4, 5].map((i) => ({ d: code.charAt(i) || '', bd: i === code.length ? '#141612' : '#D9D6CC' }));
+    return {
+      tabs, bars, pwLabel: pw ? L[sc][0] : L[0][0], pwColor: pw ? L[sc][1] : '#5F6359',
+      isReg: s.st === 'registro', isIn: s.st === 'entrar', isRec: s.st === 'recuperar', isMail: s.st === 'correo', isCode: s.st === 'codigo', isNew: s.st === 'nueva',
+      name: s.name, email: s.email, pw: s.pw, code, boxes,
+      setName: (e) => this.setState({ name: e.target.value }), setEmail: (e) => this.setState({ email: e.target.value }), setPw: (e) => this.setState({ pw: e.target.value }),
+      setCode: (e) => this.setState({ code: e.target.value }),
+      pwType: s.show ? 'text' : 'password', showLabel: s.show ? 'Ocultar' : 'Mostrar', togShow: () => this.setState({ show: !s.show }),
+      terms: String(s.terms), termsBg: s.terms ? '#141612' : '#FFFFFF', termsMark: s.terms ? '✓' : '', togTerms: () => this.setState({ terms: !s.terms }),
+      mailTo: s.email || 'tu correo',
+      mailTitle: s.reason === 'registro' ? 'Confirma tu correo' : 'Te enviamos un enlace',
+      mailText: s.reason === 'registro' ? 'Abre el correo que te enviamos y toca el botón para activar tu cuenta. El enlace dura 24 horas.' : 'Si existe una cuenta con ese correo, te llegó un enlace para crear una contraseña nueva. Dura 30 minutos.',
+      doReg: () => { if (!s.email || !s.terms || sc < 3) { this.setState({ err: !s.terms ? 'Acepta los términos para continuar.' : 'Revisa tu correo y usa una contraseña más segura.' }); return; } this.setState({ st: 'correo', reason: 'registro', err: '' }); },
+      doIn: () => { if (!s.email || !s.pw) { this.setState({ err: 'Escribe tu correo y tu contraseña.' }); return; } this.setState({ st: 'codigo', err: '' }); },
+      doRec: () => { if (!s.email) { this.setState({ err: 'Escribe el correo con el que te registraste.' }); return; } this.setState({ st: 'correo', reason: 'recuperar', err: '' }); },
+      toReg: go('registro'), toIn: go('entrar'), toRec: go('recuperar'), toNew: go('nueva'),
+      codeOk: code.length === 6, codeNot: code.length !== 6,
+      hasErr: !!s.err, err: s.err
+    };
+  }
+}
+</script>
+</body>
+</html>

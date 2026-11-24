@@ -1,0 +1,139 @@
+// Pruebas de permisos contra Supabase LOCAL. Demuestran que la base de datos impone las reglas, no la pantalla.
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+try { process.loadEnvFile(".env.local"); } catch { /* sin archivo: se saltan */ }
+const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "", ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "", SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+const local = /127\.0\.0\.1|localhost/.test(URL) && !!SERVICE;
+
+describe.skipIf(!local)("permisos en la base de datos", () => {
+  const admin = createClient(URL, SERVICE, { auth: { persistSession: false } });
+  const stamp = Date.now();
+  const pw = `Prueba-${stamp}-x9`;
+  const ids: string[] = [];
+  let ana: SupabaseClient, beto: SupabaseClient, jefe: SupabaseClient;
+  let anaId = "", betoId = "", jefeId = "", anaTx = "", anaCat = "";
+
+  async function user(name: string) {
+    const email = `${name}-${stamp}@prueba.test`;
+    const { data, error } = await admin.auth.admin.createUser({ email, password: pw, email_confirm: true, user_metadata: { name } });
+    if (error) throw error;
+    ids.push(data.user.id);
+    const c = createClient(URL, ANON, { auth: { persistSession: false } });
+    const r = await c.auth.signInWithPassword({ email, password: pw });
+    if (r.error) throw r.error;
+    return { c, id: data.user.id };
+  }
+
+  beforeAll(async () => {
+    ({ c: ana, id: anaId } = await user("ana"));
+    ({ c: beto, id: betoId } = await user("beto"));
+    ({ c: jefe, id: jefeId } = await user("jefe"));
+    await admin.from("profiles").update({ role: "admin" }).eq("id", jefeId);
+    await admin.from("app_config").update({ value: false }).eq("key", "admin_mfa_required");
+    const cat = await ana.from("categories").insert({ user_id: anaId, name: "Hogar y básicos", kind: "expense" }).select("id").single();
+    anaCat = cat.data!.id;
+    const acc = await ana.from("accounts").insert({ user_id: anaId, name: "Ubank", kind: "bank", balance_cents: 500000 }).select("id").single();
+    const tx = await ana.from("transactions").insert({ user_id: anaId, account_id: acc.data!.id, date: "2026-11-03", amount_cents: -133000, description: "Home" }).select("id").single();
+    anaTx = tx.data!.id;
+  });
+  afterAll(async () => { for (const id of ids) await admin.auth.admin.deleteUser(id); });
+
+  it("al registrarse nace con perfil y plan Gratis", async () => {
+    const p = await ana.from("profiles").select("role, onboarding_step").single();
+    expect(p.data).toMatchObject({ role: "user", onboarding_step: "welcome" });
+    expect((await ana.from("entitlements").select("state").single()).data?.state).toBe("free");
+  });
+
+  it("un usuario no puede leer datos de otro", async () => {
+    for (const t of ["transactions", "accounts", "categories", "plan_lines", "goals", "debts", "investments", "month_closures", "transaction_history"]) {
+      const r = await beto.from(t).select("*");
+      expect(r.data, t).toEqual([]);
+    }
+    expect((await beto.from("profiles").select("id")).data).toEqual([{ id: betoId }]);
+  });
+
+  it("un usuario no puede escribir ni cambiar datos de otro", async () => {
+    const ins = await beto.from("transactions").insert({ user_id: anaId, date: "2026-11-04", amount_cents: -100, description: "intruso" });
+    expect(ins.error).not.toBeNull();
+    await beto.from("transactions").update({ amount_cents: -1 }).eq("id", anaTx);
+    await beto.from("transactions").delete().eq("id", anaTx);
+    const still = await ana.from("transactions").select("amount_cents").eq("id", anaTx).single();
+    expect(still.data?.amount_cents).toBe(-133000);
+  });
+
+  it("nadie se sube el plan ni el rol a sí mismo", async () => {
+    await beto.from("entitlements").update({ state: "pro" }).eq("user_id", betoId);
+    expect((await beto.from("entitlements").select("state").single()).data?.state).toBe("free");
+    await beto.from("profiles").update({ role: "admin" }).eq("id", betoId);
+    expect((await beto.from("profiles").select("role").single()).data?.role).toBe("user");
+    expect((await beto.rpc("is_admin")).data).toBe(false);
+  });
+
+  it("los puntos solo se ganan por hechos reales y una sola vez", async () => {
+    expect((await beto.rpc("award_points", { p_kind: "closure", p_ref: "2026-11" })).data).toBe(0); // no cerró nada
+    expect((await beto.from("point_events").insert({ user_id: betoId, kind: "x", ref: "y", points: 9999 })).error).not.toBeNull();
+    await beto.from("month_closures").insert({ user_id: betoId, year: 2026, month: 11 });
+    expect((await beto.rpc("award_points", { p_kind: "closure", p_ref: "2026-11" })).data).toBe(30);
+    expect((await beto.rpc("award_points", { p_kind: "closure", p_ref: "2026-11" })).data).toBe(0);
+    // reabrir y volver a cerrar no devuelve puntos
+    await beto.from("month_closures").delete().eq("user_id", betoId);
+    await beto.from("month_closures").insert({ user_id: betoId, year: 2026, month: 11 });
+    expect((await beto.rpc("award_points", { p_kind: "closure", p_ref: "2026-11" })).data).toBe(0);
+  });
+
+  it("admin no puede ver montos, movimientos, cuentas ni deudas", async () => {
+    expect((await jefe.rpc("is_admin")).data).toBe(true);
+    for (const t of ["transactions", "accounts", "plan_lines", "plan_cells", "goals", "goal_entries", "debts", "investments", "month_totals", "transaction_history", "tax_entries", "company_entries"]) {
+      expect((await jefe.from(t).select("*")).data, t).toEqual([]);
+    }
+    const users = await jefe.rpc("admin_users", { p_search: `ana-${stamp}` });
+    expect(users.data).toHaveLength(1);
+    const text = JSON.stringify([users.data, (await jefe.rpc("admin_user", { p_user: anaId })).data, (await jefe.rpc("admin_summary")).data]);
+    expect(text).not.toMatch(/cents|133000|500000|balance/);
+  });
+
+  it("las funciones de admin están cerradas para los demás", async () => {
+    expect((await beto.rpc("admin_users")).error).not.toBeNull();
+    expect((await beto.rpc("admin_user", { p_user: anaId })).error).not.toBeNull();
+    expect((await beto.rpc("admin_grant_access", { p_user: betoId, p_kind: "fundador", p_expires: null })).error).not.toBeNull();
+    expect((await beto.from("admin_audit").select("*")).data).toEqual([]);
+    expect((await beto.from("app_config").update({ value: {} }).eq("key", "features").select()).data).toEqual([]);
+  });
+
+  it("admin da acceso de alumno y queda en el registro de actividad", async () => {
+    const r = await jefe.rpc("admin_grant_access", { p_user: anaId, p_kind: "alumno", p_expires: "2027-02-24T00:00:00Z" });
+    expect(r.error).toBeNull();
+    expect((await ana.from("entitlements").select("state, access_until").single()).data?.state).toBe("alumno");
+    const audit = await jefe.from("admin_audit").select("action, target_user").eq("target_user", anaId);
+    expect(audit.data?.map((a) => a.action)).toContain("dar_acceso");
+  });
+
+  it("en solo lectura se lee todo pero no se edita, y no se pierde nada", async () => {
+    await admin.from("entitlements").update({ state: "read_only" }).eq("user_id", anaId);
+    expect((await ana.from("transactions").select("id")).data).toHaveLength(1);
+    expect((await ana.from("transactions").insert({ user_id: anaId, date: "2026-11-05", amount_cents: -500, description: "café" })).error).not.toBeNull();
+    await ana.from("transactions").update({ amount_cents: -1 }).eq("id", anaTx);
+    await ana.from("categories").delete().eq("id", anaCat);
+    expect((await ana.from("transactions").select("amount_cents").eq("id", anaTx).single()).data?.amount_cents).toBe(-133000);
+    expect((await ana.from("categories").select("id")).data).toHaveLength(1);
+  });
+
+  it("acceso vencido pasa a Gratis sin perder datos", async () => {
+    await admin.from("entitlements").update({ state: "free", access_until: null }).eq("user_id", anaId);
+    expect((await ana.from("transactions").select("id")).data).toHaveLength(1);
+    expect((await ana.from("transactions").insert({ user_id: anaId, date: "2026-11-05", amount_cents: -500, description: "café" })).error).toBeNull();
+  });
+
+  it("cada edición de un movimiento queda en el historial", async () => {
+    await ana.from("transactions").update({ amount_cents: -134000, edited_at: new Date().toISOString() }).eq("id", anaTx);
+    const h = await ana.from("transaction_history").select("action").eq("transaction_id", anaTx).order("at");
+    expect(h.data?.map((x) => x.action)).toEqual(["create", "update"]);
+    expect((await ana.from("transaction_history").delete().eq("transaction_id", anaTx).select()).data).toEqual([]);
+  });
+
+  it("sin sesión no se lee nada", async () => {
+    const anon = createClient(URL, ANON, { auth: { persistSession: false } });
+    for (const t of ["transactions", "profiles", "app_config", "admin_audit"]) expect((await anon.from(t).select("*")).data ?? [], t).toEqual([]);
+  });
+});

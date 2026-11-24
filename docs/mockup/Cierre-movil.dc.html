@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cierre de mes · móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 960px; box-sizing: border-box; background: #F6F5F0; font-family: Geist, system-ui, sans-serif; color: #141612; display: flex; flex-direction: column; position: relative">
+  <header style="padding: 24px 20px 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px">
+    <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; color: #5F6359">Noviembre · 5 minutos</span><h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">Cierre de mes</h1></div>
+    <a href="Inicio-movil.dc.html" aria-label="Cerrar" style="text-decoration: none; width: 44px; height: 44px; border-radius: 12px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #3A3D36; font-size: 20px">×</a>
+  </header>
+  <div class="mb" style="flex: 1; padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 18px; ">
+      <ol aria-label="Pasos" style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+        <sc-for list="{{ steps }}" as="p" hint-placeholder-count="4"><li style="display: flex; flex-direction: column; gap: 6px"><span aria-hidden="true" style="height: 5px; border-radius: 3px; background: {{ p.bar }}"></span><span style="font-size: 10px; font-weight: {{ p.w }}; color: {{ p.fg }}">{{ p.label }}</span></li></sc-for>
+      </ol>
+
+      <sc-if value="{{ s0 }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <h2 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.02em">¿Qué quedó pendiente en noviembre?</h2>
+          <a href="Movimientos-movil.dc.html" style="text-decoration: none; color: #5C3208; background: #FBEBD8; border-radius: 14px; padding: 14px 16px; font-size: 14px; font-weight: 600; display: flex; justify-content: space-between">[N] movimientos sin categoría <span aria-hidden="true">›</span></a>
+          <sc-for list="{{ pend }}" as="p" hint-placeholder-count="2">
+            <div style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+              <div style="display: flex; justify-content: space-between; font-size: 15px"><strong style="font-weight: 600">{{ p.name }}</strong><span class="num" style="font-weight: 600">{{ p.amt }}</span></div>
+              <div role="group" aria-label="¿Qué pasó con {{ p.name }}?" style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{ p.opts }}" as="o" hint-placeholder-count="3"><button type="button" aria-pressed="{{ o.pressed }}" onClick="{{ o.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1.5px solid {{ o.border }}; background: {{ o.bg }}; color: {{ o.fg }}; cursor: pointer">{{ o.label }}</button></sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s1 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <h2 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.02em">Tu plan vs. lo que pasó</h2>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+            <div style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Planeaste que te sobrara</span><span class="num big" style="font-size: 24px; font-weight: 600">$95</span></div>
+            <div style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Te sobró de verdad</span><span style="font-size: 20px; font-weight: 600; color: #5F6359">[REAL]</span></div>
+          </div>
+          <div style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 6px 16px">
+            <h3 style="margin: 0; padding: 12px 0 6px; font-size: 14px; font-weight: 600">Donde más te desviaste</h3>
+            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-top: 1px solid #EFEDE6; font-size: 14px"><span>[CATEGORÍA]</span><strong style="color: #8A4B12">+[MONTO] sobre el plan</strong></div>
+            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-top: 1px solid #EFEDE6; font-size: 14px"><span>[CATEGORÍA]</span><strong style="color: #1E5A3F">-[MONTO] bajo el plan</strong></div>
+          </div>
+          <p style="margin: 0; font-size: 13px; color: #5F6359; line-height: 1.5">No es para sentirte mal: es para que el plan de diciembre sea más realista.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s2 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <h2 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.02em">Ajusta diciembre</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-radius: 14px; padding: 14px 16px; background: {{ decNetBg }}; color: {{ decNetC }}"><span style="font-size: 14px; font-weight: 600">Entra $6,418 · sale {{ decOut }}</span><strong class="num" style="font-size: 20px">{{ decNet }}</strong></div>
+          <sc-if value="{{ decNeg }}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #8A4B12; font-weight: 600">Así planeado, en diciembre te falta. Baja alguna línea hasta que no quede en negativo.</span></sc-if>
+          <div style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 4px 16px">
+            <sc-for list="{{ decLines }}" as="l" hint-placeholder-count="7">
+              <div style="display: flex; align-items: center; gap: 10px; min-height: 54px; border-top: 1px solid #EFEDE6"><label for="{{ l.id }}" style="flex: 1; font-size: 14px">{{ l.name }}</label><input id="{{ l.id }}" class="num" type="text" inputmode="decimal" value="{{ l.v }}" onChange="{{ l.set }}" style="font: inherit; font-size: 15px; font-weight: 600; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 110px; text-align: right"></div>
+            </sc-for>
+          </div>
+          <a href="Plan-movil.dc.html" style="font-size: 13px; font-weight: 600">Ver diciembre completo en el Plan anual ›</a>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s3 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <h2 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.02em">Anota tus saldos de hoy</h2>
+          <p style="margin: 0; font-size: 14px; color: #3A3D36; line-height: 1.5">Un minuto. Con esto la Proyección y tus Inversiones quedan al día.</p>
+          <div style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 4px 16px">
+            <sc-for list="{{ bal }}" as="b" hint-placeholder-count="5">
+              <div style="display: flex; align-items: center; gap: 10px; min-height: 56px; border-top: 1px solid #EFEDE6"><label for="{{ b.id }}" style="flex: 1; font-size: 14px">{{ b.name }}</label><input id="{{ b.id }}" class="num" type="text" inputmode="decimal" placeholder="$0" style="font: inherit; font-size: 15px; font-weight: 600; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 120px; text-align: right"></div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s4 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 16px; align-items: flex-start">
+          <div aria-hidden="true" style="width: 84px; height: 84px; border-radius: 50%; background: #8FD3B9; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 12px #E3F1E8"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0E3B33" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></div>
+          <h2 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.02em">Cierre de noviembre listo</h2>
+          <p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.6">Llevas <strong>[N] cierres seguidos</strong>. Te recordamos el de diciembre el día [FECHA].</p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%">
+            <a href="Diagnostico-movil.dc.html" style="text-decoration: none; flex: 1; text-align: center; font-size: 15px; font-weight: 600; padding: 16px; background: #141612; color: #FFFFFF; border-radius: 14px">Ver mi diagnóstico actualizado</a>
+            <a href="Inicio-movil.dc.html" style="text-decoration: none; flex: 1; text-align: center; font-size: 15px; font-weight: 600; padding: 16px; background: #FFFFFF; color: #141612; border-radius: 14px; border: 1.5px solid #B9DFD0">Volver al inicio</a>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; justify-content: space-between; gap: 10px; visibility: {{ navVis }}">
+        <button type="button" onClick="{{ back }}" style="font: inherit; font-size: 15px; font-weight: 600; min-height: 52px; padding: 0 18px; border: 0; background: transparent; color: #3A3D36; cursor: pointer; visibility: {{ backVis }}">‹ Atrás</button>
+        <button type="button" onClick="{{ next }}" style="font: inherit; font-size: 16px; font-weight: 600; min-height: 52px; padding: 0 28px; border: 0; background: #141612; color: #FFFFFF; border-radius: 14px; cursor: pointer">{{ nextLabel }}</button>
+      </div>
+    </div>
+  </div>
+  
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { step: 0, pend: {}, dec: { 'Hogar y básicos': '1583', 'Vehículo': '450', 'Comida y ocio': '400', 'Inner Circle': '700', 'Ahorro e inversión': '250', 'Aportes a Easy Aussie': '550', 'Viaje a Colombia': '2500' } };
+  }
+  renderVals() {
+    const s = this.state, st = s.step;
+    const num = (x) => parseFloat(String(x).replace(/[^0-9.\-]/g, '')) || 0;
+    const fmt = (v) => (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-AU');
+    const labels = ['Revisa', 'Compara', 'Ajusta diciembre', 'Saldos'];
+    const steps = labels.map((label, i) => ({ label: (i + 1) + '. ' + label, bar: i <= st ? '#141612' : '#D9D6CC', fg: i === st ? '#141612' : '#5F6359', w: i === st ? '800' : '600' }));
+    const P = [['felix', 'Felix Mobile', '$40'], ['viaje', 'Viaje a Colombia', '$2,000']];
+    const pend = P.map(([id, name, amt]) => {
+      const cur = s.pend[id];
+      const opt = (k, label) => ({ label, pressed: String(cur === k), bg: cur === k ? '#141612' : '#FFFFFF', fg: cur === k ? '#FFFFFF' : '#3A3D36', border: cur === k ? '#141612' : '#E6E4DC', pick: () => this.setState({ pend: Object.assign({}, s.pend, { [id]: k }) }) });
+      return { name, amt, opts: [opt('pagada', 'Ya la pagué'), opt('mover', 'Pasar a diciembre'), opt('no', 'No aplica')] };
+    });
+    const decLines = Object.keys(s.dec).map((k, i) => ({ id: 'dl' + i + 'm', name: k, v: s.dec[k], set: (e) => this.setState({ dec: Object.assign({}, s.dec, { [k]: e.target.value }) }) }));
+    const out = Object.keys(s.dec).reduce((a, k) => a + num(s.dec[k]), 0);
+    const net = 6418 - out;
+    const bal = [['Ubank · cuenta', 'bal-u'], ['NAB · tarjeta (lo que debes)', 'bal-n'], ['Stake · vale hoy', 'bal-s'], ['Raiz · vale hoy', 'bal-r'], ['Cripto · vale hoy', 'bal-c']].map(([name, id]) => ({ name, id: id + 'm' }));
+    return {
+      steps, pend, decLines, s0: st === 0, s1: st === 1, s2: st === 2, s3: st === 3, s4: st === 4,
+      decOut: fmt(out), decNet: fmt(net), decNetC: net < 0 ? '#8A4B12' : '#1E5A3F', decNetBg: net < 0 ? '#FBEBD8' : '#FFF8D6', decNeg: net < 0,
+      bal, navVis: st === 4 ? 'hidden' : 'visible', backVis: st === 0 ? 'hidden' : 'visible',
+      nextLabel: st === 3 ? 'Terminar cierre' : 'Siguiente',
+      back: () => this.setState({ step: Math.max(0, st - 1) }), next: () => this.setState({ step: Math.min(4, st + 1) }),
+      restart: () => this.setState({ step: 0 })
+    };
+  }
+}
+</script>
+</body>
+</html>

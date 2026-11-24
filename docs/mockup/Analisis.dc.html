@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Análisis</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Principal" style="flex: 1 1 220px; max-width: 248px; background: #FBFAF6; border-right: 1px solid #E6E4DC; padding: 22px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px 10px 8px">
+      <a href="Main.dc.html" style="text-decoration: none; display: flex; align-items: center"><img src="/_blob/bb0e7d557e23b395ba835e41bc61c1a6" alt="Revolución 360 · Revolución del Dinero" style="height: 38px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; align-self: flex-start; display: block; flex: none"></a>
+    </div>
+    <span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Tu plata</span><a href="Main.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan anual</a><a href="Movimientos.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Cuentas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg>Cuentas</a><a href="Metas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Metas</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Entiende tus números</span><a href="Forecast.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Proyección</a><a href="Analisis.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #ECEAE2; color: #141612"><span aria-hidden="true" style="position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #F2CD00"></span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/></svg>Análisis</a><a href="Deudas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Deudas e impuestos</a><a href="Inversiones.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M4 20h16"/><path d="M7 16v-4M12 16V8M17 16V5"/></svg>Inversiones</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Aprende</span><a href="Academia.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia <span style="margin-left: auto; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #FFF3B8; color: #5C4A00">340 pts</span></a>
+    <a href="Cierre.dc.html" style="text-decoration: none; margin-top: 18px; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid #EADFA0; background: #FFF8D6; color: #141612">
+      <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; flex: none; background: conic-gradient(#F2CD00 0 80%, #EADFA0 80% 100%); display: flex; align-items: center; justify-content: center"><span style="width: 26px; height: 26px; border-radius: 50%; background: #FFF8D6; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">6d</span></span>
+      <span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; font-weight: 600">Cierra noviembre</span><span style="font-size: 12px; color: #6B5A10">5 minutos · quedan 6 días</span></span></a>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid #E6E4DC">
+      <div style="display: flex; align-items: center; gap: 4px">
+        <a href="Perfil.dc.html" style="text-decoration: none; color: #141612; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 10px; flex: 1; min-width: 0; background: transparent">
+          <span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 50%; background: #141612; color: #F2CD00; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; flex: none">J</span>
+          <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 13px; font-weight: 600">Jonathan</span><span style="font-size: 12px; color: #6B6E64">Mi perfil</span></span></a>
+        <a href="Notificaciones.dc.html" aria-label="Notificaciones" title="Notificaciones" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M6 9a6 6 0 0 1 12 0c0 6.5 2.5 8.5 2.5 8.5h-17S6 15.5 6 9"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg><span aria-hidden="true" style="position: absolute; top: 8px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: #F2CD00; box-shadow: 0 0 0 2px #FBFAF6"></span></a>
+        <a href="Ayuda.dc.html" aria-label="Ayuda" title="Ayuda" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.7"/><path d="M12 17.2v.1"/></svg></a>
+      </div>
+      <div style="display: flex; flex-direction: column; padding: 0 2px">
+        <a href="Suscripcion.dc.html" style="text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4A4D45; font-weight: 450; padding: 6px 8px"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg>Suscripción</a>
+        
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px 0">
+        <img src="/_blob/07130166ac57906f8a4d3175882f16f6" alt="Revolución del Dinero" style="width: 30px; height: 30px">
+        <span style="font-size: 11px; color: #6B6E64; line-height: 1.35">Una herramienta de<br><span style="color: #141612; font-weight: 600">Revolución del Dinero</span></span>
+      </div>
+    </div>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 48px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; max-width: 1220px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Cómo te fue en 2026</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Análisis</h1></div>
+      <div role="group" aria-label="Año" style="display: flex; gap: 4px; background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 12px; padding: 4px"><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; border: 0; background: transparent; color: #5F6359; padding: 0 16px; border-radius: 9px; min-height: 38px">2025</button><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; border: 0; background: #141612; color: #FFFFFF; padding: 0 16px; border-radius: 9px; min-height: 38px">2026</button></div>
+    </header>
+    <section aria-label="Tu año en números" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 30px 0; display: flex; flex-wrap: wrap; gap: 28px; align-items: center; justify-content: space-between">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(140px, 1fr)); gap: 28px; flex: 1 1 500px">
+        <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Entró</span><span class="num big" style="font-size: 34px; font-weight: 600; letter-spacing: -0.03em">$95,346</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Salió</span><span class="num big" style="font-size: 34px; font-weight: 600; letter-spacing: -0.03em">$85,637</span><span style="font-size: 12px; color: #5F6359">Gastos, deudas, metas y ahorro</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Te sobró</span><span class="num big" style="font-size: 34px; font-weight: 600; letter-spacing: -0.03em">$9,709</span><span style="font-size: 12px; color: #5F6359">$9,245 de ellos en febrero</span></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px; background: #F6F5F0; border-radius: 14px; padding: 16px 20px">
+        <div role="img" aria-label="Ahorro real 2.7%" style="width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(#1F8A5B 0 2.7%, #E6E4DC 2.7% 100%); display: flex; align-items: center; justify-content: center"><div class="num" style="width: 60px; height: 60px; border-radius: 50%; background: #F6F5F0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600">2.7%</div></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; max-width: 170px"><span style="font-size: 13px; color: #5F6359">Ahorro e inversión</span><span class="num" style="font-size: 20px; font-weight: 600">$2,600</span><span style="font-size: 12px; color: #5F6359">S&amp;P500 + fondo de emergencia</span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="mm" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 26px; display: flex; flex-direction: column; gap: 18px">
+      <h2 id="mm" style="margin: 0; font-size: 18px; font-weight: 600">Mes a mes</h2>
+      <div style="overflow-x: auto"><div style="display: grid; grid-template-columns: repeat(12, minmax(52px, 1fr)); gap: 8px; align-items: end">
+          <sc-for list="{{ months }}" as="m" hint-placeholder-count="12">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px">
+              <div style="height: 200px; display: flex; align-items: flex-end; gap: 3px">
+                <div style="width: 16px; border-radius: 5px 5px 1px 1px; background: #141612; height: {{ m.incH }}"></div>
+                <div style="width: 16px; border-radius: 5px 5px 1px 1px; background: #B9DFD0; height: {{ m.expH }}"></div>
+              </div>
+              <span style="font-size: 11px; color: #5F6359; font-weight: 600">{{ m.label }}</span>
+              <span class="num" style="font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 6px; background: {{ m.netBg }}; color: {{ m.netColor }}">{{ m.net }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 16px; font-size: 12px; color: #3A3D36"><span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: #141612"></span>Entró</span><span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: #B9DFD0"></span>Salió</span></div></div>
+    </section>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px">
+      <section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 26px; display: flex; flex-direction: column; gap: 16px"><h2 style="margin: 0; font-size: 18px; font-weight: 600">A dónde fue cada dólar</h2>
+        <div aria-hidden="true" style="display: flex; height: 14px; border-radius: 7px; overflow: hidden; gap: 2px"><sc-for list="{{ split }}" as="s" hint-placeholder-count="10"><div style="background: {{ s.color }}; width: {{ s.w }}; border-radius: 2px"></div></sc-for></div>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+          <sc-for list="{{ split }}" as="s" hint-placeholder-count="10">
+            <li style="display: flex; align-items: center; gap: 10px; font-size: 14px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: {{ s.color }}; flex: none"></span><span style="flex: 1">{{ s.name }}</span><span class="num" style="color: #5F6359">{{ s.pct }}</span><span class="num" style="font-weight: 600; width: 72px; text-align: right">{{ s.amt }}</span></li>
+          </sc-for>
+        </ul></section>
+      <section aria-labelledby="src" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 26px; display: flex; flex-direction: column; gap: 16px">
+        <h2 id="src" style="margin: 0; font-size: 18px; font-weight: 600">De dónde vino</h2>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px">
+          <sc-for list="{{ sources }}" as="s" hint-placeholder-count="5">
+            <li style="display: flex; flex-direction: column; gap: 7px">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px"><span style="display: flex; align-items: center; gap: 8px">{{ s.name }}<sc-if value="{{ s.tag }}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #FBEBD8; color: #8A4B12">Tipo por clasificar</span></sc-if></span><span class="num"><span style="color: #5F6359">{{ s.pct }}</span>  <strong>{{ s.amt }}</strong></span></div>
+              <div aria-hidden="true" style="height: 8px; background: #EFEDE6; border-radius: 4px"><div style="height: 8px; border-radius: 4px; background: #141612; width: {{ s.w }}"></div></div>
+            </li>
+          </sc-for>
+        </ul>
+        <p style="margin: 0; background: #FBEBD8; border-radius: 14px; padding: 12px 14px; font-size: 13px; line-height: 1.5; color: #5C3208"><strong>Concentración:</strong> el sueldo fue el 68% del año y el 84% en diciembre.</p>
+      </section>
+    </div>
+
+    <section aria-labelledby="com" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 26px; display: flex; flex-direction: column; gap: 20px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><h2 id="com" style="margin: 0; font-size: 18px; font-weight: 600">Tus comercios</h2><span style="font-size: 13px; color: #5F6359">Se llena solo con tus movimientos. No tienes que etiquetar nada.</span></div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px"><div style="display: flex; flex-direction: column; gap: 12px">
+          <h3 style="margin: 0; font-size: 15px; font-weight: 600">Donde más gastas</h3>
+          <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px">
+            <sc-for list="{{ top }}" as="t" hint-placeholder-count="5">
+              <li style="display: flex; align-items: center; gap: 12px">
+                <span aria-hidden="true" class="num" style="width: 30px; height: 30px; border-radius: 9px; background: #F6F5F0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #3A3D36; flex: none">{{ t.n }}</span>
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+                  <div style="display: flex; justify-content: space-between; font-size: 14px"><span style="font-weight: 600">[COMERCIO]</span><span style="font-weight: 600; color: #5F6359">[MONTO]</span></div>
+                  <div aria-hidden="true" style="height: 6px; border-radius: 3px; background: #EFEDE6"><div style="height: 6px; border-radius: 3px; background: #141612; width: {{ t.w }}"></div></div>
+                </div>
+              </li>
+            </sc-for>
+          </ol>
+        </div><div style="display: flex; flex-direction: column; gap: 12px">
+          <h3 style="margin: 0; font-size: 15px; font-weight: 600">Vigilando ({{ watchCount }} de 5)</h3>
+          <sc-for list="{{ watches }}" as="w" hint-placeholder-count="2">
+            <article style="border: 1px solid #E6E4DC; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <span style="display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600"><span aria-hidden="true" style="width: 30px; height: 30px; border-radius: 9px; background: {{ w.bg }}; display: flex; align-items: center; justify-content: center"><span style="width: 10px; height: 10px; border-radius: 50%; background: {{ w.fg }}"></span></span>{{ w.name }}</span>
+                <button type="button" onClick="{{ w.remove }}" aria-label="Dejar de vigilar {{ w.name }}" style="font: inherit; width: 36px; height: 36px; border: 0; background: #F6F5F0; border-radius: 8px; color: #5F6359; cursor: pointer">×</button>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: #5F6359">
+                <div style="display: flex; flex-direction: column; gap: 2px">Este mes<strong style="font-size: 14px">[MONTO]</strong></div>
+                <div style="display: flex; flex-direction: column; gap: 2px">En el año<strong style="font-size: 14px">[MONTO]</strong></div>
+                <div style="display: flex; flex-direction: column; gap: 2px">Límite<strong style="font-size: 14px">[OPCIONAL]</strong></div>
+              </div>
+            </article>
+          </sc-for>
+          <div style="display: flex; gap: 8px">
+            <label for="watch-in" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Comercio o palabra a vigilar</label>
+            <input id="watch-in" type="text" value="{{ watchDraft }}" onChange="{{ setWatch }}" placeholder="Ej. Uber Eats, café" style="font: inherit; font-size: 15px; flex: 1; min-width: 0; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px">
+            <button type="button" onClick="{{ addWatch }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 46px; padding: 0 16px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">Vigilar</button>
+          </div>
+        </div></div>
+    </section>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px">
+      <section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 22px; display: flex; flex-direction: column; gap: 12px"><h2 style="margin: 0; font-size: 16px; font-weight: 600">Tú y Easy Aussie</h2>
+        <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Aportaste</span><strong class="num">$8,405</strong></div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Te pagaste</span><strong class="num">$11,050</strong></div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px; border-top: 1px solid #EFEDE6; padding-top: 10px"><span>Neto</span><strong class="num">+$2,645</strong></div></section>
+      <section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 22px; display: flex; flex-direction: column; gap: 12px"><h2 style="margin: 0; font-size: 16px; font-weight: 600">Viajes y eventos</h2>
+        <span style="font-size: 13px; color: #5F6359">$20,466 · 21% de lo que entró</span>
+        <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Europe trip</span><strong class="num">$16,666</strong></div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Inner Circle Immersion</span><strong class="num">$3,000</strong></div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Travelling Maria del Mar</span><strong class="num">$800</strong></div></section>
+      <section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 22px; display: flex; flex-direction: column; gap: 12px"><h2 style="margin: 0; font-size: 16px; font-weight: 600">Lo que más varió</h2>
+        <div style="font-size: 14px; display: flex; flex-direction: column; gap: 2px"><strong>Aportes a Easy Aussie</strong><span style="font-size: 13px; color: #5F6359">De $0 a $2,700 al mes</span></div>
+        <div style="font-size: 14px; display: flex; flex-direction: column; gap: 2px"><strong>Bike Payment</strong><span style="font-size: 13px; color: #5F6359">De $0 a $2,300 al mes</span></div>
+        <div style="font-size: 14px; display: flex; flex-direction: column; gap: 2px"><strong>Suscripciones</strong><span style="font-size: 13px; color: #5F6359">De $25 a $270 al mes</span></div></section>
+    </div>
+    <p style="margin: 0; font-size: 12px; color: #5F6359">Información general basada en tus propios datos. No es asesoría financiera ni fiscal.</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2300}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { watches: ["McDonald's", 'Café'], draft: '' }; }
+  renderVals() {
+    const labels = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const inc = [6463,17538,7198,7598,7403,7278,8778,7418,6418,6418,6418,6418];
+    const exp = [6350,8293,7173,7613,7358,7224,8699,7339,6419,6413,6323,6433];
+    const fmt = (v) => (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString('en-AU');
+    const H = 200;
+    const months = labels.map((label, i) => {
+      const net = inc[i] - exp[i];
+      return { label: label, incH: Math.round(inc[i] / 18000 * H) + 'px', expH: Math.round(exp[i] / 18000 * H) + 'px', net: fmt(net), netBg: net < 0 ? '#FBEBD8' : '#FFF8D6', netColor: net < 0 ? '#8A4B12' : '#1E5A3F' };
+    });
+    const total = 95346;
+    const raw = [['Hogar y básicos', 20467, '#141612'], ['Estilo de vida', 20466, '#3E8C7A'], ['Deudas', 15395, '#C46A2A'], ['Metas (viaje a Colombia)', 8400, '#E3B800'], ['Aportes a Easy Aussie', 8405, '#2D5C8A'], ['Vehículo', 4874, '#6FA898'], ['Comida y ocio', 4450, '#A8D3C3'], ['Ahorro e inversión', 2600, '#4C7FB5'], ['Otros', 580, '#CFCCC2'], ['Te sobró', 9709, '#E6E4DC']];
+    const split = raw.map(([name, v, color]) => ({ name, color, amt: fmt(v), pct: (v / total * 100).toFixed(1) + '%', w: (v / total * 100).toFixed(2) + '%' }));
+    const src = [['Sueldo', 65016, false], ['Ingresos extra', 13030, false], ['Retiros de Easy Aussie', 11050, true], ['Renta del auto', 3625, false], ['E-bikes', 2625, false]];
+    const sources = src.map(([name, v, tag]) => ({ name, tag, amt: fmt(v), pct: (v / total * 100).toFixed(0) + '%', w: (v / total * 100).toFixed(1) + '%' }));
+    const WC = [['#FBEBD8', '#C46A2A'], ['#FDF1DE', '#E3B800'], ['#E3ECF6', '#4C7FB5'], ['#E3F1E8', '#141612'], ['#E5F1ED', '#3E8C7A']];
+    const ws = this.state.watches;
+    const watches = ws.map((name, i) => ({ name, bg: WC[i % 5][0], fg: WC[i % 5][1], remove: () => this.setState({ watches: ws.filter((x) => x !== name) }) }));
+    const top = [100, 78, 61, 44, 30].map((w, i) => ({ n: i + 1, w: w + '%' }));
+    const addWatch = () => { const d = (this.state.draft || '').trim(); if (d && ws.length < 5) this.setState({ watches: ws.concat([d]), draft: '' }); };
+    return { months, split, sources, watches, top, addWatch, watchCount: ws.length, watchDraft: this.state.draft, setWatch: (e) => this.setState({ draft: e.target.value }) };
+  }
+}
+</script>
+</body>
+</html>

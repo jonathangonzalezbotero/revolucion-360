@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cuentas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Principal" style="flex: 1 1 220px; max-width: 248px; background: #FBFAF6; border-right: 1px solid #E6E4DC; padding: 22px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px 10px 8px">
+      <a href="Main.dc.html" style="text-decoration: none; display: flex; align-items: center"><img src="/_blob/bb0e7d557e23b395ba835e41bc61c1a6" alt="Revolución 360 · Revolución del Dinero" style="height: 38px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; align-self: flex-start; display: block; flex: none"></a>
+    </div>
+    <span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Tu plata</span><a href="Main.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan anual</a><a href="Movimientos.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Cuentas.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #ECEAE2; color: #141612"><span aria-hidden="true" style="position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #F2CD00"></span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg>Cuentas</a><a href="Metas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Metas</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Entiende tus números</span><a href="Forecast.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Proyección</a><a href="Analisis.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/></svg>Análisis</a><a href="Deudas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Deudas e impuestos</a><a href="Inversiones.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M4 20h16"/><path d="M7 16v-4M12 16V8M17 16V5"/></svg>Inversiones</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Aprende</span><a href="Academia.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia <span style="margin-left: auto; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #FFF3B8; color: #5C4A00">340 pts</span></a>
+    <a href="Cierre.dc.html" style="text-decoration: none; margin-top: 18px; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid #EADFA0; background: #FFF8D6; color: #141612">
+      <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; flex: none; background: conic-gradient(#F2CD00 0 80%, #EADFA0 80% 100%); display: flex; align-items: center; justify-content: center"><span style="width: 26px; height: 26px; border-radius: 50%; background: #FFF8D6; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">6d</span></span>
+      <span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; font-weight: 600">Cierra noviembre</span><span style="font-size: 12px; color: #6B5A10">5 minutos · quedan 6 días</span></span></a>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid #E6E4DC">
+      <div style="display: flex; align-items: center; gap: 4px">
+        <a href="Perfil.dc.html" style="text-decoration: none; color: #141612; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 10px; flex: 1; min-width: 0; background: transparent">
+          <span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 50%; background: #141612; color: #F2CD00; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; flex: none">J</span>
+          <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 13px; font-weight: 600">Jonathan</span><span style="font-size: 12px; color: #6B6E64">Mi perfil</span></span></a>
+        <a href="Notificaciones.dc.html" aria-label="Notificaciones" title="Notificaciones" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M6 9a6 6 0 0 1 12 0c0 6.5 2.5 8.5 2.5 8.5h-17S6 15.5 6 9"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg><span aria-hidden="true" style="position: absolute; top: 8px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: #F2CD00; box-shadow: 0 0 0 2px #FBFAF6"></span></a>
+        <a href="Ayuda.dc.html" aria-label="Ayuda" title="Ayuda" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.7"/><path d="M12 17.2v.1"/></svg></a>
+      </div>
+      <div style="display: flex; flex-direction: column; padding: 0 2px">
+        <a href="Suscripcion.dc.html" style="text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4A4D45; font-weight: 450; padding: 6px 8px"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg>Suscripción</a>
+        
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px 0">
+        <img src="/_blob/07130166ac57906f8a4d3175882f16f6" alt="Revolución del Dinero" style="width: 30px; height: 30px">
+        <span style="font-size: 11px; color: #6B6E64; line-height: 1.35">Una herramienta de<br><span style="color: #141612; font-weight: 600">Revolución del Dinero</span></span>
+      </div>
+    </div>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 48px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; max-width: 1220px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Tus bancos, tarjetas y efectivo</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Cuentas</h1></div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap"><button type="button" onClick="{{ openTf }}" aria-expanded="{{ tfOpen }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Mover dinero</button><button type="button" onClick="{{ openNew }}" aria-expanded="{{ newOpen }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">+ Agregar cuenta</button></div>
+    </header>
+    <section aria-label="Totales" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 26px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px; "><span style="font-size: 13px; color: #5F6359">Tu dinero hoy, sin tu empresa</span><span class="num big" style="font-size: 36px; font-weight: 600; letter-spacing: -0.03em">{{ net }}</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Disponible</span><span class="num big" style="font-size: 26px; font-weight: 600">{{ disp }}</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Debes en tarjetas</span><span class="num big" style="font-size: 26px; font-weight: 600; color: #B4441C">{{ card }}</span></div>
+    </section>
+    <sc-if value="{{ showNew }}" hint-placeholder-val="{{ false }}"><section aria-labelledby="an-hd" style="background: #FFFFFF; border-radius: 14px; padding: 24px 26px; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><h2 id="an-hd" style="margin: 0; font-size: 20px; font-weight: 600">Agregar cuenta</h2><span style="font-size: 13px; color: #5F6359; line-height: 1.5">Banco, tarjeta, efectivo o la cuenta de tu empresa. Solo escribes el saldo: la app nunca entra a tu banco.</span></div>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px"><span id="tyd" style="font-size: 12px; font-weight: 500; color: #5F6359">Tipo</span><div role="radiogroup" aria-labelledby="tyd" style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{ types }}" as="t" hint-placeholder-count="6"><button type="button" role="radio" aria-checked="{{ t.checked }}" onClick="{{ t.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 2px solid {{ t.border }}; background: {{ t.bg }}; color: #141612; cursor: pointer">{{ t.name }}</button></sc-for></div></div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="and" style="font-size: 12px; font-weight: 500; color: #5F6359">Nombre</label><input id="and" type="text" value="{{ nw.name }}" onChange="{{ setName }}" placeholder="Ej. CommBank Smart Access" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="abd" style="font-size: 12px; font-weight: 500; color: #5F6359">Banco (opcional)</label><input id="abd" type="text" value="{{ nw.bank }}" onChange="{{ setBank }}" placeholder="Ej. CommBank" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="asd" style="font-size: 12px; font-weight: 500; color: #5F6359">Saldo hoy</label><input id="asd" class="num" type="text" inputmode="decimal" value="{{ nw.bal }}" onChange="{{ setBal }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+        </div>
+        <span style="font-size: 12px; color: #5F6359">En tarjetas de crédito escribe lo que debes con signo menos. Ej. -1,920.</span>
+        <div style="display: flex; justify-content: flex-end; gap: 10px"><button type="button" onClick="{{ close }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Cancelar</button><button type="button" onClick="{{ addA }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Agregar cuenta</button></div>
+      </section></sc-if>
+    <sc-if value="{{ showTf }}" hint-placeholder-val="{{ false }}"><section aria-labelledby="tf-hd" style="background: #FFFFFF; border-radius: 14px; padding: 24px 26px; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><h2 id="tf-hd" style="margin: 0; font-size: 20px; font-weight: 600">Mover dinero entre tus cuentas</h2><span style="font-size: 13px; color: #5F6359; line-height: 1.5">Pagar la tarjeta, pasar a tu ahorro o sacar efectivo. No cuenta como gasto ni como ingreso.</span></div>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="tfd" style="font-size: 12px; font-weight: 500; color: #5F6359">Desde</label><select id="tfd" value="{{ tf.from }}" onChange="{{ setFrom }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><sc-for list="{{ names }}" as="n" hint-placeholder-count="5"><option value="{{ n }}">{{ n }}</option></sc-for></select></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="ttd" style="font-size: 12px; font-weight: 500; color: #5F6359">Hacia</label><select id="ttd" value="{{ tf.to }}" onChange="{{ setTo }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><sc-for list="{{ names }}" as="n" hint-placeholder-count="5"><option value="{{ n }}">{{ n }}</option></sc-for></select></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="tad" style="font-size: 12px; font-weight: 500; color: #5F6359">Monto</label><input id="tad" class="num" type="text" inputmode="decimal" value="{{ tf.amt }}" onChange="{{ setAmt }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px"><button type="button" onClick="{{ close }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Cancelar</button><button type="button" onClick="{{ doTf }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Registrar</button></div>
+      </section></sc-if>
+    <sc-if value="{{ hasMsg }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin: 0; font-size: 14px; font-weight: 600; color: #1E5A3F; background: #E3F1E8; border-radius: 12px; padding: 12px 14px">{{ msg }}</p></sc-if>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); gap: 20px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 12px"><div role="list" style="display: flex; flex-direction: column; gap: 12px">
+      <sc-for list="{{ items }}" as="a" hint-placeholder-count="5">
+        <article role="listitem" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; outline: 2px solid {{ a.ring }}">
+          <button type="button" onClick="{{ a.pick }}" aria-pressed="{{ a.sel }}" style="font: inherit; flex: 1 1 200px; display: flex; align-items: center; gap: 12px; border: 0; background: transparent; padding: 0; text-align: left; cursor: pointer; color: #141612; min-height: 44px">
+            <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 12px; background: {{ a.color }}; color: #FFFFFF; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: none">{{ a.initial }}</span>
+            <span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">{{ a.name }}</strong><span style="font-size: 12px; color: #5F6359">{{ a.sub }}</span>
+              <sc-if value="{{ a.hasTag }}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #2D5C8A; font-weight: 600">{{ a.tag }}</span></sc-if></span>
+          </button>
+          <div style="display: flex; flex-direction: column; gap: 4px; width: 170px">
+            <label for="{{ a.id }}" style="font-size: 11px; font-weight: 500; color: #5F6359">Saldo hoy</label>
+            <input id="{{ a.id }}" class="num" type="text" inputmode="decimal" value="{{ a.bal }}" onChange="{{ a.set }}" style="font: inherit; font-size: 16px; font-weight: 600; height: 42px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #F8F7F2; width: 100%; box-sizing: border-box; text-align: right">
+          </div>
+          <sc-if value="{{ a.hasDiff }}" hint-placeholder-val="{{ false }}"><div style="flex-basis: 100%; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; font-size: 13px; background: #FDF1DE; color: #7A4A0C; border-radius: 10px; padding: 10px 12px"><span><strong>{{ a.diff }}</strong> según tus movimientos.</span><a href="Movimientos.dc.html" style="font-weight: 600; color: #7A4A0C">Revisar</a></div></sc-if>
+        </article>
+      </sc-for>
+    </div><p style="margin: 0; font-size: 12px; color: #5F6359">Saldos de ejemplo: pon los tuyos. Actualízalos en cada cierre de mes; la app compara con tus movimientos y te avisa si falta algo.</p></div>
+      <aside aria-labelledby="det" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; position: sticky; top: 24px">
+      <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #5F6359">{{ dSub }}</span><h2 id="det" style="margin: 0; font-size: 20px; font-weight: 600">{{ dName }}</h2><span class="num big" style="font-size: 28px; font-weight: 600; letter-spacing: -0.02em">{{ dBal }}</span></div>
+      <div style="display: flex; flex-direction: column">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #EFEDE6">
+          <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Usar en mi proyección</span><span style="font-size: 12px; color: #5F6359">Su saldo es el punto de partida de tus próximos 12 meses</span></span>
+          <button type="button" role="switch" aria-checked="{{ projS }}" aria-label="Usar en mi proyección" onClick="{{ togProj }}" style="font: inherit; width: 48px; height: 28px; border-radius: 999px; border: 0; padding: 3px; cursor: pointer; background: {{ projBg }}; display: flex; justify-content: {{ projJ }}"><span style="width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF"></span></button>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #EFEDE6">
+          <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Contar en mi patrimonio</span><span style="font-size: 12px; color: #5F6359">Apágalo si el dinero no es tuyo, como el de tu empresa</span></span>
+          <button type="button" role="switch" aria-checked="{{ ntS }}" aria-label="Contar en mi patrimonio" onClick="{{ togNet }}" style="font: inherit; width: 48px; height: 28px; border-radius: 999px; border: 0; padding: 3px; cursor: pointer; background: {{ ntBg }}; display: flex; justify-content: {{ ntJ }}"><span style="width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF"></span></button>
+        </div>
+      </div>
+      <sc-if value="{{ isEmpresa }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; font-size: 13px; color: #2D5C8A; background: #E3ECF6; border-radius: 12px; padding: 12px 14px; line-height: 1.5">El dinero de tu Pty Ltd no es tuyo personalmente. Los retiros se ven en <a href="Deudas.dc.html" style="color: #2D5C8A; font-weight: 600">Cuenta con tu empresa</a>. Revísalos con tu contador (Division 7A).</p></sc-if>
+      <h3 style="margin: 6px 0 0; font-size: 14px; font-weight: 600">Últimos movimientos</h3>
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+        <sc-for list="{{ mov }}" as="m" hint-placeholder-count="4"><li style="display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid #EFEDE6; font-size: 14px"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600">{{ m.t }}</span><span style="font-size: 12px; color: #5F6359">{{ m.c }}</span></span><strong class="num">{{ m.v }}</strong></li></sc-for>
+      </ul>
+      <a href="Movimientos.dc.html" style="font-size: 14px; font-weight: 600">Ver todos los movimientos ›</a>
+      <button type="button" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 600; border: 0; background: transparent; color: #5F6359; padding: 8px 0; cursor: pointer">Archivar cuenta</button>
+    </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      list: [
+        { name: 'Ubank Spend', bank: 'Ubank', type: 'Día a día', bal: '2,340', exp: 2410, proj: true, net: true },
+        { name: 'Ubank Save', bank: 'Ubank', type: 'Ahorro', bal: '6,850', exp: null, proj: true, net: true },
+        { name: 'NAB Low Rate', bank: 'NAB', type: 'Tarjeta de crédito', bal: '-1,920', exp: null, proj: true, net: true },
+        { name: 'Efectivo', bank: '', type: 'Efectivo', bal: '120', exp: null, proj: false, net: true },
+        { name: 'Easy Aussie Pty Ltd', bank: 'Ubank', type: 'Empresa', bal: '4,300', exp: null, proj: false, net: false }
+      ],
+      sel: 0, mode: '', nw: { name: '', bank: '', type: 'Día a día', bal: '' }, tf: { from: 'Ubank Spend', to: 'Ubank Save', amt: '' }, msg: ''
+    };
+  }
+  renderVals() {
+    const chipsOf = (arr, cur, set) => arr.map((k) => ({ name: k, checked: String(cur === k), border: cur === k ? '#141612' : '#E6E4DC', bg: cur === k ? '#FFF8D6' : '#FFFFFF', pick: () => set(k) }));
+    const num = (x) => parseFloat(String(x).replace(/[^0-9.\-]/g, '')) || 0;
+    const fmt = (v) => (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-AU');
+    const s = this.state;
+    const C = { 'Día a día': '#141612', 'Ahorro': '#3E8C7A', 'Tarjeta de crédito': '#C46A2A', 'Efectivo': '#7A8A83', 'Empresa': '#2D5C8A', 'Otra': '#A9B3AE' };
+    const upd = (i, p) => { const l = s.list.slice(); l[i] = Object.assign({}, l[i], p); this.setState({ list: l }); };
+    let disp = 0, card = 0, net = 0;
+    s.list.forEach((a) => { const v = num(a.bal); if (a.type === 'Tarjeta de crédito') card += v; else if (a.type !== 'Empresa') disp += v; if (a.net) net += v; });
+    const MOV = {
+      'Día a día': [['Woolworths', 'Súper', '-$86'], ['Sueldo', 'Ingreso', '+$1,540'], ['Transferencia a Ubank Save', 'Entre tus cuentas', '-$300'], ['Opal', 'Transporte', '-$50']],
+      'Ahorro': [['Transferencia desde Ubank Spend', 'Entre tus cuentas', '+$300'], ['Intereses', 'Ingreso', '+$21']],
+      'Tarjeta de crédito': [['Pago de la tarjeta', 'Entre tus cuentas', '+$500'], ['Amazon AU', 'Compras', '-$64'], ['McDonald\'s', 'Comida fuera', '-$18']],
+      'Efectivo': [['Retiro en cajero', 'Entre tus cuentas', '+$100'], ['Café', 'Comida fuera', '-$6']],
+      'Empresa': [['Retiro a tu cuenta personal', 'Cuenta con tu empresa', '-$1,000'], ['Aporte a la empresa', 'Cuenta con tu empresa', '+$500']]
+    };
+    const items = s.list.map((a, i) => {
+      const v = num(a.bal), on = s.sel === i;
+      const d = a.exp == null ? null : v - a.exp;
+      return {
+        name: a.name, sub: (a.bank ? a.bank + ' · ' : '') + a.type, color: C[a.type] || '#A9B3AE', initial: a.name.charAt(0),
+        bal: a.bal, id: 'b' + i + 'd', set: (e) => upd(i, { bal: e.target.value }),
+        pick: () => this.setState({ sel: i }), sel: String(on), ring: on ? '#141612' : 'transparent',
+        neg: v < 0, tag: a.net ? '' : 'No cuenta en tu patrimonio',
+        hasTag: !a.net,
+        hasDiff: d !== null && Math.abs(d) >= 1, diff: d === null ? '' : (d < 0 ? 'Te faltan ' + fmt(-d) + ' por registrar' : 'Registraste ' + fmt(d) + ' de más')
+      };
+    });
+    const a = s.list[s.sel] || s.list[0];
+    const mov = (MOV[a.type] || []).map((m) => ({ t: m[0], c: m[1], v: m[2], pos: m[2].charAt(0) === '+' }));
+    const names = s.list.map((x) => x.name);
+    const setN = (k) => (e) => this.setState({ nw: Object.assign({}, s.nw, { [k]: e.target.value }) });
+    const setT = (k) => (e) => this.setState({ tf: Object.assign({}, s.tf, { [k]: e.target.value }) });
+    const out = {
+      items, mov, names,
+      disp: fmt(disp), card: fmt(card), net: fmt(net), count: s.list.length,
+      dName: a.name, dSub: (a.bank ? a.bank + ' · ' : '') + a.type, dBal: fmt(num(a.bal)),
+      dProj: !!a.proj, dNet: !!a.net,
+      togProj: () => upd(s.sel, { proj: !a.proj }), togNet: () => upd(s.sel, { net: !a.net }),
+      isEmpresa: a.type === 'Empresa',
+      showNew: s.mode === 'new', showTf: s.mode === 'tf', newOpen: String(s.mode === 'new'), tfOpen: String(s.mode === 'tf'),
+      openNew: () => this.setState({ mode: s.mode === 'new' ? '' : 'new', msg: '' }), openTf: () => this.setState({ mode: s.mode === 'tf' ? '' : 'tf', msg: '' }),
+      close: () => this.setState({ mode: '' }),
+      types: chipsOf(Object.keys(C), s.nw.type, (k) => this.setState({ nw: Object.assign({}, s.nw, { type: k }) })),
+      nw: s.nw, setName: setN('name'), setBank: setN('bank'), setBal: setN('bal'),
+      addA: () => { if (!s.nw.name.trim()) return; const n = Object.assign({ exp: null, proj: s.nw.type !== 'Empresa', net: s.nw.type !== 'Empresa' }, s.nw); this.setState({ list: s.list.concat([n]), mode: '', sel: s.list.length, msg: 'Cuenta agregada. Ya aparece en tu proyección.', nw: { name: '', bank: '', type: 'Día a día', bal: '' } }); },
+      tf: s.tf, setFrom: setT('from'), setTo: setT('to'), setAmt: setT('amt'),
+      doTf: () => {
+        const m = num(s.tf.amt); if (!m || s.tf.from === s.tf.to) return;
+        const l = s.list.map((x) => x.name === s.tf.from ? Object.assign({}, x, { bal: String(num(x.bal) - m) }) : x.name === s.tf.to ? Object.assign({}, x, { bal: String(num(x.bal) + m) }) : x);
+        this.setState({ list: l, mode: '', msg: 'Transferencia de ' + fmt(m) + ' registrada. No cuenta como gasto.', tf: Object.assign({}, s.tf, { amt: '' }) });
+      },
+      hasMsg: !!s.msg, msg: s.msg
+    };
+    const sw = (on) => ({ S: String(on), Bg: on ? '#141612' : '#CFCCC2', J: on ? 'flex-end' : 'flex-start' });
+    const P = sw(this.state.list[this.state.sel].proj), N = sw(this.state.list[this.state.sel].net);
+    Object.assign(out, { projS: P.S, projBg: P.Bg, projJ: P.J, ntS: N.S, ntBg: N.Bg, ntJ: N.J });
+    return out;
+  }
+}
+</script>
+</body>
+</html>

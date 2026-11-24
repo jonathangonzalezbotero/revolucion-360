@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Deudas e impuestos · móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#141612}a:hover{color:#1E5A3F}
+.num{font-variant-numeric:tabular-nums}
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1900px; box-sizing: border-box; background: #F6F5F0; font-family: Geist, system-ui, sans-serif; color: #141612; display: flex; flex-direction: column">
+  <header style="padding: 24px 20px 10px; display: flex; justify-content: space-between; align-items: center">
+    <h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">Deudas e impuestos</h1>
+    <button type="button" onClick="{{ toggleNew }}" aria-expanded="{{ newOpen }}" aria-label="Agregar deuda" style="font: inherit; width: 46px; height: 46px; border: 0; border-radius: 14px; background: #141612; color: #FFFFFF; font-size: 24px">+</button>
+  </header>
+
+  <div class="mb" style="flex: 1; padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 12px">
+    <section aria-label="Totales" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 18px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Cuotas este mes</span><span class="num big" style="font-size: 26px; font-weight: 600">$800</span><span style="font-size: 11px; color: #5F6359">12.5% de ingresos</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Pendiente total</span><span style="font-size: 16px; font-weight: 600; color: #5F6359">[SALDO TOTAL]</span></div>
+    </section>
+
+    <sc-if value="{{ showNew }}" hint-placeholder-val="{{ true }}">
+      <section aria-labelledby="mnd-t" style="background: #FFFFFF; border-radius: 14px; padding: 16px; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00; display: flex; flex-direction: column; gap: 12px">
+        <h2 id="mnd-t" style="margin: 0; font-size: 17px; font-weight: 600">Nueva deuda</h2>
+        <div role="radiogroup" aria-label="Tipo" style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="5"><button type="button" role="radio" aria-checked="{{ k.checked }}" onClick="{{ k.pick }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 38px; padding: 0 12px; border-radius: 999px; border: 2px solid {{ k.border }}; background: {{ k.bg }}; color: #141612">{{ k.label }}</button></sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 5px"><label for="mnd-n" style="font-size: 12px; font-weight: 500; color: #5F6359">Nombre</label><input id="mnd-n" type="text" value="{{ nd.name }}" onChange="{{ setNdName }}" placeholder="Ej. Préstamo personal" style="font: inherit; font-size: 16px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 5px"><label for="mnd-s" style="font-size: 12px; font-weight: 500; color: #5F6359">Saldo hoy</label><input id="mnd-s" type="text" inputmode="decimal" placeholder="$0" style="font: inherit; font-size: 16px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; width: 100%; box-sizing: border-box"></div>
+          <div style="display: flex; flex-direction: column; gap: 5px"><label for="mnd-q" style="font-size: 12px; font-weight: 500; color: #5F6359">Cuota mensual</label><input id="mnd-q" type="text" inputmode="decimal" value="{{ nd.quota }}" onChange="{{ setNdQuota }}" placeholder="$0" style="font: inherit; font-size: 16px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; width: 100%; box-sizing: border-box"></div>
+          <div style="display: flex; flex-direction: column; gap: 5px"><label for="mnd-t2" style="font-size: 12px; font-weight: 500; color: #5F6359">Tasa anual</label><input id="mnd-t2" type="text" inputmode="decimal" placeholder="0.0 %" style="font: inherit; font-size: 16px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; width: 100%; box-sizing: border-box"></div>
+          <div style="display: flex; flex-direction: column; gap: 5px"><label for="mnd-c" style="font-size: 12px; font-weight: 500; color: #5F6359">Nº de cuotas</label><input id="mnd-c" type="text" inputmode="numeric" placeholder="Ej. 2" style="font: inherit; font-size: 16px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; width: 100%; box-sizing: border-box"></div>
+        </div>
+        <label style="display: flex; gap: 10px; align-items: center; background: #FFF8D6; border-radius: 12px; padding: 12px; font-size: 13px; font-weight: 600"><input type="checkbox" defaultChecked="{{ true }}" style="width: 20px; height: 20px; accent-color: #141612; margin: 0">Agregar la cuota a mi Plan anual</label>
+        <button type="button" onClick="{{ saveNew }}" style="font: inherit; font-size: 15px; font-weight: 600; min-height: 50px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px">Guardar deuda</button>
+      </section>
+    </sc-if>
+
+    <sc-for list="{{ debts }}" as="d" hint-placeholder-count="2">
+      <article style="background: #FFFFFF; border-radius: 14px; padding: 16px; border: 1px solid #E6E4DC; display: flex; flex-direction: column; gap: 12px; outline: {{ d.outline }}">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 2px"><h2 style="margin: 0; font-size: 16px; font-weight: 600">{{ d.name }}</h2><span style="font-size: 12px; color: #5F6359">{{ d.kind }}</span></div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end"><button type="button" onClick="{{ d.payToggle }}" aria-expanded="{{ d.payOpen }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border: 0; background: #141612; color: #FFFFFF; border-radius: 10px; cursor: pointer">Registrar pago</button>
+            <button type="button" onClick="{{ d.edit }}" aria-expanded="{{ d.open }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 10px">{{ d.editLabel }}</button></div>
+        </div>
+        <sc-if value="{{ d.isView }}" hint-placeholder-val="{{ true }}">
+          <dl style="margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; font-size: 13px">
+            <div><dt style="font-size: 11px; color: #5F6359">Saldo</dt><dd style="margin: 2px 0 0; font-weight: 600; color: #5F6359">[SALDO]</dd></div>
+            <div><dt style="font-size: 11px; color: #5F6359">Cuota</dt><dd class="num" style="margin: 2px 0 0; font-weight: 600">{{ d.quota }}</dd></div>
+            <div><dt style="font-size: 11px; color: #5F6359">Termina</dt><dd style="margin: 2px 0 0; font-weight: 600; color: #5F6359">[FECHA FIN]</dd></div>
+            <div><dt style="font-size: 11px; color: #5F6359">Pagado 2026</dt><dd class="num" style="margin: 2px 0 0; font-weight: 600">{{ d.paid }}</dd></div>
+          </dl>
+        </sc-if>
+        <sc-if value="{{ d.isEdit }}" hint-placeholder-val="{{ false }}">
+          <form style="display: flex; flex-direction: column; gap: 10px">
+            <sc-for list="{{ d.fields }}" as="f" hint-placeholder-count="5">
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <label for="{{ f.id }}" style="font-size: 12px; font-weight: 500; color: #5F6359">{{ f.label }}</label>
+                <input id="{{ f.id }}" type="{{ f.type }}" inputmode="{{ f.mode }}" placeholder="{{ f.ph }}" style="font: inherit; font-size: 16px; height: 46px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #F8F7F2; box-sizing: border-box; width: 100%">
+              </div>
+            </sc-for>
+            <button type="button" onClick="{{ d.edit }}" style="font: inherit; font-size: 15px; font-weight: 600; min-height: 48px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px">Guardar</button>
+          </form>
+        </sc-if>
+      <sc-if value="{{ d.isPay }}" hint-placeholder-val="{{ false }}">
+          <div style="background: #FFF8D6; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+            <div role="radiogroup" aria-label="Tipo de pago" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #FFFFFF; border-radius: 12px; padding: 4px">
+              <sc-for list="{{ d.modes }}" as="mo" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ mo.checked }}" onClick="{{ mo.pick }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 40px; border: 0; border-radius: 9px; background: {{ mo.bg }}; color: {{ mo.fg }}; cursor: pointer">{{ mo.label }}</button></sc-for>
+            </div>
+            <sc-if value="{{ d.notTotal }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px"><label for="pay-{{ d.id }}-m" style="font-size: 12px; font-weight: 500; color: #5F6359">Monto pagado</label><input id="pay-{{ d.id }}-m" class="num" type="text" inputmode="decimal" placeholder="{{ d.quota }}" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"></div></sc-if>
+            <sc-if value="{{ d.isTotal }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; font-size: 13px; color: #1E5A3F; line-height: 1.5">Se registra el saldo completo ([SALDO]) y la deuda queda saldada.</p></sc-if>
+            <sc-if value="{{ d.revolving }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; font-size: 12px; color: #24496E; line-height: 1.5">Si la pagas desde tu cuenta, cuenta como transferencia entre tus cuentas, no como gasto.</p></sc-if>
+            <div style="display: flex; justify-content: flex-end; gap: 8px"><button type="button" onClick="{{ d.payToggle }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 42px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; border-radius: 10px; cursor: pointer">Cancelar</button><button type="button" onClick="{{ d.doPay }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 42px; padding: 0 16px; border: 0; background: #141612; color: #FFFFFF; border-radius: 10px; cursor: pointer">Registrar</button></div>
+          </div>
+        </sc-if>
+        </article>
+    </sc-for>
+
+    <sc-if value="{{ hasSettled }}" hint-placeholder-val="{{ false }}">
+      <section aria-labelledby="sald-m" style="background: #FFFFFF; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #B9DFD0">
+        <h2 id="sald-m" style="margin: 0; font-size: 16px; font-weight: 600">Deudas saldadas</h2>
+        <sc-for list="{{ settled }}" as="x" hint-placeholder-count="1">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 10px; border-top: 1px solid #EFEDE6">
+            <div style="display: flex; align-items: center; gap: 12px"><span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 50%; background: #8FD3B9; display: flex; align-items: center; justify-content: center; color: #0E3B33; font-weight: 600">✓</span><span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">{{ x.name }}</strong><span style="font-size: 12px; color: #5F6359">Saldada hoy · liberas {{ x.quota }} al mes</span></span></div>
+            <sc-if value="{{ x.ask }}" hint-placeholder-val="{{ true }}"><div style="background: #FFF8D6; border-radius: 12px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center"><span style="flex: 1 1 220px; font-size: 13px; color: #1E5A3F">¿Quito su cuota de tu Plan anual desde el próximo mes?</span><button type="button" onClick="{{ x.yes }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border: 0; background: #141612; color: #FFFFFF; border-radius: 10px; cursor: pointer">Sí, quitarla</button><button type="button" onClick="{{ x.no }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; border-radius: 10px; cursor: pointer">Dejarla</button></div></sc-if>
+            <sc-if value="{{ x.done }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #1E5A3F; font-weight: 600">{{ x.doneText }}</span></sc-if>
+          </div>
+        </sc-for>
+      </section>
+    </sc-if>
+
+<section aria-labelledby="abnm" style="background: #FFFFFF; border-radius: 16px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; gap: 12px; align-items: center">
+        <span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 14px; background: #FDF1DE; display: flex; align-items: center; justify-content: center; flex: none"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E3B800" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span>
+        <div style="display: flex; flex-direction: column; gap: 2px"><h2 id="abnm" style="margin: 0; font-size: 16px; font-weight: 600">Apartado para impuestos (ABN)</h2><span style="font-size: 13px; color: #5F6359">Si cobras con ABN, nadie te descuenta impuestos ni super.</span></div>
+      </div>
+      <sc-if value="{{ abnOff }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center"><span style="font-size: 14px; font-weight: 600">¿Recibes pagos con ABN?</span>
+          <button type="button" onClick="{{ abnYes }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">Sí, configurar</button>
+          <span style="font-size: 13px; color: #5F6359">Si no, puedes ignorar esta sección.</span></div>
+      </sc-if>
+      <sc-if value="{{ abnOn }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div style="display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 12px">
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="abn-inm" style="font-size: 12px; font-weight: 500; color: #5F6359">Cobraste con ABN este mes</label><input id="abn-inm" class="num" type="text" inputmode="decimal" value="{{ abnInc }}" onChange="{{ setAbnInc }}" placeholder="$0" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="abn-pctm" style="font-size: 12px; font-weight: 500; color: #5F6359">% que quieres apartar</label><input id="abn-pctm" class="num" type="text" inputmode="decimal" value="{{ abnPct }}" onChange="{{ setAbnPct }}" placeholder="Ej. 25" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+            <div style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 12px 0; display: flex; flex-direction: column; gap: 4px; justify-content: center"><span style="font-size: 12px; color: #5F6359">Aparta este mes</span><strong class="num big" style="font-size: 24px">{{ abnSet }}</strong></div>
+          </div>
+          <p style="margin: 0; font-size: 13px; color: #5C3208; background: #FBEBD8; border-radius: 12px; padding: 12px 14px; line-height: 1.5">El % correcto depende de tus ingresos totales, el GST y el super. Pregúntale a tu contador qué % usar; la app solo te ayuda a apartarlo cada mes. Se suma a tu Plan anual como "Impuestos ABN".</p>
+        </div>
+      </sc-if>
+    </section>
+    <details style="background: #FFFFFF; border-radius: 14px; padding: 0 16px; border: 1px solid #E6E4DC"><summary style="cursor: pointer; font-size: 14px; font-weight: 600; padding: 16px 0">Avanzado: cuenta con tu empresa</summary>
+    <article style="background: #FFFFFF; border-radius: 14px; padding: 0 0 16px;  display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 2px"><h2 style="margin: 0; font-size: 16px; font-weight: 600">Easy Aussie Pty Ltd</h2><span style="font-size: 12px; color: #5F6359">Cuenta entre tú y tu empresa</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <div style="background: #E3ECF6; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #24496E">Aportaste</span><span class="num" style="font-size: 15px; font-weight: 600">$8,405</span></div>
+        <div style="background: #E3F1E8; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #1E5A3F">Te pagaste</span><span class="num" style="font-size: 15px; font-weight: 600">$11,050</span></div>
+        <div style="background: #F6F5F0; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #3A3D36">Neto</span><span class="num" style="font-size: 15px; font-weight: 600">+$2,645</span></div>
+      </div>
+      <button type="button" style="font: inherit; display: flex; justify-content: space-between; align-items: center; min-height: 50px; padding: 0 14px; border-radius: 12px; border: 0; background: #FBEBD8; color: #5C3208; font-size: 14px; font-weight: 600">Clasificar $11,050 en retiros<span aria-hidden="true">›</span></button>
+      <p style="margin: 0; font-size: 12px; color: #5F6359; line-height: 1.5">Sueldo, dividendo, devolución de aportes o préstamo. Confírmalo con tu contador (Division 7A).</p>
+    </article>
+    </details>
+  </div>
+
+  <nav aria-label="Principal" style="background: #FBFAF6; border-top: 1px solid #E6E4DC; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 8px 4px 22px"><a href="Inicio-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan</a><a href="Movimientos-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Academia-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia</a><a href="Mas-movil.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 600; color: #141612"><span aria-hidden="true" style="position: absolute; top: -8px; width: 22px; height: 3px; border-radius: 0 0 3px 3px; background: #F2CD00"></span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Más</a></nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { editing: null, showNew: false, extra: [], abn: false, abnInc: '', abnPct: '', pay: null, payMode: 'cuota', settled: [], asked: {}, nd: { name: '', quota: '', kind: 'prestamo' } }; }
+  renderVals() {
+    const fields = (p) => [
+      { id: 'm' + p + '-saldo', label: 'Saldo pendiente', type: 'text', mode: 'decimal', ph: '$0' },
+      { id: 'm' + p + '-cuota', label: 'Cuota mensual', type: 'text', mode: 'decimal', ph: '$0' },
+      { id: 'm' + p + '-tasa', label: 'Tasa de interés anual', type: 'text', mode: 'decimal', ph: '0.0 %' },
+      { id: 'm' + p + '-fin', label: 'Fecha de fin', type: 'date', mode: 'none', ph: '' }
+    ];
+    const K = { prestamo: 'Préstamo', tarjeta: 'Tarjeta', bnpl: 'Afterpay / Zip', cuotas: 'A cuotas', persona: 'A una persona', otra: 'Otra' };
+    const nd = this.state.nd;
+    const defs = [
+      { id: 'ic', name: 'Inner Circle', kind: 'Deuda con entidad financiera', quota: '$700', paid: '$7,995' },
+      { id: 'bike', name: 'Bike Payment', kind: 'Pago de la moto', quota: '$100', paid: '$7,400' },
+      { id: 'nab', name: 'Tarjeta NAB', kind: 'Tarjeta de crédito · saldo variable', quota: 'Variable', paid: '—', revolving: true }
+    ].concat(this.state.extra).filter((d) => this.state.settled.indexOf(d.id) < 0);
+    const kinds = Object.keys(K).map((id) => {
+      const on = nd.kind === id;
+      return { label: K[id], checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFF8D6' : '#FFFFFF', pick: () => this.setState({ nd: Object.assign({}, nd, { kind: id }) }) };
+    });
+    const q = parseFloat(String(nd.quota).replace(/[^0-9.]/g, '')) || 0;
+    const saveNew = () => {
+      const item = { id: 'x' + this.state.extra.length, name: nd.name || 'Nueva deuda', kind: K[nd.kind], quota: q ? '$' + q.toLocaleString('en-AU') : '[CUOTA]', paid: '$0' };
+      this.setState({ extra: this.state.extra.concat([item]), showNew: false, nd: { name: '', quota: '', kind: 'prestamo' } });
+    };
+    const debts = defs.map((d) => {
+      const ed = this.state.editing === d.id;
+      return Object.assign({}, d, { isPay: this.state.pay === d.id, payOpen: String(this.state.pay === d.id), revolving: !!d.revolving,
+        payToggle: () => this.setState({ pay: this.state.pay === d.id ? null : d.id, payMode: 'cuota' }),
+        notTotal: this.state.payMode !== 'total', isTotal: this.state.payMode === 'total',
+        modes: (d.revolving ? [['cuota', 'Pagué una parte'], ['extra', 'Pago mínimo'], ['total', 'Pagué todo']] : [['cuota', 'Cuota del mes'], ['extra', 'Abono extra'], ['total', 'Pagar todo']]).map(([id, label]) => { const on = this.state.payMode === id; return { label, checked: String(on), bg: on ? '#141612' : 'transparent', fg: on ? '#FFFFFF' : '#3A3D36', pick: () => this.setState({ payMode: id }) }; }),
+        doPay: () => this.setState(this.state.payMode === 'total' ? { settled: this.state.settled.concat([d.id]), pay: null } : { pay: null }),
+        isEdit: ed, isView: !ed, open: String(ed), editLabel: ed ? 'Cerrar' : 'Editar', outline: ed ? '2px solid #141612' : 'none', fields: fields(d.id), edit: () => this.setState({ editing: ed ? null : d.id }) });
+    });
+    const nav = [['Resumen','Resumen-movil.dc.html'],['Plan','Plan-movil.dc.html'],['Movimientos','Movimientos-movil.dc.html'],['Forecast','Forecast-movil.dc.html'],['Más','Deudas-movil.dc.html']].map(([label, href]) => {
+      const on = href === 'Deudas-movil.dc.html';
+      return { label, href, current: on ? 'page' : 'false', weight: on ? '600' : '450', fg: on ? '#141612' : '#5F6359', pill: on ? '#E3F1E8' : 'transparent' };
+    });
+    const all = [{ id: 'ic', name: 'Inner Circle', quota: '$700' }, { id: 'bike', name: 'Bike Payment', quota: '$100' }, { id: 'nab', name: 'Tarjeta NAB', quota: 'la cuota' }].concat(this.state.extra);
+    const settled = this.state.settled.map((id) => { const d = all.filter((x) => x.id === id)[0] || { name: 'Deuda', quota: '' }; const a = this.state.asked[id];
+      return { name: d.name, quota: d.quota, ask: !a, done: !!a, doneText: a === 'si' ? 'Listo: quitamos la cuota de tu plan. Ese dinero queda libre en tu Proyección.' : 'La cuota se queda en tu plan.',
+        yes: () => this.setState({ asked: Object.assign({}, this.state.asked, { [id]: 'si' }) }), no: () => this.setState({ asked: Object.assign({}, this.state.asked, { [id]: 'no' }) }) }; });
+    return {
+      hasSettled: settled.length > 0, settled,
+      debts, nav, kinds, nd, saveNew,
+      abnOn: this.state.abn, abnOff: !this.state.abn, abnYes: () => this.setState({ abn: true }),
+      abnInc: this.state.abnInc, abnPct: this.state.abnPct,
+      setAbnInc: (e) => this.setState({ abnInc: e.target.value }), setAbnPct: (e) => this.setState({ abnPct: e.target.value }),
+      abnSet: (() => { const n = (x) => parseFloat(String(x).replace(/[^0-9.]/g, '')) || 0; const v = n(this.state.abnInc) * n(this.state.abnPct) / 100; return v ? '$' + Math.round(v).toLocaleString('en-AU') : '$0'; })(),
+      showNew: this.state.showNew, newOpen: String(this.state.showNew),
+      toggleNew: () => this.setState({ showNew: !this.state.showNew }),
+      setNdName: (e) => this.setState({ nd: Object.assign({}, nd, { name: e.target.value }) }),
+      setNdQuota: (e) => this.setState({ nd: Object.assign({}, nd, { quota: e.target.value }) })
+    };
+  }
+}
+</script>
+</body>
+</html>

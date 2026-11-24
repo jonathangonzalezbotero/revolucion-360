@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración · Planes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Administración" style="flex: 1 1 220px; max-width: 256px; background: #141612; color: #FFFFFF; padding: 28px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 8px"><img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 38px; height: 38px"><span style="display: flex; flex-direction: column"><strong style="font-size: 15px">Revolución 360</strong><span style="font-size: 12px; color: #8FD3B9; font-weight: 600">Administración</span></span></div>
+    <a href="Main.dc.html" style="text-decoration: none; font-size: 13px; color: #9FC8B9; padding: 6px 10px 22px">‹ Volver a la app</a>
+    <a href="Admin.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Resumen</a><a href="AdminUsuarios.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Usuarios y accesos</a><a href="AdminMenu.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Menú y funciones</a><a href="AdminAcademia.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Academia</a><a href="AdminPlanes.dc.html" aria-current="page" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: #2A2D27; color: #FFFFFF">Planes y precios</a><a href="AdminPaises.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contenido por país</a><a href="AdminSoporte.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Soporte y privacidad</a><a href="AdminActividad.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Registro de actividad</a>
+    <p style="margin-top: auto; font-size: 12px; color: #7FA9A0; line-height: 1.5; padding: 0 10px">Este panel no muestra los datos financieros de los usuarios.</p>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 44px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; max-width: 1280px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Qué incluye cada plan y cuánto cuesta</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Planes y precios</h1></div>
+      <button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px">Guardar cambios</button>
+    </header>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 18px; align-items: start">
+      <section aria-labelledby="pr" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+        <h2 id="pr" style="margin: 0; font-size: 17px; font-weight: 600">Precio de Pro por región</h2>
+        <div style="display: grid; grid-template-columns: 1.4fr 60px 1fr 1fr; gap: 8px; font-size: 12px; color: #5F6359; font-weight: 600"><span>Región</span><span>Moneda</span><span>Mensual</span><span>Anual</span></div>
+        <sc-for list="{{ regions }}" as="r" hint-placeholder-count="5">
+          <div style="display: grid; grid-template-columns: 1.4fr 60px 1fr 1fr; gap: 8px; align-items: center; font-size: 14px"><span>{{ r.r }}</span><span style="font-weight: 600">{{ r.c }}</span><label for="{{ r.idM }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Precio mensual {{ r.r }}</label><input id="{{ r.idM }}" class="num" placeholder="[PRECIO]" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"><label for="{{ r.idA }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Precio anual {{ r.r }}</label><input id="{{ r.idA }}" class="num" placeholder="[PRECIO]" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"></div>
+        </sc-for>
+        <div style="display: flex; align-items: center; gap: 12px; border-top: 1px solid #EFEDE6; padding-top: 14px"><button type="button" role="switch" aria-checked="{{ trial }}" aria-label="Prueba gratis" onClick="{{ toggleTrial }}" style="font: inherit; flex: none; width: 46px; height: 28px; border: 0; border-radius: 999px; background: {{ trialTrack }}; position: relative; padding: 0; cursor: pointer"><span aria-hidden="true" style="position: absolute; top: 3px; left: {{ trialKnob }}; width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,.2)"></span></button><span style="font-size: 14px; font-weight: 600">Prueba gratis de Pro</span><label for="tr-d" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Días de prueba</label><input id="tr-d" class="num" value="14" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 70px"><span style="font-size: 13px; color: #5F6359">días</span></div>
+        <p style="margin: 0; font-size: 12px; color: #5F6359; line-height: 1.5">Un cambio de precio solo aplica a suscripciones nuevas. Las actuales mantienen su precio hasta que tú decidas avisarles.</p>
+      </section>
+      <section aria-labelledby="ft" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 4px">
+        <h2 id="ft" style="margin: 0 0 8px; font-size: 17px; font-weight: 600">Qué incluye cada plan</h2>
+        <sc-for list="{{ feats }}" as="f" hint-placeholder-count="9"><div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 50px; border-top: 1px solid #EFEDE6"><span style="font-size: 14px">{{ f.t }}</span><button type="button" onClick="{{ f.toggle }}" aria-label="Cambiar plan de {{ f.t }}" style="font: inherit; width: 84px; font-size: 12px; font-weight: 600; min-height: 34px; border: 0; border-radius: 999px; background: {{ f.bg }}; color: {{ f.fg }}; cursor: pointer">{{ f.lbl }}</button></div></sc-for>
+        <span style="font-size: 12px; color: #5F6359; margin-top: 6px">Toca para mover una función entre Gratis y Pro.</span>
+      </section>
+    </div>
+    <section aria-labelledby="cup" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; justify-content: space-between; align-items: center"><h2 id="cup" style="margin: 0; font-size: 17px; font-weight: 600">Cupones de descuento</h2><button type="button" onClick="{{ togCup }}" aria-expanded="{{ cupOpen }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 14px; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612; border-radius: 10px; cursor: pointer">+ Nuevo cupón</button></div>
+      <sc-if value="{{ cup }}" hint-placeholder-val="{{ false }}"><div style="background: #F8F7F2; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="cu-c" style="font-size: 12px; font-weight: 500; color: #5F6359">Código</label><input id="cu-c" type="text" value="{{ c.code }}" onChange="{{ setCode }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%; font-weight: 600; letter-spacing: .06em"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="cu-p" style="font-size: 12px; font-weight: 500; color: #5F6359">% de descuento</label><input id="cu-p" class="num" type="text" inputmode="numeric" value="{{ c.pct }}" onChange="{{ setPct }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="cu-m" style="font-size: 12px; font-weight: 500; color: #5F6359">Durante (meses, 0 = siempre)</label><input id="cu-m" class="num" type="text" inputmode="numeric" value="{{ c.months }}" onChange="{{ setMonths }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="cu-a" style="font-size: 12px; font-weight: 500; color: #5F6359">Aplica a</label><select id="cu-a" value="{{ c.plan }}" onChange="{{ setPlan }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"><option>Pro mensual</option><option>Pro anual</option><option>Pro mensual y anual</option></select></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="cu-x" style="font-size: 12px; font-weight: 500; color: #5F6359">Usos máximos</label><input id="cu-x" class="num" type="text" inputmode="numeric" value="{{ c.max }}" onChange="{{ setMax }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="cu-v" style="font-size: 12px; font-weight: 500; color: #5F6359">Vence</label><input id="cu-v" type="date" value="{{ c.until }}" onChange="{{ setUntil }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap"><span style="font-size: 14px">El usuario verá: <strong>{{ pv }}</strong></span><div style="display: flex; gap: 10px"><button type="button" onClick="{{ togCup }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 42px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; border-radius: 10px; cursor: pointer">Cancelar</button><button type="button" onClick="{{ addCup }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 42px; padding: 0 16px; border: 0; background: #141612; color: #FFFFFF; border-radius: 10px; cursor: pointer">Crear cupón</button></div></div>
+        <span style="font-size: 12px; color: #5F6359">Se crea también en Stripe. Un cupón no se puede editar después de usarse: si cambias algo, crea uno nuevo.</span>
+      </div></sc-if>
+      <div style="overflow-x: auto"><table style="width: 100%; min-width: 640px; border-collapse: collapse; font-size: 14px"><thead><tr style="text-align: left; font-size: 12px; color: #5F6359"><th scope="col" style="padding: 8px 0; font-weight: 600">Código</th><th scope="col" style="padding: 8px; font-weight: 600">Descuento</th><th scope="col" style="padding: 8px; font-weight: 600">Aplica a</th><th scope="col" style="padding: 8px; font-weight: 600">Usos</th><th scope="col" style="padding: 8px; font-weight: 600">Vence</th></tr></thead>
+      <tbody><sc-for list="{{ cups }}" as="r" hint-placeholder-count="1"><tr style="border-top: 1px solid #EFEDE6"><td style="padding: 12px 0; font-weight: 600; letter-spacing: .06em">{{ r.code }}</td><td style="padding: 12px 8px">{{ r.d }}</td><td style="padding: 12px 8px">{{ r.p }}</td><td style="padding: 12px 8px" class="num">{{ r.u }}</td><td style="padding: 12px 8px">{{ r.v }}</td></tr></sc-for></tbody></table></div>
+      <span style="font-size: 12px; color: #5F6359">Cobros y facturas con Stripe · Estado: [CONECTADO / SIN CONECTAR]</span>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { cup: false, cups: [['WEBINAR', '50% por 3 meses', 'Pro mensual', '0 / 200', '31 dic 2026']], c: { code: 'ALUMNOS50', pct: '50', months: '3', plan: 'Pro mensual', max: '100', until: '' }, trial: true, feats: { plan: 'Gratis', diag: 'Gratis', metas: 'Gratis', proy: 'Gratis', mov: 'Pro', ana: 'Pro', inv: 'Pro', cierre: 'Pro', acad: 'Gratis' } }; }
+  renderVals() {
+    const s = this.state;
+    const F = [['plan', 'Plan anual y asistente'], ['diag', 'Diagnóstico'], ['metas', 'Metas (2 en Gratis, ilimitadas en Pro)'], ['proy', 'Proyección básica'], ['mov', 'Movimientos con detalle y CSV'], ['ana', 'Análisis y comercios'], ['inv', 'Inversiones'], ['cierre', 'Cierre de mes con recordatorios'], ['acad', 'Academia (clases de uso)']];
+    const feats = F.map(([id, t]) => { const pro = s.feats[id] === 'Pro'; return { t, lbl: s.feats[id], bg: pro ? '#141612' : '#E3F1E8', fg: pro ? '#FFFFFF' : '#1E5A3F', toggle: () => this.setState({ feats: Object.assign({}, s.feats, { [id]: pro ? 'Gratis' : 'Pro' }) }) }; });
+    const regions = [['Australia', 'AUD'], ['Estados Unidos y otros', 'USD'], ['Colombia', 'COP'], ['México', 'MXN'], ['España y Europa', 'EUR']].map(([r, c], i) => ({ r, c, idM: 'pm' + i, idA: 'pa' + i }));
+    const c = s.c, setC = (k) => (e) => this.setState({ c: Object.assign({}, c, { [k]: e.target.value }) });
+    const cups = s.cups.map((r) => ({ code: r[0], d: r[1], p: r[2], u: r[3], v: r[4] }));
+    const pv = (c.pct || '0') + '% de descuento' + (c.months === '0' ? ' para siempre' : ' los primeros ' + (c.months || '?') + ' meses');
+    return { cup: s.cup, cupOpen: String(s.cup), togCup: () => this.setState({ cup: !s.cup }), cups, c, pv,
+      setCode: (e) => this.setState({ c: Object.assign({}, c, { code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '') }) }), setPct: setC('pct'), setMonths: setC('months'), setPlan: setC('plan'), setMax: setC('max'), setUntil: setC('until'),
+      addCup: () => { if (!c.code) return; this.setState({ cup: false, cups: s.cups.concat([[c.code, c.pct + '% ' + (c.months === '0' ? 'siempre' : 'por ' + c.months + ' meses'), c.plan, '0 / ' + (c.max || '∞'), c.until || 'Sin fecha']]) }); },
+      feats, regions, trial: String(s.trial), trialTrack: s.trial ? '#141612' : '#CFCCC2', trialKnob: s.trial ? '20px' : '2px', toggleTrial: () => this.setState({ trial: !s.trial }) };
+  }
+}
+</script>
+</body>
+</html>

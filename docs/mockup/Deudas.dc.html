@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Deudas e impuestos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0}
+a{color:#141612}a:hover{color:#1E5A3F}
+.num{font-variant-numeric:tabular-nums}
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Principal" style="flex: 1 1 220px; max-width: 248px; background: #FBFAF6; border-right: 1px solid #E6E4DC; padding: 22px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px 10px 8px">
+      <a href="Main.dc.html" style="text-decoration: none; display: flex; align-items: center"><img src="/_blob/bb0e7d557e23b395ba835e41bc61c1a6" alt="Revolución 360 · Revolución del Dinero" style="height: 38px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; align-self: flex-start; display: block; flex: none"></a>
+    </div>
+    <span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Tu plata</span><a href="Main.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan anual</a><a href="Movimientos.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Cuentas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg>Cuentas</a><a href="Metas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Metas</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Entiende tus números</span><a href="Forecast.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Proyección</a><a href="Analisis.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/></svg>Análisis</a><a href="Deudas.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #ECEAE2; color: #141612"><span aria-hidden="true" style="position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #F2CD00"></span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Deudas e impuestos</a><a href="Inversiones.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M4 20h16"/><path d="M7 16v-4M12 16V8M17 16V5"/></svg>Inversiones</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Aprende</span><a href="Academia.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia <span style="margin-left: auto; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #FFF3B8; color: #5C4A00">340 pts</span></a>
+    <a href="Cierre.dc.html" style="text-decoration: none; margin-top: 18px; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid #EADFA0; background: #FFF8D6; color: #141612">
+      <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; flex: none; background: conic-gradient(#F2CD00 0 80%, #EADFA0 80% 100%); display: flex; align-items: center; justify-content: center"><span style="width: 26px; height: 26px; border-radius: 50%; background: #FFF8D6; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">6d</span></span>
+      <span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; font-weight: 600">Cierra noviembre</span><span style="font-size: 12px; color: #6B5A10">5 minutos · quedan 6 días</span></span></a>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid #E6E4DC">
+      <div style="display: flex; align-items: center; gap: 4px">
+        <a href="Perfil.dc.html" style="text-decoration: none; color: #141612; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 10px; flex: 1; min-width: 0; background: transparent">
+          <span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 50%; background: #141612; color: #F2CD00; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; flex: none">J</span>
+          <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 13px; font-weight: 600">Jonathan</span><span style="font-size: 12px; color: #6B6E64">Mi perfil</span></span></a>
+        <a href="Notificaciones.dc.html" aria-label="Notificaciones" title="Notificaciones" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M6 9a6 6 0 0 1 12 0c0 6.5 2.5 8.5 2.5 8.5h-17S6 15.5 6 9"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg><span aria-hidden="true" style="position: absolute; top: 8px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: #F2CD00; box-shadow: 0 0 0 2px #FBFAF6"></span></a>
+        <a href="Ayuda.dc.html" aria-label="Ayuda" title="Ayuda" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.7"/><path d="M12 17.2v.1"/></svg></a>
+      </div>
+      <div style="display: flex; flex-direction: column; padding: 0 2px">
+        <a href="Suscripcion.dc.html" style="text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4A4D45; font-weight: 450; padding: 6px 8px"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg>Suscripción</a>
+        
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px 0">
+        <img src="/_blob/07130166ac57906f8a4d3175882f16f6" alt="Revolución del Dinero" style="width: 30px; height: 30px">
+        <span style="font-size: 11px; color: #6B6E64; line-height: 1.35">Una herramienta de<br><span style="color: #141612; font-weight: 600">Revolución del Dinero</span></span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 48px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; max-width: 1220px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 14px; color: #5F6359">Lo que debes y lo que tienes que apartar</span>
+        <h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Deudas e impuestos</h1>
+      </div>
+      <button type="button" onClick="{{ toggleNew }}" aria-expanded="{{ newOpen }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">+ Agregar deuda</button>
+    </header>
+
+    <sc-if value="{{ showNew }}" hint-placeholder-val="{{ true }}">
+      <section aria-labelledby="nd-t" style="background: #FFFFFF; border-radius: 16px; padding: 26px 28px; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <h2 id="nd-t" style="margin: 0; font-size: 20px; font-weight: 600">Nueva deuda</h2>
+          <span style="font-size: 13px; color: #5F6359">Préstamo, tarjeta, compra a cuotas o lo que le debes a alguien.</span>
+        </div>
+        <div role="radiogroup" aria-label="Tipo de deuda" style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="5">
+            <button type="button" role="radio" aria-checked="{{ k.checked }}" onClick="{{ k.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 2px solid {{ k.border }}; background: {{ k.bg }}; color: #141612; cursor: pointer">{{ k.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px">
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nd-name" style="font-size: 12px; font-weight: 500; color: #5F6359">Nombre</label><input id="nd-name" type="text" value="{{ nd.name }}" onChange="{{ setNdName }}" placeholder="Ej. Préstamo personal" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nd-saldo" style="font-size: 12px; font-weight: 500; color: #5F6359">Saldo que debes hoy</label><input id="nd-saldo" type="text" inputmode="decimal" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nd-cuota" style="font-size: 12px; font-weight: 500; color: #5F6359">Cuota mensual</label><input id="nd-cuota" type="text" inputmode="decimal" value="{{ nd.quota }}" onChange="{{ setNdQuota }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nd-tasa" style="font-size: 12px; font-weight: 500; color: #5F6359">Tasa de interés anual</label><input id="nd-tasa" type="text" inputmode="decimal" placeholder="0.0 %" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nd-ini" style="font-size: 12px; font-weight: 500; color: #5F6359">Primer pago</label><input id="nd-ini" type="date" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nd-n" style="font-size: 12px; font-weight: 500; color: #5F6359">Número de cuotas</label><input id="nd-n" type="text" inputmode="numeric" placeholder="Ej. 2" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+        </div>
+        <label style="display: flex; gap: 12px; align-items: flex-start; background: #FFF8D6; border-radius: 14px; padding: 14px 16px; font-size: 14px; cursor: pointer">
+          <input type="checkbox" defaultChecked="{{ true }}" style="width: 20px; height: 20px; accent-color: #141612; margin: 0; flex: none">
+          <span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-weight: 600">Agregar la cuota a mi Plan anual</strong><span style="font-size: 13px; color: #3A3D36">Crea la línea en "Deudas" solo en los meses que dure.</span></span>
+        </label>
+        <div style="display: flex; justify-content: flex-end; gap: 10px">
+          <button type="button" onClick="{{ toggleNew }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; padding: 0 18px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; border-radius: 12px; cursor: pointer">Cancelar</button>
+          <button type="button" onClick="{{ saveNew }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; padding: 0 22px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">Guardar deuda</button>
+        </div>
+      </section>
+    </sc-if>
+
+    <section aria-label="Totales de deuda" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 28px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Deuda pendiente</span><span style="font-size: 24px; font-weight: 600; color: #5F6359">[SALDO TOTAL]</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Cuotas este mes</span><span class="num big" style="font-size: 30px; font-weight: 600">$800</span><span style="font-size: 12px; color: #5F6359">12.5% de tus ingresos</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Pagado en 2026</span><span class="num big" style="font-size: 30px; font-weight: 600">$15,395</span><span style="font-size: 12px; color: #5F6359">16.1% de tus ingresos</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Libre de deudas</span><span style="font-size: 24px; font-weight: 600; color: #5F6359">[FECHA]</span></div>
+    </section>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; align-items: start">
+      <sc-for list="{{ debts }}" as="d" hint-placeholder-count="2">
+        <article style="background: #FFFFFF; border-radius: 14px; padding: 24px; border: 1px solid #E6E4DC; display: flex; flex-direction: column; gap: 18px; outline: {{ d.outline }}">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
+            <div style="display: flex; gap: 12px; align-items: center">
+              <span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 14px; background: #FBEBD8; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C46A2A" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18M7 15h4"></path></svg></span>
+              <div style="display: flex; flex-direction: column; gap: 2px"><h2 style="margin: 0; font-size: 17px; font-weight: 600">{{ d.name }}</h2><span style="font-size: 13px; color: #5F6359">{{ d.kind }}</span></div>
+            </div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end"><button type="button" onClick="{{ d.payToggle }}" aria-expanded="{{ d.payOpen }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 14px; border: 0; background: #141612; color: #FFFFFF; border-radius: 10px; cursor: pointer">Registrar pago</button>
+            <button type="button" onClick="{{ d.edit }}" aria-expanded="{{ d.open }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 10px; cursor: pointer">{{ d.editLabel }}</button></div>
+          </div>
+
+          <sc-if value="{{ d.isView }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 16px">
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; justify-content: space-between; font-size: 13px; color: #5F6359"><span>Progreso de pago</span><span>[% PAGADO]</span></div>
+                <div aria-hidden="true" style="height: 10px; border-radius: 5px; background: #EFEDE6"></div>
+              </div>
+              <dl style="margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+                <div><dt style="font-size: 12px; color: #5F6359">Saldo</dt><dd style="margin: 3px 0 0; font-weight: 600; color: #5F6359">[SALDO]</dd></div>
+                <div><dt style="font-size: 12px; color: #5F6359">Cuota</dt><dd class="num" style="margin: 3px 0 0; font-weight: 600">{{ d.quota }}</dd></div>
+                <div><dt style="font-size: 12px; color: #5F6359">Tasa</dt><dd style="margin: 3px 0 0; font-weight: 600; color: #5F6359">[TASA %]</dd></div>
+                <div><dt style="font-size: 12px; color: #5F6359">Termina</dt><dd style="margin: 3px 0 0; font-weight: 600; color: #5F6359">[FECHA FIN]</dd></div>
+                <div><dt style="font-size: 12px; color: #5F6359">Pagado 2026</dt><dd class="num" style="margin: 3px 0 0; font-weight: 600">{{ d.paid }}</dd></div>
+                <div><dt style="font-size: 12px; color: #5F6359">Cuota 2026</dt><dd class="num" style="margin: 3px 0 0; font-weight: 600">{{ d.range }}</dd></div>
+              </dl>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ d.isEdit }}" hint-placeholder-val="{{ false }}">
+            <form style="display: flex; flex-direction: column; gap: 14px">
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+                <sc-for list="{{ d.fields }}" as="f" hint-placeholder-count="6">
+                  <div style="display: flex; flex-direction: column; gap: 6px">
+                    <label for="{{ f.id }}" style="font-size: 12px; font-weight: 500; color: #5F6359">{{ f.label }}</label>
+                    <input id="{{ f.id }}" type="{{ f.type }}" inputmode="{{ f.mode }}" placeholder="{{ f.ph }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #F8F7F2; box-sizing: border-box; width: 100%">
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display: flex; gap: 8px; justify-content: flex-end">
+                <button type="button" onClick="{{ d.edit }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; border-radius: 10px; cursor: pointer">Cancelar</button>
+                <button type="button" onClick="{{ d.edit }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 10px; cursor: pointer">Guardar</button>
+              </div>
+            </form>
+          </sc-if>
+        <sc-if value="{{ d.isPay }}" hint-placeholder-val="{{ false }}">
+          <div style="background: #FFF8D6; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+            <div role="radiogroup" aria-label="Tipo de pago" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #FFFFFF; border-radius: 12px; padding: 4px">
+              <sc-for list="{{ d.modes }}" as="mo" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ mo.checked }}" onClick="{{ mo.pick }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 40px; border: 0; border-radius: 9px; background: {{ mo.bg }}; color: {{ mo.fg }}; cursor: pointer">{{ mo.label }}</button></sc-for>
+            </div>
+            <sc-if value="{{ d.notTotal }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px"><label for="pay-{{ d.id }}-d" style="font-size: 12px; font-weight: 500; color: #5F6359">Monto pagado</label><input id="pay-{{ d.id }}-d" class="num" type="text" inputmode="decimal" placeholder="{{ d.quota }}" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"></div></sc-if>
+            <sc-if value="{{ d.isTotal }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; font-size: 13px; color: #1E5A3F; line-height: 1.5">Se registra el saldo completo ([SALDO]) y la deuda queda saldada.</p></sc-if>
+            <sc-if value="{{ d.revolving }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; font-size: 12px; color: #24496E; line-height: 1.5">Si la pagas desde tu cuenta, cuenta como transferencia entre tus cuentas, no como gasto.</p></sc-if>
+            <div style="display: flex; justify-content: flex-end; gap: 8px"><button type="button" onClick="{{ d.payToggle }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 42px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; border-radius: 10px; cursor: pointer">Cancelar</button><button type="button" onClick="{{ d.doPay }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 42px; padding: 0 16px; border: 0; background: #141612; color: #FFFFFF; border-radius: 10px; cursor: pointer">Registrar</button></div>
+          </div>
+        </sc-if>
+        </article>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ hasSettled }}" hint-placeholder-val="{{ false }}">
+      <section aria-labelledby="sald-d" style="background: #FFFFFF; border-radius: 14px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #B9DFD0">
+        <h2 id="sald-d" style="margin: 0; font-size: 16px; font-weight: 600">Deudas saldadas</h2>
+        <sc-for list="{{ settled }}" as="x" hint-placeholder-count="1">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 10px; border-top: 1px solid #EFEDE6">
+            <div style="display: flex; align-items: center; gap: 12px"><span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 50%; background: #8FD3B9; display: flex; align-items: center; justify-content: center; color: #0E3B33; font-weight: 600">✓</span><span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">{{ x.name }}</strong><span style="font-size: 12px; color: #5F6359">Saldada hoy · liberas {{ x.quota }} al mes</span></span></div>
+            <sc-if value="{{ x.ask }}" hint-placeholder-val="{{ true }}"><div style="background: #FFF8D6; border-radius: 12px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center"><span style="flex: 1 1 220px; font-size: 13px; color: #1E5A3F">¿Quito su cuota de tu Plan anual desde el próximo mes?</span><button type="button" onClick="{{ x.yes }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border: 0; background: #141612; color: #FFFFFF; border-radius: 10px; cursor: pointer">Sí, quitarla</button><button type="button" onClick="{{ x.no }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; border-radius: 10px; cursor: pointer">Dejarla</button></div></sc-if>
+            <sc-if value="{{ x.done }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #1E5A3F; font-weight: 600">{{ x.doneText }}</span></sc-if>
+          </div>
+        </sc-for>
+      </section>
+    </sc-if>
+
+<section aria-labelledby="abnd" style="background: #FFFFFF; border-radius: 16px; border: 1px solid #E6E4DC; padding: 28px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; gap: 12px; align-items: center">
+        <span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 14px; background: #FDF1DE; display: flex; align-items: center; justify-content: center; flex: none"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E3B800" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span>
+        <div style="display: flex; flex-direction: column; gap: 2px"><h2 id="abnd" style="margin: 0; font-size: 18px; font-weight: 600">Apartado para impuestos (ABN)</h2><span style="font-size: 13px; color: #5F6359">Si cobras con ABN, nadie te descuenta impuestos ni super.</span></div>
+      </div>
+      <sc-if value="{{ abnOff }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center"><span style="font-size: 14px; font-weight: 600">¿Recibes pagos con ABN?</span>
+          <button type="button" onClick="{{ abnYes }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">Sí, configurar</button>
+          <span style="font-size: 13px; color: #5F6359">Si no, puedes ignorar esta sección.</span></div>
+      </sc-if>
+      <sc-if value="{{ abnOn }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="abn-ind" style="font-size: 12px; font-weight: 500; color: #5F6359">Cobraste con ABN este mes</label><input id="abn-ind" class="num" type="text" inputmode="decimal" value="{{ abnInc }}" onChange="{{ setAbnInc }}" placeholder="$0" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="abn-pctd" style="font-size: 12px; font-weight: 500; color: #5F6359">% que quieres apartar</label><input id="abn-pctd" class="num" type="text" inputmode="decimal" value="{{ abnPct }}" onChange="{{ setAbnPct }}" placeholder="Ej. 25" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+            <div style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 12px 0; display: flex; flex-direction: column; gap: 4px; justify-content: center"><span style="font-size: 12px; color: #5F6359">Aparta este mes</span><strong class="num big" style="font-size: 24px">{{ abnSet }}</strong></div>
+          </div>
+          <p style="margin: 0; font-size: 13px; color: #5C3208; background: #FBEBD8; border-radius: 12px; padding: 12px 14px; line-height: 1.5">El % correcto depende de tus ingresos totales, el GST y el super. Pregúntale a tu contador qué % usar; la app solo te ayuda a apartarlo cada mes. Se suma a tu Plan anual como "Impuestos ABN".</p>
+        </div>
+      </sc-if>
+    </section>
+    <details style="background: #FFFFFF; border-radius: 16px; padding: 0 28px; border: 1px solid #E6E4DC"><summary style="cursor: pointer; font-size: 15px; font-weight: 600; padding: 20px 0">Avanzado: cuenta con tu empresa (Easy Aussie Pty Ltd)</summary>
+    <section aria-labelledby="ea" style="padding: 0 0 28px; display: flex; flex-direction: column; gap: 22px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap">
+        <div style="display: flex; gap: 12px; align-items: center">
+          <span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 14px; background: #E3ECF6; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2D5C8A" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V9l8-5 8 5v11M9 20v-6h6v6"></path></svg></span>
+          <div style="display: flex; flex-direction: column; gap: 2px"><h2 id="ea" style="margin: 0; font-size: 18px; font-weight: 600">Easy Aussie Pty Ltd</h2><span style="font-size: 13px; color: #5F6359">Cuenta entre tú y tu empresa</span></div>
+        </div>
+        <span style="font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: #FBEBD8; color: #8A4B12">$11,050 sin clasificar</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px">
+        <div style="background: #E3ECF6; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #24496E; font-weight: 600">Aportaste a EA</span><span class="num big" style="font-size: 24px; font-weight: 600">$8,405</span><span style="font-size: 12px; color: #24496E">Vehículos y bicicletas</span></div>
+        <div style="background: #E3F1E8; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #1E5A3F; font-weight: 600">Te pagaste desde EA</span><span class="num big" style="font-size: 24px; font-weight: 600">$11,050</span><span style="font-size: 12px; color: #1E5A3F">Transferencias a tu cuenta</span></div>
+        <div style="background: #F6F5F0; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #3A3D36; font-weight: 600">Neto 2026</span><span class="num big" style="font-size: 24px; font-weight: 600">+$2,645</span><span style="font-size: 12px; color: #3A3D36">Más retiros que aportes</span></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <h3 style="margin: 0; font-size: 15px; font-weight: 600">Clasifica tus retiros</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px">
+          <sc-for list="{{ types }}" as="t" hint-placeholder-count="4">
+            <div style="border: 1px solid #E6E4DC; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
+              <span style="font-size: 14px; font-weight: 600">{{ t.name }}</span>
+              <span style="font-size: 12px; color: #5F6359; line-height: 1.4">{{ t.desc }}</span>
+              <span style="font-size: 15px; font-weight: 600; color: #5F6359; margin-top: 4px">[MONTO]</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: 13px; line-height: 1.55; color: #5C3208; background: #FBEBD8; border-radius: 14px; padding: 14px 16px">Como Easy Aussie es una Pty Ltd, cada retiro debe tener un tipo. Los retiros sin documentar pueden tratarse como préstamo bajo la Division 7A. La app no da asesoría fiscal: confírmalo con tu contador.</p>
+    </section>
+    </details>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { editing: null, showNew: false, extra: [], abn: false, abnInc: '', abnPct: '', pay: null, payMode: 'cuota', settled: [], asked: {}, nd: { name: '', quota: '', kind: 'prestamo' } }; }
+  renderVals() {
+    const fields = (p) => [
+      { id: p + '-saldo', label: 'Saldo pendiente', type: 'text', mode: 'decimal', ph: '$0' },
+      { id: p + '-cuota', label: 'Cuota mensual', type: 'text', mode: 'decimal', ph: '$0' },
+      { id: p + '-tasa', label: 'Tasa de interés anual', type: 'text', mode: 'decimal', ph: '0.0 %' },
+      { id: p + '-dia', label: 'Día de pago', type: 'text', mode: 'numeric', ph: '1–31' },
+      { id: p + '-ini', label: 'Fecha de inicio', type: 'date', mode: 'none', ph: '' },
+      { id: p + '-fin', label: 'Fecha de fin', type: 'date', mode: 'none', ph: '' }
+    ];
+    const K = { prestamo: 'Préstamo', tarjeta: 'Tarjeta de crédito', bnpl: 'Afterpay / Zip (compra ahora, paga después)', cuotas: 'Compra a cuotas', persona: 'Le debo a alguien', otra: 'Otra' };
+    const nd = this.state.nd;
+    const defs = [
+      { id: 'ic', name: 'Inner Circle', kind: 'Deuda con entidad financiera', quota: '$700', paid: '$7,995', range: '$655 – $700' },
+      { id: 'bike', name: 'Bike Payment', kind: 'Pago de la moto', quota: '$100', paid: '$7,400', range: '$0 – $2,300' },
+      { id: 'nab', name: 'Tarjeta NAB', kind: 'Tarjeta de crédito · saldo variable', quota: 'Variable', paid: '—', range: '—', revolving: true }
+    ].concat(this.state.extra).filter((d) => this.state.settled.indexOf(d.id) < 0);
+    const kinds = Object.keys(K).map((id) => {
+      const on = nd.kind === id;
+      return { label: K[id], checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFF8D6' : '#FFFFFF', pick: () => this.setState({ nd: Object.assign({}, nd, { kind: id }) }) };
+    });
+    const q = parseFloat(String(nd.quota).replace(/[^0-9.]/g, '')) || 0;
+    const saveNew = () => {
+      const id = 'x' + this.state.extra.length;
+      const item = { id, name: nd.name || 'Nueva deuda', kind: K[nd.kind], quota: q ? '$' + q.toLocaleString('en-AU') : '[CUOTA]', paid: '$0', range: '—' };
+      this.setState({ extra: this.state.extra.concat([item]), showNew: false, nd: { name: '', quota: '', kind: 'prestamo' } });
+    };
+    const debts = defs.map((d) => {
+      const ed = this.state.editing === d.id;
+      return Object.assign({}, d, {
+        isPay: this.state.pay === d.id, payOpen: String(this.state.pay === d.id), revolving: !!d.revolving,
+        payToggle: () => this.setState({ pay: this.state.pay === d.id ? null : d.id, payMode: 'cuota' }),
+        notTotal: this.state.payMode !== 'total', isTotal: this.state.payMode === 'total',
+        modes: (d.revolving ? [['cuota', 'Pagué una parte'], ['extra', 'Pago mínimo'], ['total', 'Pagué todo']] : [['cuota', 'Cuota del mes'], ['extra', 'Abono extra'], ['total', 'Pagar todo']]).map(([id, label]) => { const on = this.state.payMode === id; return { label, checked: String(on), bg: on ? '#141612' : 'transparent', fg: on ? '#FFFFFF' : '#3A3D36', pick: () => this.setState({ payMode: id }) }; }),
+        doPay: () => this.setState(this.state.payMode === 'total' ? { settled: this.state.settled.concat([d.id]), pay: null } : { pay: null }),
+        isEdit: ed, isView: !ed, open: String(ed), editLabel: ed ? 'Editando' : 'Editar',
+        outline: ed ? '2px solid #141612' : 'none', fields: fields(d.id),
+        edit: () => this.setState({ editing: ed ? null : d.id })
+      });
+    });
+    const types = [
+      { name: 'Sueldo', desc: 'Con PAYG y super' },
+      { name: 'Dividendo', desc: 'Reparto de utilidades' },
+      { name: 'Devolución de aportes', desc: 'Lo que pusiste en vehículos' },
+      { name: 'Préstamo de EA a ti', desc: 'Sujeto a reglas del ATO' }
+    ];
+    const nav = [['Resumen del año','Main.dc.html'],['Plan anual','Plan.dc.html'],['Presupuesto del mes','Presupuesto.dc.html'],['Movimientos','Movimientos.dc.html'],['Forecast y análisis','Forecast.dc.html'],['Deudas e impuestos','Deudas.dc.html']].map(([label, href]) => {
+      const on = href === 'Deudas.dc.html';
+      return { label, href, current: on ? 'page' : 'false', weight: on ? '600' : '450', bg: on ? '#E3F1E8' : 'transparent', fg: on ? '#141612' : '#3A3D36', dot: on ? '#141612' : '#CFCCC2' };
+    });
+    const all = [{ id: 'ic', name: 'Inner Circle', quota: '$700' }, { id: 'bike', name: 'Bike Payment', quota: '$100' }, { id: 'nab', name: 'Tarjeta NAB', quota: 'la cuota' }].concat(this.state.extra);
+    const settled = this.state.settled.map((id) => { const d = all.filter((x) => x.id === id)[0] || { name: 'Deuda', quota: '' }; const a = this.state.asked[id];
+      return { name: d.name, quota: d.quota, ask: !a, done: !!a, doneText: a === 'si' ? 'Listo: quitamos la cuota de tu plan. Ese dinero queda libre en tu Proyección.' : 'La cuota se queda en tu plan.',
+        yes: () => this.setState({ asked: Object.assign({}, this.state.asked, { [id]: 'si' }) }), no: () => this.setState({ asked: Object.assign({}, this.state.asked, { [id]: 'no' }) }) }; });
+    return {
+      hasSettled: settled.length > 0, settled,
+      nav, debts, types, kinds, nd, saveNew,
+      abnOn: this.state.abn, abnOff: !this.state.abn, abnYes: () => this.setState({ abn: true }),
+      abnInc: this.state.abnInc, abnPct: this.state.abnPct,
+      setAbnInc: (e) => this.setState({ abnInc: e.target.value }), setAbnPct: (e) => this.setState({ abnPct: e.target.value }),
+      abnSet: (() => { const n = (x) => parseFloat(String(x).replace(/[^0-9.]/g, '')) || 0; const v = n(this.state.abnInc) * n(this.state.abnPct) / 100; return v ? '$' + Math.round(v).toLocaleString('en-AU') : '$0'; })(),
+      showNew: this.state.showNew, newOpen: String(this.state.showNew),
+      toggleNew: () => this.setState({ showNew: !this.state.showNew }),
+      setNdName: (e) => this.setState({ nd: Object.assign({}, nd, { name: e.target.value }) }),
+      setNdQuota: (e) => this.setState({ nd: Object.assign({}, nd, { quota: e.target.value }) })
+    };
+  }
+}
+</script>
+</body>
+</html>

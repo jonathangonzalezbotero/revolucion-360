@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Inversiones</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Principal" style="flex: 1 1 220px; max-width: 248px; background: #FBFAF6; border-right: 1px solid #E6E4DC; padding: 22px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px 10px 8px">
+      <a href="Main.dc.html" style="text-decoration: none; display: flex; align-items: center"><img src="/_blob/bb0e7d557e23b395ba835e41bc61c1a6" alt="Revolución 360 · Revolución del Dinero" style="height: 38px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; align-self: flex-start; display: block; flex: none"></a>
+    </div>
+    <span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Tu plata</span><a href="Main.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan anual</a><a href="Movimientos.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Cuentas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg>Cuentas</a><a href="Metas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Metas</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Entiende tus números</span><a href="Forecast.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Proyección</a><a href="Analisis.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/></svg>Análisis</a><a href="Deudas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Deudas e impuestos</a><a href="Inversiones.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #ECEAE2; color: #141612"><span aria-hidden="true" style="position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #F2CD00"></span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M4 20h16"/><path d="M7 16v-4M12 16V8M17 16V5"/></svg>Inversiones</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Aprende</span><a href="Academia.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia <span style="margin-left: auto; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #FFF3B8; color: #5C4A00">340 pts</span></a>
+    <a href="Cierre.dc.html" style="text-decoration: none; margin-top: 18px; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid #EADFA0; background: #FFF8D6; color: #141612">
+      <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; flex: none; background: conic-gradient(#F2CD00 0 80%, #EADFA0 80% 100%); display: flex; align-items: center; justify-content: center"><span style="width: 26px; height: 26px; border-radius: 50%; background: #FFF8D6; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">6d</span></span>
+      <span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; font-weight: 600">Cierra noviembre</span><span style="font-size: 12px; color: #6B5A10">5 minutos · quedan 6 días</span></span></a>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid #E6E4DC">
+      <div style="display: flex; align-items: center; gap: 4px">
+        <a href="Perfil.dc.html" style="text-decoration: none; color: #141612; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 10px; flex: 1; min-width: 0; background: transparent">
+          <span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 50%; background: #141612; color: #F2CD00; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; flex: none">J</span>
+          <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 13px; font-weight: 600">Jonathan</span><span style="font-size: 12px; color: #6B6E64">Mi perfil</span></span></a>
+        <a href="Notificaciones.dc.html" aria-label="Notificaciones" title="Notificaciones" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M6 9a6 6 0 0 1 12 0c0 6.5 2.5 8.5 2.5 8.5h-17S6 15.5 6 9"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg><span aria-hidden="true" style="position: absolute; top: 8px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: #F2CD00; box-shadow: 0 0 0 2px #FBFAF6"></span></a>
+        <a href="Ayuda.dc.html" aria-label="Ayuda" title="Ayuda" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.7"/><path d="M12 17.2v.1"/></svg></a>
+      </div>
+      <div style="display: flex; flex-direction: column; padding: 0 2px">
+        <a href="Suscripcion.dc.html" style="text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4A4D45; font-weight: 450; padding: 6px 8px"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg>Suscripción</a>
+        
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px 0">
+        <img src="/_blob/07130166ac57906f8a4d3175882f16f6" alt="Revolución del Dinero" style="width: 30px; height: 30px">
+        <span style="font-size: 11px; color: #6B6E64; line-height: 1.35">Una herramienta de<br><span style="color: #141612; font-weight: 600">Revolución del Dinero</span></span>
+      </div>
+    </div>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 48px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; max-width: 1220px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Dónde está tu dinero invertido y cuánto vale</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Inversiones</h1></div>
+      <button type="button" onClick="{{ toggleNew }}" aria-expanded="{{ newOpen }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">+ Agregar inversión</button>
+    </header>
+    <section aria-label="Totales" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 28px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Vale hoy</span><span class="num big" style="font-size: 36px; font-weight: 600; letter-spacing: -0.03em">{{ total }}</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Has puesto</span><span class="num big" style="font-size: 26px; font-weight: 600">{{ aportT }}</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Resultado</span><span class="num big" style="font-size: 26px; font-weight: 600; color: {{ resC }}">{{ res }}</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Aportaste en 2026 (plan)</span><span class="num big" style="font-size: 26px; font-weight: 600">$1,400</span><span style="font-size: 12px; color: #5F6359">1.5% de lo que entró</span></div>
+    </section>
+    <sc-if value="{{ showNew }}" hint-placeholder-val="{{ true }}">
+      <section aria-labelledby="nid" style="background: #FFFFFF; border-radius: 14px; padding: 24px 26px; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><h2 id="nid" style="margin: 0; font-size: 20px; font-weight: 600">Agregar inversión</h2><span style="font-size: 13px; color: #5F6359">Cualquier lugar donde tengas dinero invertido. Tú le pones el nombre.</span></div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nnd" style="font-size: 12px; font-weight: 500; color: #5F6359">Nombre (app, fondo o plataforma)</label><input id="nnd" type="text" value="{{ nw.name }}" onChange="{{ setName }}" placeholder="Ej. AustralianSuper, CommSec, Binance" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nld" style="font-size: 12px; font-weight: 500; color: #5F6359">Vincular a una línea de tu plan</label><select id="nld" value="{{ nw.link }}" onChange="{{ setLink }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 10px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"><option value="">Ninguna</option><option value="Investment S&amp;P500">Investment S&amp;P500</option><option value="Emergency fund">Emergency fund</option></select></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nad" style="font-size: 12px; font-weight: 500; color: #5F6359">Cuánto has puesto en total</label><input id="nad" class="num" type="text" inputmode="decimal" value="{{ nw.aport }}" onChange="{{ setAport }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nvd" style="font-size: 12px; font-weight: 500; color: #5F6359">Cuánto vale hoy</label><input id="nvd" class="num" type="text" inputmode="decimal" value="{{ nw.val }}" onChange="{{ setVal }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><span id="ntd" style="font-size: 12px; font-weight: 500; color: #5F6359">Tipo</span>
+          <div role="radiogroup" aria-labelledby="ntd" style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{ types }}" as="t" hint-placeholder-count="7"><button type="button" role="radio" aria-checked="{{ t.checked }}" onClick="{{ t.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 12px; border-radius: 999px; border: 2px solid {{ t.border }}; background: {{ t.bg }}; color: #141612; cursor: pointer">{{ t.name }}</button></sc-for></div></div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px"><button type="button" onClick="{{ toggleNew }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; padding: 0 16px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; border-radius: 12px; cursor: pointer">Cancelar</button><button type="button" onClick="{{ addP }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; padding: 0 20px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">Agregar</button></div>
+      </section>
+    </sc-if>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px">
+      <sc-for list="{{ items }}" as="p" hint-placeholder-count="3">
+        <article style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; gap: 12px; align-items: center">
+            <span aria-hidden="true" style="width: 42px; height: 42px; border-radius: 13px; background: {{ p.color }}; color: #FFFFFF; font-weight: 600; font-size: 17px; display: flex; align-items: center; justify-content: center; flex: none">{{ p.initial }}</span>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><h3 style="margin: 0; font-size: 16px; font-weight: 600">{{ p.name }}</h3><span style="font-size: 12px; color: #5F6359">{{ p.type }} · {{ p.share }}</span></div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+            <div style="display: flex; flex-direction: column; gap: 5px"><label for="{{ p.idA }}" style="font-size: 11px; font-weight: 500; color: #5F6359">Has puesto</label><input id="{{ p.idA }}" class="num" type="text" inputmode="decimal" value="{{ p.aport }}" onChange="{{ p.setA }}" placeholder="$0" style="font: inherit; font-size: 15px; font-weight: 600; height: 42px; padding: 0 10px; border: 1px solid #E6E4DC; border-radius: 10px; background: #F8F7F2; width: 100%; box-sizing: border-box"></div>
+            <div style="display: flex; flex-direction: column; gap: 5px"><label for="{{ p.idV }}" style="font-size: 11px; font-weight: 500; color: #5F6359">Vale hoy</label><input id="{{ p.idV }}" class="num" type="text" inputmode="decimal" value="{{ p.val }}" onChange="{{ p.setV }}" placeholder="$0" style="font: inherit; font-size: 15px; font-weight: 600; height: 42px; padding: 0 10px; border: 1px solid #E6E4DC; border-radius: 10px; background: #F8F7F2; width: 100%; box-sizing: border-box"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: #5F6359">Resultado</span><strong class="num" style="color: {{ p.resC }}">{{ p.res }}</strong></div>
+          <sc-if value="{{ p.linked }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #1E5A3F; background: #FFF8D6; border-radius: 10px; padding: 8px 10px">Vinculada a "{{ p.link }}" de tu plan: tus aportes se suman solos ($1,400 en 2026).</span></sc-if>
+          <span style="font-size: 11px; color: #5F6359">Actualizado: [FECHA]</span>
+        </article>
+      </sc-for>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start">
+      <section aria-labelledby="dist" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 14px"><h2 id="dist" style="margin: 0; font-size: 17px; font-weight: 600">Cómo está repartido</h2><sc-if value="{{ hasDist }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div aria-hidden="true" style="display: flex; height: 14px; border-radius: 7px; overflow: hidden; gap: 2px"><sc-for list="{{ dist }}" as="d" hint-placeholder-count="3"><div style="background: {{ d.color }}; width: {{ d.w }}"></div></sc-for></div>
+          <sc-for list="{{ dist }}" as="d" hint-placeholder-count="3"><div style="display: flex; align-items: center; gap: 10px; font-size: 14px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: {{ d.color }}"></span><span style="flex: 1">{{ d.name }}</span><span class="num" style="color: #5F6359">{{ d.pct }}</span><strong class="num" style="width: 80px; text-align: right">{{ d.amt }}</strong></div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ noDist }}" hint-placeholder-val="{{ true }}"><p style="margin: 0; font-size: 13px; color: #5F6359; line-height: 1.5">Escribe cuánto vale hoy cada inversión y aquí verás cómo está repartido tu dinero.</p></sc-if></section>
+      <div style="display: flex; flex-direction: column; gap: 12px"><p style="margin: 0; font-size: 13px; color: #3A3D36; background: #E3ECF6; border-radius: 14px; padding: 14px 16px; line-height: 1.5"><strong>¿Tienes super?</strong> Casi todos en Australia tienen uno, y a veces más de uno. Agrégalo para ver todo tu dinero invertido en un solo lugar.</p><p style="margin: 0; font-size: 12px; color: #5F6359">Solo para seguimiento: la app no recomienda dónde invertir. Los valores los actualizas tú, sin dar acceso a tus cuentas.</p></div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      list: [
+        { name: 'Stake', type: 'Acciones y ETF', aport: '', val: '', link: 'Investment S&P500' },
+        { name: 'Raiz', type: 'Fondos', aport: '', val: '', link: '' },
+        { name: 'Cripto', type: 'Cripto', aport: '', val: '', link: '' }
+      ],
+      showNew: false, nw: { name: '', type: 'Super', aport: '', val: '', link: '' }
+    };
+  }
+  renderVals() {
+    const T = { 'Acciones y ETF': '#141612', 'Fondos': '#4C7FB5', 'Cripto': '#E3B800', 'Super': '#2D5C8A', 'Ahorro con interés': '#6FA898', 'Propiedad': '#C46A2A', 'Otro': '#A9B3AE' };
+    const num = (x) => parseFloat(String(x).replace(/[^0-9.\-]/g, '')) || 0;
+    const fmt = (v) => (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-AU');
+    const s = this.state;
+    const upd = (i, patch) => { const l = s.list.slice(); l[i] = Object.assign({}, l[i], patch); this.setState({ list: l }); };
+    let tv = 0, ta = 0;
+    s.list.forEach((p) => { tv += num(p.val); ta += num(p.aport); });
+    const items = s.list.map((p, i) => {
+      const v = num(p.val), a = num(p.aport), has = String(p.val).trim() !== '' && String(p.aport).trim() !== '';
+      const g = v - a;
+      return {
+        name: p.name, type: p.type, color: T[p.type] || '#A9B3AE', initial: p.name.charAt(0).toUpperCase(),
+        aport: p.aport, val: p.val, idA: 'a' + i + 'd', idV: 'v' + i + 'd',
+        setA: (e) => upd(i, { aport: e.target.value }), setV: (e) => upd(i, { val: e.target.value }),
+        linked: !!p.link, link: p.link,
+        res: has ? (g >= 0 ? '+' : '') + fmt(g) + (a ? ' (' + (g / a * 100).toFixed(1) + '%)' : '') : 'Completa ambos valores',
+        resC: has ? (g < 0 ? '#8A4B12' : '#1E5A3F') : '#5F6359',
+        share: tv ? (v / tv * 100).toFixed(0) + '% del total' : ''
+      };
+    });
+    const byType = {};
+    s.list.forEach((p) => { byType[p.type] = (byType[p.type] || 0) + num(p.val); });
+    const dist = Object.keys(byType).filter((k) => byType[k] > 0).map((k) => ({ name: k, color: T[k] || '#A9B3AE', w: (byType[k] / tv * 100).toFixed(1) + '%', pct: (byType[k] / tv * 100).toFixed(0) + '%', amt: fmt(byType[k]) }));
+    const types = Object.keys(T).map((k) => {
+      const on = s.nw.type === k;
+      return { name: k, checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFF8D6' : '#FFFFFF', pick: () => this.setState({ nw: Object.assign({}, s.nw, { type: k }) }) };
+    });
+    const setNw = (k) => (e) => this.setState({ nw: Object.assign({}, s.nw, { [k]: e.target.value }) });
+    const g = tv - ta;
+    return {
+      items, dist, types, nw: s.nw, hasDist: dist.length > 0, noDist: dist.length === 0,
+      total: fmt(tv), aportT: fmt(ta), res: (g >= 0 ? '+' : '') + fmt(g), resC: g < 0 ? '#B4441C' : '#1F8A5B', count: s.list.length,
+      showNew: s.showNew, newOpen: String(s.showNew), toggleNew: () => this.setState({ showNew: !s.showNew }),
+      setName: setNw('name'), setAport: setNw('aport'), setVal: setNw('val'), setLink: setNw('link'),
+      addP: () => { if (!(s.nw.name || '').trim()) return; this.setState({ list: s.list.concat([Object.assign({}, s.nw)]), showNew: false, nw: { name: '', type: 'Super', aport: '', val: '', link: '' } }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Plan anual · móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#141612}a:hover{color:#1E5A3F}
+.num{font-variant-numeric:tabular-nums}
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 2300px; position: relative; box-sizing: border-box; background: #F6F5F0; font-family: Geist, system-ui, sans-serif; color: #141612; display: flex; flex-direction: column">
+  <header style="padding: 24px 20px 8px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px"><div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 13px; color: #5F6359">Decide tu año completo</span>
+      <h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">Plan anual 2026</h1>
+    </div><button type="button" onClick="{{ openAdd }}" aria-expanded="{{ addOpen }}" aria-label="Agregar línea" style="font: inherit; width: 46px; height: 46px; border: 0; border-radius: 14px; background: #141612; color: #FFFFFF; font-size: 24px; flex: none; cursor: pointer">+</button></div>
+    <div role="group" aria-label="Vista" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #FFFFFF; border-radius: 12px; padding: 4px; border: 1px solid #E6E4DC">
+      <button type="button" onClick="{{ toMes }}" aria-pressed="{{ mesOn }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 42px; border: 0; border-radius: 9px; background: {{ mesBg }}; color: {{ mesFg }}">Por mes</button>
+      <button type="button" onClick="{{ toLinea }}" aria-pressed="{{ lineaOn }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 42px; border: 0; border-radius: 9px; background: {{ lineaBg }}; color: {{ lineaFg }}">Por línea</button>
+    </div>
+  </header>
+
+  <sc-if value="{{ hasFlash }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin: 0 16px; font-size: 14px; font-weight: 600; color: #1E5A3F; background: #E3F1E8; border-radius: 12px; padding: 12px 14px">{{ flash }}</p></sc-if>
+  <sc-if value="{{ showAdd }}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(15,29,24,.45); z-index: 5"></div>
+    <section role="dialog" aria-modal="true" aria-labelledby="nlm-h" style="position: absolute; left: 0; right: 0; top: 70px; z-index: 6; background: #FFFFFF; border-radius: 18px 18px 0 0; padding: 20px 18px 28px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 -10px 40px rgba(15,29,24,.2)">
+      <div aria-hidden="true" style="width: 40px; height: 5px; border-radius: 3px; background: #D9D6CC; align-self: center"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center"><h2 id="nlm-h" style="margin: 0; font-size: 20px; font-weight: 600">Agregar línea</h2><button type="button" onClick="{{ closeAdd }}" aria-label="Cerrar" style="font: inherit; width: 40px; height: 40px; border: 0; border-radius: 12px; background: #F6F5F0; font-size: 20px; cursor: pointer">×</button></div>
+      <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px"><sc-for list="{{ nlPresets }}" as="p" hint-placeholder-count="3"><button type="button" onClick="{{ p.apply }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612; white-space: nowrap; cursor: pointer">{{ p.label }}</button></sc-for></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><label for="nlm-n" style="font-size: 12px; font-weight: 500; color: #5F6359">1. Nombre</label><input id="nlm-n" type="text" value="{{ nl.name }}" onChange="{{ setNlName }}" placeholder="Ej. Gimnasio, arriendo, bono" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><span id="nlm-c" style="font-size: 12px; font-weight: 500; color: #5F6359">2. Grupo</span><div role="radiogroup" aria-labelledby="nlm-c" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px"><sc-for list="{{ nlCats }}" as="c" hint-placeholder-count="9"><button type="button" role="radio" aria-checked="{{ c.checked }}" onClick="{{ c.pick }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 2px solid {{ c.border }}; background: {{ c.bg }}; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 3px; background: {{ c.color }}"></span>{{ c.name }}</button></sc-for></div></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 500; color: #5F6359">3. ¿Cuándo?</span><div role="radiogroup" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #F6F5F0; border-radius: 12px; padding: 4px"><sc-for list="{{ nlModes }}" as="q" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ q.checked }}" onClick="{{ q.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; border: 0; border-radius: 9px; background: {{ q.bg }}; color: {{ q.fg }}; cursor: pointer">{{ q.label }}</button></sc-for></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <sc-if value="{{ showFrom }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 6px"><label for="nlm-f" style="font-size: 12px; font-weight: 500; color: #5F6359">{{ fromLabel }}</label><select id="nlm-f" value="{{ nl.from }}" onChange="{{ setNlFrom }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 8px"><sc-for list="{{ monthOpts }}" as="o" hint-placeholder-count="12"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select></div></sc-if>
+          <sc-if value="{{ showTo }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 6px"><label for="nlm-t" style="font-size: 12px; font-weight: 500; color: #5F6359">Hasta</label><select id="nlm-t" value="{{ nl.to }}" onChange="{{ setNlTo }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 8px"><sc-for list="{{ monthOpts }}" as="o" hint-placeholder-count="12"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select></div></sc-if>
+        </div></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 500; color: #5F6359">4. ¿Cada cuánto?</span><div role="radiogroup" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #F6F5F0; border-radius: 12px; padding: 4px"><sc-for list="{{ nlFreqs }}" as="q" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ q.checked }}" onClick="{{ q.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; border: 0; border-radius: 9px; background: {{ q.bg }}; color: {{ q.fg }}; cursor: pointer">{{ q.label }}</button></sc-for></div></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><label for="nlm-a" style="font-size: 12px; font-weight: 500; color: #5F6359">{{ amtLabel }}</label><input id="nlm-a" class="num" type="text" inputmode="decimal" value="{{ nl.amount }}" onChange="{{ setNlAmt }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; font-size: 18px; font-weight: 600"></div>
+      <div style="background: #FFF8D6; border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px"><span style="font-size: 13px; color: #3A3D36">{{ nlMonth }}</span><strong class="num" style="font-size: 18px; color: #1E5A3F">{{ nlTotal }} <span style="font-size: 12px; font-weight: 600">en el año</span></strong></div>
+      <sc-if value="{{ notMonthly }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #5F6359; line-height: 1.5">Contamos los viernes de pago de cada mes: algunos meses traen 5 semanas.</span></sc-if>
+      <button type="button" onClick="{{ addLine }}" style="font: inherit; font-size: 15px; font-weight: 600; min-height: 52px; border: 0; border-radius: 12px; background: #141612; color: #FFFFFF; cursor: pointer">Agregar al plan</button>
+    </section>
+  </sc-if>
+
+  <div class="mb" style="flex: 1; padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 12px">
+    <section aria-label="Sin asignar por mes" style="background: radial-gradient(120% 150% at 100% 100%, rgba(242,205,0,.20) 0%, rgba(242,205,0,0) 55%), linear-gradient(135deg, #0B0C0A 0%, #1C1E19 100%); color: #FFFFFF; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <span style="font-size: 13px; color: #CFCCC2">Te sobra en el año</span>
+        <span class="num" style="font-size: 22px; font-weight: 600">{{ yearNet }}</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px">
+        <sc-for list="{{ months }}" as="m" hint-placeholder-count="12">
+          <button type="button" onClick="{{ m.pick }}" aria-pressed="{{ m.pressed }}" style="font: inherit; min-height: 48px; border-radius: 10px; border: 1.5px solid {{ m.border }}; background: {{ m.bg }}; color: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px 0">
+            <span style="font-size: 11px; font-weight: 600">{{ m.label }}</span>
+            <span class="num" style="font-size: 10px; color: {{ m.netFg }}">{{ m.net }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <sc-if value="{{ isMes }}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px">
+          <h2 style="margin: 0; font-size: 18px; font-weight: 600">{{ selName }}</h2>
+          <a href="Presupuesto-movil.dc.html" style="font-size: 13px; font-weight: 600; padding: 10px 0">Plan vs. real ›</a>
+        </div>
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="9">
+          <section style="background: #FFFFFF; border-radius: 14px; padding: 6px 16px; border: 1px solid #E6E4DC">
+            <h3 style="margin: 0; padding: 12px 0 6px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600">
+              <span style="display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 9px; height: 9px; border-radius: 3px; background: {{ g.color }}"></span>{{ g.name }}</span>
+              <span class="num" style="color: #5F6359; font-weight: 600">{{ g.monthTotal }}</span>
+            </h3>
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 10px; min-height: 48px; border-top: 1px solid #EFEDE6">
+                <label for="{{ r.id }}" style="flex: 1; font-size: 14px">{{ r.name }}<sc-if value="{{ r.isNew }}" hint-placeholder-val="{{ false }}"> <span style="font-size: 11px; font-weight: 600; color: #1E5A3F; background: #E3F1E8; border-radius: 999px; padding: 2px 7px">Nueva</span></sc-if></label>
+                <input id="{{ r.id }}" class="num" type="text" inputmode="decimal" value="{{ r.v }}" onChange="{{ r.set }}" style="font: inherit; font-size: 15px; font-weight: 600; width: 96px; height: 40px; box-sizing: border-box; text-align: right; border: 1px solid #E6E4DC; border-radius: 10px; padding: 0 10px; background: #F8F7F2; color: #141612">
+              </div>
+            </sc-for>
+          </section>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isLinea }}" hint-placeholder-val="{{ false }}">
+      <section style="background: #FFFFFF; border-radius: 14px; padding: 16px; border: 1px solid #E6E4DC; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="linea" style="font-size: 13px; font-weight: 600">Línea</label>
+          <select id="linea" value="{{ lineKey }}" onChange="{{ pickLine }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #FFFFFF; color: #141612">
+            <sc-for list="{{ lineOpts }}" as="o" hint-placeholder-count="20"><option value="{{ o.key }}">{{ o.name }}</option></sc-for>
+          </select>
+        </div>
+        <p style="margin: 0; font-size: 13px; color: #5F6359; line-height: 1.5">Reparte esta línea en el año. Ej.: concentrar el ahorro del viaje en los meses con menos gastos.</p>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{ lineCells }}" as="c" hint-placeholder-count="12">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <label for="{{ c.id }}" style="font-size: 12px; font-weight: 500; color: #5F6359">{{ c.label }}</label>
+              <input id="{{ c.id }}" class="num" type="text" inputmode="decimal" value="{{ c.v }}" onChange="{{ c.set }}" style="font: inherit; font-size: 15px; font-weight: 600; height: 44px; box-sizing: border-box; text-align: right; border: 1px solid #E6E4DC; border-radius: 10px; padding: 0 10px; background: {{ c.bg }}; color: #141612">
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-top: 1px solid #EFEDE6; padding-top: 12px; font-size: 14px"><span>Total del año</span><strong class="num">{{ lineTotal }}</strong></div>
+      </section>
+    </sc-if>
+  </div>
+
+  <nav aria-label="Principal" style="background: #FBFAF6; border-top: 1px solid #E6E4DC; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 8px 4px 22px"><a href="Inicio-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan-movil.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 600; color: #141612"><span aria-hidden="true" style="position: absolute; top: -8px; width: 22px; height: 3px; border-radius: 0 0 3px 3px; background: #F2CD00"></span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan</a><a href="Movimientos-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Academia-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia</a><a href="Mas-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Más</a></nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":2300}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.defs = [
+      { name: 'Ingresos', color: '#141612', income: true, rows: [['Sueldo', Array(12).fill(5418)], ['Retiros de Easy Aussie', [270,950,900,1330,900,1250,1250,1000,800,800,800,800]], ['Renta del auto', [500,500,500,500,625,500,500,0,0,0,0,0]], ['E-bikes', [275,470,380,350,350,0,0,0,200,200,200,200]], ['Ingresos extra', [0,10200,0,0,110,110,1610,1000,0,0,0,0]]] },
+      { name: 'Hogar y básicos', color: '#141612', rows: [['Home', [1352,1270,1270,1270,1330,670,0,1330,1330,1330,1330,990]], ['Groceries', [270,300,300,300,300,100,0,300,400,400,400,400]], ['Felix Mobile', [40,40,40,40,40,40,80,40,40,40,40,40]], ['Suscripciones', [75,190,270,70,240,100,40,170,120,125,125,25]], ['Seguro de salud', [112,112,112,117,117,117,128,128,128,128,128,128]]] },
+      { name: 'Vehículo', color: '#6FA898', rows: [['Car expenses', Array(12).fill(180)], ['Bike expenses', Array(12).fill(90)], ['Gasolina', [30,30,30,30,30,30,0,90,100,140,100,100]], ['Seguro de la moto', [76,76,76,76,76,76,76,76,76,80,80,80]]] },
+      { name: 'Deudas', color: '#C46A2A', rows: [['Inner Circle', [655,655,655,655,655,655,655,655,655,700,700,700]], ['Bike Payment', [600,100,2100,2000,2300,0,0,0,100,100,100,0]]] },
+      { name: 'Comida y ocio', color: '#A8D3C3', rows: [['Food and Entertainment', [500,450,450,450,400,200,0,400,400,400,400,400]], ['Otros', [0,0,0,0,200,100,0,280,0,0,0,0]]] },
+      { name: 'Ahorro e inversión', color: '#4C7FB5', rows: [['Investment S&P500', [100,100,100,100,100,100,100,100,150,150,150,150]], ['Emergency fund', Array(12).fill(100)]] },
+      { name: 'Metas', color: '#E3B800', rows: [['Viaje a Colombia', [0,0,0,0,0,0,0,0,2000,1900,2000,2500]]] },
+      { name: 'Negocio', color: '#2D5C8A', rows: [['Aportes a Easy Aussie', [270,1000,1200,785,0,0,400,2700,550,550,400,550]]] },
+      { name: 'Estilo de vida', color: '#3E8C7A', rows: [['Travelling Maria del Mar', [200,400,200,0,0,0,0,0,0,0,0,0]], ['Inner Circle Immersion', [0,0,0,0,1200,1800,0,0,0,0,0,0]], ['Europe trip', [1700,3200,0,1350,0,2866,6850,700,0,0,0,0]]] }
+    ];
+    const vals = {};
+    this.defs.forEach((g, gi) => g.rows.forEach((r, ri) => { vals[gi + '-' + ri] = r[1].slice(); }));
+    this.state = { vals, mode: 'mes', sel: 10, line: '6-0', added: {}, show: false, flash: '', nl: { name: '', gi: 1, mode: 'all', from: '10', to: '11', amount: '', freq: 'mensual' } };
+  }
+  setNl(patch) { this.setState({ nl: Object.assign({}, this.state.nl, patch) }); }
+  keysOf(gi) {
+    const g = this.defs[gi];
+    return g.rows.map((r, ri) => ({ key: gi + '-' + ri, name: r[0] })).concat((this.state.added[gi] || []).map((n, j) => ({ key: gi + '-a' + j, name: n, isNew: true })));
+  }
+  setVal(key, i, raw) {
+    const n = parseFloat(String(raw).replace(/[^0-9.\-]/g, '')) || 0;
+    const nv = Object.assign({}, this.state.vals);
+    const arr = nv[key].slice(); arr[i] = n; nv[key] = arr;
+    this.setState({ vals: nv });
+  }
+  renderVals() {
+    const M = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const MF = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const fmt = (v) => (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-AU');
+    const k = (v) => (v < 0 ? '-' : '+') + (Math.abs(v) >= 1000 ? (Math.abs(v) / 1000).toFixed(1) + 'k' : Math.abs(Math.round(v)));
+    const { vals, sel, mode, line } = this.state;
+    const inc = Array(12).fill(0), exp = Array(12).fill(0);
+    this.defs.forEach((g, gi) => this.keysOf(gi).forEach((o) => vals[o.key].forEach((x, i) => { if (g.income) inc[i] += x; else exp[i] += x; })));
+    const net = inc.map((x, i) => x - exp[i]);
+    const months = M.map((label, i) => ({
+      label, net: k(net[i]), pressed: i === sel ? 'true' : 'false',
+      bg: i === sel ? '#4A4D45' : '#23251F', border: i === sel ? '#F2CD00' : 'transparent',
+      netFg: net[i] < 0 ? '#FFB38A' : '#CFCCC2',
+      pick: () => this.setState({ sel: i })
+    }));
+    const groups = this.defs.map((g, gi) => ({
+      name: g.name, color: g.color,
+      monthTotal: fmt(this.keysOf(gi).reduce((a, o) => a + vals[o.key][sel], 0)),
+      rows: this.keysOf(gi).map((o) => {
+        const key = o.key;
+        return { id: 'm-' + key, name: o.name, isNew: !!o.isNew, v: String(vals[key][sel]), set: (e) => this.setVal(key, sel, e.target.value) };
+      })
+    }));
+    const lineOpts = [];
+    this.defs.forEach((g, gi) => this.keysOf(gi).forEach((o) => lineOpts.push({ key: o.key, name: o.name, sel: o.key === line })));
+    const lv = vals[line];
+    const lineCells = M.map((label, i) => ({ id: 'l-' + i, label, v: String(lv[i]), bg: i < 10 ? '#F8F7F2' : '#FFFFFF', set: (e) => this.setVal(line, i, e.target.value) }));
+    const tabDefs = [['Resumen','Resumen-movil.dc.html'],['Plan','Plan-movil.dc.html'],['Movimientos','Movimientos-movil.dc.html'],['Forecast','Forecast-movil.dc.html'],['Más','Deudas-movil.dc.html']];
+    const tabs = tabDefs.map(([label, href]) => {
+      const on = href === 'Plan-movil.dc.html';
+      return { label, href, current: on ? 'page' : 'false', weight: on ? '600' : '450', fg: on ? '#141612' : '#5F6359', pill: on ? '#E3F1E8' : 'transparent' };
+    });
+    const segOn = { bg: '#141612', fg: '#FFFFFF' }, segOff = { bg: 'transparent', fg: '#3A3D36' };
+    const sm = mode === 'mes' ? segOn : segOff, sl = mode === 'linea' ? segOn : segOff;
+    const nl = this.state.nl;
+    const amt = parseFloat(String(nl.amount).replace(/[^0-9.\-]/g, '')) || 0;
+    const f = Number(nl.from), t = Number(nl.to);
+    const inRange = (i) => nl.mode === 'all' ? true : (nl.mode === 'once' ? i === f : (i >= Math.min(f, t) && i <= Math.max(f, t)));
+    const pays = (i) => {
+      if (nl.freq === 'mensual') return 1;
+      const step = nl.freq === 'semanal' ? 7 : 14; let c = 0;
+      for (let d = new Date(2026, 0, 2); d.getFullYear() === 2026; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + step)) { if (d.getMonth() === i) c++; }
+      return c;
+    };
+    const newVals = M.map((_, i) => inRange(i) ? amt * pays(i) : 0);
+    const seg = (arr, cur, key) => arr.map(([id, label]) => ({ label, checked: String(cur === id), bg: cur === id ? '#FFFFFF' : 'transparent', fg: cur === id ? '#141612' : '#5F6359', pick: () => this.setNl({ [key]: id }) }));
+    const nlTotal = newVals.reduce((a, b) => a + b, 0);
+    const addLine = () => {
+      if (!nl.name.trim() || !amt) return;
+      const gi = nl.gi, list = (this.state.added[gi] || []).slice(), key = gi + '-a' + list.length;
+      list.push(nl.name);
+      const nv = Object.assign({}, this.state.vals); nv[key] = newVals;
+      this.setState({ added: Object.assign({}, this.state.added, { [gi]: list }), vals: nv, show: false, flash: '"' + nl.name + '" agregada: ' + fmt(nlTotal) + ' en el año', nl: Object.assign({}, nl, { name: '', amount: '' }) });
+    };
+    return {
+      showAdd: this.state.show, addOpen: String(this.state.show), openAdd: () => this.setState({ show: true, flash: '' }), closeAdd: () => this.setState({ show: false }),
+      nl, addLine, notMonthly: nl.freq !== 'mensual',
+      nlCats: this.defs.map((g, gi) => ({ name: g.name, color: g.color, checked: String(nl.gi === gi), border: nl.gi === gi ? '#141612' : '#E6E4DC', bg: nl.gi === gi ? '#FFF8D6' : '#FFFFFF', pick: () => this.setNl({ gi }) })),
+      nlModes: seg([['once', 'Un mes'], ['range', 'Varios'], ['all', 'Todo el año']], nl.mode, 'mode'),
+      nlFreqs: seg([['mensual', 'Mes'], ['quincenal', '2 semanas'], ['semanal', 'Semana']], nl.freq, 'freq'),
+      nlPresets: [
+        { label: 'Ingreso extra en diciembre', apply: () => this.setNl({ name: 'Ingreso extra diciembre', gi: 0, mode: 'once', from: '11', to: '11', freq: 'mensual' }) },
+        { label: 'Deuda nueva por 2 meses', apply: () => this.setNl({ name: 'Deuda nueva (2 meses)', gi: 3, mode: 'range', from: '10', to: '11', freq: 'mensual' }) },
+        { label: 'Arriendo semanal', apply: () => this.setNl({ name: 'Arriendo', gi: 1, mode: 'all', from: '0', to: '11', freq: 'semanal' }) }
+      ],
+      monthOpts: MF.map((label, i) => ({ v: String(i), label })),
+      showFrom: nl.mode !== 'all', showTo: nl.mode === 'range', fromLabel: nl.mode === 'once' ? 'Mes' : 'Desde',
+      amtLabel: nl.freq === 'semanal' ? 'Monto por semana' : (nl.freq === 'quincenal' ? 'Monto cada 2 semanas' : 'Monto por mes'),
+      nlTotal: amt ? fmt(nlTotal) : '$0', nlMonth: amt ? fmt(newVals[sel]) + ' en ' + MF[sel].toLowerCase() : 'Escribe el monto para ver el total',
+      setNlName: (e) => this.setNl({ name: e.target.value }), setNlFrom: (e) => this.setNl({ from: e.target.value }), setNlTo: (e) => this.setNl({ to: e.target.value }), setNlAmt: (e) => this.setNl({ amount: e.target.value }),
+      hasFlash: !!this.state.flash, flash: this.state.flash,
+      months, groups, lineOpts, lineCells, tabs, lineKey: line,
+      yearNet: fmt(net.reduce((a, b) => a + b, 0)),
+      selName: MF[sel] + ' 2026',
+      lineTotal: fmt(lv.reduce((a, b) => a + b, 0)),
+      isMes: mode === 'mes', isLinea: mode === 'linea',
+      mesOn: String(mode === 'mes'), lineaOn: String(mode === 'linea'),
+      mesBg: sm.bg, mesFg: sm.fg, lineaBg: sl.bg, lineaFg: sl.fg,
+      toMes: () => this.setState({ mode: 'mes' }),
+      toLinea: () => this.setState({ mode: 'linea' }),
+      pickLine: (e) => this.setState({ line: e.target.value })
+    };
+  }
+}
+</script>
+</body>
+</html>

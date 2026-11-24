@@ -1,0 +1,441 @@
+
+
+# Revolución 360 — Plan de implementación con Claude Code
+2026-11-24 · @Jonathan
+
+## Resumen
+La recomendación es construir Revolución 360 en 3 fases: lanzar un MVP para alumnos con plan anual, movimientos, cierre de mes y Academia, y dejar lo demás para después. Claude Code puede escribir casi todo el código, pero solo si el trabajo llega bien definido: reglas de negocio escritas, pantallas de referencia y tareas pequeñas con pruebas.
+- Qué es: una app web, usable en celular y computador, para planear y registrar las finanzas personales del año. La ofrece Revolución del Dinero como imán de clientes, suscripción mensual y acceso gratis para alumnos.
+- Para quién: latinos en Australia primero, con modo genérico para otros países. Español primero.
+- Punto de partida: el mockup de 60 pantallas y el sistema de diseño v2 ya están aprobados. Ese es el contrato visual: no se rediseña durante el desarrollo.
+- Lo que este plan no es: no elige librerías ni escribe código. Dice qué hay que decidir, preparar y vigilar para que el desarrollo con Claude Code salga bien a la primera.
+Cómo usarlo: lee las secciones 4 y 5 antes de abrir Claude Code. Son las decisiones que, si faltan, Claude Code va a inventar.
+
+## Decisiones tomadas
+Estas decisiones ya están cerradas y van tal cual en el CLAUDE.md del proyecto. Cambiar una requiere aprobación de Jonathan.
+| 
+Área | 
+Decisión | 
+| 
+Nombre | 
+Revolución 360 (antes "Mi Revolución"). Endoso: "Una herramienta de Revolución del Dinero". | 
+| 
+Logo | 
+logo-360.png: sello original de RdD + "Revolución" en Newsreader cursiva + "360" amarillo con arco. Versión clara y oscura. Para producción se vectoriza (SVG). | 
+| 
+Dominio | 
+app.revoluciondeldinero.com. El panel de administración va en su propia ruta (/admin), nunca en el menú del usuario. | 
+| 
+Idioma y tema | 
+Español primero, tema claro, escritorio y móvil con el mismo peso. | 
+| 
+Sistema de diseño | 
+v2: tinta #141612, papel #F6F5F0, amarillo RdD #F2CD00. Verde solo para dinero que entra; rojo óxido para lo que falta. Newsreader para títulos y cifras grandes, Geist para la interfaz. Íconos de línea propios. | 
+| 
+Bloques oscuros | 
+Negro a carbón con brillo amarillo, solo en Inicio, Academia, entrar a la app y el aviso de Pro. El resto de resúmenes van tipo libro contable, sin caja. | 
+| 
+Logros | 
+Puntos, niveles y rachas siempre en amarillo, nunca en verde. | 
+| 
+Modelo de negocio | 
+Freemium: Gratis y Pro (mensual y anual). Precios por región configurables. Prueba gratis de Pro configurable (14 días por defecto). | 
+| 
+Si deja de pagar | 
+Sus datos quedan en solo lectura y siempre puede exportarlos. Nunca se borran por no pagar. | 
+| 
+Alumnos | 
+Acceso gratis dado por un admin: de por vida, por meses o hasta una fecha. A usuarios elegidos, a un grupo o con código de invitación. Al vencer pasa a Gratis sin perder datos. | 
+| 
+Cupones y fundador | 
+Cupones con % y duración, creados también en Stripe. Existe el plan "Acceso fundador". | 
+| 
+Imán de clientes | 
+El Diagnóstico es la puerta. Al final, quien no es alumno ve la clase gratuita; el alumno ve el curso de la Academia que ataca su prioridad. Texto, enlace y público se configuran en Admin. | 
+| 
+Bancos | 
+Sin conexión bancaria (se descartó CDR/Basiq). Solo registro manual e importación CSV. La app nunca entra al banco. | 
+| 
+CSV | 
+Asistente en 5 pasos: banco y cuenta, columnas (se adivinan y se guarda el formato por banco), revisión con duplicados y transferencias detectadas, reglas de categoría, resumen con conciliación de saldo. El archivo se borra tras procesarlo. | 
+| 
+País y moneda | 
+Se eligen en el onboarding (Australia y "Otro país" primero). El usuario puede renombrar términos ("super" por "pensión"). Contenido por país se configura en Admin. | 
+| 
+Menú | 
+Todo visible (se rechazó mostrar funciones de a poco). Admin puede poner cada sección en visible, próximamente u oculta, y Gratis o Pro. | 
+| 
+Plan anual | 
+Rejilla de 12 meses editable, centro de la app. Agregar línea con ejemplos y frecuencia semanal, quincenal o mensual (cuenta los viernes de pago reales de cada mes). En móvil: vista por mes, por línea y agregar línea. | 
+| 
+Movimientos | 
+3 niveles: solo mi plan, totales del mes, cada movimiento. A mano y CSV en la misma pantalla, filtros por mes y categoría, recurrentes. | 
+| 
+Editar movimientos | 
+Cada movimiento se edita: monto, fecha, descripción, categoría, cuenta, unión a una línea del plan, regla para los próximos iguales, dividir en dos categorías, nota, eliminar con doble confirmación. | 
+| 
+Pagado a mano | 
+En el detalle del mes, "Pendiente" se toca y pasa a "Pagado · a mano" (mismo dato que el nivel "Solo mi plan"). Si después llega el movimiento, se une a la línea sin contarse dos veces. Lo pagado con un movimiento solo cambia editando el movimiento. | 
+| 
+Cuentas | 
+Bancos, tarjetas, efectivo y empresa con saldo escrito a mano. Aviso si el saldo no cuadra con los movimientos. La cuenta de la empresa no cuenta en el patrimonio. Transferencias entre cuentas no son gasto. | 
+| 
+Deudas | 
+Agregar deuda (incluye Afterpay/Zip y tarjeta revolvente), registrar pago (cuota, abono o total), deuda saldada pregunta si quitar la cuota del plan. | 
+| 
+Impuestos y empresa | 
+Apartado de impuestos para ABN, con aviso de preguntar el % al contador. Cuenta con la empresa (Pty Ltd) como sección avanzada, con aviso de Division 7A. | 
+| 
+Inversiones | 
+Plataformas que define el usuario, nada fijo. Se pueden unir a una línea del plan. Solo seguimiento, sin recomendaciones. | 
+| 
+Metas | 
+Tipo libre, monto y fecha calculan el aporte mensual y semanal. Aportar, usar dinero, historial, marcar cumplida (+50 puntos), agregar al plan. | 
+| 
+Proyección | 
+Se queda en el menú. Usa los datos del usuario y el saldo de sus cuentas, con escenarios "¿qué pasa si…?" y gráfico de línea. El onboarding dice "Metas con fecha" y el inicio de usuario nuevo muestra la tarjeta de Cuentas. | 
+| 
+Análisis | 
+Categorías, mes a mes, ranking de comercios y comercios vigilados (ej. McDonald's, café). | 
+| 
+Asistente | 
+"Arma tu plan" en 7 pasos, con deudas y metas libres y nombres editables. | 
+| 
+Cierre de mes | 
+4 pasos: revisa, compara, ajusta el mes siguiente, saldos. Es el hábito central. | 
+| 
+Diagnóstico | 
+5 indicadores con referencias generales. Siempre con el aviso de que es información general, no asesoría. | 
+| 
+Academia | 
+Solo cursos de uso de la app y de finanzas (no Ruta del Revolucionario por ahora). 9 cursos, portadas 3D negro y amarillo. | 
+| 
+Puntos y niveles | 
+Niveles: Despertar 0, Orden 300, Ahorro 500, Inversión 1,000, Revolucionario 2,000. Puntos: clase +10, curso +50, cierre +30, saldar deuda +50, meta +100, aporte a meta +5, semana activa +5. Solo premian buen comportamiento financiero. | 
+| 
+Insignias | 
+10 insignias 3D negro y dorado. Bloqueadas en gris con su avance; al ganarla, celebración, color, fecha y notificación. | 
+| 
+Racha | 
+Semanal (lunes a domingo). Cuenta si registra un gasto, marca un pago, ve una clase o cierra el mes. Un comodín al mes. Ícono de llama. | 
+| 
+Usuario nuevo | 
+Lista de 4 primeros pasos con puntos y estados vacíos que explican qué falta. Nunca un gráfico vacío. | 
+| 
+Notificaciones | 
+Centro en la app con filtros. 4 correos: bienvenida, recordatorio de cierre, acceso por vencer (30 y 7 días antes), pago fallido. | 
+| 
+Ayuda | 
+Preguntas frecuentes y casos de soporte. Los datos técnicos adjuntos nunca incluyen montos. | 
+| 
+Admin | 
+Separado del producto. Nunca ve las finanzas de nadie. Usuarios y accesos, gestionar usuario, grupos, menú y funciones, Academia, planes y cupones, países, soporte y privacidad, registro de actividad. | 
+| 
+Legal | 
+Términos y privacidad en lenguaje simple, como borrador para revisar con abogado en Australia. | 
+
+## Alcance por fases
+Se construye todo lo diseñado, pero en 4 fases: cada una termina con algo usable por personas reales y con un criterio claro para pasar a la siguiente.
+Fase 0 · Preparación (sin código de producto)
+- CLAUDE.md del proyecto con las decisiones tomadas, el sistema de diseño y las reglas de trabajo (sección 6).
+- Reglas de negocio escritas y aprobadas (sección 4), con ejemplos numéricos de tu propio Excel.
+- Una ficha por pantalla: qué muestra, qué se puede hacer, de dónde salen los datos y qué pasa cuando está vacía. Se sacan del mockup.
+- Cuentas creadas a tu nombre: base de datos en región Sydney, Stripe, dominio, correo transaccional, repositorio.
+- Borrador legal enviado al abogado.
+- Sale cuando: Claude Code puede leer el repositorio y entender qué construir sin preguntarte nada básico.
+Fase 1 · MVP para alumnos (sin cobros)
+- Entrar a la app: registro, entrar, recuperar contraseña, verificar correo, 2 pasos.
+- Onboarding con país y moneda, asistente "Arma tu plan", estados vacíos y primeros pasos.
+- Plan anual (escritorio y móvil), detalle del mes con "Pagado · a mano".
+- Movimientos en sus 3 niveles, registro a mano y edición de cada movimiento.
+- Cuentas, Metas, Cierre de mes, Inicio y Diagnóstico.
+- Academia con el curso "Empieza aquí" y el reproductor de clases.
+- Perfil: datos, región y moneda, nombres, seguridad, privacidad (exportar y borrar).
+- Admin mínimo: usuarios y accesos gratis, grupos, menú y funciones.
+- Correos de bienvenida y recordatorio de cierre.
+- Sale cuando: 10 a 20 alumnos usan la app un mes completo, al menos la mitad hace su primer cierre, y no hay ningún incidente de datos.
+Fase 2 · Abierta al público y con cobros
+- Stripe: Pro mensual y anual, prueba gratis, cupones, acceso fundador, pago fallido, muro de Pro y solo lectura al dejar de pagar.
+- Importar CSV completo con reglas y duplicados.
+- Deudas completas, apartado de impuestos ABN y cuenta con la empresa.
+- Inversiones, Análisis con comercios, Proyección con escenarios.
+- Puntos, niveles, insignias, racha con comodín y notificaciones completas.
+- Ayuda y soporte; admin restante: Academia, planes y precios, soporte y privacidad, registro de actividad.
+- Resto de cursos de la Academia.
+- Sale cuando: los pagos cuadran con Stripe durante 2 cierres de mes seguidos y el soporte responde en menos de 24 horas.
+Fase 3 · Crecer
+- Contenido por país y otros países además de Australia.
+- App instalable en el celular y notificaciones push.
+- Inglés.
+- Decidir si la Ruta del Revolucionario entra a la Academia.
+
+## Arquitectura en bloques
+La app y el panel de administración son dos puertas distintas a la misma lógica de negocio; ninguna pantalla habla directo con la base de datos, y el panel nunca ve montos.
+- Una sola app web para escritorio y móvil, instalable en el celular más adelante (fase 3). No hay apps nativas en las tiendas por ahora.
+- El panel de administración vive en su propia ruta y con su propio control de acceso.
+- La lógica de negocio concentra todos los cálculos. Es lo primero que se construye y lo más probado.
+- Servicios externos: autenticación con 2 pasos, base de datos en Sydney, Stripe para cobros, un servicio de correo para los 4 correos automáticos y almacenamiento para imágenes. El CSV se procesa y se borra.
+- La herramienta exacta de cada bloque es una de las decisiones pendientes de la fase 0.
+
+## Reglas de negocio que hay que escribir antes de programar
+Si una regla no está escrita, Claude Code la inventa, y en una app de plata eso significa números que no cuadran. Cada regla de esta lista necesita un documento corto con su definición y 3 ejemplos con números reales (de tu Excel 2026), que luego se vuelven pruebas automáticas.
+Dinero, fechas y moneda
+- Los montos se guardan en centavos, nunca con decimales sueltos. Se define cómo se redondea y cómo se muestra cada moneda.
+- Cada usuario tiene una zona horaria. El mes y la semana (lunes a domingo) se calculan en su hora, no en la del servidor.
+- Una sola moneda por usuario en la fase 1. Multimoneda queda para la fase 3.
+Plan anual
+- Una línea = nombre, grupo, tipo (ingreso o gasto) y un monto por mes.
+- Frecuencias: mensual, quincenal y semanal. Quincenal y semanal cuentan los días de pago reales que caen en cada mes, desde una fecha de primer pago que elige el usuario (en el mockup se usó el viernes 2 de enero de 2026 como ejemplo).
+- Qué pasa al editar una celda suelta frente a cambiar la frecuencia de toda la línea: hay que decidir cuál gana.
+- Estado de cada línea en cada mes: pendiente, pagado con movimiento o pagado a mano. Pago parcial y pago de más también necesitan regla.
+Movimientos
+- Signo: entra positivo, sale negativo. Las transferencias entre cuentas propias no cuentan ni como ingreso ni como gasto.
+- Cómo un movimiento se une a una línea del plan: a mano, por regla, o sugerido por monto y fecha cercanos. Un movimiento unido a una línea pagada a mano la reemplaza sin duplicar.
+- Duplicados: misma cuenta, mismo monto, fechas a 2 días o menos y descripción parecida. Se avisa, no se borra solo.
+- Dividir un movimiento: las partes deben sumar el total.
+- Recurrentes: cuándo se crean solos y cómo se evita duplicarlos si después llegan por CSV.
+- Toda edición y eliminación queda en un historial interno, para soporte y para recalcular.
+Cuentas y conciliación
+- Saldo escrito por el usuario con su fecha. Saldo esperado = último saldo escrito + movimientos posteriores. La diferencia se muestra como "te faltan $X por registrar".
+- Tarjetas de crédito en negativo. La cuenta de la empresa queda fuera del patrimonio por defecto.
+Cierre de mes
+- Qué cierra: el mes queda marcado, sus montos reales quedan como confirmados (el verde del Excel original) y suma 30 puntos una sola vez.
+- Si se puede reabrir un mes cerrado, quién y cómo. Recomendado: sí, con aviso, sin devolver puntos.
+Metas, deudas, impuestos e inversiones
+- Meta: ahorrado = aportes − usos. Aporte necesario = (monto − ahorrado) / meses que faltan; semanal = mensual × 12 / 52.
+- Deuda: saldo, tasa y cuota calculan la fecha en que terminas. Afterpay y Zip con su calendario de 4 pagos. Al saldarla: preguntar si quitar la cuota del plan.
+- Impuestos ABN: el usuario pone el % que le indica su contador; la app solo calcula cuánto apartar.
+- Inversiones: aportado frente a valor actual, escrito a mano. Sin precios en vivo.
+Diagnóstico (5 indicadores)
+- Te sobra = (ingresos − gastos) / ingresos.
+- Ahorro e inversión = aportes a ahorro e inversión / ingresos.
+- Cuotas de deudas = cuotas del mes / ingresos.
+- Fondo de emergencia = saldo del fondo / gastos básicos del mes. Hay que definir qué categorías son "básicas".
+- Dependencia = ingreso más grande / ingresos totales.
+- Referencias por país, editables en Admin. Siempre con el aviso de información general.
+Proyección
+- Saldo inicial = suma de cuentas marcadas "usar en mi proyección". Cada mes futuro suma el neto del plan. Los escenarios apagan líneas sin tocar el plan.
+Puntos, racha e insignias
+- Una tabla de eventos que dan puntos, cada uno con su límite (por ejemplo, un cierre por mes). Los puntos nunca se ganan dos veces por la misma acción, ni borrando y volviendo a crear.
+- Racha: una semana cuenta con al menos una acción válida. El comodín (1 por mes calendario) se usa solo cuando una semana falla. Hay que decidir si se avisa antes de gastarlo.
+- Cada insignia con su condición exacta y cómo se mide su avance.
+Planes y accesos
+- Estados: Gratis, prueba de Pro, Pro, acceso gratis de alumno (con vencimiento), fundador y solo lectura. Para cada uno: qué ve, qué puede editar y a qué estado pasa al vencer.
+- Qué función es Gratis y cuál es Pro se lee de la configuración de Admin, nunca queda escrito en el código.
+Países
+- Por país: moneda, frecuencia de pago sugerida, términos locales (super, ABN, ATO, Afterpay), categorías sugeridas y referencias del diagnóstico. "Otro país" es el modo genérico.
+
+## Seguridad, privacidad y cumplimiento
+Pediste que la app sea 100% segura para ofrecerla al público; en la práctica eso significa que la seguridad va en las reglas desde el primer día, no al final. Estas son innegociables y van en el CLAUDE.md.
+Datos y acceso
+- Cada usuario solo puede leer y escribir sus propios datos, y eso lo impone la base de datos, no solo la pantalla. Hay que probarlo con un usuario intentando leer datos de otro.
+- El panel de administración no tiene acceso a montos, movimientos, cuentas ni deudas de nadie. Solo ve nombre, correo, plan, acceso, país y actividad (clases vistas, cierres hechos, puntos).
+- Datos guardados en servidores en Sydney, cifrados en tránsito y en reposo.
+- Verificación en 2 pasos disponible para todos y obligatoria para administradores. Reiniciarla requiere verificar la identidad.
+- Las contraseñas nunca pasan por el código de la app: las maneja el servicio de autenticación.
+- Las claves secretas (Stripe, base de datos, correo) nunca van al repositorio ni a una conversación con Claude Code.
+Pagos
+- Los datos de la tarjeta los maneja Stripe. La app nunca ve ni guarda el número.
+- El estado del plan se actualiza con los avisos que manda Stripe, verificados, no con lo que diga el navegador.
+Privacidad (Australia)
+- Privacy Act 1988 y los Australian Privacy Principles. Para usuarios en Europa, también el RGPD.
+- Notifiable Data Breaches: si hay una filtración que afecte a usuarios, se avisa a ellos y a la OAIC. Hay que tener el procedimiento escrito antes de lanzar.
+- El usuario puede exportar todos sus datos y borrar su cuenta desde Mi perfil. El borrado se completa en 30 días y solo se guardan las facturas que la ley exige.
+- El CSV importado se procesa y se borra; solo quedan los movimientos que el usuario confirma.
+- Los datos técnicos que se adjuntan a soporte nunca llevan montos ni movimientos.
+- Las notas internas de admin no pueden contener datos financieros ni de salud.
+Lo que la app no es
+- No es asesoría financiera personal. El diagnóstico, la proyección y los consejos son información general, con el aviso visible, para no entrar en lo que exige una licencia AFSL.
+- No es un banco ni mueve dinero.
+- Los términos, la privacidad y el texto del aviso los revisa un abogado en Australia antes de abrir al público. No soy abogado.
+Registro de actividad
+- Toda acción de un administrador queda registrada con quién, qué y cuándo: dar o quitar acceso, reiniciar 2 pasos, suspender, exportar, borrar.
+
+## Cómo trabajar con Claude Code
+Claude Code rinde cuando cada tarea es pequeña, tiene una referencia visual y termina con pruebas que pasan. El trabajo tuyo es preparar el terreno y revisar, no escribir código.
+Lo que va en el repositorio antes de la primera tarea
+- CLAUDE.md en la raíz: qué es la app, para quién, la tabla de decisiones tomadas, las reglas de seguridad de la sección 5 y las reglas de trabajo de esta sección. Corto: Claude Code lo lee en cada sesión.
+- Carpeta docs/ con:
+- las reglas de negocio de la sección 4, un archivo por tema, con sus ejemplos numéricos;
+- una ficha por pantalla (qué muestra, acciones, datos, estado vacío, versión móvil);
+- los textos de la app en un solo lugar, en español, para que nadie los invente.
+- Carpeta docs/mockup/ con los 60 HTML del lienzo como referencia visual. Te los puedo exportar.
+- Los tokens del sistema de diseño (colores, letras, espacios, radios, sombras) en un solo archivo, sacados de la lámina "Sistema de diseño v2". Ningún color suelto en las pantallas.
+- Logo en SVG, insignias, portadas de cursos y los íconos como archivos del proyecto.
+- Datos de prueba: tu plan 2026 del Excel, con las reclasificaciones que aprobaste (Inner Circle es una deuda; "Family" pasó a la meta Viaje a Colombia, parcialmente gastada; Easy Aussie es una cuenta en ambos sentidos: aportes $8,405, retiros $11,050, neto +$2,645), para probar cada cálculo con números reales.
+Cómo se pide cada tarea
+- Una tarea = una pantalla o un flujo de punta a punta (datos, lógica, pantalla escritorio y móvil, pruebas). Nunca "haz todo el módulo de deudas" de una vez.
+- Empieza siempre en modo plan: Claude Code propone cómo lo hará, tú lo apruebas, y solo después escribe código. Esto respeta tu regla de no actuar sin aprobación.
+- Plantilla de pedido: qué pantalla (enlace a su ficha y a su HTML de referencia), qué reglas aplica (enlace a docs), qué queda fuera, y cómo sé que está lista.
+- Una rama y un pull request por tarea. Nada entra a la rama principal sin revisión.
+- Una conversación por tarea: al terminar se limpia el contexto para que no arrastre decisiones viejas.
+Revisión
+- Primero las pruebas automáticas, después un agente de revisión de código (puedes usar tu subagente de revisión), y al final tú en el navegador comparando con el mockup.
+- Cambios en la base de datos (tablas, permisos) los revisa siempre una persona antes de aplicarlos.
+- Cualquier cosa que toque dinero, permisos o pagos lleva pruebas que lo demuestren; sin pruebas no se aprueba.
+Límites para Claude Code
+- Nunca usa claves de producción ni se conecta a la base de datos de producción. Trabaja en local y en un entorno de pruebas.
+- No agrega librerías nuevas sin justificar por qué.
+- No cambia el diseño: si algo del mockup no se puede hacer, lo pregunta.
+- No cambia una decisión de la tabla. Si cree que hay que cambiarla, lo dice y espera.
+Cuando algo cambie
+- Si durante el desarrollo se decide algo nuevo, se agrega en el mismo pull request a la tabla de decisiones, a la ficha de la pantalla y, si es visual, a la lámina del sistema de diseño.
+
+## Calidad: pruebas, accesibilidad y rendimiento
+La regla es simple: si un cálculo de dinero no tiene prueba, no existe. Las pruebas son también lo que impide que Claude Code rompa algo viejo al hacer algo nuevo.
+Pruebas de cálculos (las más importantes)
+- Cada regla de la sección 4 tiene pruebas con los ejemplos de su documento: frecuencias semanal y quincenal, conciliación, metas, fecha de fin de una deuda, los 5 indicadores, proyección, puntos y racha.
+- Una prueba con tu año 2026 completo: los totales deben dar lo que ya validamos (ingresos $95,346; gastos $85,637; te sobra $9,709 en el año).
+- Casos límite: meses con 5 semanas de pago, año bisiesto, cambio de horario de verano, montos negativos, centavos, una meta sin fecha.
+Pruebas de permisos
+- Un usuario no puede ver ni cambiar datos de otro.
+- Admin no puede ver montos.
+- Un usuario en solo lectura no puede editar; uno con acceso vencido pasa a Gratis sin perder nada.
+Pruebas de flujos completos (en el navegador)
+- Registrarse, armar el plan con el asistente, registrar un gasto, editarlo, marcar una línea como pagada, hacer el cierre de mes.
+- Importar un CSV real de Ubank y de NAB, con duplicados.
+- Pagar Pro, que falle un pago, cancelar y quedar en solo lectura.
+- Exportar los datos y borrar la cuenta.
+Accesibilidad
+- Todo se puede usar con teclado; los botones tienen nombre para lectores de pantalla (el mockup ya los trae).
+- Contraste suficiente: cuidado con el amarillo sobre blanco, que solo se usa como fondo o borde, nunca como texto pequeño.
+- Botones de al menos 44 px de alto en móvil.
+- Las animaciones se apagan si el teléfono tiene "reducir movimiento".
+Rendimiento
+- El Inicio debe cargar en menos de 2 segundos en un celular con 4G.
+- La rejilla del Plan anual (12 meses por unas 40 líneas) debe sentirse instantánea al editar.
+- Las imágenes (portadas, insignias) se sirven en el tamaño justo.
+Revisión visual
+- Cada pantalla terminada se compara con su HTML del mockup, en escritorio y móvil, antes de aprobar el pull request.
+
+## Operación y lanzamiento
+Antes de que entre el primer alumno tiene que existir todo lo que te avisa cuando algo falla y lo que te permite recuperar datos. Sin eso, no se abre.
+Entornos
+- Local (donde trabaja Claude Code), pruebas (igual a producción, con datos falsos) y producción.
+- Cada pull request aprobado se despliega solo a pruebas; a producción solo cuando tú lo apruebas.
+- Stripe en modo prueba hasta la fase 2.
+Respaldo y recuperación
+- Copias automáticas diarias de la base de datos, guardadas al menos 30 días.
+- Probar una restauración completa antes de lanzar, no después del primer problema.
+Monitoreo
+- Aviso inmediato si la app se cae, si sube la tasa de errores o si falla un pago.
+- Los errores se registran sin montos ni datos personales.
+Medición del producto
+- El camino del usuario del panel de Admin: se registró → terminó el asistente → volvió la semana siguiente → primer cierre de mes → pasó a Pro.
+- Se mide si el sistema de puntos ayuda o molesta: cierres hechos y rachas de quienes ganan insignias frente a quienes no.
+- Se mide si la gente usa Proyección, para cerrar esa duda con datos.
+Beta con alumnos (fase 1)
+- 10 a 20 alumnos de un mismo grupo, con acceso gratis por 3 meses.
+- Un canal directo para que te reporten cosas (puede ser el mismo soporte de la app).
+- Una llamada corta con 5 de ellos después de su primer cierre de mes.
+Soporte
+- Respuesta en menos de 24 horas hábiles, en español.
+- Respuestas guardadas para las preguntas frecuentes, que alimentan la página de Ayuda.
+Contenido que tú debes producir
+- Video de bienvenida de 60 segundos y foto tuya para la pantalla de entrar y el inicio de usuario nuevo.
+- Tu frase para la pantalla de entrar.
+- Las clases de los cursos 01 a 09 (el curso "Empieza aquí" es el único necesario para la fase 1).
+- Revisar los textos de la app para que suenen a ti.
+- La clase gratuita y su enlace para el bloque del Diagnóstico.
+
+## Riesgos y decisiones pendientes
+Hay 13 decisiones abiertas; las primeras 7 bloquean la fase 1 y se deben cerrar en la fase 0.
+| 
+Decisión pendiente | 
+Por qué importa | 
+Se necesita para | 
+| 
+Herramientas técnicas finales (propuesta anterior: Next.js, Supabase en Sydney, Stripe) | 
+Todo lo demás se apoya en esto | 
+Fase 0 | 
+| 
+Qué categorías son "gastos básicos" | 
+Define el indicador de fondo de emergencia y la insignia "Colchón de 1 mes" | 
+Fase 0 | 
+| 
+Si gana la celda editada o la frecuencia de la línea en el Plan anual | 
+Evita que se borren ediciones del usuario | 
+Fase 0 | 
+| 
+Si un mes cerrado se puede reabrir | 
+Afecta el cierre, los puntos y la conciliación | 
+Fase 0 | 
+| 
+Cómo se sugiere unir un movimiento a una línea del plan (margen de monto y de días) | 
+Define cuándo una línea pasa a "Pagado" sola | 
+Fase 0 | 
+| 
+Razón social y ABN que ofrecen la app | 
+Va en términos, privacidad, facturas y Stripe | 
+Fase 0 | 
+| 
+Ícono cuadrado de la app (favicon y celular) | 
+Hoy solo está el logo horizontal | 
+Fase 0 | 
+| 
+Si se avisa antes de gastar el comodín de racha | 
+Cambia cómo se siente la racha | 
+Fase 2 | 
+| 
+Precio de Pro por región y descuento para alumnos | 
+Hoy dice [PRECIO] y [X]% en la app y los correos | 
+Fase 2 | 
+| 
+Registrar "Revolución 360" como marca en IP Australia | 
+Proteger el nombre antes de invertir en él | 
+Antes de abrir al público | 
+| 
+Logo en vector con la fuente real | 
+La imagen de Higgsfield imita la letra; para impresión y tiendas se necesita exacto | 
+Antes de abrir al público | 
+| 
+Si la Proyección se queda tal cual, se simplifica o se reparte | 
+Decidir con los datos de uso de la beta | 
+Fase 2 | 
+| 
+Si la Ruta del Revolucionario entra a la Academia | 
+Cambia el alcance de la Academia | 
+Fase 3 | 
+Riesgos principales
+- Números que no cuadran. Es lo que más rápido mata la confianza en una app de plata. Mitigación: reglas escritas con ejemplos y pruebas con tu año real (secciones 4 y 7).
+- Una filtración de datos. Mitigación: permisos en la base de datos, pruebas de permisos, 2 pasos, admin sin acceso a montos (sección 5).
+- Que se lea como asesoría financiera. Mitigación: aviso visible, textos revisados por abogado, nada de recomendaciones de inversión.
+- Claude Code inventando o cambiando decisiones. Mitigación: CLAUDE.md, fichas por pantalla, modo plan y revisión de cada pull request.
+- El alcance. Son 60 pantallas. Mitigación: las fases y no empezar la siguiente sin cumplir el criterio de salida.
+- Los bancos cambian el formato del CSV. Mitigación: formatos guardados por banco y una alerta cuando una importación no reconoce las columnas.
+- Los puntos se sienten infantiles para alguien con deudas. Mitigación: medirlo en la beta y poder apagarlos desde Admin.
+- El contenido no está listo. Las clases, el video y la foto dependen de ti. Mitigación: la fase 1 solo necesita el curso "Empieza aquí".
+- Todo pasa por tu revisión. Si tú eres el único que aprueba, tú eres el cuello de botella. Mitigación: reservar bloques fijos a la semana para revisar pull requests.
+
+## Hoja de ruta y checklist para empezar
+El primer paso es la fase 0 completa; el primer código que se escribe son los cálculos del Plan anual con sus pruebas, no una pantalla.
+Checklist de la fase 0
+- Cerrar las 7 decisiones que bloquean la fase 1 (sección de riesgos).
+- Escribir las reglas de negocio con 3 ejemplos cada una, usando tu Excel 2026.
+- Escribir la ficha de cada pantalla de la fase 1.
+- Exportar del lienzo los 60 HTML, los tokens de diseño, el logo, las insignias y las portadas.
+- Crear el repositorio con CLAUDE.md, docs/ y docs/mockup/.
+- Crear las cuentas: base de datos en Sydney, Stripe (modo prueba), dominio, correo transaccional, monitoreo.
+- Preparar los datos de prueba con tu plan 2026.
+- Mandar términos y privacidad al abogado.
+- Grabar el video de bienvenida y tomarte la foto.
+Orden de construcción de la fase 1 (cada paso depende de los anteriores)
+- Base del proyecto: estructura, tokens de diseño, menú lateral y barra móvil, entornos local y de pruebas.
+- Entrar a la app: registro, entrar, recuperar, verificar correo, 2 pasos. Pruebas de permisos desde aquí.
+- Motor de cálculo del plan: líneas, frecuencias, totales por mes. Solo lógica y pruebas, contra tu año 2026.
+- Onboarding y asistente "Arma tu plan".
+- Plan anual en escritorio y móvil, con agregar línea.
+- Cuentas y movimientos a mano (3 niveles), con edición.
+- Detalle del mes con "Pagado · a mano" y la unión movimiento ↔ línea.
+- Metas.
+- Cierre de mes.
+- Inicio, con su gráfico del año, y Diagnóstico.
+- Usuario nuevo: primeros pasos y estados vacíos.
+- Academia: curso "Empieza aquí" y reproductor de clases.
+- Perfil: datos, región y moneda, nombres, seguridad, exportar y borrar.
+- Admin mínimo: usuarios, accesos gratis, grupos, menú y funciones, registro de actividad.
+- Correos de bienvenida y recordatorio de cierre.
+- Respaldos, monitoreo, prueba de restauración y revisión de seguridad.
+- Beta con 10 a 20 alumnos.
+Después
+- La fase 2 sigue el mismo método, empezando por Stripe y el muro de Pro, porque de eso depende abrir al público.

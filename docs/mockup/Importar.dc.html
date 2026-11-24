@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Importar CSV</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Principal" style="flex: 1 1 220px; max-width: 248px; background: #FBFAF6; border-right: 1px solid #E6E4DC; padding: 22px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px 10px 8px">
+      <a href="Main.dc.html" style="text-decoration: none; display: flex; align-items: center"><img src="/_blob/bb0e7d557e23b395ba835e41bc61c1a6" alt="Revolución 360 · Revolución del Dinero" style="height: 38px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; align-self: flex-start; display: block; flex: none"></a>
+    </div>
+    <span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Tu plata</span><a href="Main.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan anual</a><a href="Movimientos.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #ECEAE2; color: #141612"><span aria-hidden="true" style="position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #F2CD00"></span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Cuentas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg>Cuentas</a><a href="Metas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Metas</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Entiende tus números</span><a href="Forecast.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Proyección</a><a href="Analisis.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/></svg>Análisis</a><a href="Deudas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Deudas e impuestos</a><a href="Inversiones.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M4 20h16"/><path d="M7 16v-4M12 16V8M17 16V5"/></svg>Inversiones</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Aprende</span><a href="Academia.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia <span style="margin-left: auto; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #FFF3B8; color: #5C4A00">340 pts</span></a>
+    <a href="Cierre.dc.html" style="text-decoration: none; margin-top: 18px; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid #EADFA0; background: #FFF8D6; color: #141612">
+      <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; flex: none; background: conic-gradient(#F2CD00 0 80%, #EADFA0 80% 100%); display: flex; align-items: center; justify-content: center"><span style="width: 26px; height: 26px; border-radius: 50%; background: #FFF8D6; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">6d</span></span>
+      <span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; font-weight: 600">Cierra noviembre</span><span style="font-size: 12px; color: #6B5A10">5 minutos · quedan 6 días</span></span></a>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid #E6E4DC">
+      <div style="display: flex; align-items: center; gap: 4px">
+        <a href="Perfil.dc.html" style="text-decoration: none; color: #141612; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 10px; flex: 1; min-width: 0; background: transparent">
+          <span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 50%; background: #141612; color: #F2CD00; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; flex: none">J</span>
+          <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 13px; font-weight: 600">Jonathan</span><span style="font-size: 12px; color: #6B6E64">Mi perfil</span></span></a>
+        <a href="Notificaciones.dc.html" aria-label="Notificaciones" title="Notificaciones" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M6 9a6 6 0 0 1 12 0c0 6.5 2.5 8.5 2.5 8.5h-17S6 15.5 6 9"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg><span aria-hidden="true" style="position: absolute; top: 8px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: #F2CD00; box-shadow: 0 0 0 2px #FBFAF6"></span></a>
+        <a href="Ayuda.dc.html" aria-label="Ayuda" title="Ayuda" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.7"/><path d="M12 17.2v.1"/></svg></a>
+      </div>
+      <div style="display: flex; flex-direction: column; padding: 0 2px">
+        <a href="Suscripcion.dc.html" style="text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4A4D45; font-weight: 450; padding: 6px 8px"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg>Suscripción</a>
+        
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px 0">
+        <img src="/_blob/07130166ac57906f8a4d3175882f16f6" alt="Revolución del Dinero" style="width: 30px; height: 30px">
+        <span style="font-size: 11px; color: #6B6E64; line-height: 1.35">Una herramienta de<br><span style="color: #141612; font-weight: 600">Revolución del Dinero</span></span>
+      </div>
+    </div>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 48px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; max-width: 1220px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Movimientos · traer el archivo de tu banco</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Importar CSV</h1></div>
+      <a href="Movimientos.dc.html" style="font-size: 14px; font-weight: 600">‹ Volver a Movimientos</a>
+    </header>
+    <ol aria-label="Pasos" style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 24px">
+      <sc-for list="{{ steps }}" as="p" hint-placeholder-count="5"><li><button type="button" onClick="{{ p.go }}" aria-current="{{ p.cur }}" style="font: inherit; display: flex; align-items: center; gap: 10px; border: 0; background: transparent; padding: 4px 0; cursor: pointer; min-height: 40px">
+        <span style="width: 30px; height: 30px; border-radius: 50%; background: {{ p.bg }}; color: {{ p.fg }}; border: 1.5px solid {{ p.bd }}; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; box-sizing: border-box">{{ p.mark }}</span>
+        <span style="font-size: 14px; font-weight: 600; color: {{ p.tc }}">{{ p.t }}</span></button></li></sc-for>
+    </ol>
+    <sc-if value="{{ s0 }}" hint-placeholder-val="{{ true }}"><section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 28px; display: flex; flex-direction: column; gap: 20px">
+      <div style="display: flex; flex-direction: column; gap: 8px"><span id="bk" style="font-size: 12px; font-weight: 500; color: #5F6359">¿De qué banco es el archivo?</span><div role="radiogroup" aria-labelledby="bk" style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{ banks }}" as="b" hint-placeholder-count="6"><button type="button" role="radio" aria-checked="{{ b.checked }}" onClick="{{ b.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 2px solid {{ b.border }}; background: {{ b.bg }}; color: #141612; cursor: pointer">{{ b.name }}</button></sc-for></div></div>
+      <div style="max-width: 360px"><div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="acd" style="font-size: 12px; font-weight: 500; color: #5F6359">¿A qué cuenta van estos movimientos?</label><select id="acd" value="{{ acct }}" onChange="{{ setAcct }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option>Ubank Spend</option><option>Ubank Save</option><option>NAB Low Rate</option></select></div></div>
+      <div style="border: 2px dashed #CFCCC2; background: #FFF8D6; border-radius: 14px; padding: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 18px">
+        <span aria-hidden="true" style="width: 52px; height: 60px; border-radius: 8px; background: #FFFFFF; border: 2px solid #141612; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; box-sizing: border-box; font-size: 11px; font-weight: 600; color: #141612">CSV</span>
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 4px"><strong style="font-size: 15px">ubank-transacciones-nov-2026.csv</strong><span style="font-size: 13px; color: #5F6359">48 filas · del 1 al 22 de noviembre · listo para revisar</span></span>
+        <button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border: 1px solid #D9D6CC; background: #FFFFFF; border-radius: 12px; cursor: pointer">Cambiar archivo</button>
+      </div>
+      <details style="font-size: 14px; color: #3A3D36"><summary style="cursor: pointer; font-weight: 600; color: #141612; min-height: 32px">¿Cómo descargo el CSV de {{ bank }}?</summary><ol style="margin: 10px 0 0; padding-left: 20px; line-height: 1.7"><li>Entra a tu banco desde el computador.</li><li>Abre la cuenta y busca "Exportar" o "Descargar transacciones".</li><li>Elige el formato CSV y las fechas del mes.</li></ol><a href="Leccion.dc.html" style="font-weight: 600">Ver el video de 2 minutos ›</a></details>
+      <div style="display: flex; justify-content: space-between; gap: 10px; padding-top: 6px"><span></span><button type="button" onClick="{{ next }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Continuar</button></div>
+    </section></sc-if><sc-if value="{{ s1 }}" hint-placeholder-val="{{ false }}"><section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 28px; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><h2 style="margin: 0; font-size: 17px; font-weight: 600">Dinos qué es cada columna</h2><span style="font-size: 14px; color: #5F6359">Lo adivinamos por ti. Corrige solo si algo no cuadra.</span></div>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px">
+        <thead><tr style="text-align: left; color: #5F6359; font-size: 12px"><th scope="col" style="padding: 8px 10px; font-weight: 600">Columna en tu archivo</th><th scope="col" style="padding: 8px 10px; font-weight: 600">Ejemplos</th><th scope="col" style="padding: 8px 10px; font-weight: 600; width: 260px">En la app es</th></tr></thead>
+        <tbody><sc-for list="{{ cols }}" as="c" hint-placeholder-count="5"><tr style="border-top: 1px solid #EFEDE6"><th scope="row" style="padding: 12px 10px; text-align: left"><code style="font-size: 13px; background: #F6F5F0; border-radius: 6px; padding: 3px 8px">{{ c.k }}</code></th><td style="padding: 12px 10px; color: #5F6359; font-size: 13px" class="num">{{ c.sample }}</td>
+          <td style="padding: 8px 10px"><label for="{{ c.id }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Columna {{ c.k }}</label><select id="{{ c.id }}" value="{{ c.val }}" onChange="{{ c.set }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; height: 42px; padding: 0 10px"><option value="Fecha">Fecha</option><option value="Descripción">Descripción</option><option value="Salida">Salida</option><option value="Entrada">Entrada</option><option value="Monto (+/-)">Monto (+/-)</option><option value="Saldo (para comparar)">Saldo (para comparar)</option><option value="Ignorar">Ignorar</option></select></td></tr></sc-for></tbody>
+      </table>
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end">
+        <div style="width: 220px"><div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="fdd" style="font-size: 12px; font-weight: 500; color: #5F6359">Formato de fecha</label><select id="fdd" value="{{ fmtD }}" onChange="{{ setFmt }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option>dd/mm/aaaa</option><option>mm/dd/aaaa</option><option>aaaa-mm-dd</option></select></div></div>
+        <div style="display: flex; gap: 10px; align-items: center; min-height: 46px"><button type="button" role="checkbox" aria-checked="{{ saveS }}" aria-labelledby="svd" onClick="{{ togSave }}" style="font: inherit; width: 24px; height: 24px; flex: none; border-radius: 7px; border: 2px solid #141612; background: {{ saveBg }}; color: #FFFFFF; font-size: 13px; font-weight: 600; cursor: pointer; padding: 0">{{ saveMark }}</button><span id="svd" style="font-size: 14px">Recordar este formato para {{ bank }}: la próxima vez te saltas este paso.</span></div>
+      </div>
+      <sc-if value="{{ hasMissing }}" hint-placeholder-val="{{ false }}"><p role="alert" style="margin: 0; font-size: 13px; font-weight: 600; color: #A1401A; background: #FCEDE6; border-radius: 10px; padding: 10px 12px">{{ missing }}</p></sc-if>
+      <div style="display: flex; justify-content: space-between; gap: 10px; padding-top: 6px"><button type="button" onClick="{{ back }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">‹ Atrás</button><button type="button" onClick="{{ next }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Ver los movimientos</button></div>
+    </section></sc-if><sc-if value="{{ s2 }}" hint-placeholder-val="{{ false }}"><section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 28px; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #E3F1E8; color: #1E5A3F; white-space: nowrap">{{ nInc }} para importar</span><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #FDF1DE; color: #7A4A0C; white-space: nowrap">{{ nDup }} duplicado omitido</span><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #E3ECF6; color: #2D5C8A; white-space: nowrap">1 transferencia entre tus cuentas</span>
+        <sc-if value="{{ hasNone }}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #EFEDE6; color: #3A3D36; white-space: nowrap">{{ nNone }} sin categoría</span></sc-if>
+      </div>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px">
+        <thead><tr style="text-align: left; color: #5F6359; font-size: 12px"><th scope="col" style="padding: 8px; width: 40px; font-weight: 600"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden">Importar</span></th><th scope="col" style="padding: 8px; font-weight: 600; width: 60px">Fecha</th><th scope="col" style="padding: 8px; font-weight: 600">Descripción</th><th scope="col" style="padding: 8px; font-weight: 600; text-align: right">Monto</th><th scope="col" style="padding: 8px; font-weight: 600; width: 210px">Categoría</th></tr></thead>
+        <tbody><sc-for list="{{ rows }}" as="r" hint-placeholder-count="8"><tr style="border-top: 1px solid #EFEDE6; background: {{ r.rowBg }}; opacity: {{ r.op }}">
+          <td style="padding: 10px 8px"><button type="button" role="checkbox" aria-checked="{{ r.inc }}" aria-label="Importar este movimiento" onClick="{{ r.tog }}" style="font: inherit; width: 24px; height: 24px; border-radius: 7px; border: 2px solid #141612; background: {{ r.incBg }}; color: #FFFFFF; font-size: 13px; font-weight: 600; cursor: pointer; padding: 0">{{ r.incMark }}</button></td>
+          <td style="padding: 10px 8px; color: #5F6359" class="num">{{ r.d }}</td>
+          <td style="padding: 10px 8px"><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-weight: 600">{{ r.t }}</span>
+            <sc-if value="{{ r.isDup }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #7A4A0C; font-weight: 600">Parece duplicado: ya lo registraste a mano el 22/11. Lo dejamos fuera.</span></sc-if>
+            <sc-if value="{{ r.isTf }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #2D5C8A; font-weight: 600">Pago a tu tarjeta NAB: no cuenta como gasto.</span></sc-if></span></td>
+          <td style="padding: 10px 8px; text-align: right; font-weight: 600; color: {{ r.vc }}" class="num">{{ r.v }}</td>
+          <td style="padding: 6px 8px"><label for="{{ r.id }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Categoría</label><select id="{{ r.id }}" value="{{ r.c }}" onChange="{{ r.set }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; height: 40px; padding: 0 8px; font-size: 14px"><option value="Súper">Súper</option><option value="Comida fuera">Comida fuera</option><option value="Transporte">Transporte</option><option value="Suscripciones">Suscripciones</option><option value="Ingreso">Ingreso</option><option value="Entre tus cuentas">Entre tus cuentas</option><option value="Familia y remesas">Familia y remesas</option><option value="Sin categoría">Sin categoría</option></select></td>
+        </tr></sc-for></tbody>
+      </table>
+      <span style="font-size: 13px; color: #5F6359">Mostrando 8 de {{ nTotal }} filas del ejemplo. Las 48 del archivo real se ven igual, con scroll.</span>
+      <div style="display: flex; justify-content: space-between; gap: 10px; padding-top: 6px"><button type="button" onClick="{{ back }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">‹ Atrás</button><button type="button" onClick="{{ next }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Siguiente: reglas</button></div>
+    </section></sc-if><sc-if value="{{ s3 }}" hint-placeholder-val="{{ false }}"><section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 28px; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><h2 style="margin: 0; font-size: 17px; font-weight: 600">Que la app aprenda de ti</h2><span style="font-size: 14px; color: #5F6359">Con estas reglas, la próxima importación sale casi sola. Puedes cambiarlas cuando quieras en Mi perfil.</span></div>
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+        <sc-for list="{{ rules }}" as="r" hint-placeholder-count="4"><li style="display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid #EFEDE6">
+          <span style="flex: 1; font-size: 14px; line-height: 1.5">Si la descripción contiene <code style="background: #F6F5F0; border-radius: 6px; padding: 2px 7px; font-size: 13px">{{ r.k }}</code> → <strong>{{ r.c }}</strong> <span style="color: #5F6359; font-size: 13px">· aplica a {{ r.n }}</span></span>
+          <button type="button" role="switch" aria-checked="{{ r.on }}" aria-label="Activar regla" onClick="{{ r.tog }}" style="font: inherit; width: 48px; height: 28px; border-radius: 999px; border: 0; padding: 3px; cursor: pointer; background: {{ r.bg }}; display: flex; justify-content: {{ r.j }}; flex: none"><span style="width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF"></span></button>
+        </li></sc-for>
+      </ul>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 220px auto; gap: 12px; align-items: end; background: #F8F7F2; border-radius: 14px; padding: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="nkd" style="font-size: 12px; font-weight: 500; color: #5F6359">Si la descripción contiene</label><input id="nkd" type="text" value="{{ nk }}" onChange="{{ setNk }}" placeholder="Ej. COLES" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><label for="ncd" style="font-size: 12px; font-weight: 500; color: #5F6359">Categoría</label><select id="ncd" value="{{ nc }}" onChange="{{ setNc }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option value="Súper">Súper</option><option value="Comida fuera">Comida fuera</option><option value="Transporte">Transporte</option><option value="Suscripciones">Suscripciones</option><option value="Ingreso">Ingreso</option><option value="Entre tus cuentas">Entre tus cuentas</option><option value="Familia y remesas">Familia y remesas</option><option value="Sin categoría">Sin categoría</option></select></div>
+        <button type="button" onClick="{{ addRule }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612; font-weight: 600; ">+ Regla</button>
+      </div>
+      <div style="display: flex; justify-content: space-between; gap: 10px; padding-top: 6px"><button type="button" onClick="{{ back }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">‹ Atrás</button><button type="button" onClick="{{ next }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Importar {{ nInc }} movimientos</button></div>
+    </section></sc-if><sc-if value="{{ s4 }}" hint-placeholder-val="{{ false }}"><section style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 34px 0; display: flex; flex-direction: column; gap: 18px">
+      <span style="font-size: 13px; color: #5F6359">Importación lista · {{ acct }}</span>
+      <p style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em">{{ nInc }} movimientos nuevos. <span style="color: #141612; background: linear-gradient(transparent 60%, #FFE45C 60%)">+10 puntos</span></p>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Entró</span><strong class="num" style="font-size: 22px">{{ sumIn }}</strong></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Salió</span><strong class="num" style="font-size: 22px">{{ sumOut }}</strong></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Duplicados omitidos</span><strong class="num" style="font-size: 22px">{{ nDup }}</strong></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Reglas activas</span><strong class="num" style="font-size: 22px">{{ nOn }}</strong></div>
+      </div>
+      <p style="margin: 0; font-size: 14px; color: #5F6359; background: #F6F5F0; border-radius: 12px; padding: 12px 14px">El saldo final del archivo ($2,340.10) coincide con el de tu cuenta en la app. Todo cuadra.</p>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap"><a href="Movimientos.dc.html" style="text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 20px; border-radius: 12px; background: #F2CD00; color: #141612">Ver mis movimientos</a><button type="button" onClick="{{ restart }}" style="font: inherit; font-size: 15px; font-weight: 600; padding: 0 18px; min-height: 48px; border-radius: 12px; border: 1px solid #D9D6CC; background: transparent; color: #141612; cursor: pointer">Importar otro archivo</button></div>
+    </section></sc-if>
+    <p style="margin: 0; font-size: 12px; color: #5F6359">El archivo se procesa y se borra. Solo guardamos los movimientos que tú confirmas.</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1250}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      step: 0, bank: 'Ubank', acct: 'Ubank Spend', file: true, save: true,
+      map: { Date: 'Fecha', Description: 'Descripción', Debit: 'Salida', Credit: 'Entrada', Balance: 'Saldo (para comparar)' },
+      fmtD: 'dd/mm/aaaa',
+      rows: [
+        { d: '22/11', t: 'WOOLWORTHS 1234 SYDNEY', v: -86.40, c: 'Súper', inc: false, flag: 'dup' },
+        { d: '21/11', t: 'MCDONALDS PARRAMATTA', v: -18.50, c: 'Comida fuera', inc: true, flag: '' },
+        { d: '21/11', t: 'SALARY EASY AUSSIE PTY', v: 1540, c: 'Ingreso', inc: true, flag: '' },
+        { d: '20/11', t: 'TRANSFER TO NAB CARD', v: -500, c: 'Entre tus cuentas', inc: true, flag: 'tf' },
+        { d: '20/11', t: 'OPAL TRAVEL', v: -50, c: 'Transporte', inc: true, flag: '' },
+        { d: '19/11', t: 'REMITLY COLOMBIA', v: -250, c: 'Familia y remesas', inc: true, flag: '' },
+        { d: '18/11', t: 'NETFLIX.COM', v: -18.99, c: 'Suscripciones', inc: true, flag: '' },
+        { d: '18/11', t: 'GELATO MESSINA', v: -12, c: 'Sin categoría', inc: true, flag: '' }
+      ],
+      rules: [
+        { k: 'WOOLWORTHS', c: 'Súper', n: 12, on: true },
+        { k: 'MCDONALDS', c: 'Comida fuera', n: 6, on: true },
+        { k: 'OPAL', c: 'Transporte', n: 9, on: true },
+        { k: 'GELATO MESSINA', c: 'Comida fuera', n: 1, on: false }
+      ],
+      nk: '', nc: 'Comida fuera'
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const num = (x) => parseFloat(String(x).replace(/[^0-9.\-]/g, '')) || 0;
+    const money = (v) => (v < 0 ? '-$' : '+$') + Math.abs(v).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const ST = ['Sube el archivo', 'Columnas', 'Revisa', 'Reglas', 'Listo'];
+    const steps = ST.map((t, i) => ({ n: String(i + 1), t, cur: s.step === i ? 'step' : 'false', bg: i < s.step ? '#141612' : s.step === i ? '#141612' : '#FFFFFF', fg: i <= s.step ? '#FFFFFF' : '#5F6359', bd: i <= s.step ? 'transparent' : '#D9D6CC', mark: i < s.step ? '✓' : String(i + 1), tc: s.step === i ? '#141612' : '#5F6359', go: () => { if (i <= s.step) this.setState({ step: i }); } }));
+    const BANKS = ['Ubank', 'NAB', 'CommBank', 'Westpac', 'ANZ', 'Otro banco'];
+    const banks = BANKS.map((b) => ({ name: b, checked: String(s.bank === b), border: s.bank === b ? '#141612' : '#E6E4DC', bg: s.bank === b ? '#FFF8D6' : '#FFFFFF', pick: () => this.setState({ bank: b }) }));
+    const SAMPLE = { Date: ['22/11/2026', '21/11/2026', '21/11/2026'], Description: ['WOOLWORTHS 1234 SYDNEY', 'MCDONALDS PARRAMATTA', 'SALARY EASY AUSSIE PTY'], Debit: ['86.40', '18.50', ''], Credit: ['', '', '1540.00'], Balance: ['2,340.10', '2,426.50', '2,445.00'] };
+    const cols = Object.keys(s.map).map((k, i) => ({ k, id: 'col' + i + 'd', val: s.map[k], set: (e) => this.setState({ map: Object.assign({}, s.map, { [k]: e.target.value }) }), sample: SAMPLE[k].filter((x) => x).join(' · '), ok: s.map[k] !== 'Ignorar' }));
+    const vals = Object.keys(s.map).map((k) => s.map[k]);
+    const missing = ['Fecha', 'Descripción'].filter((x) => vals.indexOf(x) < 0).concat(vals.indexOf('Monto (+/-)') < 0 && (vals.indexOf('Salida') < 0 || vals.indexOf('Entrada') < 0) ? ['Monto'] : []);
+    const updR = (i, p) => { const r = s.rows.slice(); r[i] = Object.assign({}, r[i], p); this.setState({ rows: r }); };
+    const rows = s.rows.map((r, i) => ({
+      d: r.d, t: r.t, v: money(r.v), vc: r.v > 0 ? '#1E5A3F' : '#141612', c: r.c, id: 'rc' + i + 'd', inc: String(r.inc),
+      incBg: r.inc ? '#141612' : '#FFFFFF', incMark: r.inc ? '✓' : '', tog: () => updR(i, { inc: !r.inc }),
+      set: (e) => updR(i, { c: e.target.value }), op: r.inc ? '1' : '.5',
+      isDup: r.flag === 'dup', isTf: r.flag === 'tf', isNone: r.c === 'Sin categoría',
+      rowBg: r.flag === 'dup' ? '#FFF8EC' : r.c === 'Sin categoría' ? '#FBFCFA' : '#FFFFFF'
+    }));
+    const inc = s.rows.filter((r) => r.inc);
+    const dups = s.rows.filter((r) => r.flag === 'dup' && !r.inc).length;
+    const none = inc.filter((r) => r.c === 'Sin categoría').length;
+    const rules = s.rules.map((r, i) => ({ k: r.k, c: r.c, n: r.n + (r.n === 1 ? ' movimiento' : ' movimientos'), on: String(r.on), bg: r.on ? '#141612' : '#CFCCC2', j: r.on ? 'flex-end' : 'flex-start', tog: () => { const l = s.rules.slice(); l[i] = Object.assign({}, r, { on: !r.on }); this.setState({ rules: l }); } }));
+    const nOn = s.rules.filter((r) => r.on).length;
+    return {
+      steps, banks, cols, rows, rules,
+      s0: s.step === 0, s1: s.step === 1, s2: s.step === 2, s3: s.step === 3, s4: s.step === 4,
+      bank: s.bank, acct: s.acct, setAcct: (e) => this.setState({ acct: e.target.value }), fmtD: s.fmtD, setFmt: (e) => this.setState({ fmtD: e.target.value }),
+      saveS: String(s.save), saveBg: s.save ? '#141612' : '#FFFFFF', saveMark: s.save ? '✓' : '', togSave: () => this.setState({ save: !s.save }),
+      hasMissing: missing.length > 0, noMissing: missing.length === 0, missing: 'Falta indicar: ' + missing.join(', '),
+      next: () => this.setState({ step: Math.min(4, s.step + 1) }), back: () => this.setState({ step: Math.max(0, s.step - 1) }), restart: () => this.setState({ step: 0 }),
+      nInc: String(inc.length), nDup: String(dups), nNone: String(none), hasNone: none > 0, nTotal: String(s.rows.length), nOn: String(nOn),
+      nk: s.nk, nc: s.nc, setNk: (e) => this.setState({ nk: e.target.value }), setNc: (e) => this.setState({ nc: e.target.value }),
+      addRule: () => { if (!s.nk.trim()) return; this.setState({ rules: s.rules.concat([{ k: s.nk.toUpperCase(), c: s.nc, n: 0, on: true }]), nk: '' }); },
+      sumIn: money(inc.filter((r) => r.v > 0 && r.c !== 'Entre tus cuentas').reduce((a, r) => a + r.v, 0)),
+      sumOut: money(inc.filter((r) => r.v < 0 && r.c !== 'Entre tus cuentas').reduce((a, r) => a + r.v, 0))
+    };
+  }
+}
+</script>
+</body>
+</html>

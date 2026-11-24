@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Diagnóstico · móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 2000px; box-sizing: border-box; background: #F6F5F0; font-family: Geist, system-ui, sans-serif; color: #141612; display: flex; flex-direction: column; position: relative">
+  <header style="padding: 24px 20px 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px">
+    <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; color: #5F6359">Noviembre 2026</span><h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">Tu diagnóstico</h1></div>
+    
+  </header>
+  <div class="mb" style="flex: 1; padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 12px">
+    <section style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 18px 0; display: flex; flex-direction: column; gap: 12px">
+      <p style="margin: 0; font-size: 17px; font-weight: 600; line-height: 1.45">Te sobra dinero cada mes, pero casi nada queda <span style="color: #B4441C">ahorrado o invertido</span>.</p>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap"><span style="font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 999px; background: #E3F1E8; color: #1E5A3F">1 bien</span><span style="font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 999px; background: #FDF1DE; color: #7A4A0C">2 atención</span><span style="font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 999px; background: #FBEBD8; color: #8A4B12">1 prioridad</span></div>
+    </section>
+    <article style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><h3 style="margin: 0; font-size: 15px; font-weight: 600">Te sobra cada mes</h3><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #E3F1E8; color: #1E5A3F; white-space: nowrap">Bien</span></div>
+          <div style="display: flex; align-items: baseline; gap: 8px"><span class="num big" style="font-size: 28px; font-weight: 600; letter-spacing: -0.03em">10.2%</span><span style="font-size: 13px; color: #5F6359">de lo que entra</span></div>
+          <span style="font-size: 12px; color: #5F6359">Referencia general: 10% o más</span>
+          <span style="font-size: 13px; color: #3A3D36; line-height: 1.5; border-top: 1px solid #EFEDE6; padding-top: 10px">Ojo: $9,245 vinieron de un ingreso extra en febrero.</span>
+        </article>
+<article style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><h3 style="margin: 0; font-size: 15px; font-weight: 600">Ahorro e inversión</h3><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #FBEBD8; color: #8A4B12; white-space: nowrap">Prioridad</span></div>
+          <div style="display: flex; align-items: baseline; gap: 8px"><span class="num big" style="font-size: 28px; font-weight: 600; letter-spacing: -0.03em">2.7%</span><span style="font-size: 13px; color: #5F6359">de lo que entra</span></div>
+          <span style="font-size: 12px; color: #5F6359">Referencia general: 10% a 20%</span>
+          <span style="font-size: 13px; color: #3A3D36; line-height: 1.5; border-top: 1px solid #EFEDE6; padding-top: 10px">$2,600 en el año: S&amp;P500 y fondo de emergencia.</span>
+        </article>
+<article style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><h3 style="margin: 0; font-size: 15px; font-weight: 600">Cuotas de deudas</h3><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #FDF1DE; color: #7A4A0C; white-space: nowrap">Atención</span></div>
+          <div style="display: flex; align-items: baseline; gap: 8px"><span class="num big" style="font-size: 28px; font-weight: 600; letter-spacing: -0.03em">16.1%</span><span style="font-size: 13px; color: #5F6359">de lo que entra</span></div>
+          <span style="font-size: 12px; color: #5F6359">Referencia general: menos de 15–20%</span>
+          <span style="font-size: 13px; color: #3A3D36; line-height: 1.5; border-top: 1px solid #EFEDE6; padding-top: 10px">$800 al mes entre Inner Circle y Bike Payment.</span>
+        </article>
+<article style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><h3 style="margin: 0; font-size: 15px; font-weight: 600">Fondo de emergencia</h3><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #EFEDE6; color: #3A3D36; white-space: nowrap">Falta tu saldo</span></div>
+          <div style="display: flex; align-items: baseline; gap: 8px"><span class="num big" style="font-size: 28px; font-weight: 600; letter-spacing: -0.03em">[N] meses</span><span style="font-size: 13px; color: #5F6359">de gastos básicos</span></div>
+          <span style="font-size: 12px; color: #5F6359">Referencia general: 3 a 6 meses</span>
+          <span style="font-size: 13px; color: #3A3D36; line-height: 1.5; border-top: 1px solid #EFEDE6; padding-top: 10px">Tus gastos básicos son ~$1,706 al mes.</span>
+        </article>
+<article style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><h3 style="margin: 0; font-size: 15px; font-weight: 600">Dependencia de un ingreso</h3><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #FDF1DE; color: #7A4A0C; white-space: nowrap">Atención</span></div>
+          <div style="display: flex; align-items: baseline; gap: 8px"><span class="num big" style="font-size: 28px; font-weight: 600; letter-spacing: -0.03em">68%</span><span style="font-size: 13px; color: #5F6359">viene del sueldo</span></div>
+          <span style="font-size: 12px; color: #5F6359">Mientras más alto, más riesgo si ese ingreso falla</span>
+          <span style="font-size: 13px; color: #3A3D36; line-height: 1.5; border-top: 1px solid #EFEDE6; padding-top: 10px">En diciembre llega al 84%.</span>
+        </article>
+    <h2 style="margin: 6px 4px 0; font-size: 17px; font-weight: 600">Tus focos</h2>
+    <article style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; gap: 14px; align-items: flex-start">
+          <span aria-hidden="true" style="width: 42px; height: 42px; border-radius: 12px; background: #F6F5F0; display: flex; align-items: center; justify-content: center; flex: none"><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C46A2A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><h3 style="margin: 0; font-size: 16px; font-weight: 600">Salir de deudas</h3><p style="margin: 0; font-size: 14px; color: #3A3D36; line-height: 1.55">Tienes 2 deudas con cuotas de $800 al mes. Registra el saldo y la tasa de cada una para ver cuándo terminas y cuál conviene atacar primero.</p><a href="Deudas-movil.dc.html" style="font-size: 14px; font-weight: 600; padding: 4px 0">Completar mis deudas ›</a></div>
+        </article>
+<article style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; gap: 14px; align-items: flex-start">
+          <span aria-hidden="true" style="width: 42px; height: 42px; border-radius: 12px; background: #F6F5F0; display: flex; align-items: center; justify-content: center; flex: none"><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#B38F00" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><h3 style="margin: 0; font-size: 16px; font-weight: 600">Ahorrar para un viaje</h3><p style="margin: 0; font-size: 14px; color: #3A3D36; line-height: 1.55">Viaje a Colombia: $8,400 aportados. Ponle monto y fecha para saber si vas a tiempo.</p><a href="Inicio-movil.dc.html" style="font-size: 14px; font-weight: 600; padding: 4px 0">Definir mi meta ›</a></div>
+        </article>
+    <section aria-label="Siguiente paso" style="display: flex; flex-direction: column; gap: 14px">
+      <div role="group" aria-label="Vista del mockup" style="display: flex; gap: 6px; align-items: center; padding: 6px; background: #FFFFFF; border: 1px dashed #CFCCC2; border-radius: 12px; align-self: flex-start">
+        <span style="font-size: 11px; font-weight: 600; color: #5F6359; text-transform: uppercase; letter-spacing: .06em; padding: 0 6px">Mockup · ver como</span>
+        <button type="button" aria-pressed="{{ leadOn }}" onClick="{{ toLead }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 32px; padding: 0 10px; border-radius: 999px; border: 0; background: {{ leadBg }}; color: {{ leadFg }}; cursor: pointer">Aún no es alumno</button>
+        <button type="button" aria-pressed="{{ stuOn }}" onClick="{{ toStu }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 32px; padding: 0 10px; border-radius: 999px; border: 0; background: {{ stuBg }}; color: {{ stuFg }}; cursor: pointer">Alumno</button>
+      </div>
+      <sc-if value="{{ isLead }}" hint-placeholder-val="{{ true }}"><div style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 20px 0; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: center; gap: 10px"><img src="/_blob/07130166ac57906f8a4d3175882f16f6" alt="" style="width: 44px; height: 44px"><span style="font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #1F8A5B">Revolución del Dinero</span></div>
+        <h2 style="margin: 0; font-size: 20px; font-weight: 600; line-height: 1.2">¿Quieres subir tu ahorro sin dejar de vivir?</h2>
+        <p style="margin: 0; font-size: 14px; color: #5F6359; line-height: 1.55">En la clase gratuita te muestro el método paso a paso, con ejemplos de latinos en Australia.</p>
+        <a href="#" style="text-decoration: none; align-self: flex-start; font-size: 15px; font-weight: 600; padding: 14px 20px; background: #F2CD00; color: #141612; border-radius: 12px">Ver la clase gratuita</a>
+      </div></sc-if>
+      <sc-if value="{{ isStu }}" hint-placeholder-val="{{ false }}"><a href="Academia-movil.dc.html" style="text-decoration: none; color: #141612; background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 20px; display: flex; flex-wrap: wrap; gap: 18px; align-items: center">
+        <img src="/_blob/a443e795d42bd383548535da36be81f3" alt="" style="width: 160px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px; flex: none">
+        <span style="flex: 1 1 220px; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 500; color: #5F6359">Tu prioridad: ahorro · Curso 08 de la Academia</span><strong style="font-size: 17px; font-weight: 600">Ahorro y fondo de emergencia</strong><span style="font-size: 14px; color: #3A3D36; line-height: 1.5">5 clases cortas para pasar de 2.7% a 10% sin dejar de vivir. +10 puntos por clase.</span><span style="font-size: 14px; font-weight: 600">Empezar el curso ›</span></span>
+      </a></sc-if>
+    </section>
+    <p style="margin: 0; font-size: 12px; color: #5F6359; line-height: 1.5">Información general basada en tus datos y en referencias generales. No es asesoría financiera personal. Se actualiza en cada cierre de mes.</p>
+  </div>
+  <nav aria-label="Principal" style="background: #FBFAF6; border-top: 1px solid #E6E4DC; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 8px 4px 22px"><a href="Inicio-movil.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 600; color: #141612"><span aria-hidden="true" style="position: absolute; top: -8px; width: 22px; height: 3px; border-radius: 0 0 3px 3px; background: #F2CD00"></span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan</a><a href="Movimientos-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Academia-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia</a><a href="Mas-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Más</a></nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":2000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { v: 'lead' }; }
+  renderVals() {
+    const lead = this.state.v === 'lead';
+    return { isLead: lead, isStu: !lead, leadOn: String(lead), stuOn: String(!lead), leadBg: lead ? '#141612' : 'transparent', leadFg: lead ? '#FFFFFF' : '#3A3D36', stuBg: lead ? 'transparent' : '#141612', stuFg: lead ? '#3A3D36' : '#FFFFFF', toLead: () => this.setState({ v: 'lead' }), toStu: () => this.setState({ v: 'stu' }) };
+  }
+}
+</script>
+</body>
+</html>

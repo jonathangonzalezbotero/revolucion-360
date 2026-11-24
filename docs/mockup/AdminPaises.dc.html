@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración · Países</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Administración" style="flex: 1 1 220px; max-width: 256px; background: #141612; color: #FFFFFF; padding: 28px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 8px"><img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 38px; height: 38px"><span style="display: flex; flex-direction: column"><strong style="font-size: 15px">Revolución 360</strong><span style="font-size: 12px; color: #8FD3B9; font-weight: 600">Administración</span></span></div>
+    <a href="Main.dc.html" style="text-decoration: none; font-size: 13px; color: #9FC8B9; padding: 6px 10px 22px">‹ Volver a la app</a>
+    <a href="Admin.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Resumen</a><a href="AdminUsuarios.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Usuarios y accesos</a><a href="AdminMenu.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Menú y funciones</a><a href="AdminAcademia.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Academia</a><a href="AdminPlanes.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Planes y precios</a><a href="AdminPaises.dc.html" aria-current="page" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: #2A2D27; color: #FFFFFF">Contenido por país</a><a href="AdminSoporte.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Soporte y privacidad</a><a href="AdminActividad.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Registro de actividad</a>
+    <p style="margin-top: auto; font-size: 12px; color: #7FA9A0; line-height: 1.5; padding: 0 10px">Este panel no muestra los datos financieros de los usuarios.</p>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 44px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; max-width: 1280px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Lo que cambia según dónde vive cada usuario</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Contenido por país</h1></div>
+      <button type="button" onClick="{{ togAdd }}" aria-expanded="{{ addOpen }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">+ Agregar país</button>
+    </header>
+    <sc-if value="{{ add }}" hint-placeholder-val="{{ false }}"><section aria-labelledby="ap" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px">
+      <h2 id="ap" style="margin: 0; font-size: 18px; font-weight: 600">Agregar país</h2>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end">
+        <div style="display: flex; flex-direction: column; gap: 6px"><label for="ap-p" style="font-size: 12px; font-weight: 500; color: #5F6359">País</label><select id="ap-p" value="{{ np }}" onChange="{{ setNp }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"><option>Chile</option><option>Perú</option><option>Argentina</option><option>Nueva Zelanda</option><option>Canadá</option><option>Reino Unido</option></select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 500; color: #5F6359">Moneda</span><span class="num" style="height: 44px; display: flex; align-items: center; font-size: 15px; font-weight: 600">{{ npCur }}</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><label for="ap-b" style="font-size: 12px; font-weight: 500; color: #5F6359">Copiar contenido de</label><select id="ap-b" value="{{ nb }}" onChange="{{ setNb }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"><option>Otro país</option><option>Australia</option><option>Colombia</option></select></div>
+      </div>
+      <span style="font-size: 12px; color: #5F6359">Se crea como borrador. Los usuarios de ese país siguen viendo el modo genérico hasta que lo publiques.</span>
+      <div style="display: flex; gap: 10px; justify-content: flex-end"><button type="button" onClick="{{ togAdd }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border: 1px solid #E6E4DC; background: #FFFFFF; border-radius: 12px; cursor: pointer">Cancelar</button><button type="button" onClick="{{ addC }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">Crear borrador</button></div>
+    </section></sc-if>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+      <section aria-label="Países" style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 8px">
+        <sc-for list="{{ countries }}" as="c" hint-placeholder-count="6"><button type="button" onClick="{{ c.pick }}" style="font: inherit; text-align: left; background: {{ c.bg }}; border: 2px solid {{ c.b }}; border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; color: #141612"><span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">{{ c.n }}</strong><span style="font-size: 12px; color: #5F6359">{{ c.c }}</span></span><span style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: {{ c.stBg }}; color: {{ c.stFg }}">{{ c.st }}</span></button></sc-for>
+        <p style="margin: 4px 2px 0; font-size: 12px; color: #5F6359; line-height: 1.5">"Otro país" es el modo genérico: sin funciones de impuestos ni bancos específicos.</p>
+      </section>
+      <section aria-labelledby="ced" style="flex: 999 1 520px; min-width: 0; background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 18px">
+        <h2 id="ced" style="margin: 0; font-size: 22px; font-weight: 600">{{ curName }} · {{ curCur }}</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="c-frec" style="font-size: 12px; font-weight: 500; color: #5F6359">Frecuencia de pago sugerida</label><select id="c-frec" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box"><option>Cada semana</option><option>Cada 2 semanas</option><option>Cada mes</option></select></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="c-idi" style="font-size: 12px; font-weight: 500; color: #5F6359">Idioma por defecto</label><select id="c-idi" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box"><option>Español</option><option>English</option></select></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><h3 style="margin: 0; font-size: 15px; font-weight: 600">Términos locales</h3><span style="font-size: 12px; color: #5F6359">El nombre que ven los usuarios de este país. Cada usuario puede renombrarlos en su perfil.</span>
+          <sc-for list="{{ terms }}" as="t" hint-placeholder-count="4"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; border-top: 1px solid #EFEDE6; padding-top: 8px"><label for="{{ t.id }}" style="font-size: 14px">{{ t.k }}</label><input id="{{ t.id }}" value="{{ t.v }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"></div></sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><h3 style="margin: 0; font-size: 15px; font-weight: 600">Categorías y deudas sugeridas</h3>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px"><span style="font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; background: #F6F5F0">Hogar y básicos</span><span style="font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; background: #F6F5F0">Familia y remesas</span><span style="font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; background: #F6F5F0">Afterpay / Zip</span><span style="font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; background: #F6F5F0">HECS-HELP</span><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612">+ Agregar</button></div></div>
+        <div style="display: flex; flex-direction: column; gap: 10px; background: #F8F7F2; border-radius: 14px; padding: 16px">
+          <div style="display: flex; align-items: center; gap: 12px"><button type="button" role="switch" aria-checked="{{ tax }}" aria-label="Apartado para impuestos" onClick="{{ toggleTax }}" style="font: inherit; flex: none; width: 46px; height: 28px; border: 0; border-radius: 999px; background: {{ taxTrack }}; position: relative; padding: 0; cursor: pointer"><span aria-hidden="true" style="position: absolute; top: 3px; left: {{ taxKnob }}; width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,.2)"></span></button><strong style="font-size: 14px">Apartado para impuestos de trabajadores independientes</strong></div>
+          <label for="c-taxtxt" style="font-size: 12px; font-weight: 500; color: #5F6359">Aviso que ven los usuarios</label><textarea id="c-taxtxt" rows="2" style="font: inherit; font-size: 14px; padding: 12px; border: 1.5px solid #D9D6CC; border-radius: 12px">El % correcto depende de tus ingresos totales, el GST y el super. Pregúntale a tu contador qué % usar.</textarea>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><label for="c-ref" style="font-size: 12px; font-weight: 500; color: #5F6359">Referencias del diagnóstico (ahorro, deudas, fondo de emergencia)</label><textarea id="c-ref" rows="2" style="font: inherit; font-size: 14px; padding: 12px; border: 1.5px solid #D9D6CC; border-radius: 12px">Ahorro: 10% a 20% · Cuotas de deudas: menos de 15–20% · Fondo de emergencia: 3 a 6 meses</textarea></div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1350}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sel: 0, tax: true, add: false, extra: [], np: 'Chile', nb: 'Otro país' }; }
+  renderVals() {
+    const CUR = { 'Chile': 'CLP', 'Perú': 'PEN', 'Argentina': 'ARS', 'Nueva Zelanda': 'NZD', 'Canadá': 'CAD', 'Reino Unido': 'GBP' };
+    const C = [['Australia', 'Completo', 'AUD'], ['Otro país', 'Genérico', 'Elige el usuario'], ['Colombia', 'Borrador', 'COP'], ['México', 'Sin crear', 'MXN'], ['España', 'Sin crear', 'EUR'], ['Estados Unidos', 'Sin crear', 'USD']].concat(this.state.extra);
+    const countries = C.map(([n, st, c], i) => { const on = this.state.sel === i; return { n, st, c, bg: on ? '#FFF8D6' : '#FFFFFF', b: on ? '#141612' : '#E6E4DC', stBg: st === 'Completo' ? '#E3F1E8' : (st === 'Sin crear' ? '#EFEDE6' : '#FDF1DE'), stFg: st === 'Completo' ? '#1E5A3F' : (st === 'Sin crear' ? '#5F6359' : '#8A4B12'), pick: () => this.setState({ sel: i }) }; });
+    const cur = C[this.state.sel];
+    const terms = [['Jubilación', 'Super'], ['Trabajo independiente', 'ABN'], ['Compra ahora, paga después', 'Afterpay / Zip'], ['Oficina de impuestos', 'ATO']].map(([k, v], i) => ({ k, v, id: 'ct' + i }));
+    const s = this.state;
+    return { add: s.add, addOpen: String(s.add), togAdd: () => this.setState({ add: !s.add }), np: s.np, nb: s.nb, npCur: CUR[s.np] || '', setNp: (e) => this.setState({ np: e.target.value }), setNb: (e) => this.setState({ nb: e.target.value }),
+      addC: () => this.setState({ extra: s.extra.concat([[s.np, 'Borrador', CUR[s.np] || '']]), add: false, sel: C.length }),
+      countries, curName: cur[0], curCur: cur[2], terms, tax: String(this.state.tax), taxTrack: this.state.tax ? '#141612' : '#CFCCC2', taxKnob: this.state.tax ? '20px' : '2px', toggleTax: () => this.setState({ tax: !this.state.tax }) };
+  }
+}
+</script>
+</body>
+</html>

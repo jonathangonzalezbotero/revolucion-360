@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración · Soporte</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Administración" style="flex: 1 1 220px; max-width: 256px; background: #141612; color: #FFFFFF; padding: 28px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 8px"><img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 38px; height: 38px"><span style="display: flex; flex-direction: column"><strong style="font-size: 15px">Revolución 360</strong><span style="font-size: 12px; color: #8FD3B9; font-weight: 600">Administración</span></span></div>
+    <a href="Main.dc.html" style="text-decoration: none; font-size: 13px; color: #9FC8B9; padding: 6px 10px 22px">‹ Volver a la app</a>
+    <a href="Admin.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Resumen</a><a href="AdminUsuarios.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Usuarios y accesos</a><a href="AdminMenu.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Menú y funciones</a><a href="AdminAcademia.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Academia</a><a href="AdminPlanes.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Planes y precios</a><a href="AdminPaises.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contenido por país</a><a href="AdminSoporte.dc.html" aria-current="page" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: #2A2D27; color: #FFFFFF">Soporte y privacidad</a><a href="AdminActividad.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Registro de actividad</a>
+    <p style="margin-top: auto; font-size: 12px; color: #7FA9A0; line-height: 1.5; padding: 0 10px">Este panel no muestra los datos financieros de los usuarios.</p>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 44px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; max-width: 1280px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Ayuda a tus usuarios y atiende sus pedidos de datos</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Soporte y privacidad</h1></div>
+      
+    </header>
+    <div role="tablist" style="display: flex; gap: 8px"><button type="button" role="tab" aria-selected="{{ ts.sel }}" onClick="{{ ts.pick }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 42px; padding: 0 18px; border-radius: 999px; border: 1px solid #E6E4DC; background: {{ ts.bg }}; color: {{ ts.fg }}; cursor: pointer">Soporte · [N] abiertos</button><button type="button" role="tab" aria-selected="{{ tp.sel }}" onClick="{{ tp.pick }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 42px; padding: 0 18px; border-radius: 999px; border: 1px solid #E6E4DC; background: {{ tp.bg }}; color: {{ tp.fg }}; cursor: pointer">Privacidad · [N] pendientes</button></div>
+    <sc-if value="{{ sop }}" hint-placeholder-val="{{ true }}">
+      <section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px">
+        <div style="overflow-x: auto"><table style="width: 100%; min-width: 720px; border-collapse: collapse; font-size: 14px"><thead><tr style="text-align: left; font-size: 12px; color: #5F6359"><th scope="col" style="padding: 8px 0; font-weight: 600">Usuario</th><th scope="col" style="padding: 8px 8px; font-weight: 600">Asunto</th><th scope="col" style="padding: 8px 8px; font-weight: 600">Estado</th><th scope="col" style="padding: 8px 8px; font-weight: 600">Recibido</th><th scope="col" style="padding: 8px 8px; font-weight: 600"></th></tr></thead>
+          <tbody><tr style="border-top: 1px solid #EFEDE6"><td style="padding: 13px 0"><span style="display: flex; flex-direction: column; gap: 2px"><strong>[USUARIO]</strong><span style="font-size: 12px; color: #5F6359">[CORREO]</span></span></td><td style="padding: 13px 8px">No me deja importar mi CSV de [BANCO]</td><td style="padding: 13px 8px"><span style="font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #FBEBD8; color: #8A4B12">Nuevo</span></td><td style="padding: 13px 8px; color: #5F6359">[FECHA]</td><td style="padding: 13px 0; text-align: right"><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 34px; padding: 0 12px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 8px">Abrir</button></td></tr><tr style="border-top: 1px solid #EFEDE6"><td style="padding: 13px 0"><span style="display: flex; flex-direction: column; gap: 2px"><strong>[USUARIO]</strong><span style="font-size: 12px; color: #5F6359">[CORREO]</span></span></td><td style="padding: 13px 8px">Quiero cambiar mi método de pago</td><td style="padding: 13px 8px"><span style="font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #E3F1E8; color: #1E5A3F">Respondido</span></td><td style="padding: 13px 8px; color: #5F6359">[FECHA]</td><td style="padding: 13px 0; text-align: right"><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 34px; padding: 0 12px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 8px">Abrir</button></td></tr><tr style="border-top: 1px solid #EFEDE6"><td style="padding: 13px 0"><span style="display: flex; flex-direction: column; gap: 2px"><strong>[USUARIO]</strong><span style="font-size: 12px; color: #5F6359">[CORREO]</span></span></td><td style="padding: 13px 8px">¿Cómo agrego una deuda en otra moneda?</td><td style="padding: 13px 8px"><span style="font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #EFEDE6; color: #3A3D36">En espera del usuario</span></td><td style="padding: 13px 8px; color: #5F6359">[FECHA]</td><td style="padding: 13px 0; text-align: right"><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 34px; padding: 0 12px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 8px">Abrir</button></td></tr></tbody></table></div>
+        <p style="margin: 0; font-size: 13px; color: #1E5A3F; background: #FFF8D6; border-radius: 12px; padding: 12px 14px; line-height: 1.5">Si para resolver un caso necesitas ver la cuenta del usuario, pídele permiso desde aquí. El acceso dura 24 horas, solo lectura, y queda en el Registro de actividad.</p>
+      </section>
+    </sc-if>
+    <sc-if value="{{ priv }}" hint-placeholder-val="{{ false }}">
+      <section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px">
+        <div style="overflow-x: auto"><table style="width: 100%; min-width: 720px; border-collapse: collapse; font-size: 14px"><thead><tr style="text-align: left; font-size: 12px; color: #5F6359"><th scope="col" style="padding: 8px 0; font-weight: 600">Usuario</th><th scope="col" style="padding: 8px 8px; font-weight: 600">Pedido</th><th scope="col" style="padding: 8px 8px; font-weight: 600">Estado</th><th scope="col" style="padding: 8px 8px; font-weight: 600">Responder antes de</th><th scope="col" style="padding: 8px 8px; font-weight: 600"></th></tr></thead>
+          <tbody><tr style="border-top: 1px solid #EFEDE6"><td style="padding: 13px 0"><span style="display: flex; flex-direction: column; gap: 2px"><strong>[USUARIO]</strong><span style="font-size: 12px; color: #5F6359">[CORREO]</span></span></td><td style="padding: 13px 8px">Exportar todos mis datos</td><td style="padding: 13px 8px"><span style="font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #E3F1E8; color: #1E5A3F">Automático · listo</span></td><td style="padding: 13px 8px; color: #5F6359">—</td><td style="padding: 13px 0; text-align: right"><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 34px; padding: 0 12px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 8px">Abrir</button></td></tr><tr style="border-top: 1px solid #EFEDE6"><td style="padding: 13px 0"><span style="display: flex; flex-direction: column; gap: 2px"><strong>[USUARIO]</strong><span style="font-size: 12px; color: #5F6359">[CORREO]</span></span></td><td style="padding: 13px 8px">Borrar mi cuenta</td><td style="padding: 13px 8px"><span style="font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #FBEBD8; color: #8A4B12">Por confirmar</span></td><td style="padding: 13px 8px; color: #5F6359">[FECHA]</td><td style="padding: 13px 0; text-align: right"><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 34px; padding: 0 12px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 8px">Abrir</button></td></tr><tr style="border-top: 1px solid #EFEDE6"><td style="padding: 13px 0"><span style="display: flex; flex-direction: column; gap: 2px"><strong>[USUARIO]</strong><span style="font-size: 12px; color: #5F6359">[CORREO]</span></span></td><td style="padding: 13px 8px">Corregir mi correo</td><td style="padding: 13px 8px"><span style="font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #EFEDE6; color: #3A3D36">Nuevo</span></td><td style="padding: 13px 8px; color: #5F6359">[FECHA]</td><td style="padding: 13px 0; text-align: right"><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 34px; padding: 0 12px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 8px">Abrir</button></td></tr></tbody></table></div>
+        <p style="margin: 0; font-size: 12px; color: #5F6359; line-height: 1.5">Los plazos dependen de la ley de cada país (Privacy Act en Australia, GDPR en Europa). Confírmalos con un abogado antes de lanzar.</p>
+      </section>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'soporte' }; }
+  renderVals() {
+    const t = this.state.tab;
+    const tab = (id) => ({ bg: t === id ? '#141612' : '#FFFFFF', fg: t === id ? '#FFFFFF' : '#3A3D36', sel: String(t === id), pick: () => this.setState({ tab: id }) });
+    return { sop: t === 'soporte', priv: t === 'privacidad', ts: tab('soporte'), tp: tab('privacidad') };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,797 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-24T10:00:00Z"
+ },
+ "title": "App de finanzas personales — mockup",
+ "launch": {
+  "view": "canvas"
+ },
+ "pages": [],
+ "boards": {
+  "SistemaDiseno.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 3300,
+   "title": "Sistema de diseño v2",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Acceso.dc.html": {
+   "x": 0,
+   "y": 3720,
+   "w": 1440,
+   "h": 1000,
+   "title": "Acceso · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Acceso-movil.dc.html": {
+   "x": 1520,
+   "y": 3720,
+   "w": 390,
+   "h": 900,
+   "title": "Acceso · Móvil",
+   "is_interactive": true
+  },
+  "Onboarding.dc.html": {
+   "x": 0,
+   "y": 5140,
+   "w": 1440,
+   "h": 1000,
+   "title": "Onboarding · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Onboarding-movil.dc.html": {
+   "x": 1520,
+   "y": 5140,
+   "w": 390,
+   "h": 900,
+   "title": "Onboarding · Móvil",
+   "is_interactive": true
+  },
+  "PlanGuiado.dc.html": {
+   "x": 0,
+   "y": 6560,
+   "w": 1440,
+   "h": 1000,
+   "title": "Arma tu plan · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "PlanGuiado-movil.dc.html": {
+   "x": 1520,
+   "y": 6560,
+   "w": 390,
+   "h": 1100,
+   "title": "Arma tu plan · Móvil",
+   "is_interactive": true
+  },
+  "Diagnostico.dc.html": {
+   "x": 0,
+   "y": 8080,
+   "w": 1440,
+   "h": 1600,
+   "title": "Diagnóstico · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Diagnostico-movil.dc.html": {
+   "x": 1520,
+   "y": 8080,
+   "w": 390,
+   "h": 2010,
+   "title": "Diagnóstico · Móvil",
+   "is_interactive": true
+  },
+  "Vacio.dc.html": {
+   "x": 0,
+   "y": 10500,
+   "w": 1440,
+   "h": 1500,
+   "title": "Inicio sin datos · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Vacio-movil.dc.html": {
+   "x": 1520,
+   "y": 10500,
+   "w": 390,
+   "h": 2632,
+   "title": "Inicio sin datos · Móvil",
+   "is_interactive": true
+  },
+  "Main.dc.html": {
+   "x": 0,
+   "y": 13552,
+   "w": 1440,
+   "h": 1450,
+   "title": "Inicio · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Inicio-movil.dc.html": {
+   "x": 1520,
+   "y": 13552,
+   "w": 390,
+   "h": 1650,
+   "title": "Inicio · Móvil",
+   "is_interactive": true
+  },
+  "Mas-movil.dc.html": {
+   "x": 1990,
+   "y": 13552,
+   "w": 390,
+   "h": 1400,
+   "title": "Menú Más · Móvil",
+   "is_interactive": true
+  },
+  "Plan.dc.html": {
+   "x": 0,
+   "y": 15622,
+   "w": 1440,
+   "h": 2508,
+   "title": "Plan anual · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Plan-movil.dc.html": {
+   "x": 1520,
+   "y": 15622,
+   "w": 390,
+   "h": 2300,
+   "title": "Plan anual · Móvil",
+   "is_interactive": true
+  },
+  "Presupuesto.dc.html": {
+   "x": 0,
+   "y": 18550,
+   "w": 1440,
+   "h": 2337,
+   "title": "Detalle del mes · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Presupuesto-movil.dc.html": {
+   "x": 1520,
+   "y": 18550,
+   "w": 390,
+   "h": 1850,
+   "title": "Detalle del mes · Móvil",
+   "is_interactive": true
+  },
+  "Movimientos.dc.html": {
+   "x": 0,
+   "y": 21307,
+   "w": 1440,
+   "h": 2000,
+   "title": "Movimientos · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Movimientos-movil.dc.html": {
+   "x": 1520,
+   "y": 21307,
+   "w": 390,
+   "h": 1676,
+   "title": "Movimientos · Móvil",
+   "is_interactive": true
+  },
+  "Importar.dc.html": {
+   "x": 0,
+   "y": 23727,
+   "w": 1440,
+   "h": 1250,
+   "title": "Importar CSV · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Cuentas.dc.html": {
+   "x": 0,
+   "y": 25397,
+   "w": 1440,
+   "h": 1300,
+   "title": "Cuentas · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Cuentas-movil.dc.html": {
+   "x": 1520,
+   "y": 25397,
+   "w": 390,
+   "h": 1420,
+   "title": "Cuentas · Móvil",
+   "is_interactive": true
+  },
+  "Metas.dc.html": {
+   "x": 0,
+   "y": 27237,
+   "w": 1440,
+   "h": 1300,
+   "title": "Metas · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Metas-movil.dc.html": {
+   "x": 1520,
+   "y": 27237,
+   "w": 390,
+   "h": 1400,
+   "title": "Metas · Móvil",
+   "is_interactive": true
+  },
+  "Forecast.dc.html": {
+   "x": 0,
+   "y": 29057,
+   "w": 1440,
+   "h": 1350,
+   "title": "Proyección · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Forecast-movil.dc.html": {
+   "x": 1520,
+   "y": 29057,
+   "w": 390,
+   "h": 1700,
+   "title": "Proyección · Móvil",
+   "is_interactive": true
+  },
+  "Analisis.dc.html": {
+   "x": 0,
+   "y": 31177,
+   "w": 1440,
+   "h": 2300,
+   "title": "Análisis · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Analisis-movil.dc.html": {
+   "x": 1520,
+   "y": 31177,
+   "w": 390,
+   "h": 2300,
+   "title": "Análisis · Móvil",
+   "is_interactive": true
+  },
+  "Bloqueo-movil.dc.html": {
+   "x": 1990,
+   "y": 31177,
+   "w": 390,
+   "h": 1150,
+   "title": "Bloqueo suave (plan Gratis) · Móvil",
+   "is_interactive": true
+  },
+  "Deudas.dc.html": {
+   "x": 0,
+   "y": 33897,
+   "w": 1440,
+   "h": 1900,
+   "title": "Deudas e impuestos · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Deudas-movil.dc.html": {
+   "x": 1520,
+   "y": 33897,
+   "w": 390,
+   "h": 1900,
+   "title": "Deudas e impuestos · Móvil",
+   "is_interactive": true
+  },
+  "Inversiones.dc.html": {
+   "x": 0,
+   "y": 36217,
+   "w": 1440,
+   "h": 1500,
+   "title": "Inversiones · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Inversiones-movil.dc.html": {
+   "x": 1520,
+   "y": 36217,
+   "w": 390,
+   "h": 1700,
+   "title": "Inversiones · Móvil",
+   "is_interactive": true
+  },
+  "Cierre.dc.html": {
+   "x": 0,
+   "y": 38337,
+   "w": 1440,
+   "h": 1100,
+   "title": "Cierre de mes · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Cierre-movil.dc.html": {
+   "x": 1520,
+   "y": 38337,
+   "w": 390,
+   "h": 960,
+   "title": "Cierre de mes · Móvil",
+   "is_interactive": true
+  },
+  "Academia.dc.html": {
+   "x": 0,
+   "y": 39857,
+   "w": 1440,
+   "h": 2161,
+   "title": "Academia · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Academia-movil.dc.html": {
+   "x": 1520,
+   "y": 39857,
+   "w": 390,
+   "h": 2376,
+   "title": "Academia · Móvil",
+   "is_interactive": true
+  },
+  "Leccion.dc.html": {
+   "x": 0,
+   "y": 42653,
+   "w": 1440,
+   "h": 1500,
+   "title": "Clase · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Leccion-movil.dc.html": {
+   "x": 1520,
+   "y": 42653,
+   "w": 390,
+   "h": 2100,
+   "title": "Clase · Móvil",
+   "is_interactive": true
+  },
+  "Suscripcion.dc.html": {
+   "x": 0,
+   "y": 45173,
+   "w": 1440,
+   "h": 1900,
+   "title": "Suscripción · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Suscripcion-movil.dc.html": {
+   "x": 1520,
+   "y": 45173,
+   "w": 390,
+   "h": 2400,
+   "title": "Suscripción · Móvil",
+   "is_interactive": true
+  },
+  "Perfil.dc.html": {
+   "x": 0,
+   "y": 47993,
+   "w": 1440,
+   "h": 1300,
+   "title": "Mi perfil · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Perfil-movil.dc.html": {
+   "x": 1520,
+   "y": 47993,
+   "w": 390,
+   "h": 2100,
+   "title": "Mi perfil · Móvil",
+   "is_interactive": true
+  },
+  "Notificaciones.dc.html": {
+   "x": 0,
+   "y": 50513,
+   "w": 1440,
+   "h": 1250,
+   "title": "Notificaciones · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Notificaciones-movil.dc.html": {
+   "x": 1520,
+   "y": 50513,
+   "w": 390,
+   "h": 1500,
+   "title": "Notificaciones · Móvil",
+   "is_interactive": true
+  },
+  "Correos.dc.html": {
+   "x": 1990,
+   "y": 50513,
+   "w": 1440,
+   "h": 1700,
+   "title": "Correos automáticos",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Ayuda.dc.html": {
+   "x": 0,
+   "y": 52633,
+   "w": 1440,
+   "h": 1300,
+   "title": "Ayuda · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Ayuda-movil.dc.html": {
+   "x": 1520,
+   "y": 52633,
+   "w": 390,
+   "h": 1700,
+   "title": "Ayuda · Móvil",
+   "is_interactive": true
+  },
+  "Legal.dc.html": {
+   "x": 0,
+   "y": 54753,
+   "w": 1440,
+   "h": 1500,
+   "title": "Términos y privacidad · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Legal-movil.dc.html": {
+   "x": 1520,
+   "y": 54753,
+   "w": 390,
+   "h": 1900,
+   "title": "Términos y privacidad · Móvil",
+   "is_interactive": true
+  },
+  "Admin.dc.html": {
+   "x": 0,
+   "y": 57073,
+   "w": 1440,
+   "h": 1150,
+   "title": "Admin · Resumen",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "AdminUsuarios.dc.html": {
+   "x": 1520,
+   "y": 57073,
+   "w": 1440,
+   "h": 1400,
+   "title": "Admin · Usuarios y accesos",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "AdminUsuario.dc.html": {
+   "x": 0,
+   "y": 58893,
+   "w": 1440,
+   "h": 1350,
+   "title": "Admin · Gestionar usuario",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "AdminMenu.dc.html": {
+   "x": 1520,
+   "y": 58893,
+   "w": 1440,
+   "h": 1684,
+   "title": "Admin · Menú y funciones",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "AdminAcademia.dc.html": {
+   "x": 0,
+   "y": 61003,
+   "w": 1440,
+   "h": 2830,
+   "title": "Admin · Academia",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "AdminPlanes.dc.html": {
+   "x": 1520,
+   "y": 61003,
+   "w": 1440,
+   "h": 1300,
+   "title": "Admin · Planes y precios",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "AdminPaises.dc.html": {
+   "x": 0,
+   "y": 64253,
+   "w": 1440,
+   "h": 1350,
+   "title": "Admin · Contenido por país",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "AdminSoporte.dc.html": {
+   "x": 1520,
+   "y": 64253,
+   "w": 1440,
+   "h": 1000,
+   "title": "Admin · Soporte y privacidad",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "AdminActividad.dc.html": {
+   "x": 3040,
+   "y": 64253,
+   "w": 1440,
+   "h": 1150,
+   "title": "Admin · Registro de actividad",
+   "is_interactive": true,
+   "expand": "fill"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "SistemaDiseno.dc.html",
+  "Acceso.dc.html",
+  "Acceso-movil.dc.html",
+  "Onboarding.dc.html",
+  "Onboarding-movil.dc.html",
+  "PlanGuiado.dc.html",
+  "PlanGuiado-movil.dc.html",
+  "Diagnostico.dc.html",
+  "Diagnostico-movil.dc.html",
+  "Vacio.dc.html",
+  "Vacio-movil.dc.html",
+  "Inicio-movil.dc.html",
+  "Mas-movil.dc.html",
+  "Plan.dc.html",
+  "Plan-movil.dc.html",
+  "Presupuesto.dc.html",
+  "Presupuesto-movil.dc.html",
+  "Movimientos.dc.html",
+  "Movimientos-movil.dc.html",
+  "Importar.dc.html",
+  "Cuentas.dc.html",
+  "Cuentas-movil.dc.html",
+  "Metas.dc.html",
+  "Metas-movil.dc.html",
+  "Forecast.dc.html",
+  "Forecast-movil.dc.html",
+  "Analisis.dc.html",
+  "Analisis-movil.dc.html",
+  "Bloqueo-movil.dc.html",
+  "Deudas.dc.html",
+  "Deudas-movil.dc.html",
+  "Inversiones.dc.html",
+  "Inversiones-movil.dc.html",
+  "Cierre.dc.html",
+  "Cierre-movil.dc.html",
+  "Academia.dc.html",
+  "Academia-movil.dc.html",
+  "Leccion.dc.html",
+  "Leccion-movil.dc.html",
+  "Suscripcion.dc.html",
+  "Suscripcion-movil.dc.html",
+  "Perfil.dc.html",
+  "Perfil-movil.dc.html",
+  "Notificaciones.dc.html",
+  "Notificaciones-movil.dc.html",
+  "Correos.dc.html",
+  "Ayuda.dc.html",
+  "Ayuda-movil.dc.html",
+  "Legal.dc.html",
+  "Legal-movil.dc.html",
+  "Admin.dc.html",
+  "AdminUsuarios.dc.html",
+  "AdminUsuario.dc.html",
+  "AdminMenu.dc.html",
+  "AdminAcademia.dc.html",
+  "AdminPlanes.dc.html",
+  "AdminPaises.dc.html",
+  "AdminSoporte.dc.html",
+  "AdminActividad.dc.html"
+ ],
+ "notes": {
+  "t0": {
+   "x": 0,
+   "y": -260,
+   "text": "0 · Sistema de diseño v2",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t1": {
+   "x": 0,
+   "y": 3460,
+   "text": "A0 · Entrar a la app: registro, entrar, recuperar, 2 pasos",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t2": {
+   "x": 0,
+   "y": 4880,
+   "text": "A · Empezar: onboarding",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t3": {
+   "x": 0,
+   "y": 6300,
+   "text": "B · Arma tu plan (asistente)",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t4": {
+   "x": 0,
+   "y": 7820,
+   "text": "C · Tu diagnóstico",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t5": {
+   "x": 0,
+   "y": 10240,
+   "text": "D · Usuario nuevo: primeros pasos y estados vacíos",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t6": {
+   "x": 0,
+   "y": 13292,
+   "text": "1 · Inicio  (+ menú Más en móvil)",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t7": {
+   "x": 0,
+   "y": 15362,
+   "text": "2 · Plan anual  (móvil: toca + para agregar una línea)",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t8": {
+   "x": 0,
+   "y": 18290,
+   "text": "2b · Detalle del mes (desde el Plan anual)",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t9": {
+   "x": 0,
+   "y": 21047,
+   "text": "3 · Movimientos",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t10": {
+   "x": 0,
+   "y": 23467,
+   "text": "3b · Importar CSV: columnas, duplicados y reglas",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t11": {
+   "x": 0,
+   "y": 25137,
+   "text": "3c · Cuentas",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t12": {
+   "x": 0,
+   "y": 26977,
+   "text": "3d · Metas",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t13": {
+   "x": 0,
+   "y": 28797,
+   "text": "4 · Proyección",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t14": {
+   "x": 0,
+   "y": 30917,
+   "text": "5 · Análisis  (+ bloqueo suave del plan Gratis)",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t15": {
+   "x": 0,
+   "y": 33637,
+   "text": "6 · Deudas e impuestos",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t16": {
+   "x": 0,
+   "y": 35957,
+   "text": "7 · Inversiones",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t17": {
+   "x": 0,
+   "y": 38077,
+   "text": "8 · Cierre de mes",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t18": {
+   "x": 0,
+   "y": 39597,
+   "text": "9 · Academia",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t19": {
+   "x": 0,
+   "y": 42393,
+   "text": "9b · Clase",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t20": {
+   "x": 0,
+   "y": 44913,
+   "text": "10 · Suscripción",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t21": {
+   "x": 0,
+   "y": 47733,
+   "text": "11 · Mi perfil",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t22": {
+   "x": 0,
+   "y": 50253,
+   "text": "12 · Notificaciones  (+ correos automáticos)",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t23": {
+   "x": 0,
+   "y": 52373,
+   "text": "13 · Ayuda y soporte",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t24": {
+   "x": 0,
+   "y": 54493,
+   "text": "14 · Términos y privacidad (borrador)",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t25": {
+   "x": 0,
+   "y": 56813,
+   "text": "Admin · Resumen y usuarios",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t26": {
+   "x": 0,
+   "y": 58633,
+   "text": "Admin · Gestionar un usuario y menú",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t27": {
+   "x": 0,
+   "y": 60743,
+   "text": "Admin · Academia y planes (+ cupones)",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t28": {
+   "x": 0,
+   "y": 63993,
+   "text": "Admin · Países, soporte y actividad",
+   "kind": "title1",
+   "maxW": 2380
+  }
+ },
+ "designSystems": []
+}

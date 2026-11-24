@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Onboarding</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0}
+a{color:#141612}a:hover{color:#1E5A3F}
+.num{font-variant-numeric:tabular-nums}
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; padding: 20px; box-sizing: border-box; gap: 20px">
+  <aside style="flex: 1 1 420px; background: radial-gradient(120% 150% at 100% 100%, rgba(242,205,0,.20) 0%, rgba(242,205,0,0) 55%), linear-gradient(135deg, #0B0C0A 0%, #1C1E19 100%); color: #FFFFFF; border-radius: 28px; padding: 44px; box-sizing: border-box; display: flex; flex-direction: column; gap: 32px; position: relative; overflow: hidden; min-height: 920px">
+    <div aria-hidden="true" style="position: absolute; right: -120px; top: -120px; width: 360px; height: 360px; border-radius: 50%; border: 56px solid #23251F"></div>
+    <div aria-hidden="true" style="position: absolute; left: -80px; bottom: -100px; width: 260px; height: 260px; border-radius: 50%; background: #23251F"></div>
+    <div style="display: flex; align-items: center; gap: 10px; position: relative">
+      <div aria-hidden="true" style="width: 34px; height: 34px; border-radius: 11px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><div style="width: 12px; height: 12px; border-radius: 50%; border: 3px solid #141612"></div></div>
+      <span style="font-weight: 600; font-size: 19px">Revolución 360</span>
+      <img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 40px; height: 40px; margin-left: auto">
+    </div>
+
+    <div style="position: relative; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 28px">
+      <sc-if value="{{ v.welcome }}" hint-placeholder-val="{{ true }}">
+        <div style="position: relative; height: 340px; max-width: 440px">
+          <div style="position: absolute; left: 0; top: 0; width: 270px; background: #FFFFFF; color: #141612; border-radius: 16px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,.25); display: flex; flex-direction: column; gap: 14px; transform: rotate(-3deg)">
+            <span style="font-size: 12px; font-weight: 500; color: #5F6359">Tu plan anual</span>
+            <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 4px; align-items: end; height: 90px">
+              <sc-for list="{{ deco }}" as="d" hint-placeholder-count="12"><div style="border-radius: 4px 4px 1px 1px; background: {{ d.c }}; height: {{ d.h }}"></div></sc-for>
+            </div>
+            <div aria-hidden="true" style="display: flex; gap: 6px"><span style="height: 8px; flex: 3; border-radius: 4px; background: #141612"></span><span style="height: 8px; flex: 2; border-radius: 4px; background: #E3B800"></span><span style="height: 8px; flex: 1; border-radius: 4px; background: #4C7FB5"></span></div>
+          </div>
+          <div style="position: absolute; right: 0; top: 120px; width: 210px; background: #FFFFFF; color: #141612; border-radius: 16px; padding: 18px; box-shadow: 0 20px 40px rgba(0,0,0,.25); display: flex; gap: 14px; align-items: center; transform: rotate(4deg)">
+            <div aria-hidden="true" style="width: 56px; height: 56px; border-radius: 50%; background: conic-gradient(#141612 0 68%, #E3F1E8 68% 100%); display: flex; align-items: center; justify-content: center; flex: none"><div style="width: 40px; height: 40px; border-radius: 50%; background: #FFFFFF"></div></div>
+            <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; font-weight: 500; color: #5F6359">Meta</span><span style="font-size: 15px; font-weight: 600">Viaje soñado</span></div>
+          </div>
+          <div style="position: absolute; left: 40px; bottom: 0; background: #E3B800; color: #141612; border-radius: 999px; padding: 12px 18px; font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(0,0,0,.25)">Todo tu año en una vista</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ v.goals }}" hint-placeholder-val="{{ false }}">
+        <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(3, 96px); gap: 14px">
+          <sc-for list="{{ goalDeco }}" as="g" hint-placeholder-count="6"><div style="width: 96px; height: 96px; border-radius: 26px; background: {{ g.bg }}; display: flex; align-items: center; justify-content: center; transform: rotate({{ g.rot }})"><div style="width: 30px; height: 30px; border-radius: {{ g.r }}; background: {{ g.fg }}"></div></div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ v.secure }}" hint-placeholder-val="{{ false }}">
+        <div aria-hidden="true" style="width: 180px; height: 210px; border-radius: 90px 90px 100px 100px / 60px 60px 140px 140px; background: #23251F; border: 3px solid #F2CD00; display: flex; align-items: center; justify-content: center">
+          <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#F2CD00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+        </div>
+      </sc-if>
+      <sc-if value="{{ v.cats }}" hint-placeholder-val="{{ false }}">
+        <div aria-hidden="true" style="display: flex; flex-wrap: wrap; gap: 10px; max-width: 380px">
+          <sc-for list="{{ catDeco }}" as="c" hint-placeholder-count="9"><span style="height: 40px; width: {{ c.w }}; border-radius: 999px; background: {{ c.c }}"></span></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ v.done }}" hint-placeholder-val="{{ false }}">
+        <div aria-hidden="true" style="width: 150px; height: 150px; border-radius: 50%; background: #F2CD00; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 18px #23251F, 0 0 0 36px #23251F">
+          <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#1C1E19" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 460px">
+        <h1 style="margin: 0; font-size: 40px; line-height: 1.12; font-weight: 600; letter-spacing: -0.03em">{{ side.title }}</h1>
+        <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #D9D6CC">{{ side.text }}</p>
+      </div>
+    </div>
+
+    <div style="position: relative; display: flex; flex-wrap: wrap; gap: 8px">
+      <span style="font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 999px; background: #23251F; color: #D9D6CC">Sin claves del banco</span>
+      <span style="font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 999px; background: #23251F; color: #D9D6CC">Verificación en 2 pasos</span>
+      <span style="font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 999px; background: #23251F; color: #D9D6CC">Tus datos, siempre tuyos</span>
+    </div>
+  </aside>
+
+  <main style="flex: 999 1 520px; min-width: 0; display: flex; justify-content: center; align-items: center; padding: 32px 24px">
+    <div style="width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 30px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px">
+        <ol aria-label="Pasos" style="list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex: 1">
+          <sc-for list="{{ dots }}" as="d" hint-placeholder-count="6"><li style="flex: {{ d.flex }}; height: 6px; border-radius: 3px; background: {{ d.c }}"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden">{{ d.label }}</span></li></sc-for>
+        </ol>
+        <span style="font-size: 13px; font-weight: 600; color: #5F6359; white-space: nowrap">{{ stepText }}</span>
+      </div>
+
+      <sc-if value="{{ s0 }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 22px">
+          <span style="align-self: flex-start; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #141612; background: #E3F1E8; padding: 6px 12px; border-radius: 999px">Menos de 3 minutos</span>
+          <h2 style="margin: 0; font-size: 44px; line-height: 1.08; font-weight: 600; letter-spacing: -0.035em">Deja de adivinar a dónde se va tu dinero.</h2>
+          <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #3A3D36">Planea tu año completo, registra tus movimientos y toma decisiones viendo los 12 meses juntos.</p>
+          <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px">
+            <sc-for list="{{ perks }}" as="p" hint-placeholder-count="3">
+              <li style="display: flex; gap: 14px; align-items: center; background: #FFFFFF; border-radius: 16px; padding: 14px 16px; border: 1px solid #E6E4DC">
+                <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 12px; background: {{ p.bg }}; display: flex; align-items: center; justify-content: center; flex: none"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ p.fg }}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span>
+                <span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px; font-weight: 600">{{ p.t }}</strong><span style="font-size: 13px; color: #5F6359">{{ p.d }}</span></span>
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s1 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <h2 style="margin: 0; font-size: 34px; line-height: 1.12; font-weight: 600; letter-spacing: -0.03em">¿Qué quieres lograr este año?</h2>
+          <p style="margin: 0; font-size: 15px; color: #5F6359">Elige todas las que quieras. Así armamos tus primeras metas.</p>
+          <div role="group" aria-label="Metas" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+            <sc-for list="{{ goals }}" as="g" hint-placeholder-count="6">
+              <button type="button" role="checkbox" aria-checked="{{ g.checked }}" onClick="{{ g.toggle }}" style="font: inherit; text-align: left; min-height: 96px; padding: 16px; border-radius: 14px; border: 2px solid {{ g.border }}; background: {{ g.bg }}; color: #141612; display: flex; flex-direction: column; gap: 10px; cursor: pointer">
+                <span style="display: flex; justify-content: space-between; width: 100%">
+                  <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 11px; background: {{ g.iconBg }}; display: flex; align-items: center; justify-content: center"><span style="width: 13px; height: 13px; border-radius: {{ g.shape }}; background: {{ g.iconFg }}"></span></span>
+                  <span aria-hidden="true" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid {{ g.tickBorder }}; background: {{ g.tickBg }}; color: #FFFFFF; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center">{{ g.tick }}</span>
+                </span>
+                <span style="font-size: 15px; font-weight: 600">{{ g.name }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s2 }}" hint-placeholder-val="{{ false }}">
+        <form style="display: flex; flex-direction: column; gap: 18px">
+          <h2 style="margin: 0; font-size: 34px; line-height: 1.12; font-weight: 600; letter-spacing: -0.03em">Crea tu cuenta</h2>
+          <div style="display: flex; flex-direction: column; gap: 7px">
+            <label for="o-nombre" style="font-size: 14px; font-weight: 600">¿Cómo te llamas?</label>
+            <input id="o-nombre" type="text" autocomplete="given-name" value="{{ name }}" onChange="{{ setName }}" style="font: inherit; font-size: 16px; height: 52px; padding: 0 16px; border: 1.5px solid #D9D6CC; border-radius: 14px; background: #FFFFFF">
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+            <div style="display: flex; flex-direction: column; gap: 7px"><label for="o-pais" style="font-size: 14px; font-weight: 600">¿Dónde vives?</label><select id="o-pais" style="font: inherit; font-size: 15px; height: 52px; padding: 0 10px; border: 1.5px solid #D9D6CC; border-radius: 14px; background: #FFFFFF"><option>Australia</option><option>Colombia</option><option>México</option><option>España</option><option>Estados Unidos</option><option>Otro país</option></select></div>
+            <div style="display: flex; flex-direction: column; gap: 7px"><label for="o-mon" style="font-size: 14px; font-weight: 600">Moneda</label><select id="o-mon" style="font: inherit; font-size: 15px; height: 52px; padding: 0 10px; border: 1.5px solid #D9D6CC; border-radius: 14px; background: #FFFFFF"><option>AUD · dólar australiano</option><option>COP · peso colombiano</option><option>MXN · peso mexicano</option><option>EUR · euro</option><option>USD · dólar</option></select></div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 7px">
+            <label for="o-email" style="font-size: 14px; font-weight: 600">Correo</label>
+            <input id="o-email" type="email" autocomplete="email" style="font: inherit; font-size: 16px; height: 52px; padding: 0 16px; border: 1.5px solid #D9D6CC; border-radius: 14px; background: #FFFFFF">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 7px">
+            <label for="o-pass" style="font-size: 14px; font-weight: 600">Contraseña</label>
+            <input id="o-pass" type="password" autocomplete="new-password" aria-describedby="o-pass-h" style="font: inherit; font-size: 16px; height: 52px; padding: 0 16px; border: 1.5px solid #D9D6CC; border-radius: 14px; background: #FFFFFF">
+            <div aria-hidden="true" style="display: flex; gap: 4px"><span style="flex: 1; height: 4px; border-radius: 2px; background: #141612"></span><span style="flex: 1; height: 4px; border-radius: 2px; background: #141612"></span><span style="flex: 1; height: 4px; border-radius: 2px; background: #D9D6CC"></span><span style="flex: 1; height: 4px; border-radius: 2px; background: #D9D6CC"></span></div>
+            <span id="o-pass-h" style="font-size: 12px; color: #5F6359">Mínimo 12 caracteres.</span>
+          </div>
+        </form>
+      </sc-if>
+
+      <sc-if value="{{ s3 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <h2 style="margin: 0; font-size: 34px; line-height: 1.12; font-weight: 600; letter-spacing: -0.03em">Protege tu cuenta</h2>
+          <p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.6">Escanea el código con tu app de autenticación y escribe los 6 dígitos que te muestre.</p>
+          <div style="display: flex; gap: 22px; align-items: center; flex-wrap: wrap; background: #FFFFFF; border-radius: 14px; padding: 20px; border: 1px solid #E6E4DC">
+            <div role="img" aria-label="Código QR" style="width: 136px; height: 136px; border-radius: 14px; background: #F6F5F0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #5F6359; font-weight: 600">[CÓDIGO QR]</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 220px">
+              <label for="o-code" style="font-size: 14px; font-weight: 600">Código de verificación</label>
+              <input id="o-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="font: inherit; font-size: 26px; font-weight: 600; letter-spacing: .35em; height: 58px; padding: 0 16px; border: 1.5px solid #D9D6CC; border-radius: 14px; background: #FFFFFF">
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s4 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <h2 style="margin: 0; font-size: 34px; line-height: 1.12; font-weight: 600; letter-spacing: -0.03em">Tus categorías</h2>
+          <p style="margin: 0; font-size: 15px; color: #5F6359">Una base para empezar. Renómbralas o agrega las tuyas cuando quieras.</p>
+          <div role="group" aria-label="Categorías" style="display: flex; flex-wrap: wrap; gap: 10px">
+            <sc-for list="{{ cats }}" as="c" hint-placeholder-count="9">
+              <button type="button" role="checkbox" aria-checked="{{ c.checked }}" onClick="{{ c.toggle }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; padding: 0 16px 0 10px; border-radius: 999px; border: 2px solid {{ c.border }}; background: {{ c.bg }}; color: #141612; display: flex; align-items: center; gap: 10px; cursor: pointer; opacity: {{ c.op }}">
+                <span aria-hidden="true" style="width: 26px; height: 26px; border-radius: 50%; background: {{ c.color }}"></span>{{ c.name }}<sc-if value="{{ c.opt }}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #5F6359; font-weight: 600">opcional</span></sc-if>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s5 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <h2 style="margin: 0; font-size: 38px; line-height: 1.1; font-weight: 600; letter-spacing: -0.03em">{{ doneTitle }}</h2>
+          <p style="margin: 0; font-size: 16px; color: #3A3D36; line-height: 1.6">Creamos estas metas para ti. Ahora armamos tu plan del año con unas preguntas simples.</p>
+          <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+            <sc-for list="{{ chosen }}" as="g" hint-placeholder-count="2">
+              <li style="display: flex; align-items: center; gap: 12px; background: #FFFFFF; border-radius: 16px; padding: 14px 16px; border: 1px solid #E6E4DC">
+                <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 11px; background: {{ g.iconBg }}; display: flex; align-items: center; justify-content: center"><span style="width: 13px; height: 13px; border-radius: {{ g.shape }}; background: {{ g.iconFg }}"></span></span>
+                <span style="flex: 1; font-size: 15px; font-weight: 600">{{ g.name }}</span>
+                <span style="font-size: 12px; font-weight: 500; color: #5F6359">Monto y fecha: [POR DEFINIR]</span>
+              </li>
+            </sc-for>
+          </ul>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+            <a href="PlanGuiado.dc.html" style="text-decoration: none; text-align: center; font-size: 15px; font-weight: 600; padding: 17px; background: #141612; color: #FFFFFF; border-radius: 14px">Armar mi plan · 3 min</a>
+            <a href="Plan.dc.html" style="text-decoration: none; text-align: center; font-size: 15px; font-weight: 600; padding: 17px; background: #FFFFFF; color: #141612; border-radius: 14px; border: 1.5px solid #CFCCC2">Empezar en blanco</a>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; visibility: {{ navVis }}">
+        <button type="button" onClick="{{ back }}" style="font: inherit; font-size: 15px; font-weight: 600; min-height: 52px; padding: 0 20px; border: 0; background: transparent; color: #3A3D36; border-radius: 14px; cursor: pointer; visibility: {{ backVis }}">‹ Atrás</button>
+        <button type="button" onClick="{{ next }}" style="font: inherit; font-size: 16px; font-weight: 600; min-height: 54px; padding: 0 30px; border: 0; background: #141612; color: #FFFFFF; border-radius: 14px; cursor: pointer; box-shadow: 0 8px 20px rgba(14,90,77,.25)">{{ nextLabel }}</button>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 10px"><img src="/_blob/07130166ac57906f8a4d3175882f16f6" alt="Revolución del Dinero" style="width: 36px; height: 36px"><span style="font-size: 12px; color: #5F6359">Una herramienta de Revolución del Dinero · [TÉRMINOS] · [PRIVACIDAD]</span></div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { step: 0, goals: { deudas: true, viaje: true }, off: {}, name: '' };
+  }
+  renderVals() {
+    const s = this.state, st = s.step;
+    const G = [
+      ['deudas', 'Salir de deudas', '#FBEBD8', '#C46A2A', '4px'],
+      ['viaje', 'Ahorrar para un viaje', '#FDF1DE', '#E3B800', '50%'],
+      ['emergencia', 'Fondo de emergencia', '#E3ECF6', '#4C7FB5', '4px 4px 50% 50%'],
+      ['claridad', 'Saber a dónde va mi dinero', '#E3F1E8', '#141612', '50%'],
+      ['invertir', 'Empezar a invertir', '#E5F1ED', '#3E8C7A', '2px'],
+      ['negocio', 'Separar mi dinero del negocio', '#E3ECF6', '#2D5C8A', '50% 4px']
+    ];
+    const goals = G.map(([id, name, iconBg, iconFg, shape]) => {
+      const on = !!s.goals[id];
+      return { name, iconBg, iconFg, shape, checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFF8D6' : '#FFFFFF', tick: on ? '✓' : '', tickBorder: on ? '#141612' : '#CFCCC2', tickBg: on ? '#141612' : '#FFFFFF', toggle: () => this.setState({ goals: Object.assign({}, s.goals, { [id]: !on }) }) };
+    });
+    const chosen = goals.filter((g) => g.checked === 'true');
+    const C = [['Ingresos', '#141612'], ['Hogar y básicos', '#141612'], ['Vehículo', '#6FA898'], ['Comida y ocio', '#A8D3C3'], ['Deudas', '#C46A2A'], ['Ahorro e inversión', '#4C7FB5'], ['Metas', '#E3B800'], ['Estilo de vida', '#3E8C7A'], ['Mi negocio', '#2D5C8A']];
+    const cats = C.map(([name, color]) => {
+      const on = !s.off[name];
+      return { name, color, opt: name === 'Mi negocio', checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFFFFF' : '#F6F5F0', op: on ? '1' : '0.55', toggle: () => this.setState({ off: Object.assign({}, s.off, { [name]: on }) }) };
+    });
+    const labels = ['Bienvenida', 'Metas', 'Cuenta', 'Seguridad', 'Listo'];
+    const di = st === 5 ? 4 : st;
+    const dots = labels.map((label, i) => ({ label, flex: i === di ? '2' : '1', c: i <= di ? '#141612' : '#D9D6CC' }));
+    const SIDE = [
+      ['Tu dinero, con calma.', 'Una herramienta para planear tu año y ver con claridad cada dólar.'],
+      ['Cada meta empieza con una decisión.', 'Dinos qué quieres lograr y armamos tu plan alrededor de eso.'],
+      ['Tu espacio, solo tuyo.', 'Nadie más ve tus números. Ni siquiera necesitamos tus claves del banco.'],
+      ['Seguridad de verdad.', 'La verificación en dos pasos es obligatoria para todos. Tu contraseña sola no basta para entrar.'],
+      ['Ordena sin complicarte.', 'Empieza con una base probada y ajústala a tu vida.'],
+      ['Todo listo.', 'Ahora, tu plan del año en 3 minutos.']
+    ];
+    const perks = [
+      { t: 'Plan anual editable', d: 'Ajusta los 12 meses y mira el efecto al instante', bg: '#E3F1E8', fg: '#141612' },
+      { t: 'Metas con seguimiento', d: 'Viajes, emergencias, salir de deudas', bg: '#FDF1DE', fg: '#E3B800' },
+      { t: 'Metas con fecha', d: 'Cuánto apartar al mes para llegar', bg: '#E3ECF6', fg: '#4C7FB5' }
+    ];
+    const hs = [40, 62, 50, 78, 55, 70, 46, 84, 60, 72, 66, 90];
+    const deco = hs.map((h, i) => ({ h: h + 'px', c: i === 11 ? '#E3B800' : (i % 2 ? '#141612' : '#CFCCC2') }));
+    const goalDeco = [['#FBEBD8', '#C46A2A', '6px', '-6deg'], ['#FDF1DE', '#E3B800', '50%', '4deg'], ['#E3ECF6', '#4C7FB5', '6px 6px 50% 50%', '-2deg'], ['#E3F1E8', '#141612', '50%', '5deg'], ['#E5F1ED', '#3E8C7A', '3px', '-5deg'], ['#E3ECF6', '#2D5C8A', '50% 6px', '3deg']].map(([bg, fg, r, rot]) => ({ bg, fg, r, rot }));
+    const catDeco = [['#F2CD00', '120px'], ['#E3B800', '90px'], ['#4C7FB5', '150px'], ['#C46A2A', '80px'], ['#A8D3C3', '130px'], ['#FFFFFF', '100px'], ['#3E8C7A', '140px'], ['#6FA898', '70px'], ['#2D5C8A', '110px']].map(([c, w]) => ({ c, w }));
+    const nm = (s.name || '').trim();
+    return {
+      s0: st === 0, s1: st === 1, s2: st === 2, s3: st === 3, s4: st === 4, s5: st === 5,
+      v: { welcome: st === 0 || st === 2, goals: st === 1, secure: st === 3, cats: st === 4, done: st === 5 },
+      side: { title: SIDE[st][0], text: SIDE[st][1] },
+      goals, chosen, cats, dots, perks, deco, goalDeco, catDeco,
+      stepText: st === 0 ? 'Bienvenida' : 'Paso ' + (st === 5 ? 4 : st) + ' de 4',
+      name: s.name, setName: (e) => this.setState({ name: e.target.value }),
+      doneTitle: nm ? '¡Listo, ' + nm + '! Tu espacio está creado.' : '¡Listo! Tu espacio está creado.',
+      navVis: st === 5 ? 'hidden' : 'visible', backVis: st === 0 ? 'hidden' : 'visible',
+      nextLabel: st === 0 ? 'Empezar' : (st === 3 ? 'Crear mi espacio' : 'Continuar'),
+      back: () => this.setState({ step: st === 5 ? 3 : Math.max(0, st - 1) }),
+      next: () => this.setState({ step: st === 3 ? 5 : Math.min(5, st + 1) })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Clase</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Principal" style="flex: 1 1 220px; max-width: 248px; background: #FBFAF6; border-right: 1px solid #E6E4DC; padding: 22px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px 10px 8px">
+      <a href="Main.dc.html" style="text-decoration: none; display: flex; align-items: center"><img src="/_blob/bb0e7d557e23b395ba835e41bc61c1a6" alt="Revolución 360 · Revolución del Dinero" style="height: 38px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; align-self: flex-start; display: block; flex: none"></a>
+    </div>
+    <span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Tu plata</span><a href="Main.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan anual</a><a href="Movimientos.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Cuentas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg>Cuentas</a><a href="Metas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Metas</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Entiende tus números</span><a href="Forecast.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Proyección</a><a href="Analisis.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/></svg>Análisis</a><a href="Deudas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Deudas e impuestos</a><a href="Inversiones.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M4 20h16"/><path d="M7 16v-4M12 16V8M17 16V5"/></svg>Inversiones</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Aprende</span><a href="Academia.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #ECEAE2; color: #141612"><span aria-hidden="true" style="position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #F2CD00"></span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia <span style="margin-left: auto; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #FFF3B8; color: #5C4A00">340 pts</span></a>
+    <a href="Cierre.dc.html" style="text-decoration: none; margin-top: 18px; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid #EADFA0; background: #FFF8D6; color: #141612">
+      <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; flex: none; background: conic-gradient(#F2CD00 0 80%, #EADFA0 80% 100%); display: flex; align-items: center; justify-content: center"><span style="width: 26px; height: 26px; border-radius: 50%; background: #FFF8D6; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">6d</span></span>
+      <span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; font-weight: 600">Cierra noviembre</span><span style="font-size: 12px; color: #6B5A10">5 minutos · quedan 6 días</span></span></a>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid #E6E4DC">
+      <div style="display: flex; align-items: center; gap: 4px">
+        <a href="Perfil.dc.html" style="text-decoration: none; color: #141612; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 10px; flex: 1; min-width: 0; background: transparent">
+          <span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 50%; background: #141612; color: #F2CD00; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; flex: none">J</span>
+          <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 13px; font-weight: 600">Jonathan</span><span style="font-size: 12px; color: #6B6E64">Mi perfil</span></span></a>
+        <a href="Notificaciones.dc.html" aria-label="Notificaciones" title="Notificaciones" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M6 9a6 6 0 0 1 12 0c0 6.5 2.5 8.5 2.5 8.5h-17S6 15.5 6 9"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg><span aria-hidden="true" style="position: absolute; top: 8px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: #F2CD00; box-shadow: 0 0 0 2px #FBFAF6"></span></a>
+        <a href="Ayuda.dc.html" aria-label="Ayuda" title="Ayuda" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.7"/><path d="M12 17.2v.1"/></svg></a>
+      </div>
+      <div style="display: flex; flex-direction: column; padding: 0 2px">
+        <a href="Suscripcion.dc.html" style="text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4A4D45; font-weight: 450; padding: 6px 8px"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg>Suscripción</a>
+        
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px 0">
+        <img src="/_blob/07130166ac57906f8a4d3175882f16f6" alt="Revolución del Dinero" style="width: 30px; height: 30px">
+        <span style="font-size: 11px; color: #6B6E64; line-height: 1.35">Una herramienta de<br><span style="color: #141612; font-weight: 600">Revolución del Dinero</span></span>
+      </div>
+    </div>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 48px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; max-width: 1300px">
+<div style="display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start">
+      <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 18px"><div style="position: relative; border-radius: 16px; overflow: hidden; background: #0B0C0A; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center">
+        <img src="/_blob/177cb8c6e63a332cdb1f6c53ea986d4f" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .55">
+        <button type="button" aria-label="Reproducir" style="font: inherit; width: 84px; height: 84px; border-radius: 50%; border: 0; background: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative"><svg aria-hidden="true" width="38" height="38" viewBox="0 0 24 24" fill="#1C1E19" stroke="#1C1E19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l11 7-11 7z"></path></svg></button>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 16px 12px; display: flex; flex-direction: column; gap: 8px; color: #FFFFFF">
+          <div aria-hidden="true" style="height: 4px; border-radius: 2px; background: #3A3D36"><div style="width: 0%; height: 4px; border-radius: 2px; background: #F2CD00"></div></div>
+          <span class="num" style="font-size: 13px; font-weight: 600">00:00 / [MM:SS]</span>
+        </div>
+      </div><div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-start">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: .12em; color: #141612">EMPIEZA AQUÍ · MÓDULO 1</span>
+          <h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em">Haz tu primer cierre de mes</h1>
+          <span style="font-size: 13px; color: #5F6359">[DURACIÓN] · <strong style="color: #8A4B12">Obligatoria para avanzar</strong> · +10 puntos</span>
+        </div>
+        <div style="display: flex; gap: 8px; ">
+          <a href="Academia.dc.html" aria-label="Volver a la Academia" style="text-decoration: none; width: 48px; height: 48px; border-radius: 12px; border: 1px solid #E6E4DC; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #3A3D36; font-size: 18px; flex: none">‹</a>
+          <button type="button" onClick="{{ complete }}" style="font: inherit;  font-size: 15px; font-weight: 600; min-height: 48px; padding: 0 22px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">{{ btnLabel }}</button>
+        </div>
+      </div><a href="Cierre.dc.html" style="text-decoration: none; color: #141612; background: #FDF1DE; border-radius: 16px; padding: 16px 18px; display: flex; align-items: center; gap: 14px">
+        <span style="width: 42px; height: 42px; border-radius: 12px; background: #E3B800; display: flex; align-items: center; justify-content: center; flex: none"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="#141612" stroke="#141612" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l11 7-11 7z"></path></svg></span>
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">Hazlo ahora en la app</strong><span style="font-size: 13px; color: #5C3208">Abre tu Cierre de noviembre y sigue la clase paso a paso.</span></span><span aria-hidden="true" style="font-size: 18px">›</span></a><section aria-labelledby="sobre" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 22px; display: flex; flex-direction: column; gap: 10px">
+        <h2 id="sobre" style="margin: 0; font-size: 16px; font-weight: 600">Sobre esta clase</h2>
+        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #3A3D36">En 5 minutos al mes revisas qué pasó, ajustas el mes siguiente y anotas tus saldos. Es el hábito que hace que todo lo demás funcione.</p>
+        <sc-if value="{{ more }}" hint-placeholder-val="{{ false }}"><ul style="margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7; color: #3A3D36"><li>Qué hacer con lo que quedó pendiente</li><li>Cómo leer plan vs. real sin culparte</li><li>Ajustar el mes siguiente para que no quede en negativo</li></ul></sc-if>
+        <button type="button" onClick="{{ toggleMore }}" style="font: inherit; align-self: flex-start; font-size: 14px; font-weight: 600; color: #141612; background: transparent; border: 0; padding: 6px 0; cursor: pointer">{{ moreLabel }}</button>
+      </section>
+      <section aria-label="Valoración" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+        <span style="font-size: 15px; font-weight: 600">¿Qué tan útil te pareció esta clase?</span>
+        <div role="radiogroup" aria-label="Calificación" style="display: flex; gap: 2px"><sc-for list="{{ stars }}" as="st" hint-placeholder-count="5"><button type="button" role="radio" aria-label="{{ st.label }}" onClick="{{ st.pick }}" style="font: inherit; width: 40px; height: 40px; border: 0; background: transparent; font-size: 26px; color: {{ st.c }}; cursor: pointer">★</button></sc-for></div>
+      </section>
+      <section aria-labelledby="com" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 22px; display: flex; flex-direction: column; gap: 12px">
+        <h2 id="com" style="margin: 0; font-size: 16px; font-weight: 600">Comentarios</h2>
+        <div style="display: flex; gap: 10px"><span aria-hidden="true" style="width: 38px; height: 38px; border-radius: 50%; background: #E3F1E8; color: #141612; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: none">J</span>
+          <label for="cm-d" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Escribe un comentario</label><textarea id="cm-d" rows="3" placeholder="Comparte una duda o lo que aprendiste…" style="font: inherit; font-size: 14px; flex: 1; padding: 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; resize: vertical"></textarea></div>
+        <span style="font-size: 13px; color: #5F6359">Todavía no hay comentarios en esta clase.</span>
+      </section></div>
+      <div style="flex: 1 1 320px; max-width: 380px"><aside aria-labelledby="curso" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <h2 id="curso" style="margin: 0; font-size: 16px; font-weight: 600">EMPIEZA AQUÍ</h2>
+        <div aria-hidden="true" style="height: 6px; border-radius: 3px; background: #EFEDE6"><div style="height: 6px; border-radius: 3px; background: #141612; width: {{ progW }}"></div></div>
+        <span class="num" style="font-size: 13px; color: #5F6359">{{ prog }}</span>
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: .1em; color: #141612; margin-top: 4px">MÓDULO 1 · ARRANCA</span>
+        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+          <sc-for list="{{ lessons }}" as="l" hint-placeholder-count="6"><li style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: {{ l.bg }}; color: {{ l.fg }}"><span aria-hidden="true" style="width: 24px; height: 24px; border-radius: 50%; background: {{ l.iconBg }}; color: {{ l.iconFg }}; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: none">{{ l.icon }}</span><span style="flex: 1; font-size: 14px; font-weight: 600">{{ l.t }}</span><span class="num" style="font-size: 12px; opacity: .7">{{ l.dur }}</span></li></sc-for>
+        </ol>
+        <button type="button" onClick="{{ toggle2 }}" aria-expanded="{{ open2 }}" style="font: inherit; text-align: left; display: flex; justify-content: space-between; align-items: center; background: #F8F7F2; border: 0; border-radius: 12px; padding: 12px; cursor: pointer; color: #141612"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 600; letter-spacing: .1em; color: #141612">MÓDULO 2</span><strong style="font-size: 14px">Tus herramientas</strong></span><span style="font-size: 13px; color: #5F6359">0/3 {{ chev2 }}</span></button>
+        <sc-if value="{{ open2 }}" hint-placeholder-val="{{ false }}"><ul style="list-style: none; margin: 0; padding: 0 0 0 6px; font-size: 14px; color: #8A8D83; display: flex; flex-direction: column; gap: 10px"><li>· Deudas e impuestos</li><li>· Inversiones</li><li>· Análisis y comercios</li></ul></sc-if>
+      </aside></div>
+    </div>
+    <sc-if value="{{ showToast }}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); width: 460px; background: #0B0C0A; color: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; gap: 14px; align-items: center; box-shadow: 0 16px 40px rgba(0,0,0,.3); z-index: 5">
+        <span aria-hidden="true" style="width: 54px; height: 54px; border-radius: 14px; background: #E3B800; display: flex; align-items: center; justify-content: center; flex: none"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="#141612" stroke="#141612" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg></span>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 15px"><strong style="font-size: 22px; color: #F2CD00">+10</strong> puntos</span><div aria-hidden="true" style="height: 6px; border-radius: 3px; background: #3A3D36"><div style="height: 6px; width: 70%; border-radius: 3px; background: #F2CD00"></div></div><span style="font-size: 12px; color: #CFCCC2">Te faltan 150 para el nivel Ahorro</span></div>
+        <button type="button" onClick="{{ closeToast }}" aria-label="Cerrar" style="font: inherit; width: 36px; height: 36px; border: 0; background: transparent; color: #CFCCC2; font-size: 18px; cursor: pointer">×</button>
+      </div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { done: false, toast: false, more: false, stars: 0, open2: false }; }
+  renderVals() {
+    const s = this.state;
+    const M1 = [['Bienvenida a Revolución 360', 'done'], ['Arma tu plan con el asistente', 'done'], ['Entiende tu Plan anual', 'done'], ['Haz tu primer cierre de mes', 'cur'], ['Registra tus gastos a tu manera', 'lock'], ['Lee tu Proyección', 'lock']];
+    const lessons = M1.map(([t, st]) => {
+      const done = st === 'done' || (st === 'cur' && s.done);
+      const cur = st === 'cur' && !s.done, next = st === 'lock' && t === 'Registra tus gastos a tu manera' && s.done;
+      return { t, dur: '[MM:SS]', bg: cur || next ? '#141612' : 'transparent', fg: cur || next ? '#FFFFFF' : (st === 'lock' ? '#8A8D83' : '#141612'),
+        iconBg: done ? '#141612' : (cur || next ? '#F2CD00' : '#EFEDE6'), icon: done ? '✓' : (cur || next ? '▸' : '·'), iconFg: done ? '#FFFFFF' : '#1C1E19' };
+    });
+    const n = s.done ? 4 : 3;
+    const stars = [1, 2, 3, 4, 5].map((i) => ({ i, c: i <= s.stars ? '#E3B800' : '#D9D6CC', label: i + ' de 5', pick: () => this.setState({ stars: i }) }));
+    return {
+      lessons, stars, prog: n + ' de 9 clases · ' + Math.round(n / 9 * 100) + '%', progW: Math.round(n / 9 * 100) + '%',
+      complete: () => this.setState({ done: true, toast: true }), closeToast: () => this.setState({ toast: false }),
+      showToast: s.toast, btnLabel: s.done ? 'Siguiente clase ›' : 'Completar y continuar',
+      more: s.more, less: !s.more, toggleMore: () => this.setState({ more: !s.more }), moreLabel: s.more ? 'Ver menos' : 'Ver más',
+      open2: s.open2, toggle2: () => this.setState({ open2: !s.open2 }), chev2: s.open2 ? '▴' : '▾'
+    };
+  }
+}
+</script>
+</body>
+</html>

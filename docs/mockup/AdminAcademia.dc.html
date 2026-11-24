@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración · Academia</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Administración" style="flex: 1 1 220px; max-width: 256px; background: #141612; color: #FFFFFF; padding: 28px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 8px"><img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 38px; height: 38px"><span style="display: flex; flex-direction: column"><strong style="font-size: 15px">Revolución 360</strong><span style="font-size: 12px; color: #8FD3B9; font-weight: 600">Administración</span></span></div>
+    <a href="Main.dc.html" style="text-decoration: none; font-size: 13px; color: #9FC8B9; padding: 6px 10px 22px">‹ Volver a la app</a>
+    <a href="Admin.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Resumen</a><a href="AdminUsuarios.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Usuarios y accesos</a><a href="AdminMenu.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Menú y funciones</a><a href="AdminAcademia.dc.html" aria-current="page" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: #2A2D27; color: #FFFFFF">Academia</a><a href="AdminPlanes.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Planes y precios</a><a href="AdminPaises.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contenido por país</a><a href="AdminSoporte.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Soporte y privacidad</a><a href="AdminActividad.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Registro de actividad</a>
+    <p style="margin-top: auto; font-size: 12px; color: #7FA9A0; line-height: 1.5; padding: 0 10px">Este panel no muestra los datos financieros de los usuarios.</p>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 44px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; max-width: 1280px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Etapas, cursos, clases y puntos</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Academia</h1></div>
+      <button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px">+ Nuevo curso</button>
+    </header>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+      <section aria-label="Cursos" style="flex: 1 1 300px; max-width: 360px; display: flex; flex-direction: column; gap: 10px">
+        <sc-for list="{{ courses }}" as="c" hint-placeholder-count="9">
+          <button type="button" onClick="{{ c.pick }}" style="font: inherit; text-align: left; background: {{ c.bg }}; border: 2px solid {{ c.b }}; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; cursor: pointer; color: #141612">
+            <img src="{{ c.img }}" alt="" style="width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px">
+            <span style="font-size: 11px; font-weight: 600; letter-spacing: .1em; color: #141612">{{ c.et }}</span>
+            <strong style="font-size: 15px">{{ c.t }}</strong>
+            <span style="display: flex; gap: 8px; align-items: center"><span style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: {{ c.stBg }}; color: {{ c.stFg }}">{{ c.st }}</span><span style="font-size: 12px; color: #5F6359">{{ c.n }}</span></span>
+          </button>
+        </sc-for>
+        <section aria-labelledby="pts" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+          <h2 id="pts" style="margin: 0; font-size: 15px; font-weight: 600">Puntos y niveles</h2>
+          <div style="display: grid; grid-template-columns: 1fr 70px; gap: 8px; align-items: center; font-size: 13px">
+            <label for="pp1">Por clase</label><input id="pp1" class="num" value="10" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; height: 38px">
+            <label for="pp2">Por curso</label><input id="pp2" class="num" value="50" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; height: 38px">
+            <label for="pp3">Por cierre de mes</label><input id="pp3" class="num" value="30" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; height: 38px">
+            <label for="pp4">Por semana de racha</label><input id="pp4" class="num" value="5" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; height: 38px">
+          </div>
+          <span style="font-size: 12px; color: #5F6359">Niveles: Despertar · Orden · Ahorro · Inversión · Revolucionario (editables)</span>
+        </section>
+      </section>
+      <section aria-labelledby="ed" style="flex: 999 1 520px; min-width: 0; background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start">
+          <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: .1em; color: #141612">{{ curStage }}</span><h2 id="ed" style="margin: 0; font-size: 22px; font-weight: 600">{{ curTitle }}</h2></div>
+          <div style="display: flex; gap: 8px"><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; border-radius: 10px">Programar publicación</button><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border: 0; background: #141612; color: #FFFFFF; border-radius: 10px">Publicar</button></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 600; letter-spacing: .1em; color: #5F6359">MÓDULO 1 · ARRANCA</span>
+          <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px"><sc-for list="{{ lessons }}" as="l" hint-placeholder-count="6"><li style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid #E6E4DC; background: #FFFFFF"><span aria-hidden="true" style="color: #A9B3AE; font-size: 16px; cursor: grab">⋮⋮</span><span class="num" style="font-size: 12px; font-weight: 600; color: #5F6359; width: 18px">{{ l.n }}</span><span style="flex: 1; font-size: 14px; font-weight: 600">{{ l.t }}</span><span style="font-size: 12px; color: #5F6359">[MM:SS]</span></li></sc-for></ol>
+          <button type="button" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612; border-radius: 10px; margin-top: 4px">+ Clase</button>
+        </div>
+        <div style="background: #F8F7F2; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+          <h3 style="margin: 0; font-size: 15px; font-weight: 600">Editar clase 4: Haz tu primer cierre de mes</h3>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="l-vid" style="font-size: 12px; font-weight: 500; color: #5F6359">Video</label><div style="display: flex; gap: 8px"><input id="l-vid" type="url" placeholder="Enlace de Vimeo, Mux o YouTube privado" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; flex: 1; min-width: 0"><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 44px; padding: 0 12px; border: 1px solid #E6E4DC; background: #FFFFFF; border-radius: 12px">Subir</button></div></div>
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="l-scr" style="font-size: 12px; font-weight: 500; color: #5F6359">Botón "Hazlo ahora en la app" lleva a</label><select id="l-scr" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box"><option>Cierre de mes</option><option>Plan anual</option><option>Movimientos</option><option>Ninguna</option></select></div>
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="l-pts" style="font-size: 12px; font-weight: 500; color: #5F6359">Puntos al completarla</label><input id="l-pts" class="num" value="10" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="l-plan" style="font-size: 12px; font-weight: 500; color: #5F6359">Disponible en</label><select id="l-plan" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box"><option>Gratis y Pro</option><option>Solo Pro</option></select></div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="l-desc" style="font-size: 12px; font-weight: 500; color: #5F6359">Sobre esta clase</label><textarea id="l-desc" rows="3" style="font: inherit; font-size: 14px; padding: 12px; border: 1.5px solid #D9D6CC; border-radius: 12px">En 5 minutos al mes revisas qué pasó, ajustas el mes siguiente y anotas tus saldos.</textarea></div>
+          <div style="display: flex; align-items: center; gap: 12px"><button type="button" role="switch" aria-checked="{{ req }}" aria-label="Obligatoria para avanzar" onClick="{{ toggleReq }}" style="font: inherit; flex: none; width: 46px; height: 28px; border: 0; border-radius: 999px; background: {{ reqTrack }}; position: relative; padding: 0; cursor: pointer"><span aria-hidden="true" style="position: absolute; top: 3px; left: {{ reqKnob }}; width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,.2)"></span></button><span style="font-size: 14px; font-weight: 600">Obligatoria para avanzar a la siguiente clase</span></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2600}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sel: 0, req: true }; }
+  renderVals() {
+    const C = [['Domina la app · 01', 'Empieza aquí', 'Publicado', 9], ['Domina la app · 02', 'Tu Plan anual a fondo', 'Borrador', 6], ['Domina la app · 03', 'Movimientos y cierre de mes', 'Borrador', 5], ['Domina la app · 04', 'Deudas, impuestos e inversiones', 'Borrador', 5], ['Domina la app · 05', 'Proyección y análisis', 'Borrador', 4], ['Tu dinero · 06', 'Planea tu año financiero', 'Borrador', 0], ['Tu dinero · 07', 'Sal de deudas con método', 'Programado · 4 dic', 7], ['Tu dinero · 08', 'Ahorro y fondo de emergencia', 'Borrador', 0], ['Tu dinero · 09', 'Tus primeras inversiones', 'Borrador', 0]];
+    const IMG = ['/_blob/177cb8c6e63a332cdb1f6c53ea986d4f', '/_blob/5a1bcfeeb8f2540f1ab7049e9cbdeecc', '/_blob/8f6f44104af0d431735a88cca31d67b2', '/_blob/872a571a572edd6d04b9f4e4bcd46dde', '/_blob/58f8141d519d5d7a026512f03d2660de', '/_blob/d6cb77fb42618694eede74141aa8bc2a', '/_blob/d2103b0a79b70278103058e954f82035', '/_blob/a443e795d42bd383548535da36be81f3', '/_blob/6942d5963d3b596be5e04b0dddc83e27'];
+    const courses = C.map(([et, t, st, n], i) => { const on = this.state.sel === i; return { img: IMG[i], et, t, st, n: n + ' clases', bg: on ? '#FFF8D6' : '#FFFFFF', b: on ? '#141612' : '#E6E4DC',
+      stBg: st === 'Publicado' ? '#E3F1E8' : (st.indexOf('Programado') === 0 ? '#FDF1DE' : '#EFEDE6'), stFg: st === 'Publicado' ? '#1E5A3F' : (st.indexOf('Programado') === 0 ? '#8A4B12' : '#3A3D36'), pick: () => this.setState({ sel: i }) }; });
+    const cur = C[this.state.sel];
+    const lessons = ['Bienvenida a Revolución 360', 'Arma tu plan con el asistente', 'Entiende tu Plan anual', 'Haz tu primer cierre de mes', 'Registra tus gastos a tu manera', 'Lee tu Proyección'].map((t, i) => ({ t, n: i + 1, sel: i === 3 }));
+    return { courses, curTitle: cur[1], curStage: cur[0], lessons, req: String(this.state.req), reqTrack: this.state.req ? '#141612' : '#CFCCC2', reqKnob: this.state.req ? '20px' : '2px', toggleReq: () => this.setState({ req: !this.state.req }) };
+  }
+}
+</script>
+</body>
+</html>

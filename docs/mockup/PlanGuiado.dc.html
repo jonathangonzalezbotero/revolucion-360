@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Arma tu plan</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; padding: 40px 56px 64px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px">
+    <img src="/_blob/bb0e7d557e23b395ba835e41bc61c1a6" alt="Revolución 360 · Revolución del Dinero" style="height: 36px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; align-self: flex-start; display: block; flex: none">
+    <div style="display: flex; align-items: center; gap: 16px"><span style="font-size: 13px; font-weight: 600; color: #141612; white-space: nowrap">Arma tu plan · 3 minutos</span><ol aria-label="Pasos" style="list-style: none; margin: 0; padding: 0; display: flex; gap: 5px; flex: 1"><sc-for list="{{ dots }}" as="d" hint-placeholder-count="7"><li style="flex: {{ d.flex }}; height: 6px; border-radius: 3px; background: {{ d.c }}"></li></sc-for></ol><span style="font-size: 13px; font-weight: 600; color: #5F6359; white-space: nowrap">{{ stepText }}</span></div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start">
+      <div style="flex: 999 1 460px; min-width: 0; max-width: 620px; display: flex; flex-direction: column; gap: 22px">
+      <sc-if value="{{ s0 }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <h2 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15">¿Cuánto te pagan y cada cuánto?</h2>
+          <p style="margin: 0; font-size: 14px; color: #5F6359; line-height: 1.5">Pon lo que recibes en tu cuenta. Si cambia cada semana, usa un promedio.</p>
+          <sc-for list="{{ inc }}" as="r" hint-placeholder-count="1">
+            <div style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+              <label for="{{ r.idN }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Nombre del ingreso</label>
+              <input id="{{ r.idN }}" type="text" value="{{ r.name }}" onChange="{{ r.setN }}" placeholder="Ej. Restaurante, limpieza" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 0; font-weight: 600">
+              <div style="display: flex; gap: 8px">
+                <label for="{{ r.idA }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Monto</label>
+                <input id="{{ r.idA }}" class="num" type="text" inputmode="decimal" value="{{ r.amt }}" onChange="{{ r.setA }}" placeholder="$0" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 0; flex: 1">
+                <label for="{{ r.idF }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Frecuencia</label>
+                <select id="{{ r.idF }}" value="{{ r.freq }}" onChange="{{ r.setF }}" style="font: inherit; font-size: 14px; font-weight: 600; height: 46px; padding: 0 8px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"><sc-for list="{{ freqOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+                <button type="button" role="switch" aria-checked="{{ r.abn }}" onClick="{{ r.togAbn }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 12px; border-radius: 999px; border: 1.5px solid {{ r.abnB }}; background: {{ r.abnBg }}; color: {{ r.abnFg }}; cursor: pointer">Lo cobro con ABN</button>
+                <span class="num" style="font-size: 12px; color: #1E5A3F; font-weight: 600">{{ r.monthly }}</span>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ anyAbn }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; font-size: 13px; color: #5C3208; background: #FBEBD8; border-radius: 12px; padding: 12px 14px; line-height: 1.5">Con ABN nadie te descuenta impuestos. Te ayudaremos a apartar un % de cada pago en "Deudas e impuestos".</p></sc-if>
+          <button type="button" onClick="{{ addInc }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612; border-radius: 12px; cursor: pointer">+ Tengo otro ingreso</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s1 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <h2 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15">¿Dónde vives?</h2>
+          <div role="group" aria-label="Tipo de vivienda" style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{ vivTipos }}" as="t" hint-placeholder-count="3"><button type="button" aria-pressed="{{ t.pressed }}" onClick="{{ t.pick }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1.5px solid {{ t.b }}; background: {{ t.bg }}; color: {{ t.fg }}; cursor: pointer">{{ t.t }}</button></sc-for></div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="gv-ad" style="font-size: 13px; font-weight: 600">¿Cuánto pagas?</label>
+            <div style="display: flex; gap: 8px"><input id="gv-ad" class="num" type="text" inputmode="decimal" value="{{ viv.amt }}" onChange="{{ setVivA }}" placeholder="$0" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 0; flex: 1"><label for="gv-fd" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Frecuencia</label><select id="gv-fd" value="{{ viv.freq }}" onChange="{{ setVivF }}" style="font: inherit; font-size: 14px; font-weight: 600; height: 46px; padding: 0 8px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"><sc-for list="{{ freqOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select></div>
+            <span class="num" style="font-size: 12px; color: #1E5A3F; font-weight: 600">≈ {{ vivM }} al mes</span>
+            <sc-if value="{{ isHip }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #24496E; background: #E3ECF6; border-radius: 12px; padding: 10px 12px; margin-top: 4px">También la agregamos a tus deudas. El saldo pendiente lo completas después.</span></sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s2 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <h2 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15">Lo básico</h2>
+          <p style="margin: 0; font-size: 14px; color: #5F6359; line-height: 1.5">Un número aproximado está bien. Lo afinas después.</p>
+          <sc-for list="{{ bas }}" as="b" hint-placeholder-count="4">
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="{{ b.idA }}" style="font-size: 13px; font-weight: 600">{{ b.name }}</label>
+              <div style="display: flex; gap: 8px"><input id="{{ b.idA }}" class="num" type="text" inputmode="decimal" value="{{ b.amt }}" onChange="{{ b.setA }}" placeholder="$0" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 0; flex: 1"><label for="{{ b.idF }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Frecuencia de {{ b.name }}</label><select id="{{ b.idF }}" value="{{ b.freq }}" onChange="{{ b.setF }}" style="font: inherit; font-size: 14px; font-weight: 600; height: 46px; padding: 0 8px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"><sc-for list="{{ freqOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select></div></div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s3 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <h2 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15">¿Tienes alguna de estas deudas?</h2>
+          <p style="margin: 0; font-size: 14px; color: #5F6359; line-height: 1.5">Marca las que tengas y escribe cuánto pagas al mes.</p>
+          <sc-for list="{{ deu }}" as="d" hint-placeholder-count="4">
+            <div style="border-radius: 14px; border: 2px solid {{ d.b }}; background: {{ d.bg }}; padding: 6px 6px 6px 14px; display: flex; align-items: center; gap: 10px; min-height: 52px">
+              <button type="button" role="checkbox" aria-checked="{{ d.checked }}" onClick="{{ d.tog }}" style="font: inherit; flex: 1; text-align: left; font-size: 15px; font-weight: 600; border: 0; background: transparent; min-height: 44px; color: #141612; cursor: pointer; display: flex; align-items: center; gap: 10px"><span aria-hidden="true" style="width: 24px; height: 24px; border-radius: 50%; background: #FFFFFF; border: 1.5px solid {{ d.b }}; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #141612">{{ d.mark }}</span>{{ d.name }}</button>
+              <sc-if value="{{ d.on }}" hint-placeholder-val="{{ false }}"><label for="{{ d.id }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Cuota mensual de {{ d.name }}</label><input id="{{ d.id }}" class="num" type="text" inputmode="decimal" value="{{ d.v }}" onChange="{{ d.setV }}" placeholder="$ al mes" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 0; width: 120px"></sc-if>
+            </div>
+          </sc-for>
+          <sc-for list="{{ deuX }}" as="x" hint-placeholder-count="0">
+            <div style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 12px; display: flex; flex-direction: column; gap: 8px; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00">
+              <label for="{{ x.idN }}" style="font-size: 12px; font-weight: 500; color: #5F6359">Nombre de la deuda</label>
+              <input id="{{ x.idN }}" type="text" value="{{ x.name }}" onChange="{{ x.setN }}" placeholder="Ej. Hipoteca, préstamo estudiantil, deuda con mi tío" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 0; font-weight: 600">
+              <div style="display: flex; gap: 8px">
+                <label for="{{ x.idT }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Tipo</label>
+                <select id="{{ x.idT }}" value="{{ x.tipo }}" onChange="{{ x.setT }}" style="font: inherit; font-size: 14px; font-weight: 600; height: 46px; padding: 0 8px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; flex: 1"><option>Hipoteca</option><option>Préstamo estudiantil</option><option>Deuda con familia o amigos</option><option>Impuestos atrasados</option><option>Otra</option></select>
+                <label for="{{ x.idV }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Cuota mensual</label>
+                <input id="{{ x.idV }}" class="num" type="text" inputmode="decimal" value="{{ x.v }}" onChange="{{ x.setV }}" placeholder="$ al mes" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 0; width: 120px">
+              </div>
+            </div>
+          </sc-for>
+          <button type="button" onClick="{{ addX }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612; border-radius: 12px; cursor: pointer">+ Otra deuda</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s4 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <h2 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15">¿Le mandas dinero a tu familia?</h2>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+            <button type="button" aria-pressed="{{ remYes }}" onClick="{{ setRemY }}" style="font: inherit; font-size: 15px; font-weight: 600; min-height: 54px; border-radius: 14px; border: 2px solid {{ remY.b }}; background: {{ remY.bg }}; color: {{ remY.fg }}; cursor: pointer">Sí</button>
+            <button type="button" aria-pressed="{{ remNo }}" onClick="{{ setRemN }}" style="font: inherit; font-size: 15px; font-weight: 600; min-height: 54px; border-radius: 14px; border: 2px solid {{ remN.b }}; background: {{ remN.bg }}; color: {{ remN.fg }}; cursor: pointer">No</button>
+          </div>
+          <sc-if value="{{ remYes }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="gr-ad" style="font-size: 13px; font-weight: 600">¿Cuánto, en dólares australianos?</label>
+              <div style="display: flex; gap: 8px"><input id="gr-ad" class="num" type="text" inputmode="decimal" value="{{ remAmt }}" onChange="{{ setRemA }}" placeholder="$0" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 0; flex: 1"><label for="gr-fd" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Frecuencia</label><select id="gr-fd" value="{{ remFreq }}" onChange="{{ setRemF }}" style="font: inherit; font-size: 14px; font-weight: 600; height: 46px; padding: 0 8px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"><sc-for list="{{ freqOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select></div>
+              <span style="font-size: 12px; color: #5F6359">Queda como su propia categoría: "Familia y remesas".</span></div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s5 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <h2 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15">Ponle número a tus metas</h2>
+          <p style="margin: 0; font-size: 14px; color: #5F6359; line-height: 1.5">Cámbiales el nombre, agrega las tuyas. Si no sabes el monto todavía, déjalo vacío.</p>
+          <sc-for list="{{ metas }}" as="m" hint-placeholder-count="2">
+            <div style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 14px; display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; gap: 8px; align-items: center"><label for="{{ m.idN }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Nombre de la meta</label><input id="{{ m.idN }}" type="text" value="{{ m.name }}" onChange="{{ m.setN }}" placeholder="Ej. Comprar un carro" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 0; flex: 1; font-weight: 600"><button type="button" onClick="{{ m.del }}" aria-label="Quitar meta" style="font: inherit; width: 44px; height: 44px; border: 0; background: #F6F5F0; border-radius: 12px; color: #5F6359; cursor: pointer">×</button></div>
+              <label for="{{ m.idA }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Monto de la meta</label>
+              <div style="display: flex; gap: 8px"><input id="{{ m.idA }}" class="num" type="text" inputmode="decimal" value="{{ m.amt }}" onChange="{{ m.setA }}" placeholder="Monto" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 0; flex: 1"><label for="{{ m.idF }}" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Fecha</label><input id="{{ m.idF }}" type="month" style="font: inherit; font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 0; width: 150px"></div></div>
+          </sc-for>
+          <button type="button" onClick="{{ addMeta }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612; border-radius: 12px; cursor: pointer">+ Agregar meta</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s6 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <h2 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15">Tu plan anual está listo</h2>
+          <p style="margin: 0; font-size: 14px; color: #5F6359; line-height: 1.5">Creamos <strong style="color: #141612">{{ lines }} líneas</strong> repartidas en los 12 meses. Los meses con 5 semanas ya tienen el pago extra.</p>
+          <div style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 18px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+            <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Entra al mes</span><span class="num" style="font-size: 18px; font-weight: 600">{{ incM }}</span></div>
+            <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Sale al mes</span><span class="num" style="font-size: 18px; font-weight: 600">{{ outM }}</span></div>
+            <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">{{ netLbl }}</span><span class="num" style="font-size: 18px; font-weight: 600">{{ netM }}</span></div>
+          </div>
+          <a href="Diagnostico.dc.html" style="text-decoration: none; text-align: center; font-size: 16px; font-weight: 600; padding: 17px; background: #141612; color: #FFFFFF; border-radius: 14px">Ver mi diagnóstico</a>
+          <a href="Plan.dc.html" style="text-align: center; font-size: 14px; font-weight: 600; padding: 8px">Ir a mi Plan anual</a>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; justify-content: space-between; gap: 10px; visibility: {{ navVis }}">
+        <button type="button" onClick="{{ back }}" style="font: inherit; font-size: 15px; font-weight: 600; min-height: 52px; padding: 0 16px; border: 0; background: transparent; color: #3A3D36; cursor: pointer; visibility: {{ backVis }}">‹ Atrás</button>
+        <button type="button" onClick="{{ next }}" style="font: inherit; font-size: 16px; font-weight: 600; min-height: 54px; padding: 0 28px; border: 0; background: #141612; color: #FFFFFF; border-radius: 14px; cursor: pointer; box-shadow: 0 8px 20px rgba(14,90,77,.25)">{{ nextLabel }}</button>
+      </div>
+      </div>
+      <aside aria-label="Tu mes hasta ahora" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 22px 0; display: flex; flex-direction: column; gap: 14px; flex: 1 1 280px; max-width: 340px">
+        <span style="font-size: 13px; color: #5F6359; font-weight: 600">Tu mes hasta ahora</span>
+        <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Entra</span><strong class="num">{{ incM }}</strong></div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px; color: #5F6359"><span>Vivienda</span><span class="num">{{ vivM }}</span></div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px; color: #5F6359"><span>Lo básico</span><span class="num">{{ basM }}</span></div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px; color: #5F6359"><span>Deudas</span><span class="num">{{ deuM }}</span></div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px; color: #5F6359"><span>Familia</span><span class="num">{{ remM }}</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid #E6E4DC; padding-top: 12px"><span style="font-size: 14px; font-weight: 600">{{ netLbl }}</span><strong class="num big" style="font-size: 26px">{{ netM }}</strong></div>
+        <span style="font-size: 12px; color: #5F6359; line-height: 1.5">Lo semanal se convierte a mes: semanal × 52 ÷ 12.</span>
+      </aside>
+    </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      step: 0,
+      inc: [{ name: 'Trabajo', amt: '', freq: 'semanal', abn: false }],
+      viv: { tipo: 'Arriendo', amt: '', freq: 'semanal' },
+      bas: { 'Súper': { amt: '', freq: 'semanal' }, 'Luz, gas e internet': { amt: '', freq: 'mensual' }, 'Teléfono': { amt: '', freq: 'mensual' }, 'Transporte': { amt: '', freq: 'semanal' } },
+      deu: { 'Tarjeta de crédito': null, 'Afterpay / Zip': null, 'Préstamo de auto': null, 'Préstamo personal': null },
+      rem: { on: null, amt: '', freq: 'mensual' },
+      metas: [{ name: 'Salir de deudas', amt: '' }, { name: 'Ahorrar para un viaje', amt: '' }],
+      deuX: []
+    };
+  }
+  renderVals() {
+    const s = this.state, st = s.step;
+    const num = (x) => parseFloat(String(x).replace(/[^0-9.\-]/g, '')) || 0;
+    const F = { semanal: 52 / 12, quincenal: 26 / 12, mensual: 1 };
+    const mo = (x, f) => num(x) * F[f];
+    const fmt = (v) => (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-AU');
+    const set = (k, v) => this.setState({ [k]: v });
+    const freqOpts = [{ v: 'semanal', label: 'Cada semana' }, { v: 'quincenal', label: 'Cada 2 semanas' }, { v: 'mensual', label: 'Cada mes' }];
+    const incomeM = s.inc.reduce((a, r) => a + mo(r.amt, r.freq), 0);
+    const vivM = mo(s.viv.amt, s.viv.freq);
+    const basM = Object.keys(s.bas).reduce((a, k) => a + mo(s.bas[k].amt, s.bas[k].freq), 0);
+    const deuM = Object.keys(s.deu).reduce((a, k) => a + (s.deu[k] === null ? 0 : num(s.deu[k])), 0) + s.deuX.reduce((a, d) => a + num(d.v), 0) + (s.viv.tipo === 'Hipoteca' ? 0 : 0);
+    const remM = s.rem.on ? mo(s.rem.amt, s.rem.freq) : 0;
+    const outM = vivM + basM + deuM + remM;
+    const net = incomeM - outM;
+    const inc = s.inc.map((r, i) => {
+      const u = (p) => { const l = s.inc.slice(); l[i] = Object.assign({}, r, p); set('inc', l); };
+      return { n: i, idN: 'gi-n' + i + 'd', idA: 'gi-a' + i + 'd', idF: 'gi-f' + i + 'd', name: r.name, amt: r.amt, freq: r.freq, abn: String(r.abn),
+        abnBg: r.abn ? '#141612' : '#FFFFFF', abnFg: r.abn ? '#FFFFFF' : '#3A3D36', abnB: r.abn ? '#141612' : '#D9D6CC',
+        setN: (e) => u({ name: e.target.value }), setA: (e) => u({ amt: e.target.value }), setF: (e) => u({ freq: e.target.value }), togAbn: () => u({ abn: !r.abn }),
+        monthly: r.amt ? '≈ ' + fmt(mo(r.amt, r.freq)) + ' al mes' : '' };
+    });
+    const anyAbn = s.inc.some((r) => r.abn);
+    const vivTipos = ['Arriendo', 'Hipoteca', 'Vivo con familia o amigos'].map((t) => { const on = s.viv.tipo === t; return { t, pressed: String(on), bg: on ? '#141612' : '#FFFFFF', fg: on ? '#FFFFFF' : '#3A3D36', b: on ? '#141612' : '#D9D6CC', pick: () => set('viv', Object.assign({}, s.viv, { tipo: t })) }; });
+    const bas = Object.keys(s.bas).map((k, i) => ({ name: k, idA: 'gb-a' + i + 'd', idF: 'gb-f' + i + 'd', amt: s.bas[k].amt, freq: s.bas[k].freq,
+      setA: (e) => set('bas', Object.assign({}, s.bas, { [k]: Object.assign({}, s.bas[k], { amt: e.target.value }) })),
+      setF: (e) => set('bas', Object.assign({}, s.bas, { [k]: Object.assign({}, s.bas[k], { freq: e.target.value }) })) }));
+    const deu = Object.keys(s.deu).map((k, i) => { const on = s.deu[k] !== null; return { name: k, on, id: 'gd' + i + 'd', checked: String(on), v: on ? s.deu[k] : '', bg: on ? '#FFF8D6' : '#FFFFFF', b: on ? '#141612' : '#E6E4DC', mark: on ? '✓' : '+',
+      tog: () => set('deu', Object.assign({}, s.deu, { [k]: on ? null : '' })), setV: (e) => set('deu', Object.assign({}, s.deu, { [k]: e.target.value })) }; });
+    const remYes = s.rem.on === true, remNo = s.rem.on === false;
+    const upM = (i, p) => { const l = s.metas.slice(); l[i] = Object.assign({}, l[i], p); set('metas', l); };
+    const metas = s.metas.map((m, i) => ({ name: m.name, idN: 'gm-n' + i + 'd', idA: 'gm-a' + i + 'd', idF: 'gm-f' + i + 'd', amt: m.amt,
+      setN: (e) => upM(i, { name: e.target.value }), setA: (e) => upM(i, { amt: e.target.value }), del: () => set('metas', s.metas.filter((_, j) => j !== i)) }));
+    const upX = (i, p) => { const l = s.deuX.slice(); l[i] = Object.assign({}, l[i], p); set('deuX', l); };
+    const deuX = s.deuX.map((d, i) => ({ idN: 'gx-n' + i + 'd', idT: 'gx-t' + i + 'd', idV: 'gx-v' + i + 'd', name: d.name, tipo: d.tipo, v: d.v,
+      setN: (e) => upX(i, { name: e.target.value }), setT: (e) => upX(i, { tipo: e.target.value }), setV: (e) => upX(i, { v: e.target.value }) }));
+    const T = ['Tus ingresos', 'Dónde vives', 'Lo básico', 'Tus deudas', 'Tu familia', 'Tus metas', 'Tu plan'];
+    const dots = T.map((t, i) => ({ c: i <= st ? '#141612' : '#D9D6CC', flex: i === st ? '2' : '1' }));
+    const lines = s.inc.length + 1 + 4 + Object.keys(s.deu).filter((k) => s.deu[k] !== null).length + s.deuX.length + (s.rem.on ? 1 : 0) + s.metas.length;
+    return {
+      inc, anyAbn, vivTipos, viv: s.viv, bas, deu, metas, deuX, isHip: s.viv.tipo === 'Hipoteca',
+      addX: () => set('deuX', s.deuX.concat([{ name: '', tipo: 'Hipoteca', v: '' }])), addMeta: () => set('metas', s.metas.concat([{ name: '', amt: '' }])), freqOpts, dots, remYes, remNo,
+      remAmt: s.rem.amt, remFreq: s.rem.freq,
+      remY: { bg: remYes ? '#141612' : '#FFFFFF', fg: remYes ? '#FFFFFF' : '#141612', b: remYes ? '#141612' : '#D9D6CC' },
+      remN: { bg: remNo ? '#141612' : '#FFFFFF', fg: remNo ? '#FFFFFF' : '#141612', b: remNo ? '#141612' : '#D9D6CC' },
+      setRemY: () => set('rem', Object.assign({}, s.rem, { on: true })), setRemN: () => set('rem', Object.assign({}, s.rem, { on: false })),
+      setRemA: (e) => set('rem', Object.assign({}, s.rem, { amt: e.target.value })), setRemF: (e) => set('rem', Object.assign({}, s.rem, { freq: e.target.value })),
+      setVivA: (e) => set('viv', Object.assign({}, s.viv, { amt: e.target.value })), setVivF: (e) => set('viv', Object.assign({}, s.viv, { freq: e.target.value })),
+      addInc: () => set('inc', s.inc.concat([{ name: '', amt: '', freq: 'mensual', abn: false }])),
+      s0: st === 0, s1: st === 1, s2: st === 2, s3: st === 3, s4: st === 4, s5: st === 5, s6: st === 6,
+      title: T[st], stepText: 'Paso ' + (st + 1) + ' de 7',
+      incM: fmt(incomeM), outM: fmt(outM), netM: fmt(net), netC: net < 0 ? '#8A4B12' : '#1E5A3F', netLbl: net < 0 ? 'Te falta' : 'Te sobra', lines,
+      remM: fmt(remM), vivM: fmt(vivM), basM: fmt(basM), deuM: fmt(deuM),
+      navVis: st === 6 ? 'hidden' : 'visible', backVis: st === 0 ? 'hidden' : 'visible', nextLabel: st === 5 ? 'Crear mi plan' : 'Siguiente',
+      back: () => set('step', Math.max(0, st - 1)), next: () => set('step', Math.min(6, st + 1))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Plan anual</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0}
+a{color:#141612}a:hover{color:#1E5A3F}
+.num{font-variant-numeric:tabular-nums}
+.cell:focus{outline:2px solid #141612;background:#FFFFFF}
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Principal" style="flex: 1 1 220px; max-width: 248px; background: #FBFAF6; border-right: 1px solid #E6E4DC; padding: 22px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px 10px 8px">
+      <a href="Main.dc.html" style="text-decoration: none; display: flex; align-items: center"><img src="/_blob/bb0e7d557e23b395ba835e41bc61c1a6" alt="Revolución 360 · Revolución del Dinero" style="height: 38px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; align-self: flex-start; display: block; flex: none"></a>
+    </div>
+    <span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Tu plata</span><a href="Main.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #ECEAE2; color: #141612"><span aria-hidden="true" style="position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #F2CD00"></span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan anual</a><a href="Movimientos.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Cuentas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg>Cuentas</a><a href="Metas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Metas</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Entiende tus números</span><a href="Forecast.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Proyección</a><a href="Analisis.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/></svg>Análisis</a><a href="Deudas.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Deudas e impuestos</a><a href="Inversiones.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M4 20h16"/><path d="M7 16v-4M12 16V8M17 16V5"/></svg>Inversiones</a><span style="font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #8A8D83; padding: 18px 12px 6px">Aprende</span><a href="Academia.dc.html" style="text-decoration: none; position: relative; display: flex; align-items: center; gap: 11px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 450; background: transparent; color: #4A4D45"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia <span style="margin-left: auto; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #FFF3B8; color: #5C4A00">340 pts</span></a>
+    <a href="Cierre.dc.html" style="text-decoration: none; margin-top: 18px; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid #EADFA0; background: #FFF8D6; color: #141612">
+      <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; flex: none; background: conic-gradient(#F2CD00 0 80%, #EADFA0 80% 100%); display: flex; align-items: center; justify-content: center"><span style="width: 26px; height: 26px; border-radius: 50%; background: #FFF8D6; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">6d</span></span>
+      <span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; font-weight: 600">Cierra noviembre</span><span style="font-size: 12px; color: #6B5A10">5 minutos · quedan 6 días</span></span></a>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid #E6E4DC">
+      <div style="display: flex; align-items: center; gap: 4px">
+        <a href="Perfil.dc.html" style="text-decoration: none; color: #141612; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 10px; flex: 1; min-width: 0; background: transparent">
+          <span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 50%; background: #141612; color: #F2CD00; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; flex: none">J</span>
+          <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 13px; font-weight: 600">Jonathan</span><span style="font-size: 12px; color: #6B6E64">Mi perfil</span></span></a>
+        <a href="Notificaciones.dc.html" aria-label="Notificaciones" title="Notificaciones" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M6 9a6 6 0 0 1 12 0c0 6.5 2.5 8.5 2.5 8.5h-17S6 15.5 6 9"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg><span aria-hidden="true" style="position: absolute; top: 8px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: #F2CD00; box-shadow: 0 0 0 2px #FBFAF6"></span></a>
+        <a href="Ayuda.dc.html" aria-label="Ayuda" title="Ayuda" style="text-decoration: none; position: relative; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4A4D45; background: transparent"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.7"/><path d="M12 17.2v.1"/></svg></a>
+      </div>
+      <div style="display: flex; flex-direction: column; padding: 0 2px">
+        <a href="Suscripcion.dc.html" style="text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4A4D45; font-weight: 450; padding: 6px 8px"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B6E64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg>Suscripción</a>
+        
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px 0">
+        <img src="/_blob/07130166ac57906f8a4d3175882f16f6" alt="Revolución del Dinero" style="width: 30px; height: 30px">
+        <span style="font-size: 11px; color: #6B6E64; line-height: 1.35">Una herramienta de<br><span style="color: #141612; font-weight: 600">Revolución del Dinero</span></span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 40px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; max-width: 1280px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 14px; color: #5F6359">Decide tu año completo, no mes a mes</span>
+        <h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Plan anual 2026</h1>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <a href="PlanGuiado.dc.html" style="text-decoration: none; display: inline-flex; align-items: center; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 16px; border: 1px solid #B9DFD0; background: #FFF8D6; color: #1E5A3F; border-radius: 10px">Armar con asistente</a>
+        <button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 16px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; border-radius: 10px">Duplicar como plan 2027</button>
+        <button type="button" onClick="{{ toggleAdd }}" aria-expanded="{{ addOpen }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 16px; border: 0; background: #141612; color: #FFFFFF; border-radius: 10px; cursor: pointer">+ Agregar línea</button>
+      </div>
+    </header>
+
+    <sc-if value="{{ showAdd }}" hint-placeholder-val="{{ true }}">
+      <section aria-labelledby="add-t" style="background: #FFFFFF; border-radius: 16px; padding: 26px 28px; border: 1px solid #E6E4DC; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00; display: flex; flex-direction: column; gap: 22px">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h2 id="add-t" style="margin: 0; font-size: 20px; font-weight: 600">Nueva línea en tu plan</h2>
+            <span style="font-size: 13px; color: #5F6359">Un ingreso, un gasto o una deuda; para un mes, varios o todo el año.</span>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+            <span style="font-size: 12px; font-weight: 500; color: #5F6359">Ejemplos:</span>
+            <sc-for list="{{ presets }}" as="p" hint-placeholder-count="3">
+              <button type="button" onClick="{{ p.apply }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 34px; padding: 0 12px; border: 1px dashed #CFCCC2; background: #FFF8D6; color: #1E5A3F; border-radius: 999px; cursor: pointer">{{ p.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px">
+          <div style="display: flex; flex-direction: column; gap: 18px">
+            <div style="display: flex; flex-direction: column; gap: 7px">
+              <label for="nl-name" style="font-size: 13px; font-weight: 600">1. ¿Cómo se llama?</label>
+              <input id="nl-name" type="text" value="{{ nl.name }}" onChange="{{ setName }}" placeholder="Ej. Bono de fin de año" style="font: inherit; font-size: 15px; height: 48px; padding: 0 14px; border: 1.5px solid #D9D6CC; border-radius: 12px">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <span id="nl-cat-l" style="font-size: 13px; font-weight: 600">2. ¿Dónde va?</span>
+              <div role="radiogroup" aria-labelledby="nl-cat-l" style="display: flex; flex-wrap: wrap; gap: 8px">
+                <sc-for list="{{ catPick }}" as="c" hint-placeholder-count="9">
+                  <button type="button" role="radio" aria-checked="{{ c.checked }}" onClick="{{ c.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 12px 0 8px; border-radius: 999px; border: 2px solid {{ c.border }}; background: {{ c.bg }}; color: #141612; display: flex; align-items: center; gap: 7px; cursor: pointer"><span aria-hidden="true" style="width: 18px; height: 18px; border-radius: 50%; background: {{ c.color }}"></span>{{ c.name }}</button>
+                </sc-for>
+                <button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 12px; border-radius: 999px; border: 1.5px dashed #CFCCC2; background: #FFFFFF; color: #3A3D36; cursor: pointer">+ Nueva categoría</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 18px">
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <span id="nl-when-l" style="font-size: 13px; font-weight: 600">3. ¿Cuándo?</span>
+              <div role="radiogroup" aria-labelledby="nl-when-l" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #F6F5F0; border-radius: 12px; padding: 4px">
+                <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3">
+                  <button type="button" role="radio" aria-checked="{{ m.checked }}" onClick="{{ m.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; border: 0; border-radius: 9px; background: {{ m.bg }}; color: {{ m.fg }}; cursor: pointer">{{ m.label }}</button>
+                </sc-for>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: flex-end">
+                <sc-if value="{{ showFrom }}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; flex-direction: column; gap: 6px; flex: 1">
+                    <label for="nl-from" style="font-size: 12px; font-weight: 500; color: #5F6359">{{ fromLabel }}</label>
+                    <select id="nl-from" value="{{ nl.from }}" onChange="{{ setFrom }}" style="font: inherit; font-size: 14px; height: 44px; padding: 0 10px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"><sc-for list="{{ monthOpts }}" as="o" hint-placeholder-count="12"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ showTo }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 6px; flex: 1">
+                    <label for="nl-to" style="font-size: 12px; font-weight: 500; color: #5F6359">Hasta</label>
+                    <select id="nl-to" value="{{ nl.to }}" onChange="{{ setTo }}" style="font: inherit; font-size: 14px; height: 44px; padding: 0 10px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"><sc-for list="{{ monthOpts }}" as="o" hint-placeholder-count="12"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <span id="nl-freq-l" style="font-size: 13px; font-weight: 600">4. ¿Cada cuánto llega o se paga?</span>
+              <div role="radiogroup" aria-labelledby="nl-freq-l" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #F6F5F0; border-radius: 12px; padding: 4px">
+                <sc-for list="{{ freqs }}" as="q" hint-placeholder-count="3">
+                  <button type="button" role="radio" aria-checked="{{ q.checked }}" onClick="{{ q.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; border: 0; border-radius: 9px; background: {{ q.bg }}; color: {{ q.fg }}; cursor: pointer">{{ q.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ notMonthly }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #5F6359">Primer pago: viernes 2 de enero. Los meses con un pago extra se ven más altos.</span></sc-if>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 7px">
+              <label for="nl-amt" style="font-size: 13px; font-weight: 600">5. Monto {{ amtLabel }}</label>
+              <input id="nl-amt" class="num" type="text" inputmode="decimal" value="{{ nl.amount }}" onChange="{{ setAmt }}" placeholder="$0" style="font: inherit; font-size: 22px; font-weight: 600; height: 52px; padding: 0 14px; border: 1.5px solid #D9D6CC; border-radius: 12px">
+            </div>
+          </div>
+        </div>
+
+        <div style="background: #F8F7F2; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 13px">
+            <span style="font-weight: 600">Así quedará en tu plan</span>
+            <span style="color: #5F6359"><strong style="color: #141612">{{ pv.title }}</strong> en {{ pv.group }} · total <strong class="num" style="color: #141612">{{ pv.total }}</strong></span>
+          </div>
+          <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{ pv.cells }}" as="c" hint-placeholder-count="12">
+              <div style="border-radius: 10px; padding: 8px 4px; text-align: center; background: {{ c.bg }}; color: {{ c.fg }}; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 11px; font-weight: 600">{{ c.m }}</span><span class="num" style="font-size: 12px; font-weight: 600">{{ c.v }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px">
+          <button type="button" onClick="{{ toggleAdd }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; padding: 0 18px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; border-radius: 12px; cursor: pointer">Cancelar</button>
+          <button type="button" onClick="{{ addLine }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; padding: 0 22px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">Agregar al plan</button>
+        </div>
+      </section>
+    </sc-if>
+
+    <section aria-label="Totales del año" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px">
+      <div style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 18px 0; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 12px; color: #5F6359">Entra en el año</span>
+        <span class="num big" style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em">{{ sum.inc }}</span>
+      </div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 18px 20px; border: 1px solid #E6E4DC; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 12px; color: #5F6359">Sale en el año</span>
+        <span class="num big" style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em">{{ sum.exp }}</span>
+      </div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 18px 20px; border: 1px solid #E6E4DC; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 12px; color: #5F6359">Te sobra en el año</span>
+        <span class="num big" style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em; color: {{ sum.netColor }}">{{ sum.net }}</span>
+      </div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 18px 20px; border: 1px solid #E6E4DC; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 12px; color: #5F6359">Meses en negativo</span>
+        <span class="num big" style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em; color: {{ sum.negColor }}">{{ sum.neg }}</span>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 13px; color: #3A3D36">
+      <span style="display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 4px; background: #EFEDE6"></span>Mes cerrado</span>
+      <span style="display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 4px; background: #E3F1E8; outline: 1.5px solid #141612"></span>Mes actual</span>
+      <span style="display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 4px; background: #FFFFFF; outline: 1px solid #E6E4DC"></span>Planeado</span>
+      <span style="margin-left: auto; color: #5F6359">Edita cualquier celda: los totales se recalculan al instante.</span>
+    </div>
+
+    <section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; overflow: hidden">
+      <div style="overflow-x: auto">
+        <table style="border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 1240px; width: 100%">
+          <thead>
+            <tr>
+              <th scope="col" style="position: sticky; left: 0; z-index: 2; background: #FFFFFF; text-align: left; padding: 14px 16px; font-size: 12px; color: #5F6359; font-weight: 600; min-width: 210px; border-bottom: 1px solid #E6E4DC">Concepto</th>
+              <sc-for list="{{ heads }}" as="h" hint-placeholder-count="12">
+                <th scope="col" style="padding: 14px 6px; font-size: 12px; font-weight: 600; color: {{ h.fg }}; background: {{ h.bg }}; text-align: right; min-width: 72px; border-bottom: 1px solid #E6E4DC"><a href="Presupuesto.dc.html" title="Ver plan vs. real de {{ h.label }}" style="color: inherit; text-decoration: underline; text-decoration-color: #CFCCC2; text-underline-offset: 3px">{{ h.label }}</a></th>
+              </sc-for>
+              <th scope="col" style="padding: 14px 16px; font-size: 12px; font-weight: 600; text-align: right; min-width: 90px; border-bottom: 1px solid #E6E4DC">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ groups }}" as="g" hint-placeholder-count="9">
+              <tr>
+                <th scope="rowgroup" style="position: sticky; left: 0; z-index: 1; background: #F8F7F2; text-align: left; padding: 12px 16px 10px; font-size: 13px; font-weight: 600; border-top: 1px solid #E6E4DC">
+                  <span style="display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: {{ g.color }}"></span>{{ g.name }}</span>
+                </th>
+                <sc-for list="{{ g.totals }}" as="t" hint-placeholder-count="12">
+                  <td class="num" style="background: #F8F7F2; padding: 12px 8px 10px; text-align: right; font-weight: 600; color: #3A3D36; border-top: 1px solid #E6E4DC">{{ t }}</td>
+                </sc-for>
+                <td class="num" style="background: #F8F7F2; padding: 12px 16px 10px; text-align: right; font-weight: 600; border-top: 1px solid #E6E4DC">{{ g.total }}</td>
+              </tr>
+              <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+                <tr>
+                  <th scope="row" style="position: sticky; left: 0; z-index: 1; background: #FFFFFF; text-align: left; padding: 4px 16px 4px 34px; font-weight: 500; white-space: nowrap; border-top: 1px solid #EFEDE6; background: {{ r.nameBg }}">{{ r.name }}<sc-if value="{{ r.isNew }}" hint-placeholder-val="{{ false }}"> <span style="font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: #141612; color: #FFFFFF; margin-left: 6px">NUEVA</span></sc-if></th>
+                  <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="12">
+                    <td style="padding: 3px 3px; background: {{ c.bg }}; border-top: 1px solid #EFEDE6">
+                      <input class="cell num" type="text" inputmode="decimal" aria-label="{{ c.label }}" value="{{ c.v }}" onChange="{{ c.set }}" style="font: inherit; font-size: 13px; width: 100%; box-sizing: border-box; text-align: right; border: 0; border-radius: 6px; padding: 7px 6px; background: transparent; color: {{ c.fg }}">
+                    </td>
+                  </sc-for>
+                  <td class="num" style="padding: 4px 16px; text-align: right; font-weight: 600; border-top: 1px solid #EFEDE6">{{ r.total }}</td>
+                </tr>
+              </sc-for>
+            </sc-for>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" style="position: sticky; left: 0; z-index: 1; background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; text-align: left; padding: 14px 0; font-weight: 600">Entra</th>
+              <sc-for list="{{ incT }}" as="t" hint-placeholder-count="12"><td class="num" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; padding: 14px 0; text-align: right; font-weight: 600">{{ t }}</td></sc-for>
+              <td class="num" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; padding: 14px 0; text-align: right; font-weight: 600">{{ sum.inc }}</td>
+            </tr>
+            <tr>
+              <th scope="row" style="position: sticky; left: 0; z-index: 1; background: #2A2D27; color: #FFFFFF; text-align: left; padding: 14px 16px; font-weight: 600">Sale</th>
+              <sc-for list="{{ expT }}" as="t" hint-placeholder-count="12"><td class="num" style="background: #2A2D27; color: #FFFFFF; padding: 14px 8px; text-align: right; font-weight: 600">{{ t }}</td></sc-for>
+              <td class="num" style="background: #2A2D27; color: #FFFFFF; padding: 14px 16px; text-align: right; font-weight: 600">{{ sum.exp }}</td>
+            </tr>
+            <tr>
+              <th scope="row" style="position: sticky; left: 0; z-index: 1; background: #FFFFFF; text-align: left; padding: 14px 16px; font-weight: 600">Te sobra / falta</th>
+              <sc-for list="{{ netT }}" as="t" hint-placeholder-count="12">
+                <td style="padding: 10px 4px; text-align: right"><span class="num" style="display: inline-block; padding: 4px 8px; border-radius: 8px; font-weight: 600; background: {{ t.bg }}; color: {{ t.fg }}">{{ t.v }}</span></td>
+              </sc-for>
+              <td class="num" style="padding: 14px 16px; text-align: right; font-weight: 600; color: {{ sum.netColor }}">{{ sum.net }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2300}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const z = (n) => Array(n).fill(0);
+    this.defs = [
+      { name: 'Ingresos', color: '#141612', income: true, rows: [
+        ['Sueldo', Array(12).fill(5418)],
+        ['Retiros de Easy Aussie', [270,950,900,1330,900,1250,1250,1000,800,800,800,800]],
+        ['Renta del auto', [500,500,500,500,625,500,500,0,0,0,0,0]],
+        ['E-bikes', [275,470,380,350,350,0,0,0,200,200,200,200]],
+        ['Ingresos extra', [0,10200,0,0,110,110,1610,1000,0,0,0,0]] ] },
+      { name: 'Hogar y básicos', color: '#141612', rows: [
+        ['Home', [1352,1270,1270,1270,1330,670,0,1330,1330,1330,1330,990]],
+        ['Groceries', [270,300,300,300,300,100,0,300,400,400,400,400]],
+        ['Felix Mobile', [40,40,40,40,40,40,80,40,40,40,40,40]],
+        ['Suscripciones', [75,190,270,70,240,100,40,170,120,125,125,25]],
+        ['Seguro de salud', [112,112,112,117,117,117,128,128,128,128,128,128]] ] },
+      { name: 'Vehículo', color: '#6FA898', rows: [
+        ['Car expenses', Array(12).fill(180)],
+        ['Bike expenses', Array(12).fill(90)],
+        ['Gasolina', [30,30,30,30,30,30,0,90,100,140,100,100]],
+        ['Seguro de la moto', [76,76,76,76,76,76,76,76,76,80,80,80]] ] },
+      { name: 'Deudas', color: '#C46A2A', rows: [
+        ['Inner Circle', [655,655,655,655,655,655,655,655,655,700,700,700]],
+        ['Bike Payment', [600,100,2100,2000,2300,0,0,0,100,100,100,0]] ] },
+      { name: 'Comida y ocio', color: '#A8D3C3', rows: [
+        ['Food and Entertainment', [500,450,450,450,400,200,0,400,400,400,400,400]],
+        ['Otros', [0,0,0,0,200,100,0,280,0,0,0,0]] ] },
+      { name: 'Ahorro e inversión', color: '#4C7FB5', rows: [
+        ['Investment S&P500', [100,100,100,100,100,100,100,100,150,150,150,150]],
+        ['Emergency fund', Array(12).fill(100)] ] },
+      { name: 'Metas', color: '#E3B800', rows: [
+        ['Viaje a Colombia', [0,0,0,0,0,0,0,0,2000,1900,2000,2500]] ] },
+      { name: 'Negocio', color: '#2D5C8A', rows: [
+        ['Aportes a Easy Aussie', [270,1000,1200,785,0,0,400,2700,550,550,400,550]] ] },
+      { name: 'Familia y remesas', color: '#B8860B', rows: [] },
+      { name: 'Estilo de vida', color: '#3E8C7A', rows: [
+        ['Travelling Maria del Mar', [200,400,200,0,0,0,0,0,0,0,0,0]],
+        ['Inner Circle Immersion', [0,0,0,0,1200,1800,0,0,0,0,0,0]],
+        ['Europe trip', [1700,3200,0,1350,0,2866,6850,700,0,0,0,0]] ] }
+    ];
+    const vals = {};
+    this.defs.forEach((g, gi) => g.rows.forEach((r, ri) => { vals[gi + '-' + ri] = r[1].slice(); }));
+    this.state = { vals, added: {}, show: true, lastKey: null, nl: { name: 'Ingreso extra diciembre', gi: 0, mode: 'once', from: '11', to: '11', amount: '', freq: 'mensual' } };
+  }
+  setNl(patch) { this.setState({ nl: Object.assign({}, this.state.nl, patch) }); }
+  renderVals() {
+    const M = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const MF = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const CUR = 10;
+    const fmt = (v) => (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-AU');
+    const short = (v) => v === 0 ? '—' : fmt(v);
+    const colBg = (i) => i < CUR ? '#F8F7F2' : (i === CUR ? '#FFF8D6' : '#FFFFFF');
+    const { vals, added, nl, lastKey } = this.state;
+    const inc = Array(12).fill(0), exp = Array(12).fill(0);
+    const groups = this.defs.map((g, gi) => {
+      const gt = Array(12).fill(0);
+      const list = g.rows.map((r, ri) => ({ name: r[0], key: gi + '-' + ri, isNew: false }))
+        .concat((added[gi] || []).map((n, j) => ({ name: n, key: gi + '-a' + j, isNew: true })));
+      const rows = list.map((rr) => {
+        const key = rr.key;
+        const v = vals[key];
+        v.forEach((x, i) => { gt[i] += x; });
+        return {
+          name: rr.name, isNew: rr.isNew, nameBg: key === lastKey ? '#FFF8D6' : '#FFFFFF',
+          total: fmt(v.reduce((a, b) => a + b, 0)),
+          cells: v.map((x, i) => ({
+            v: x === 0 ? '' : String(x),
+            label: rr.name + ' ' + M[i],
+            bg: key === lastKey && x !== 0 ? '#E3F1E8' : colBg(i),
+            fg: i < CUR ? '#5F6359' : '#141612',
+            set: (e) => {
+              const n = parseFloat(String(e.target.value).replace(/[^0-9.\-]/g, '')) || 0;
+              const nv = Object.assign({}, this.state.vals);
+              const arr = nv[key].slice(); arr[i] = n; nv[key] = arr;
+              this.setState({ vals: nv });
+            }
+          }))
+        };
+      });
+      gt.forEach((x, i) => { if (g.income) inc[i] += x; else exp[i] += x; });
+      return { name: g.name, color: g.color, rows, totals: gt.map(short), total: fmt(gt.reduce((a, b) => a + b, 0)) };
+    });
+    const net = inc.map((x, i) => x - exp[i]);
+    const tInc = inc.reduce((a, b) => a + b, 0), tExp = exp.reduce((a, b) => a + b, 0), tNet = tInc - tExp;
+    const neg = net.filter((x) => x < 0).length;
+    const heads = M.map((label, i) => ({ label: i === CUR ? label + ' •' : label, bg: colBg(i), fg: i === CUR ? '#141612' : '#3A3D36' }));
+
+    const amt = parseFloat(String(nl.amount).replace(/[^0-9.\-]/g, '')) || 0;
+    const f = Number(nl.from), t = Number(nl.to);
+    const inRange = (i) => nl.mode === 'all' ? true : (nl.mode === 'once' ? i === f : (i >= Math.min(f, t) && i <= Math.max(f, t)));
+    const pays = (i) => {
+      if (nl.freq === 'mensual') return 1;
+      const step = nl.freq === 'semanal' ? 7 : 14; let c = 0;
+      for (let d = new Date(2026, 0, 2); d.getFullYear() === 2026; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + step)) { if (d.getMonth() === i) c++; }
+      return c;
+    };
+    const newVals = M.map((_, i) => inRange(i) ? amt * pays(i) : 0);
+    const pv = {
+      title: nl.name || 'Nueva línea',
+      group: this.defs[nl.gi].name,
+      total: amt ? fmt(newVals.reduce((a, b) => a + b, 0)) : '[MONTO]',
+      cells: M.map((m, i) => ({ m, v: inRange(i) ? (amt ? fmt(newVals[i]) : (nl.freq === 'mensual' ? '$?' : pays(i) + ' pagos')) : '—', bg: inRange(i) ? '#141612' : '#FFFFFF', fg: inRange(i) ? '#FFFFFF' : '#5F6359' }))
+    };
+    const catPick = this.defs.map((g, gi) => {
+      const on = nl.gi === gi;
+      return { name: g.name, color: g.color, checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFF8D6' : '#FFFFFF', pick: () => this.setNl({ gi }) };
+    });
+    const modes = [['once', 'Un mes'], ['range', 'Varios meses'], ['all', 'Todo el año']].map(([id, label]) => {
+      const on = nl.mode === id;
+      return { label, checked: String(on), bg: on ? '#FFFFFF' : 'transparent', fg: on ? '#141612' : '#5F6359', pick: () => this.setNl({ mode: id }) };
+    });
+    const freqs = [['mensual', 'Cada mes'], ['quincenal', 'Cada 2 semanas'], ['semanal', 'Cada semana']].map(([id, label]) => {
+      const on = nl.freq === id;
+      return { label, checked: String(on), bg: on ? '#FFFFFF' : 'transparent', fg: on ? '#141612' : '#5F6359', pick: () => this.setNl({ freq: id }) };
+    });
+    const presets = [
+      { label: 'Ingreso extra en diciembre', apply: () => this.setNl({ name: 'Ingreso extra diciembre', gi: 0, mode: 'once', from: '11', to: '11', amount: '', freq: 'mensual' }) },
+      { label: 'Deuda nueva por 2 meses', apply: () => this.setNl({ name: 'Deuda nueva (2 meses)', gi: 3, mode: 'range', from: '10', to: '11', amount: '', freq: 'mensual' }) },
+      { label: 'Arriendo semanal', apply: () => this.setNl({ name: 'Arriendo', gi: 1, mode: 'all', from: '0', to: '11', amount: '', freq: 'semanal' }) }
+    ];
+    const addLine = () => {
+      const gi = nl.gi, list = (this.state.added[gi] || []).slice(), key = gi + '-a' + list.length;
+      list.push(nl.name || 'Nueva línea');
+      const nv = Object.assign({}, this.state.vals); nv[key] = newVals;
+      this.setState({ added: Object.assign({}, this.state.added, { [gi]: list }), vals: nv, show: false, lastKey: key });
+    };
+    return {
+      nav: [['Resumen del año','Main.dc.html'],['Plan anual','Plan.dc.html'],['Presupuesto del mes','Presupuesto.dc.html'],['Movimientos','Movimientos.dc.html'],['Forecast y análisis','Forecast.dc.html'],['Deudas y negocio','Deudas.dc.html']].map(([label, href]) => {
+        const on = href === 'Plan.dc.html';
+        return { label, href, current: on ? 'page' : 'false', weight: on ? '600' : '450', bg: on ? '#E3F1E8' : 'transparent', fg: on ? '#141612' : '#3A3D36', dot: on ? '#141612' : '#CFCCC2' };
+      }),
+      showAdd: this.state.show, addOpen: String(this.state.show), toggleAdd: () => this.setState({ show: !this.state.show }),
+      nl, pv, catPick, modes, presets, addLine, freqs, notMonthly: nl.freq !== 'mensual', amtLabel: nl.freq === 'semanal' ? 'por semana' : (nl.freq === 'quincenal' ? 'por pago (cada 2 semanas)' : 'por mes'),
+      monthOpts: MF.map((label, i) => ({ v: String(i), label })),
+      showFrom: nl.mode !== 'all', showTo: nl.mode === 'range', fromLabel: nl.mode === 'once' ? 'Mes' : 'Desde',
+      setName: (e) => this.setNl({ name: e.target.value }),
+      setFrom: (e) => this.setNl({ from: e.target.value }),
+      setTo: (e) => this.setNl({ to: e.target.value }),
+      setAmt: (e) => this.setNl({ amount: e.target.value }),
+      heads, groups,
+      incT: inc.map(fmt), expT: exp.map(fmt),
+      netT: net.map((x) => ({ v: fmt(x), bg: x < 0 ? '#FBEBD8' : '#FFF8D6', fg: x < 0 ? '#8A4B12' : '#1E5A3F' })),
+      sum: { inc: fmt(tInc), exp: fmt(tExp), net: fmt(tNet), netColor: tNet < 0 ? '#8A4B12' : '#141612', neg: neg + ' de 12', negColor: neg > 0 ? '#8A4B12' : '#141612' }
+    };
+  }
+}
+</script>
+</body>
+</html>

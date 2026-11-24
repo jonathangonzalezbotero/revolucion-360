@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración · Usuarios</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Administración" style="flex: 1 1 220px; max-width: 256px; background: #141612; color: #FFFFFF; padding: 28px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 8px"><img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 38px; height: 38px"><span style="display: flex; flex-direction: column"><strong style="font-size: 15px">Revolución 360</strong><span style="font-size: 12px; color: #8FD3B9; font-weight: 600">Administración</span></span></div>
+    <a href="Main.dc.html" style="text-decoration: none; font-size: 13px; color: #9FC8B9; padding: 6px 10px 22px">‹ Volver a la app</a>
+    <a href="Admin.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Resumen</a><a href="AdminUsuarios.dc.html" aria-current="page" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: #2A2D27; color: #FFFFFF">Usuarios y accesos</a><a href="AdminMenu.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Menú y funciones</a><a href="AdminAcademia.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Academia</a><a href="AdminPlanes.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Planes y precios</a><a href="AdminPaises.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contenido por país</a><a href="AdminSoporte.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Soporte y privacidad</a><a href="AdminActividad.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Registro de actividad</a>
+    <p style="margin-top: auto; font-size: 12px; color: #7FA9A0; line-height: 1.5; padding: 0 10px">Este panel no muestra los datos financieros de los usuarios.</p>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 44px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; max-width: 1280px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Quién usa la app y con qué acceso</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Usuarios y accesos</h1></div>
+      <button type="button" onClick="{{ toggle }}" aria-expanded="{{ open }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">+ Dar acceso gratuito</button>
+    </header>
+    <sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
+      <section aria-labelledby="gift" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00; padding: 24px 26px; display: flex; flex-direction: column; gap: 18px">
+        <h2 id="gift" style="margin: 0; font-size: 19px; font-weight: 600">Dar acceso gratuito a Pro</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px"><span id="g-who" style="font-size: 13px; font-weight: 600">¿A quién?</span>
+          <div role="radiogroup" aria-labelledby="g-who" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #F6F5F0; border-radius: 12px; padding: 4px; max-width: 560px"><sc-for list="{{ whos }}" as="w" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ w.checked }}" onClick="{{ w.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; border: 0; border-radius: 9px; background: {{ w.bg }}; color: {{ w.fg }}; cursor: pointer">{{ w.l }}</button></sc-for></div>
+          <sc-if value="{{ isGrupo }}" hint-placeholder-val="{{ true }}"><div style="display: flex; gap: 10px; flex-wrap: wrap"><label for="g-grp" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Grupo</label><select id="g-grp" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; min-width: 280px"><sc-for list="{{ groups }}" as="g" hint-placeholder-count="3"><option>{{ g }}</option></sc-for></select><button type="button" onClick="{{ togGrp }}" aria-expanded="{{ grpOpen }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 44px; padding: 0 14px; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612; border-radius: 12px; cursor: pointer">+ Crear grupo</button></div>
+          <sc-if value="{{ grp }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 12px; background: #F8F7F2; border-radius: 14px; padding: 16px; max-width: 620px">
+            <strong style="font-size: 15px">Nuevo grupo</strong>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+              <div style="display: flex; flex-direction: column; gap: 6px"><label for="ng-n" style="font-size: 12px; font-weight: 500; color: #5F6359">Nombre</label><input id="ng-n" type="text" value="{{ gname }}" onChange="{{ setG }}" placeholder="Ej. Bootcamp marzo 2027" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"></div>
+              <div style="display: flex; flex-direction: column; gap: 6px"><label for="ng-s" style="font-size: 12px; font-weight: 500; color: #5F6359">Sumar personas</label><select id="ng-s" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 100%"><option>Pegando correos</option><option>Con un código de invitación</option><option>Desde una lista CSV</option></select></div>
+            </div>
+            <span style="font-size: 12px; color: #5F6359">Un grupo sirve para dar o quitar acceso a muchas personas a la vez, y para ver cómo usa la app cada cohorte.</span>
+            <div style="display: flex; gap: 10px; justify-content: flex-end"><button type="button" onClick="{{ togGrp }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 42px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; border-radius: 10px; cursor: pointer">Cancelar</button><button type="button" onClick="{{ addG }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 42px; padding: 0 16px; border: 0; background: #141612; color: #FFFFFF; border-radius: 10px; cursor: pointer">Crear grupo</button></div>
+          </div></sc-if>
+          <sc-if value="{{ hasGmsg }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin: 0; font-size: 13px; font-weight: 600; color: #1E5A3F; background: #E3F1E8; border-radius: 10px; padding: 10px 12px; max-width: 620px">{{ gmsg }}</p></sc-if></sc-if>
+          <sc-if value="{{ isUno }}" hint-placeholder-val="{{ false }}"><label for="g-mails" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Correos</label><textarea id="g-mails" rows="2" placeholder="Pega uno o varios correos, separados por coma" style="font: inherit; font-size: 14px; padding: 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; max-width: 560px"></textarea></sc-if>
+          <sc-if value="{{ isCodigo }}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 10px; flex-wrap: wrap"><label for="g-code" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Código</label><input id="g-code" type="text" value="RUTA2027" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; font-weight: 600; letter-spacing: .08em; width: 200px"><label for="g-max" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Usos máximos</label><input id="g-max" type="text" inputmode="numeric" placeholder="Usos máximos" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 160px"></div></sc-if>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><span id="g-dur" style="font-size: 13px; font-weight: 600">¿Por cuánto tiempo?</span>
+          <div role="radiogroup" aria-labelledby="g-dur" style="display: flex; gap: 8px; flex-wrap: wrap"><sc-for list="{{ durs }}" as="d" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ d.checked }}" onClick="{{ d.pick }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid {{ d.b }}; background: {{ d.bg }}; color: {{ d.fg }}; cursor: pointer">{{ d.l }}</button></sc-for></div>
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+            <sc-if value="{{ isMeses }}" hint-placeholder-val="{{ true }}"><label for="g-m" style="font-size: 13px; font-weight: 600">Meses</label><input id="g-m" class="num" type="text" inputmode="numeric" value="{{ months }}" onChange="{{ setMonths }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; width: 90px"></sc-if>
+            <sc-if value="{{ isFecha }}" hint-placeholder-val="{{ false }}"><label for="g-f" style="font-size: 13px; font-weight: 600">Hasta</label><input id="g-f" type="date" value="{{ until }}" onChange="{{ setUntil }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box"></sc-if>
+            <span style="font-size: 14px; font-weight: 600; color: #1E5A3F; background: #FFF8D6; border-radius: 999px; padding: 8px 14px">{{ vence }}</span>
+          </div>
+        </div>
+        <label style="display: flex; gap: 10px; align-items: center; font-size: 14px"><input type="checkbox" defaultChecked="{{ true }}" style="width: 20px; height: 20px; accent-color: #141612; margin: 0">Avisarles por correo y en la app</label>
+        <span style="font-size: 13px; color: #5F6359">Al vencer pasan a Gratis automáticamente, sin perder sus datos. Puedes extender o quitar el acceso cuando quieras.</span>
+        <div style="display: flex; gap: 10px; justify-content: flex-end"><button type="button" onClick="{{ toggle }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; padding: 0 16px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; border-radius: 12px; cursor: pointer">Cancelar</button><button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; padding: 0 20px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px">Dar acceso</button></div>
+      </section>
+    </sc-if>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
+      <label for="u-q" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Buscar usuario</label><input id="u-q" type="search" placeholder="Buscar por nombre o correo" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box; flex: 1 1 260px">
+      <label for="u-p" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Plan</label><select id="u-p" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box"><option>Todos los planes</option><option>Gratis</option><option>Pro</option><option>Acceso gratis</option></select>
+      <label for="u-c" style="position: absolute; width: 1px; height: 1px; overflow: hidden">País</label><select id="u-c" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; box-sizing: border-box"><option>Todos los países</option><option>Australia</option><option>Colombia</option><option>Otro país</option></select>
+      <button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 44px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; border-radius: 12px">Exportar lista</button>
+    </div>
+    <section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; overflow: hidden"><div style="overflow-x: auto"><table style="width: 100%; min-width: 820px; border-collapse: collapse; font-size: 14px">
+      <thead><tr style="text-align: left; font-size: 12px; color: #5F6359; background: #F8F7F2"><th scope="col" style="padding: 12px 18px; font-weight: 600">Usuario</th><th scope="col" style="padding: 12px; font-weight: 600">País</th><th scope="col" style="padding: 12px; font-weight: 600">Plan</th><th scope="col" style="padding: 12px; font-weight: 600">Vence / renueva</th><th scope="col" style="padding: 12px; font-weight: 600">Último acceso</th><th scope="col" style="padding: 12px 18px; font-weight: 600; text-align: right">Acciones</th></tr></thead>
+      <tbody><sc-for list="{{ rows }}" as="r" hint-placeholder-count="4"><tr style="border-top: 1px solid #EFEDE6"><td style="padding: 14px 18px"><span style="display: flex; flex-direction: column; gap: 2px"><strong>{{ r.n }}</strong><span style="font-size: 12px; color: #5F6359">{{ r.e }}</span></span></td><td style="padding: 14px 12px">{{ r.c }}</td><td style="padding: 14px 12px"><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: {{ r.bg }}; color: {{ r.fg }}">{{ r.p }}</span></td><td style="padding: 14px 12px; color: #3A3D36">{{ r.v }}</td><td style="padding: 14px 12px; color: #5F6359">[FECHA]</td><td style="padding: 14px 18px; text-align: right"><a href="AdminUsuario.dc.html" style="text-decoration: none; display: inline-flex; align-items: center; font-size: 13px; font-weight: 600; min-height: 36px; padding: 0 12px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 8px">Gestionar</a></td></tr></sc-for></tbody>
+    </table></div></section>
+    <span style="font-size: 12px; color: #5F6359">"Gestionar" permite cambiar el plan, extender o quitar acceso, reenviar invitación y suspender la cuenta. No muestra sus finanzas.</span>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: true, dur: 'meses', months: '12', until: '', who: 'grupo', grp: false, groups: ['Alumnos Ruta del Revolucionario 2026', 'Bootcamp financiero', 'Círculo Privado'], gname: '', gmsg: '' }; }
+  renderVals() {
+    const s = this.state;
+    const D = [['vida', 'De por vida'], ['meses', 'Por meses'], ['fecha', 'Hasta una fecha']];
+    const durs = D.map(([id, l]) => { const on = s.dur === id; return { l, checked: String(on), bg: on ? '#141612' : '#FFFFFF', fg: on ? '#FFFFFF' : '#3A3D36', b: on ? '#141612' : '#D9D6CC', pick: () => this.setState({ dur: id }) }; });
+    const W = [['uno', 'Usuarios elegidos'], ['grupo', 'Un grupo'], ['codigo', 'Código de invitación']];
+    const whos = W.map(([id, l]) => { const on = s.who === id; return { l, checked: String(on), bg: on ? '#FFFFFF' : 'transparent', fg: on ? '#141612' : '#5F6359', pick: () => this.setState({ who: id }) }; });
+    const n = parseInt(s.months, 10) || 0;
+    let vence = 'Nunca vence';
+    if (s.dur === 'meses') { const d = new Date(2026, 10, 24); d.setMonth(d.getMonth() + n); vence = n ? 'Vence el ' + d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Escribe la cantidad de meses'; }
+    if (s.dur === 'fecha') vence = s.until ? 'Vence el ' + s.until : 'Elige la fecha';
+    const rows = [
+      ['Jonathan', '[CORREO]', 'Australia', 'Acceso fundador', 'De por vida', '#FDF1DE', '#8A4B12'],
+      ['[USUARIO]', '[CORREO]', 'Australia', 'Pro', 'Se renueva [FECHA]', '#E3F1E8', '#1E5A3F'],
+      ['[USUARIO]', '[CORREO]', 'Colombia', 'Acceso gratis · Alumnos Ruta', 'Vence [FECHA]', '#E3ECF6', '#24496E'],
+      ['[USUARIO]', '[CORREO]', 'España', 'Gratis', '—', '#EFEDE6', '#3A3D36']
+    ].map(([n, e, c, p, v, bg, fg]) => ({ n, e, c, p, v, bg, fg }));
+    return { durs, whos, rows, vence, isMeses: s.dur === 'meses', isFecha: s.dur === 'fecha', months: s.months, until: s.until,
+      isGrupo: s.who === 'grupo', isUno: s.who === 'uno', isCodigo: s.who === 'codigo',
+      setMonths: (e) => this.setState({ months: e.target.value }), setUntil: (e) => this.setState({ until: e.target.value }),
+      open: s.open, toggle: () => this.setState({ open: !s.open }),
+      groups: s.groups, grp: s.grp, grpOpen: String(s.grp), togGrp: () => this.setState({ grp: !s.grp, gmsg: '' }), gname: s.gname, setG: (e) => this.setState({ gname: e.target.value }),
+      addG: () => { if (!s.gname.trim()) return; this.setState({ groups: s.groups.concat([s.gname]), grp: false, gname: '', gmsg: 'Grupo "' + s.gname + '" creado. Ya puedes darle acceso.' }); },
+      hasGmsg: !!s.gmsg, gmsg: s.gmsg };
+  }
+}
+</script>
+</body>
+</html>

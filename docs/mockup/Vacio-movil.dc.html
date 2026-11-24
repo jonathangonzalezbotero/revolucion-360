@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Inicio · usuario nuevo · móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 2500px; box-sizing: border-box; background: #F6F5F0; font-family: Geist, system-ui, sans-serif; color: #141612; display: flex; flex-direction: column; position: relative">
+  <header style="padding: 24px 20px 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px">
+    <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; color: #5F6359">Martes 24 de noviembre</span><h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">Hola, Ana</h1></div>
+    
+  </header>
+  <div class="mb" style="flex: 1; padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 12px">
+    <section style="background: radial-gradient(120% 150% at 100% 100%, rgba(242,205,0,.20) 0%, rgba(242,205,0,0) 55%), linear-gradient(135deg, #0B0C0A 0%, #1C1E19 100%); color: #FFFFFF; border-radius: 16px; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between">
+      <div style="display: flex; flex-direction: column; gap: 10px; max-width: 560px">
+        <span style="font-size: 13px; color: #CFCCC2">Bienvenida, Ana</span>
+        <p style="margin: 0; font-size: 21px; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em">Aquí vas a ver tu año completo. <span style="color: #F2CD00">Empecemos por tu plan.</span></p>
+        <a href="PlanGuiado-movil.dc.html" style="text-decoration: none; align-self: flex-start; font-size: 15px; font-weight: 600; padding: 14px 20px; border-radius: 12px; background: #F2CD00; color: #141612">Armar mi plan · 10 min</a>
+      </div>
+      <div role="img" aria-label="Video de bienvenida de Jonathan (por grabar)" style="width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; background: rgba(255,255,255,.08); border: 1px dashed rgba(255,255,255,.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #D9D6CC; font-size: 12px"><span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 50%; background: #F2CD00; display: flex; align-items: center; justify-content: center"><span style="width: 0; height: 0; border-left: 14px solid #141612; border-top: 9px solid transparent; border-bottom: 9px solid transparent; margin-left: 4px"></span></span>[Video tuyo de bienvenida · 60 s]</div>
+    </section>
+    <section aria-labelledby="ck" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 18px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap"><h2 id="ck" style="margin: 0; font-size: 17px; font-weight: 600">Tus primeros pasos</h2><span class="num" style="font-size: 14px; font-weight: 600; color: #141612">{{ n }} de 4</span></div>
+      <div aria-hidden="true" style="height: 8px; border-radius: 4px; background: #EFEDE6; overflow: hidden"><div style="height: 100%; width: {{ w }}; background: linear-gradient(90deg, #F2CD00, #E3B800); border-radius: 4px"></div></div>
+      <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4"><li style="display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid #EFEDE6">
+          <button type="button" role="checkbox" aria-checked="{{ s.cur }}" aria-label="Marcar paso como hecho" onClick="{{ s.tog }}" style="font: inherit; width: 34px; height: 34px; border-radius: 50%; border: 2px solid #141612; background: {{ s.bg }}; color: {{ s.fg }}; font-weight: 600; font-size: 14px; flex: none; cursor: pointer; padding: 0">{{ s.mark }}</button>
+          <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">{{ s.t }}</strong><span style="font-size: 13px; color: #5F6359">{{ s.sub }}</span></span>
+          <span style="font-size: 12px; font-weight: 600; color: #7A5A00; background: #FFF6CC; border-radius: 999px; padding: 4px 9px; white-space: nowrap">{{ s.pts }}</span>
+          <sc-if value="{{ s.notDone }}" hint-placeholder-val="{{ true }}"><a href="{{ s.href }}" aria-label="Empezar" style="font-size: 14px; font-weight: 600; padding: 8px 4px">›</a></sc-if>
+        </li></sc-for>
+      </ol>
+      <sc-if value="{{ allDone }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin: 0; font-size: 14px; font-weight: 600; color: #1E5A3F; background: #E3F1E8; border-radius: 12px; padding: 12px 14px">Listo. Ya tienes tu año en un solo lugar. Esta lista desaparece y verás tu Inicio completo.</p></sc-if>
+    </section>
+    <h2 style="margin: 6px 4px 0; font-size: 17px; font-weight: 600">Así se ve el resto sin datos</h2>
+    <article style="background: #FFFFFF; border: 1.5px dashed #D9D6CC; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5F6359">Movimientos</span>
+          <span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 14px; background: #E3F1E8; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg></span>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600">Aún no hay movimientos</h3>
+          <p style="margin: 0; font-size: 14px; color: #3A3D36; line-height: 1.5">Registra un gasto en 10 segundos o importa el archivo de tu banco.</p>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><a href="Movimientos.dc.html" style="text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 16px; border-radius: 12px; background: #141612; color: #FFFFFF">Registrar un gasto</a><a href="Importar.dc.html" style="font-size: 14px; font-weight: 600; padding: 10px 4px">Importar CSV</a></div>
+        </article>
+<article style="background: #FFFFFF; border: 1.5px dashed #D9D6CC; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5F6359">Deudas</span>
+          <span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 14px; background: #FBEBD8; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C46A2A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600">Sin deudas registradas</h3>
+          <p style="margin: 0; font-size: 14px; color: #3A3D36; line-height: 1.5">Si tienes tarjeta, préstamo, Afterpay o hipoteca, agrégala y te mostramos cuándo terminas.</p>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><a href="Deudas.dc.html" style="text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 16px; border-radius: 12px; background: #141612; color: #FFFFFF">Agregar una deuda</a><a href="#" style="font-size: 14px; font-weight: 600; padding: 10px 4px">No tengo deudas</a></div>
+        </article>
+<article style="background: #FFFFFF; border: 1.5px dashed #D9D6CC; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5F6359">Metas</span>
+          <span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 14px; background: #FDF1DE; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600">Todavía no tienes metas</h3>
+          <p style="margin: 0; font-size: 14px; color: #3A3D36; line-height: 1.5">Un viaje, un fondo de emergencia, un carro. Te decimos cuánto apartar al mes.</p>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><a href="Metas.dc.html" style="text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 16px; border-radius: 12px; background: #141612; color: #FFFFFF">Crear mi primera meta</a></div>
+        </article>
+<article style="background: #FFFFFF; border: 1.5px dashed #D9D6CC; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5F6359">Inversiones</span>
+          <span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 14px; background: #E3ECF6; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2D5C8A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M4 20h16"/><path d="M7 16v-4M12 16V8M17 16V5"/></svg></span>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600">Nada invertido por ahora</h3>
+          <p style="margin: 0; font-size: 14px; color: #3A3D36; line-height: 1.5">Agrega tu super y cualquier app donde inviertas. Solo para verlo todo junto.</p>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><a href="Inversiones.dc.html" style="text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 16px; border-radius: 12px; background: #141612; color: #FFFFFF">Agregar mi super</a></div>
+        </article>
+<article style="background: #FFFFFF; border: 1.5px dashed #D9D6CC; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5F6359">Análisis</span>
+          <span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 14px; background: #EFEDE6; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3A3D36" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/></svg></span>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600">Necesitamos un mes de datos</h3>
+          <p style="margin: 0; font-size: 14px; color: #3A3D36; line-height: 1.5">Cuando cierres tu primer mes verás en qué se va tu plata y dónde gastas más.</p>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><a href="Leccion.dc.html" style="text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 16px; border-radius: 12px; background: #141612; color: #FFFFFF">Ver cómo funciona</a></div>
+        </article>
+<article style="background: #FFFFFF; border: 1.5px dashed #D9D6CC; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5F6359">Cuentas</span>
+          <span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 14px; background: #E5F1ED; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3E8C7A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg></span>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600">Agrega tu banco y tu tarjeta</h3>
+          <p style="margin: 0; font-size: 14px; color: #3A3D36; line-height: 1.5">Solo el nombre y el saldo de hoy. Nunca entramos a tu banco.</p>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><a href="Cuentas.dc.html" style="text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 16px; border-radius: 12px; background: #141612; color: #FFFFFF">Agregar mis cuentas</a></div>
+        </article>
+  </div>
+  <nav aria-label="Principal" style="background: #FBFAF6; border-top: 1px solid #E6E4DC; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 8px 4px 22px"><a href="Inicio-movil.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 600; color: #141612"><span aria-hidden="true" style="position: absolute; top: -8px; width: 22px; height: 3px; border-radius: 0 0 3px 3px; background: #F2CD00"></span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan</a><a href="Movimientos-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Academia-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia</a><a href="Mas-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Más</a></nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":2500}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { done: [] }; }
+  renderVals() {
+    const s = this.state;
+    const S = [
+      ['plan', 'Arma tu plan del año', 'El asistente te hace 7 preguntas. 10 minutos.', 'PlanGuiado-movil.dc.html', '+30 pts'],
+      ['cuentas', 'Agrega tus cuentas', 'Banco, tarjeta y efectivo con su saldo de hoy.', 'Cuentas-movil.dc.html', '+10 pts'],
+      ['gasto', 'Registra tu primer gasto', 'El café de hoy cuenta. 10 segundos.', 'Movimientos-movil.dc.html', '+5 pts'],
+      ['clase', 'Mira "Empieza aquí"', 'Clase 1 de 9: cómo usar la app. 4 minutos.', 'Leccion-movil.dc.html', '+10 pts']
+    ];
+    const steps = S.map((x, i) => {
+      const d = s.done.indexOf(x[0]) >= 0;
+      return { n: String(i + 1), t: x[1], sub: x[2], href: x[3], pts: x[4], done: d, notDone: !d, cur: String(d), bg: d ? '#141612' : '#FFFFFF', fg: d ? '#FFFFFF' : '#141612', mark: d ? '✓' : String(i + 1),
+        tog: () => this.setState({ done: d ? s.done.filter((k) => k !== x[0]) : s.done.concat([x[0]]) }) };
+    });
+    const n = s.done.length;
+    return { steps, n: String(n), w: (n / 4 * 100) + '%', allDone: n === 4, notAll: n < 4 };
+  }
+}
+</script>
+</body>
+</html>

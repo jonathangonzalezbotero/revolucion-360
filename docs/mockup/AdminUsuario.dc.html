@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración · Gestionar usuario</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Administración" style="flex: 1 1 220px; max-width: 256px; background: #141612; color: #FFFFFF; padding: 28px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 8px"><img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 38px; height: 38px"><span style="display: flex; flex-direction: column"><strong style="font-size: 15px">Revolución 360</strong><span style="font-size: 12px; color: #8FD3B9; font-weight: 600">Administración</span></span></div>
+    <a href="Main.dc.html" style="text-decoration: none; font-size: 13px; color: #9FC8B9; padding: 6px 10px 22px">‹ Volver a la app</a>
+    <a href="Admin.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Resumen</a><a href="AdminUsuarios.dc.html" aria-current="page" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: #2A2D27; color: #FFFFFF">Usuarios y accesos</a><a href="AdminMenu.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Menú y funciones</a><a href="AdminAcademia.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Academia</a><a href="AdminPlanes.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Planes y precios</a><a href="AdminPaises.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contenido por país</a><a href="AdminSoporte.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Soporte y privacidad</a><a href="AdminActividad.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Registro de actividad</a>
+    <p style="margin-top: auto; font-size: 12px; color: #7FA9A0; line-height: 1.5; padding: 0 10px">Este panel no muestra los datos financieros de los usuarios.</p>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 44px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; max-width: 1280px">
+    <a href="AdminUsuarios.dc.html" style="font-size: 14px; font-weight: 600">‹ Usuarios y accesos</a>    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Ejemplo · ana.martinez@correo.com</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Ana Martínez</h1></div>
+      <sc-if value="{{ susp }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 999px; background: #FCEDE6; color: #A1401A">Suspendida</span></sc-if>
+    </header>
+    <sc-if value="{{ hasMsg }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin: 0; font-size: 14px; font-weight: 600; color: #1E5A3F; background: #E3F1E8; border-radius: 12px; padding: 12px 14px">{{ msg }}</p></sc-if>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr); gap: 18px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 18px">
+        <section aria-labelledby="pa" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+          <h2 id="pa" style="margin: 0; font-size: 17px; font-weight: 600">Plan y acceso</h2>
+          <div style="display: flex; gap: 24px; flex-wrap: wrap"><div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 500; color: #5F6359">Plan</span><strong style="font-size: 20px">{{ plan }}</strong><span style="font-size: 13px; color: #5F6359">Grupo: Alumnos Ruta del Revolucionario 2026</span></div><div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 500; color: #5F6359">Vence</span><strong style="font-size: 20px">{{ until }}</strong></div></div>
+          <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #EFEDE6; padding-top: 14px"><span id="ex" style="font-size: 13px; font-weight: 600">Extender acceso</span>
+            <div role="radiogroup" aria-labelledby="ex" style="display: flex; gap: 8px; flex-wrap: wrap"><sc-for list="{{ exts }}" as="e" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ e.checked }}" onClick="{{ e.pick }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 42px; padding: 0 16px; border-radius: 999px; border: 1.5px solid {{ e.b }}; background: {{ e.bg }}; color: {{ e.fg }}; cursor: pointer">{{ e.l }}</button></sc-for></div>
+            <sc-if value="{{ hasExt }}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap"><span style="font-size: 14px; font-weight: 600; color: #1E5A3F; background: #FFF8D6; border-radius: 999px; padding: 8px 14px">{{ preview }}</span><button type="button" onClick="{{ doExt }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF">Extender</button></div></sc-if>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; border-top: 1px solid #EFEDE6; padding-top: 14px"><button type="button" onClick="{{ toPro }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612">Cambiar a Pro pagado</button><button type="button" onClick="{{ quitar }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 12px; cursor: pointer; border: 1px solid #F0D2C4; background: #FFFFFF; color: #A1401A">Quitar acceso gratis</button></div>
+        </section>
+        <section aria-labelledby="us" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+          <h2 id="us" style="margin: 0; font-size: 17px; font-weight: 600">Cómo usa la app</h2>
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px"><div style="background: #F8F7F2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Asistente</span><strong class="num" style="font-size: 20px">Completo</strong></div><div style="background: #F8F7F2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Cierres de mes</span><strong class="num" style="font-size: 20px">1</strong></div><div style="background: #F8F7F2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Clases vistas</span><strong class="num" style="font-size: 20px">4 de 9</strong></div><div style="background: #F8F7F2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5F6359">Puntos</span><strong class="num" style="font-size: 20px">120</strong></div></div>
+          <span style="font-size: 12px; color: #5F6359">Solo actividad. Nunca ves sus montos, cuentas ni movimientos.</span>
+        </section>
+        <section aria-labelledby="no" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+          <h2 id="no" style="margin: 0; font-size: 17px; font-weight: 600"><label for="nt">Notas internas</label></h2>
+          <textarea id="nt" rows="3" value="{{ note }}" onChange="{{ setNote }}" style="font: inherit; font-size: 14px; padding: 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; resize: vertical"></textarea>
+          <span style="font-size: 12px; color: #5F6359">Solo las ven los administradores. No escribas datos financieros ni de salud.</span>
+        </section>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 18px">
+        <section aria-labelledby="cu" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 4px">
+          <h2 id="cu" style="margin: 0 0 8px; font-size: 17px; font-weight: 600">Cuenta</h2>
+          <div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #EFEDE6; font-size: 14px"><span style="color: #5F6359">País y moneda</span><span style="font-weight: 600; text-align: right">Australia · AUD</span></div><div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #EFEDE6; font-size: 14px"><span style="color: #5F6359">Se registró</span><span style="font-weight: 600; text-align: right">1 nov 2026</span></div><div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #EFEDE6; font-size: 14px"><span style="color: #5F6359">Último acceso</span><span style="font-weight: 600; text-align: right">Hace 2 días · iPhone</span></div><div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #EFEDE6; font-size: 14px"><span style="color: #5F6359">Verificación en 2 pasos</span><span style="font-weight: 600; text-align: right">Activa</span></div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; padding-top: 12px"><button type="button" onClick="{{ resend }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612">Reenviar invitación</button><button type="button" onClick="{{ reset2fa }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612">Reiniciar 2 pasos</button><button type="button" onClick="{{ logout }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612">Cerrar sesiones</button></div>
+          <span style="font-size: 12px; color: #5F6359; padding-top: 6px">Antes de reiniciar los 2 pasos, verifica su identidad por videollamada o con el correo de registro.</span>
+        </section>
+        <section aria-labelledby="pv" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 12px">
+          <h2 id="pv" style="margin: 0; font-size: 17px; font-weight: 600">Privacidad y cuenta</h2>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap"><button type="button" onClick="{{ export }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612">Enviarle sus datos</button><button type="button" onClick="{{ togSusp }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 12px; cursor: pointer; border: 1px solid #F0D2C4; background: #FFFFFF; color: #A1401A">{{ suspLabel }}</button></div>
+          <div style="border: 1.5px solid #F0D2C4; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #FFFAF7">
+            <strong style="font-size: 14px; color: #A1401A">Borrar la cuenta</strong>
+            <span style="font-size: 13px; color: #3A3D36; line-height: 1.5">Borra todos sus datos en 30 días. No se puede deshacer. Solo hazlo si ella lo pidió por escrito.</span>
+            <label for="dl" style="font-size: 12px; font-weight: 500; color: #5F6359">Escribe BORRAR para confirmar</label>
+            <div style="display: flex; gap: 10px"><input id="dl" type="text" value="{{ del }}" onChange="{{ setDel }}" style="font: inherit; font-size: 15px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; flex: 1; min-width: 0"><button type="button" onClick="{{ doDel }}" aria-disabled="{{ delDis }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border: 0; border-radius: 12px; background: {{ delBg }}; color: {{ delFg }}; cursor: pointer">Borrar</button></div>
+          </div>
+        </section>
+        <section aria-labelledby="lg" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 4px">
+          <h2 id="lg" style="margin: 0 0 8px; font-size: 17px; font-weight: 600">Historial de cambios</h2>
+          <sc-for list="{{ log }}" as="l" hint-placeholder-count="2"><div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-top: 1px solid #EFEDE6"><span style="font-size: 14px; font-weight: 600">{{ l.t }}</span><span style="font-size: 12px; color: #5F6359">{{ l.w }} · {{ l.d }}</span></div></sc-for>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1350}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { ext: '', plan: 'Acceso gratis', until: new Date(2027, 2, 1), susp: false, del: '', note: 'Alumna de la cohorte de octubre. Pidió ayuda con el CSV de CommBank.', msg: '', log: [['Le diste acceso gratis por 4 meses', 'Jonathan', '1 nov 2026'], ['Se registró con el código RUTA2027', 'Sistema', '1 nov 2026']] }; }
+  renderVals() {
+    const s = this.state;
+    const fd = (d) => d ? d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Nunca vence';
+    const E = [['3', '+3 meses'], ['12', '+12 meses'], ['vida', 'De por vida']];
+    const calc = (k) => { if (k === 'vida') return null; const d = new Date(s.until || new Date(2026, 10, 24)); d.setMonth(d.getMonth() + Number(k)); return d; };
+    const exts = E.map(([k, l]) => ({ l, checked: String(s.ext === k), bg: s.ext === k ? '#141612' : '#FFFFFF', fg: s.ext === k ? '#FFFFFF' : '#3A3D36', b: s.ext === k ? '#141612' : '#D9D6CC', pick: () => this.setState({ ext: s.ext === k ? '' : k }) }));
+    const nd = s.ext ? calc(s.ext) : undefined;
+    const act = (m, entry, patch) => () => this.setState(Object.assign({ msg: m, log: [[entry, 'Jonathan', 'hoy']].concat(s.log) }, patch || {}));
+    return {
+      exts, hasExt: !!s.ext, preview: s.ext ? 'Nuevo vencimiento: ' + fd(nd) : '',
+      plan: s.plan, until: s.plan === 'Gratis' ? '—' : fd(s.until),
+      doExt: () => { if (!s.ext) return; this.setState({ until: nd, ext: '', msg: 'Acceso extendido. Le avisamos por correo.', log: [['Extendiste su acceso hasta ' + fd(nd), 'Jonathan', 'hoy']].concat(s.log) }); },
+      toPro: act('Ahora tiene Pro pagado desde su próxima factura.', 'Cambiaste su plan a Pro', { plan: 'Pro' }),
+      quitar: act('Acceso quitado. Pasa a Gratis sin perder sus datos.', 'Quitaste su acceso gratis', { plan: 'Gratis', until: null }),
+      resend: act('Invitación reenviada.', 'Reenviaste la invitación'),
+      reset2fa: act('Le enviamos un enlace para configurar de nuevo los 2 pasos.', 'Reiniciaste su verificación en 2 pasos'),
+      logout: act('Cerramos su sesión en todos los dispositivos.', 'Cerraste todas sus sesiones'),
+      susp: s.susp, notSusp: !s.susp, suspLabel: s.susp ? 'Reactivar cuenta' : 'Suspender cuenta',
+      togSusp: () => this.setState({ susp: !s.susp, msg: s.susp ? 'Cuenta reactivada.' : 'Cuenta suspendida. No puede entrar hasta que la reactives.', log: [[s.susp ? 'Reactivaste la cuenta' : 'Suspendiste la cuenta', 'Jonathan', 'hoy']].concat(s.log) }),
+      export: act('Le enviamos un enlace seguro para descargar sus datos. Vence en 7 días.', 'Enviaste la exportación de sus datos'),
+      del: s.del, setDel: (e) => this.setState({ del: e.target.value }), canDel: s.del === "BORRAR", delDis: String(s.del !== "BORRAR"), delBg: s.del === 'BORRAR' ? '#A1401A' : '#E6E4DC', delFg: s.del === 'BORRAR' ? '#FFFFFF' : '#5F6359',
+      doDel: () => { if (s.del !== 'BORRAR') return; this.setState({ del: '', msg: 'Borrado programado. Se completa en 30 días; se conservan solo sus facturas.', log: [['Programaste el borrado de la cuenta', 'Jonathan', 'hoy']].concat(s.log) }); },
+      note: s.note, setNote: (e) => this.setState({ note: e.target.value }),
+      hasMsg: !!s.msg, msg: s.msg, log: s.log.map((l) => ({ t: l[0], w: l[1], d: l[2] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

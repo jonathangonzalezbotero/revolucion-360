@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Clase · móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 2100px; box-sizing: border-box; background: #F6F5F0; font-family: Geist, system-ui, sans-serif; color: #141612; display: flex; flex-direction: column; position: relative">
+
+  <div class="mb" style="flex: 1; padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 12px">
+<div style="position: relative; border-radius: 16px; overflow: hidden; background: #0B0C0A; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center">
+        <img src="/_blob/177cb8c6e63a332cdb1f6c53ea986d4f" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .55">
+        <button type="button" aria-label="Reproducir" style="font: inherit; width: 60px; height: 60px; border-radius: 50%; border: 0; background: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="#1C1E19" stroke="#1C1E19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l11 7-11 7z"></path></svg></button>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 16px 12px; display: flex; flex-direction: column; gap: 8px; color: #FFFFFF">
+          <div aria-hidden="true" style="height: 4px; border-radius: 2px; background: #3A3D36"><div style="width: 0%; height: 4px; border-radius: 2px; background: #F2CD00"></div></div>
+          <span class="num" style="font-size: 13px; font-weight: 600">00:00 / [MM:SS]</span>
+        </div>
+      </div>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-start">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: .12em; color: #141612">EMPIEZA AQUÍ · MÓDULO 1</span>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.02em">Haz tu primer cierre de mes</h1>
+          <span style="font-size: 13px; color: #5F6359">[DURACIÓN] · <strong style="color: #8A4B12">Obligatoria para avanzar</strong> · +10 puntos</span>
+        </div>
+        <div style="display: flex; gap: 8px; width: 100%">
+          <a href="Academia-movil.dc.html" aria-label="Volver a la Academia" style="text-decoration: none; width: 48px; height: 48px; border-radius: 12px; border: 1px solid #E6E4DC; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #3A3D36; font-size: 18px; flex: none">‹</a>
+          <button type="button" onClick="{{ complete }}" style="font: inherit; flex: 1; font-size: 15px; font-weight: 600; min-height: 48px; padding: 0 22px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">{{ btnLabel }}</button>
+        </div>
+      </div>
+<a href="Cierre-movil.dc.html" style="text-decoration: none; color: #141612; background: #FDF1DE; border-radius: 16px; padding: 16px 18px; display: flex; align-items: center; gap: 14px">
+        <span style="width: 42px; height: 42px; border-radius: 12px; background: #E3B800; display: flex; align-items: center; justify-content: center; flex: none"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="#141612" stroke="#141612" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l11 7-11 7z"></path></svg></span>
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">Hazlo ahora en la app</strong><span style="font-size: 13px; color: #5C3208">Abre tu Cierre de noviembre y sigue la clase paso a paso.</span></span><span aria-hidden="true" style="font-size: 18px">›</span></a>
+<section aria-labelledby="sobre" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+        <h2 id="sobre" style="margin: 0; font-size: 16px; font-weight: 600">Sobre esta clase</h2>
+        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #3A3D36">En 5 minutos al mes revisas qué pasó, ajustas el mes siguiente y anotas tus saldos. Es el hábito que hace que todo lo demás funcione.</p>
+        <sc-if value="{{ more }}" hint-placeholder-val="{{ false }}"><ul style="margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7; color: #3A3D36"><li>Qué hacer con lo que quedó pendiente</li><li>Cómo leer plan vs. real sin culparte</li><li>Ajustar el mes siguiente para que no quede en negativo</li></ul></sc-if>
+        <button type="button" onClick="{{ toggleMore }}" style="font: inherit; align-self: flex-start; font-size: 14px; font-weight: 600; color: #141612; background: transparent; border: 0; padding: 6px 0; cursor: pointer">{{ moreLabel }}</button>
+      </section>
+      <section aria-label="Valoración" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+        <span style="font-size: 15px; font-weight: 600">¿Qué tan útil te pareció esta clase?</span>
+        <div role="radiogroup" aria-label="Calificación" style="display: flex; gap: 2px"><sc-for list="{{ stars }}" as="st" hint-placeholder-count="5"><button type="button" role="radio" aria-label="{{ st.label }}" onClick="{{ st.pick }}" style="font: inherit; width: 40px; height: 40px; border: 0; background: transparent; font-size: 26px; color: {{ st.c }}; cursor: pointer">★</button></sc-for></div>
+      </section>
+      <section aria-labelledby="com" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <h2 id="com" style="margin: 0; font-size: 16px; font-weight: 600">Comentarios</h2>
+        <div style="display: flex; gap: 10px"><span aria-hidden="true" style="width: 38px; height: 38px; border-radius: 50%; background: #E3F1E8; color: #141612; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: none">J</span>
+          <label for="cm-m" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Escribe un comentario</label><textarea id="cm-m" rows="3" placeholder="Comparte una duda o lo que aprendiste…" style="font: inherit; font-size: 14px; flex: 1; padding: 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; resize: vertical"></textarea></div>
+        <span style="font-size: 13px; color: #5F6359">Todavía no hay comentarios en esta clase.</span>
+      </section>
+<aside aria-labelledby="curso" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <h2 id="curso" style="margin: 0; font-size: 16px; font-weight: 600">EMPIEZA AQUÍ</h2>
+        <div aria-hidden="true" style="height: 6px; border-radius: 3px; background: #EFEDE6"><div style="height: 6px; border-radius: 3px; background: #141612; width: {{ progW }}"></div></div>
+        <span class="num" style="font-size: 13px; color: #5F6359">{{ prog }}</span>
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: .1em; color: #141612; margin-top: 4px">MÓDULO 1 · ARRANCA</span>
+        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+          <sc-for list="{{ lessons }}" as="l" hint-placeholder-count="6"><li style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: {{ l.bg }}; color: {{ l.fg }}"><span aria-hidden="true" style="width: 24px; height: 24px; border-radius: 50%; background: {{ l.iconBg }}; color: {{ l.iconFg }}; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: none">{{ l.icon }}</span><span style="flex: 1; font-size: 14px; font-weight: 600">{{ l.t }}</span><span class="num" style="font-size: 12px; opacity: .7">{{ l.dur }}</span></li></sc-for>
+        </ol>
+        <button type="button" onClick="{{ toggle2 }}" aria-expanded="{{ open2 }}" style="font: inherit; text-align: left; display: flex; justify-content: space-between; align-items: center; background: #F8F7F2; border: 0; border-radius: 12px; padding: 12px; cursor: pointer; color: #141612"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 600; letter-spacing: .1em; color: #141612">MÓDULO 2</span><strong style="font-size: 14px">Tus herramientas</strong></span><span style="font-size: 13px; color: #5F6359">0/3 {{ chev2 }}</span></button>
+        <sc-if value="{{ open2 }}" hint-placeholder-val="{{ false }}"><ul style="list-style: none; margin: 0; padding: 0 0 0 6px; font-size: 14px; color: #8A8D83; display: flex; flex-direction: column; gap: 10px"><li>· Deudas e impuestos</li><li>· Inversiones</li><li>· Análisis y comercios</li></ul></sc-if>
+      </aside>
+<sc-if value="{{ showToast }}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="position: absolute; left: 12px; right: 12px; bottom: 96px; background: #0B0C0A; color: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; gap: 14px; align-items: center; box-shadow: 0 16px 40px rgba(0,0,0,.3); z-index: 5">
+        <span aria-hidden="true" style="width: 54px; height: 54px; border-radius: 14px; background: #E3B800; display: flex; align-items: center; justify-content: center; flex: none"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="#141612" stroke="#141612" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg></span>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 15px"><strong style="font-size: 22px; color: #F2CD00">+10</strong> puntos</span><div aria-hidden="true" style="height: 6px; border-radius: 3px; background: #3A3D36"><div style="height: 6px; width: 70%; border-radius: 3px; background: #F2CD00"></div></div><span style="font-size: 12px; color: #CFCCC2">Te faltan 150 para el nivel Ahorro</span></div>
+        <button type="button" onClick="{{ closeToast }}" aria-label="Cerrar" style="font: inherit; width: 36px; height: 36px; border: 0; background: transparent; color: #CFCCC2; font-size: 18px; cursor: pointer">×</button>
+      </div>
+    </sc-if>
+  </div>
+  <nav aria-label="Principal" style="background: #FBFAF6; border-top: 1px solid #E6E4DC; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 8px 4px 22px"><a href="Inicio-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h5v-6h4v6h5V9"/></svg>Inicio</a><a href="Plan-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v3M16 2.5v3M8 13h2M14 13h2M8 17h2"/></svg>Plan</a><a href="Movimientos-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 20V4M3 8l4-4 4 4"/><path d="M17 4v16M13 16l4 4 4-4"/></svg>Movimientos</a><a href="Academia-movil.dc.html" aria-current="page" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 600; color: #141612"><span aria-hidden="true" style="position: absolute; top: -8px; width: 22px; height: 3px; border-radius: 0 0 3px 3px; background: #F2CD00"></span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#141612" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.6 8.5 2.6 12 0v-5"/><path d="M22 9v5"/></svg>Academia</a><a href="Mas-movil.dc.html" style="text-decoration: none; position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; justify-content: center; font-size: 11px; font-weight: 450; color: #7A7D73"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7D73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Más</a></nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":2100}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { done: false, toast: false, more: false, stars: 0, open2: false }; }
+  renderVals() {
+    const s = this.state;
+    const M1 = [['Bienvenida a Revolución 360', 'done'], ['Arma tu plan con el asistente', 'done'], ['Entiende tu Plan anual', 'done'], ['Haz tu primer cierre de mes', 'cur'], ['Registra tus gastos a tu manera', 'lock'], ['Lee tu Proyección', 'lock']];
+    const lessons = M1.map(([t, st]) => {
+      const done = st === 'done' || (st === 'cur' && s.done);
+      const cur = st === 'cur' && !s.done, next = st === 'lock' && t === 'Registra tus gastos a tu manera' && s.done;
+      return { t, dur: '[MM:SS]', bg: cur || next ? '#141612' : 'transparent', fg: cur || next ? '#FFFFFF' : (st === 'lock' ? '#8A8D83' : '#141612'),
+        iconBg: done ? '#141612' : (cur || next ? '#F2CD00' : '#EFEDE6'), icon: done ? '✓' : (cur || next ? '▸' : '·'), iconFg: done ? '#FFFFFF' : '#1C1E19' };
+    });
+    const n = s.done ? 4 : 3;
+    const stars = [1, 2, 3, 4, 5].map((i) => ({ i, c: i <= s.stars ? '#E3B800' : '#D9D6CC', label: i + ' de 5', pick: () => this.setState({ stars: i }) }));
+    return {
+      lessons, stars, prog: n + ' de 9 clases · ' + Math.round(n / 9 * 100) + '%', progW: Math.round(n / 9 * 100) + '%',
+      complete: () => this.setState({ done: true, toast: true }), closeToast: () => this.setState({ toast: false }),
+      showToast: s.toast, btnLabel: s.done ? 'Siguiente clase ›' : 'Completar y continuar',
+      more: s.more, less: !s.more, toggleMore: () => this.setState({ more: !s.more }), moreLabel: s.more ? 'Ver menos' : 'Ver más',
+      open2: s.open2, toggle2: () => this.setState({ open2: !s.open2 }), chev2: s.open2 ? '▴' : '▾'
+    };
+  }
+}
+</script>
+</body>
+</html>
