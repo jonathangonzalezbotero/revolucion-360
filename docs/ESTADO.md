@@ -25,7 +25,7 @@ Actualizado: 24 de noviembre de 2026. Todo el código está en `main` en GitHub.
 | `/suscripcion` + `/api/stripe/*` | Suscripcion | Construido; sin claves de prueba de Stripe no cobra (lo explica en pantalla) |
 | `/perfil`, `/notificaciones`, `/ayuda`, `/mas` | Perfil, Notificaciones, Ayuda, Mas-movil | Construido; las 5 pantallas cargan con el usuario demo |
 | `/legal/terminos`, `/legal/privacidad` | Legal | Construido (borrador para abogado) |
-| `/admin`, `/admin/usuarios`, `/admin/usuarios/[id]`, `/admin/grupos`, `/admin/soporte`, `/admin/actividad` | Admin, AdminUsuarios, AdminUsuario, AdminSoporte, AdminActividad | Construido (parte 1), sin probar |
+| `/admin`, `/admin/usuarios`, `/admin/usuarios/[id]`, `/admin/grupos`, `/admin/soporte`, `/admin/actividad` | Admin, AdminUsuarios, AdminUsuario, AdminSoporte, AdminActividad | Construido (parte 1), sin probar; mejoras en 3b |
 | `/admin/menu`, `/admin/academia`, `/admin/planes`, `/admin/paises` | AdminMenu, AdminAcademia, AdminPlanes, AdminPaises | **❌ Falta construir** (parte 2; ver brief abajo) |
 | Correos, `/api/cron/*`, PWA, push | Correos | Ver sección "Correos y app instalable" |
 
@@ -62,6 +62,21 @@ Rutas `src/app/admin/menu/`, `academia/`, `planes/`, `paises/`, reutilizando el 
 - **Planes y precios:** `price_regions` (montos por región, descuento de alumno), prueba gratis (`app_config.trial`), cupones (`coupons`; crearlos también en Stripe con `src/lib/stripe.ts`, y el script `scripts/stripe-setup.ts` sincroniza precios), acceso fundador.
 - **Contenido por país:** `countries` (moneda, zona horaria, frecuencia de pago sugerida, términos locales, categorías sugeridas, referencias del diagnóstico `benchmarks`, habilitar), y `app_config.diag_cta` (texto y enlace de la clase gratuita del Diagnóstico) y `app_config.legal` (razón social, ABN, contacto).
 Para construirlo con Claude Code: pídele que lea `docs/BRIEF-AGENTES.md` y estos cuatro mockups.
+
+### 3b. Mejoras pendientes del panel (parte 1)
+- Función de base `admin_emails(uuid[])` para traer correos en lote (hoy se piden de a uno con `admin_user`; pesado con miles de usuarios).
+- `admin_users`: filtro por rol y por país, búsqueda exacta por correo, y opción de 7 días en el filtro "vencen pronto" (el resumen cuenta 7 días y el filtro 30).
+- Función para "dónde más abandonan" en la Academia (hoy dice "Sin datos aún").
+- Del mockup quedaron fuera (sin función detrás): "Cambiar a Pro pagado", "Cerrar sesiones", "Enviarle sus datos", "Avisarles por correo" al dar acceso, subroles de admin y dispositivo del último acceso.
+- Borrar una cuenta desde el panel es inmediato (el mockup decía 30 días; el borrado programado de 30 días es el que pide el usuario desde su perfil).
+- Probar en vivo: reiniciar 2 pasos, borrar cuenta, responder soporte (notificación) y el filtro del registro de actividad.
+
+### Correos, tareas programadas y app instalable
+- Construido y sin ejecutar: 4 correos (`src/lib/email/`), crons en `src/app/api/cron/*` (horarios en `vercel.json`), PWA (`public/manifest.webmanifest`, `public/sw.js`, `public/icons/`) y push (`/api/push/subscribe`).
+- Probar en local con Supabase y `npm run dev`: `curl -H "Authorization: Bearer local-cron-secret" http://localhost:3000/api/cron/bienvenida` (y `cierre`, `vencimientos`, `pagos`, `borrados`, `racha`). Fuera de producción solo se envían correos a `@revolucion360.test`.
+- Push: generar claves con `npx web-push generate-vapid-keys` y ponerlas en `NEXT_PUBLIC_VAPID_PUBLIC_KEY` y `VAPID_PRIVATE_KEY`.
+- El borrado automático cancela la suscripción de Stripe antes de borrar la cuenta.
+- Detalles en `docs/OPERACION.md`.
 
 ### 4. Inglés
 Todos los textos tienen versión `en` en los `messages.ts` de cada pantalla. Falta probar el cambio de idioma de punta a punta (Perfil → idioma; las pantallas de acceso leen la cookie `r360_locale`) y revisar el tono de las traducciones.

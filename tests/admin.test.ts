@@ -1,0 +1,123 @@
+import { describe, expect, it } from "vitest";
+import {
+  actionGroupFilter, checkCode, checkMaxUses, checkNote, codeDuration, csvCell, endOfDay, expiryFrom, isUuid, listHref,
+  noteHasMoney, pageCount, pageRange, parseActionGroup, parseEmails, parseFilter, parsePage, parseSearch, pct,
+} from "@/app/admin/_shared/lib";
+
+describe("vencimiento de un acceso", () => {
+  const today = "2026-11-24";
+  it("de por vida no vence", () => expect(expiryFrom("vida", {}, today)).toEqual({ ok: true, until: null }));
+  it("por meses suma desde hoy", () => expect(expiryFrom("meses", { months: "12" }, today)).toEqual({ ok: true, until: "2027-11-24" }));
+  it("fin de mes no se desborda", () => expect(expiryFrom("meses", { months: 3 }, "2026-11-30")).toEqual({ ok: true, until: "2027-02-28" }));
+  it("extender suma desde el vencimiento actual si aún no vence", () => expect(expiryFrom("meses", { months: 3 }, today, "2027-03-01")).toEqual({ ok: true, until: "2027-06-01" }));
+  it("extender un acceso vencido suma desde hoy", () => expect(expiryFrom("meses", { months: 3 }, today, "2026-01-10")).toEqual({ ok: true, until: "2027-02-24" }));
+  it("meses inválidos", () => {
+    expect(expiryFrom("meses", { months: "" }, today).ok).toBe(false);
+    expect(expiryFrom("meses", { months: "0" }, today).ok).toBe(false);
+    expect(expiryFrom("meses", { months: "2.5" }, today).ok).toBe(false);
+    expect(expiryFrom("meses", { months: "121" }, today).ok).toBe(false);
+  });
+  it("hasta una fecha futura", () => expect(expiryFrom("fecha", { until: "2027-03-01" }, today)).toEqual({ ok: true, until: "2027-03-01" }));
+  it("rechaza fechas pasadas, de hoy o mal escritas", () => {
+    expect(expiryFrom("fecha", { until: "2026-11-24" }, today)).toEqual({ ok: false, error: "past" });
+    expect(expiryFrom("fecha", { until: "2026-02-30" }, today)).toEqual({ ok: false, error: "date" });
+    expect(expiryFrom("fecha", { until: "" }, today)).toEqual({ ok: false, error: "date" });
+  });
+  it("se guarda al final del día", () => {
+    expect(endOfDay("2027-03-01")).toBe("2027-03-01T23:59:59Z");
+    expect(endOfDay(null)).toBeNull();
+  });
+});
+
+describe("notas internas sin montos", () => {
+  it.each(["Pagó $300 de más", "debe $ 1200", "le faltan 300$", "saldo 1.234,56", "gasta 99.90 al mes", "tiene 2,500,000 en deudas", "AUD 300 en la tarjeta", "unos 300 USD"])("rechaza «%s»", (t) => {
+    expect(noteHasMoney(t)).toBe(true);
+    expect(checkNote(t)).toEqual({ ok: false, error: "money" });
+  });
+  it.each(["Alumna de la cohorte de octubre", "Pidió ayuda con el CSV el 3 de noviembre", "Tiene 2 cuentas y 1 meta", "Llamar después de las 5"])("acepta «%s»", (t) => {
+    expect(noteHasMoney(t)).toBe(false);
+    expect(checkNote(t)).toEqual({ ok: true, body: t });
+  });
+  it("vacía o muy larga", () => {
+    expect(checkNote("   ")).toEqual({ ok: false, error: "empty" });
+    expect(checkNote("a".repeat(1001))).toEqual({ ok: false, error: "long" });
+  });
+});
+
+describe("filtros y paginación", () => {
+  it("filtro conocido o todos", () => {
+    expect(parseFilter("pro")).toBe("pro");
+    expect(parseFilter(["failed"])).toBe("failed");
+    expect(parseFilter("admin")).toBe("all");
+    expect(parseFilter(undefined)).toBe("all");
+  });
+  it("página válida", () => {
+    expect(parsePage("3")).toBe(3);
+    expect(parsePage("0")).toBe(1);
+    expect(parsePage("-2")).toBe(1);
+    expect(parsePage("abc")).toBe(1);
+  });
+  it("búsqueda limpia", () => expect(parseSearch("  ana   martínez ")).toBe("ana martínez"));
+  it("rango y total de páginas", () => {
+    expect(pageRange(1, 25)).toEqual({ limit: 25, offset: 0 });
+    expect(pageRange(3, 25)).toEqual({ limit: 25, offset: 50 });
+    expect(pageCount(0, 25)).toBe(1);
+    expect(pageCount(25, 25)).toBe(1);
+    expect(pageCount(26, 25)).toBe(2);
+  });
+  it("arma el enlace sin lo que está por defecto", () => {
+    expect(listHref("/admin/usuarios", { q: "", filtro: "all", p: 1 })).toBe("/admin/usuarios");
+    expect(listHref("/admin/usuarios", { q: "ana", filtro: "pro", p: 2 })).toBe("/admin/usuarios?q=ana&filtro=pro&p=2");
+  });
+  it("grupos de acciones del registro", () => {
+    expect(parseActionGroup("accesos")).toBe("accesos");
+    expect(parseActionGroup("otro")).toBe("all");
+    expect(actionGroupFilter("accesos")).toBe("action.like.dar_acceso*,action.like.quitar_acceso*,action.like.codigo_*,action.like.grupo_*");
+  });
+  it("porcentajes sin dividir por cero", () => {
+    expect(pct(1, 3)).toBe(33);
+    expect(pct(5, 0)).toBe(0);
+  });
+});
+
+describe("códigos de invitación", () => {
+  it("se guardan en mayúsculas", () => expect(checkCode(" ruta2027 ")).toEqual({ ok: true, code: "RUTA2027" }));
+  it("rechaza cortos, largos o con símbolos", () => {
+    expect(checkCode("abc").ok).toBe(false);
+    expect(checkCode("A".repeat(41)).ok).toBe(false);
+    expect(checkCode("RUTA 2027").ok).toBe(false);
+    expect(checkCode("-RUTA").ok).toBe(false);
+  });
+  it("usos máximos opcionales", () => {
+    expect(checkMaxUses("")).toEqual({ ok: true, max: null });
+    expect(checkMaxUses("50")).toEqual({ ok: true, max: 50 });
+    expect(checkMaxUses("0").ok).toBe(false);
+    expect(checkMaxUses("1.5").ok).toBe(false);
+  });
+  it("duración del código", () => {
+    expect(codeDuration("vida", {}, "2026-11-24")).toEqual({ ok: true, months: null, until: null });
+    expect(codeDuration("meses", { months: "6" }, "2026-11-24")).toEqual({ ok: true, months: 6, until: null });
+    expect(codeDuration("fecha", { until: "2027-01-31" }, "2026-11-24")).toEqual({ ok: true, months: null, until: "2027-01-31" });
+    expect(codeDuration("fecha", { until: "2026-01-31" }, "2026-11-24").ok).toBe(false);
+  });
+});
+
+describe("otros", () => {
+  it("correos pegados", () => expect(parseEmails("Ana@Correo.com, bob@x.co;ana@correo.com\nmalo")).toEqual({ valid: ["ana@correo.com", "bob@x.co"], invalid: ["malo"] }));
+  it("uuid", () => {
+    expect(isUuid("1b4e28ba-2fa1-11d2-883f-0016d3cca427")).toBe(true);
+    expect(isUuid("1; drop table")).toBe(false);
+  });
+  it("CSV sin fórmulas", () => {
+    expect(csvCell("=HYPERLINK()")).toBe("'=HYPERLINK()");
+    expect(csvCell('Ana "la jefa"')).toBe('"Ana ""la jefa"""');
+    expect(csvCell(null)).toBe("");
+  });
+});
+
+describe("vencimiento guardado", () => {
+  it("vuelve al mismo día que eligió el admin", async () => {
+    const { endOfDay, expiryDay } = await import("@/app/admin/_shared/lib");
+    expect(expiryDay(endOfDay("2027-03-01")!)).toBe("2027-03-01");
+  });
+});

@@ -1,0 +1,102 @@
+import type { Messages } from "@/i18n";
+
+/** Textos comunes del panel (navegación, estados, acciones del registro, formulario de acceso). La parte 2 los reutiliza. */
+export const A = {
+  es: {
+    nav: {
+      label: "Administración", brand: "Revolución 360", admin: "Administración", back: "‹ Volver a la app",
+      resumen: "Resumen", usuarios: "Usuarios y accesos", grupos: "Grupos", menu: "Menú y funciones", academia: "Academia",
+      planes: "Planes y precios", paises: "Contenido por país", soporte: "Soporte y privacidad", actividad: "Registro de actividad",
+      privacy: "Este panel no muestra los datos financieros de los usuarios.",
+    },
+    states: { free: "Gratis", trial: "Prueba", pro: "Pro", alumno: "Acceso alumno", fundador: "Acceso fundador", read_only: "Solo lectura" } as Record<string, string>,
+    kinds: { alumno: "Alumno", fundador: "Fundador" } as Record<string, string>,
+    roles: { user: "Usuario", admin: "Administrador" } as Record<string, string>,
+    suspended: "Suspendida", failedPay: "Pago fallido", never: "Nunca vence", none: "—", deleted: "Cuenta borrada", system: "Sistema", noName: "Sin nombre",
+    monthsN: "{n} meses", rowsN: "{n} filas", statuses: { open: "sin responder", answered: "respondido", closed: "cerrado" } as Record<string, string>,
+    prev: "‹ Anterior", next: "Siguiente ›", page: "Página {n} de {total}", pager: "Páginas",
+    close: "Cerrar", cancel: "Cancelar", save: "Guardar", saving: "Guardando…",
+    errors: {
+      generic: "No se pudo guardar. Intenta de nuevo.", months: "Escribe entre 1 y 120 meses.", date: "Elige una fecha válida.", past: "La fecha tiene que ser después de hoy.",
+      email: "El correo no coincide con el de la cuenta.", self: "No puedes hacer esto con tu propia cuenta.", notFound: "No encontramos ese usuario.",
+    },
+    grant: {
+      kind: "Tipo de acceso", dur: "¿Por cuánto tiempo?", vida: "De por vida", meses: "Por meses", fecha: "Hasta una fecha", months: "Meses", until: "Hasta",
+      expires: "Vence el {date}", typeMonths: "Escribe la cantidad de meses", pickDate: "Elige la fecha",
+      note: "Al vencer pasan a Gratis automáticamente, sin perder sus datos. Puedes extender o quitar el acceso cuando quieras.",
+      notify: "Les avisamos en la app.", proNote: "Ya paga Pro: su plan pagado no cambia y el acceso queda en su historial.",
+      give: "Dar acceso", giving: "Dando acceso…",
+    },
+    actions: {
+      dar_acceso: "Dio acceso gratis", quitar_acceso: "Quitó el acceso gratis", suspender: "Suspendió una cuenta", reactivar: "Reactivó una cuenta",
+      cambiar_rol: "Cambió el rol", reiniciar_2pasos: "Reinició los 2 pasos", restablecer_clave: "Envió el correo para cambiar la contraseña",
+      borrar_cuenta: "Borró una cuenta", nota_agregar: "Escribió una nota interna", nota_borrar: "Borró una nota interna",
+      grupo_crear: "Creó un grupo", grupo_renombrar: "Renombró un grupo", grupo_borrar: "Borró un grupo", grupo_agregar: "Sumó a alguien a un grupo", grupo_quitar: "Quitó a alguien de un grupo",
+      codigo_crear: "Creó un código de invitación", codigo_activar: "Activó un código", codigo_desactivar: "Desactivó un código",
+      soporte_responder: "Respondió un caso de soporte", soporte_estado: "Cambió el estado de un caso",
+      privacidad_exportar: "Marcó una exportación como hecha", exportar_lista: "Exportó la lista de usuarios",
+      faq_crear: "Creó una pregunta frecuente", faq_editar: "Editó una pregunta frecuente", faq_publicar: "Publicó una pregunta frecuente", faq_ocultar: "Ocultó una pregunta frecuente", faq_ordenar: "Cambió el orden de las preguntas", faq_borrar: "Borró una pregunta frecuente",
+    } as Record<string, string>,
+    resumen: {
+      title: "Resumen", eyebrow: "Cómo va Revolución 360", period: "Periodo", d30: "30 días", d90: "90 días",
+      users: "Usuarios", newUsers: "+{n} en {d} días", active: "Activos ({d} días)", ofTotal: "{pct}% del total",
+      pro: "Pagan Pro", income: "Ingreso mensual estimado: {amount}", free: "Con acceso gratis", freeSub: "Alumnos y fundadores",
+      funnel: "El camino de tus usuarios", fSignup: "Se registraron", fWizard: "Terminaron el asistente", fReturned: "Volvieron la semana siguiente", fClosure: "Hicieron su primer cierre de mes", fPro: "Pasaron a Pro",
+      funnelNote: "El cierre de mes es tu mejor señal de que alguien se va a quedar.", funnelEmpty: "Nadie se registró en este periodo", funnelEmptySub: "El embudo aparece cuando llegan usuarios nuevos.",
+      attention: "Requiere tu atención", failed: "{n} pagos fallidos", expiring: "{n} accesos gratis vencen esta semana", privacy: "{n} solicitudes de exportar o borrar datos", tickets: "{n} preguntas de soporte sin responder",
+      allClear: "Nada pendiente", allClearSub: "Sin pagos fallidos, vencimientos, pedidos de datos ni preguntas sin responder.",
+      academy: "Academia", seen: "Clases vistas", top: "Clase más vista", drop: "Donde más abandonan", rating: "Calificación promedio", ratingVal: "{n} / 5", noData: "Sin datos aún",
+    },
+  },
+  en: {
+    nav: {
+      label: "Administration", brand: "Revolución 360", admin: "Administration", back: "‹ Back to the app",
+      resumen: "Overview", usuarios: "Users and access", grupos: "Groups", menu: "Menu and features", academia: "Academy",
+      planes: "Plans and pricing", paises: "Content by country", soporte: "Support and privacy", actividad: "Activity log",
+      privacy: "This panel doesn't show users' financial data.",
+    },
+    states: { free: "Free", trial: "Trial", pro: "Pro", alumno: "Student access", fundador: "Founder access", read_only: "Read only" } as Record<string, string>,
+    kinds: { alumno: "Student", fundador: "Founder" } as Record<string, string>,
+    roles: { user: "User", admin: "Administrator" } as Record<string, string>,
+    suspended: "Suspended", failedPay: "Payment failed", never: "Never expires", none: "—", deleted: "Deleted account", system: "System", noName: "No name",
+    monthsN: "{n} months", rowsN: "{n} rows", statuses: { open: "unanswered", answered: "answered", closed: "closed" } as Record<string, string>,
+    prev: "‹ Previous", next: "Next ›", page: "Page {n} of {total}", pager: "Pages",
+    close: "Close", cancel: "Cancel", save: "Save", saving: "Saving…",
+    errors: {
+      generic: "Couldn't save. Try again.", months: "Enter between 1 and 120 months.", date: "Pick a valid date.", past: "The date has to be after today.",
+      email: "The email doesn't match the account's.", self: "You can't do this to your own account.", notFound: "We couldn't find that user.",
+    },
+    grant: {
+      kind: "Access type", dur: "For how long?", vida: "Lifetime", meses: "For months", fecha: "Until a date", months: "Months", until: "Until",
+      expires: "Expires {date}", typeMonths: "Enter the number of months", pickDate: "Pick the date",
+      note: "When it expires they move to Free automatically, without losing their data. You can extend or remove access any time.",
+      notify: "We let them know in the app.", proNote: "They already pay for Pro: their paid plan doesn't change and the access stays in their history.",
+      give: "Give access", giving: "Giving access…",
+    },
+    actions: {
+      dar_acceso: "Gave free access", quitar_acceso: "Removed free access", suspender: "Suspended an account", reactivar: "Reactivated an account",
+      cambiar_rol: "Changed the role", reiniciar_2pasos: "Reset 2-step verification", restablecer_clave: "Sent the password reset email",
+      borrar_cuenta: "Deleted an account", nota_agregar: "Wrote an internal note", nota_borrar: "Deleted an internal note",
+      grupo_crear: "Created a group", grupo_renombrar: "Renamed a group", grupo_borrar: "Deleted a group", grupo_agregar: "Added someone to a group", grupo_quitar: "Removed someone from a group",
+      codigo_crear: "Created an invite code", codigo_activar: "Turned a code on", codigo_desactivar: "Turned a code off",
+      soporte_responder: "Answered a support case", soporte_estado: "Changed a case's status",
+      privacidad_exportar: "Marked an export as done", exportar_lista: "Exported the user list",
+      faq_crear: "Created a FAQ", faq_editar: "Edited a FAQ", faq_publicar: "Published a FAQ", faq_ocultar: "Hid a FAQ", faq_ordenar: "Reordered the FAQs", faq_borrar: "Deleted a FAQ",
+    } as Record<string, string>,
+    resumen: {
+      title: "Overview", eyebrow: "How Revolución 360 is doing", period: "Period", d30: "30 days", d90: "90 days",
+      users: "Users", newUsers: "+{n} in {d} days", active: "Active ({d} days)", ofTotal: "{pct}% of total",
+      pro: "Paying Pro", income: "Estimated monthly revenue: {amount}", free: "With free access", freeSub: "Students and founders",
+      funnel: "Your users' journey", fSignup: "Signed up", fWizard: "Finished the setup", fReturned: "Came back the next week", fClosure: "Did their first month close", fPro: "Moved to Pro",
+      funnelNote: "The month close is your best sign someone will stay.", funnelEmpty: "Nobody signed up in this period", funnelEmptySub: "The funnel shows up when new users arrive.",
+      attention: "Needs your attention", failed: "{n} failed payments", expiring: "{n} free accesses expire this week", privacy: "{n} requests to export or delete data", tickets: "{n} unanswered support questions",
+      allClear: "Nothing pending", allClearSub: "No failed payments, expirations, data requests or unanswered questions.",
+      academy: "Academy", seen: "Lessons watched", top: "Most watched lesson", drop: "Where most drop off", rating: "Average rating", ratingVal: "{n} / 5", noData: "No data yet",
+    },
+  },
+} satisfies Messages<unknown>;
+
+export type AdminText = (typeof A)["es"];
+
+/** Nombre legible de una acción del registro; si no la conocemos (p. ej. de la parte 2), se muestra tal cual. */
+export const actionLabel = (t: AdminText, action: string) => t.actions[action] ?? action.replace(/_/g, " ");
