@@ -4,7 +4,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 try { process.loadEnvFile(".env.local"); } catch { /* sin archivo: se saltan */ }
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "", ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "", SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
-const local = /127\.0\.0\.1|localhost/.test(URL) && !!SERVICE;
+const isLocal = /127\.0\.0\.1|localhost/.test(URL) && !!SERVICE;
+// Si Supabase local no está corriendo (Docker apagado), estas pruebas se saltan en vez de fallar.
+const up = isLocal && (await fetch(`${URL}/auth/v1/health`, { headers: { apikey: ANON } }).then((r) => r.ok, () => false));
+const local = up;
 
 describe.skipIf(!local)("permisos en la base de datos", () => {
   const admin = createClient(URL, SERVICE, { auth: { persistSession: false } });
