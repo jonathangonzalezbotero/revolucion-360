@@ -43,7 +43,7 @@ Antes de usar una API de Next, lee su guía en `node_modules/next/dist/docs/` (v
 - Nunca un gráfico vacío: estado vacío que explica qué falta.
 
 ## Trabajo
-- `npm run dev` · `npm test` · `npm run typecheck` · `npm run lint` · `npm run db:migrate` (aplica migraciones nuevas a la base) · `npm run db:types` · `npm run seed:demo` (solo crea). Sin Docker.
+- `npm run dev` · `npm test` · `npm run typecheck` · `npm run lint` · `npm run db:status` · `npm run db:migrate:check` · `npm run db:migrate` (aplica migraciones nuevas a la base) · `npm run db:types` · `npm run seed:demo` (solo crea). Sin Docker.
 - Cambios de base de datos: un archivo nuevo en `supabase/migrations/` (nunca editar uno ya aplicado), solo cambios que agregan (regla 0). Los revisa una persona antes de `db:migrate`.
 - No se agregan librerías sin justificar por qué.
 - Una decisión nueva se anota en `docs/plan-de-implementacion.md` en el mismo cambio.

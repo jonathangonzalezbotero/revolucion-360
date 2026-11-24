@@ -35,7 +35,8 @@ Actualizado: 24 de noviembre de 2026. Todo el código está en `main` en GitHub.
 Desde el 25 nov 2026 no se usa Docker: la app corre en local contra la base de producción (`.env`). **La base nunca se resetea ni se borra** (CLAUDE.md, regla 0).
 ```bash
 npx supabase link --project-ref rzfaseleufqbfxyrcgyz   # una vez
-npx supabase migration list   # qué migraciones faltan en la base
+npm run db:status            # qué migraciones faltan en la base
+npm run db:migrate:check     # muestra qué aplicaría, sin aplicar nada
 npm run db:migrate            # aplica solo las nuevas (revisarlas antes)
 npm run db:types
 npm run typecheck && npm test # las pruebas de permisos se saltan: solo corren contra un Supabase local
