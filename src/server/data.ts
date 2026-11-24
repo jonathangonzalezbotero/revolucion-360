@@ -195,5 +195,6 @@ export async function loadDiagnosticInput(s: Session, year: number, month: numbe
   }
   const fundFromGoals = (goals ?? []).reduce((a, g) => a + ((g.goal_entries as { amount_cents: number }[]) ?? []).reduce((x, e) => x + e.amount_cents, 0), 0);
   const fundFromAccounts = accounts.filter((a) => a.isEmergencyFund).reduce((a, x) => a + x.balanceCents, 0);
-  return { incomeCents: income, expenseCents: expense, savingCents: saving, debtPaymentsCents: debt, basicExpensesCents: basic, emergencyFundCents: Math.max(fundFromGoals, fundFromAccounts), largestIncomeCents: largest };
+  const hasEmergencyFund = goals.length > 0 || accounts.some((a) => a.isEmergencyFund);
+  return { incomeCents: income, expenseCents: expense, savingCents: saving, debtPaymentsCents: debt, basicExpensesCents: basic, emergencyFundCents: Math.max(fundFromGoals, fundFromAccounts), largestIncomeCents: largest, hasEmergencyFund };
 }

@@ -41,6 +41,12 @@
   --teal-fondo: #E5F1ED;
   --revisar-fondo: #FFF8F0;  /* fila por revisar */
   --rojo-borde: #F0D2C4;
+  --velo: rgba(20,22,18,.45);
+  --exito-borde: #B9DFD0;    /* círculo y borde de la pantalla de éxito */
+  --exito-anillo: #8FD3B9;
+  --tinta-2: #3A3D36;
+  --papel-claro: #FBFCFA;        /* texto fuerte secundario */
+  --ambar-oscuro: #7A4A0C;  /* fondo detrás de ventanas y hojas */
   /* Bloque oscuro (solo Inicio, Academia, acceso y muro de Pro) */
   --oscuro-1: #0B0C0A;
   --oscuro-2: #1C1E19;
@@ -59,6 +65,8 @@
   --sombra-foco: 0 0 0 3px rgba(242,205,0,.45);
   --sombra-form: 6px 6px 0 var(--amarillo);   /* formulario abierto: borde tinta y sombra amarilla desplazada */
   --sombra-hoja: 0 -8px 40px rgba(20,22,18,.18);
+  --sombra-tarjeta: 0 1px 2px rgba(20,22,18,.06), 0 8px 24px rgba(20,22,18,.06);
+  --sombra-portada: 0 12px 32px rgba(20,22,18,.22);
   --nav-ancho: 248px;
 }
 
@@ -198,7 +206,7 @@ table.data td { padding: 12px; border-bottom: 1px solid var(--linea-2); vertical
 table.data td.r, table.data th.r { text-align: right; }
 
 dialog.modal { border: 1.5px solid var(--tinta); border-radius: var(--r-2xl); padding: 24px; width: min(560px, calc(100vw - 32px)); box-shadow: var(--sombra-form); background: var(--blanco); color: var(--tinta); }
-dialog.modal::backdrop { background: rgba(20,22,18,.45); }
+dialog.modal::backdrop { background: var(--velo); }
 @media (max-width: 899px) {
   dialog.modal { margin: auto 0 0; width: 100vw; max-width: 100vw; border-radius: 20px 20px 0 0; border-width: 1.5px 0 0; box-shadow: var(--sombra-hoja); max-height: 92dvh; padding: 20px 16px max(20px, env(safe-area-inset-bottom)); }
 }

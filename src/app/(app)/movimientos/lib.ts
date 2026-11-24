@@ -141,11 +141,11 @@ export function moneyInput(cents: Cents): string {
   return abs % 100 === 0 ? String(abs / 100) : (abs / 100).toFixed(2);
 }
 
-export type Query = { mes?: string; anio?: string; cat?: string; cuenta?: string; ver?: string; linea?: string; nivel?: string };
+export type Query = { mes?: string; anio?: string; cat?: string; cuenta?: string; ver?: string; linea?: string; nivel?: string; estado?: string };
 /** Enlace a /movimientos con sus filtros (sin parámetros vacíos). */
 export function movHref(q: Query): string {
   const sp = new URLSearchParams();
-  for (const k of ["nivel", "anio", "mes", "ver", "linea", "cat", "cuenta"] as const) if (q[k]) sp.set(k, q[k]!);
+  for (const k of ["nivel", "anio", "mes", "ver", "linea", "cat", "cuenta", "estado"] as const) if (q[k]) sp.set(k, q[k]!);
   const s = sp.toString();
   return s ? `/movimientos?${s}` : "/movimientos";
 }

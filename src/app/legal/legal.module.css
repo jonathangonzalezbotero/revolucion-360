@@ -1,0 +1,20 @@
+.page { background: var(--papel-claro); min-height: 100dvh; width: 100%; color: var(--tinta); }
+.wrap { max-width: 860px; margin: 0 auto; padding: 48px 40px 80px; display: flex; flex-direction: column; gap: 18px; }
+.back { font-size: 14px; font-weight: 600; color: var(--tinta); min-height: 44px; display: inline-flex; align-items: center; }
+.title { margin: 16px 0 0; font-size: 36px; }
+.lead { margin: 0; font-size: 17px; color: var(--tinta-2); line-height: 1.6; }
+.draft { background: var(--amarillo-pastel); color: var(--amarillo-texto); border-radius: var(--r-xl); padding: 14px 16px; font-size: 14px; line-height: 1.5; }
+.tabs { display: flex; gap: 6px; padding: 5px; background: var(--blanco); border: 1px solid var(--linea); border-radius: var(--r-xl); align-self: flex-start; }
+.tabs a { font-size: 14px; font-weight: 600; min-height: 42px; padding: 0 16px; border-radius: var(--r-md); color: var(--tinta-2); text-decoration: none; display: inline-flex; align-items: center; }
+.tabs a[aria-current="page"] { background: var(--tinta); color: var(--blanco); }
+.section { display: flex; flex-direction: column; gap: 8px; padding: 20px 0; border-top: 1px solid var(--linea); }
+.section h2 { margin: 0; font-size: 20px; }
+.section p { margin: 0; font-size: 16px; color: var(--tinta-2); line-height: 1.7; max-width: 680px; }
+@media (max-width: 899px) {
+  .wrap { padding: 20px 16px 48px; gap: 14px; }
+  .title { font-size: 28px; margin-top: 8px; }
+  .lead { font-size: 15px; }
+  .tabs { align-self: stretch; }
+  .tabs a { flex: 1; justify-content: center; }
+  .section p { font-size: 15px; }
+}

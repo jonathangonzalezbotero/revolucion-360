@@ -16,7 +16,9 @@ import type { Acc, AddPayload, Cat, Ctx, LineOpt } from "./types";
 export type Period = { kind: "month" | "year" | "any"; year: number; month: number | null; label: string };
 type Props = {
   header: { title: string; eyebrow: string };
-  /** Lo que va entre el título y la lista: meses (móvil), avisos y la tarjeta de niveles. */
+  /** Meses (solo móvil): van en el encabezado, encima de los filtros. */
+  months: React.ReactNode;
+  /** Lo que va entre los filtros (móvil) o el título (escritorio) y la lista: avisos y la tarjeta de niveles. */
   children: React.ReactNode;
   rows: MovRow[]; categories: Cat[]; accounts: Acc[]; linesByYear: Record<string, LineOpt[]>;
   period: Period; years: number[]; initial: Filter; lineName: string | null; query: Query;
@@ -28,7 +30,7 @@ type Props = {
 
 const PAGE = 200;
 
-export function Detail({ header, children, rows, categories, accounts, linesByYear, period, years, initial, lineName, query, flags, locked, ctx }: Props) {
+export function Detail({ header, months, children, rows, categories, accounts, linesByYear, period, years, initial, lineName, query, flags, locked, ctx }: Props) {
   const { t, c, fmt, locale } = ctx;
   const router = useRouter();
   const toast = useToast();
@@ -58,6 +60,18 @@ export function Detail({ header, children, rows, categories, accounts, linesByYe
   const quickCats = useMemo(() => [...categories.filter((x) => x.kind !== "income"), ...categories.filter((x) => x.kind === "income")].slice(0, 6), [categories]);
 
   const goPeriod = (q: Partial<Query>) => router.push(movHref({ ...query, cat: filter.cat, cuenta: filter.account, ...q }));
+
+  /**
+   * "Por revisar" sin mes trae solo los por revisar de todas las fechas. Si el estado cambia a otro (o a "Todos"),
+   * esa lista no alcanza: se carga el mes en curso completo con el nuevo estado (sigue en "Cada movimiento").
+   */
+  const pickState = (state: StateFilter) => {
+    if (period.kind === "any" && query.ver === "revisar" && state !== "revisar") {
+      set({ state });
+      return goPeriod({ nivel: query.nivel || "detail", ver: "", anio: "", mes: "", estado: state });
+    }
+    set({ state });
+  };
 
   /** Guarda un movimiento a mano. Si hay uno parecido, avisa y deja decidir; si coincide con una línea del plan, la sugiere. */
   const submit = async (payload: AddPayload, force = false): Promise<boolean> => {
@@ -97,7 +111,7 @@ export function Detail({ header, children, rows, categories, accounts, linesByYe
   const monthValue = period.kind === "any" ? "any" : period.kind === "year" ? "all" : String(period.month);
 
   const pillOf = (r: MovRow): { label: string; cls: string; style?: React.CSSProperties } => {
-    if (r.kind === "transfer") return { label: c.status.transfer, cls: "pill", style: { background: "var(--papel)", color: "var(--azul-oscuro)" } };
+    if (r.kind === "transfer") return { label: c.status.transfer, cls: "pill", style: { background: "var(--azul-fondo)", color: "var(--azul-texto)" } };
     if (r.status === "review") return { label: c.status.review, cls: "pill pill-warn" };
     if (r.parts.length) return { label: t.list.st.split, cls: "pill" };
     if (r.lineId) return { label: t.list.st.plan, cls: "pill pill-ok" };
@@ -112,10 +126,13 @@ export function Detail({ header, children, rows, categories, accounts, linesByYe
 
   const rowBody = (r: MovRow) => {
     const pill = pillOf(r);
-    const color = r.kind === "transfer" ? "var(--azul-oscuro)" : (r.categoryId ? catById.get(r.categoryId)?.color : null) ?? "var(--ambar-texto)";
+    const catColor = r.categoryId ? catById.get(r.categoryId)?.color : null;
+    // como el mockup: transferencia en azul sobre su fondo; sin categoría, ámbar sobre su fondo
+    const avatar: React.CSSProperties = r.kind === "transfer" ? { color: "var(--azul-oscuro)", background: "var(--azul-fondo)" }
+      : catColor ? { color: catColor } : { color: "var(--ambar-texto)", background: "var(--rojo-fondo)" };
     return (
       <>
-        <span aria-hidden="true" className={css.avatar} style={{ color }}>{r.description.trim().charAt(0).toUpperCase()}</span>
+        <span aria-hidden="true" className={css.avatar} style={avatar}>{r.description.trim().charAt(0).toUpperCase()}</span>
         <span className={css.rowMain}>
           <span>{r.description}</span>
           <span className="xs muted">{catLabel(r)} · {(r.accountId ? accById.get(r.accountId)?.name : null) ?? t.list.noAccount} · {formatDate(r.date, locale, period.kind === "any" ? "long" : "short")}</span>
@@ -130,14 +147,18 @@ export function Detail({ header, children, rows, categories, accounts, linesByYe
 
   return (
     <>
-      <PageHeader title={header.title} eyebrow={<span className="only-desktop">{header.eyebrow}</span>}>
-        {canWrite ? (
-          <>
-            <button type="button" className="btn only-desktop" aria-expanded={panel} onClick={() => { setEditId(null); setPanel((p) => !p); }}>{t.add}</button>
-            <button type="button" className="btn only-mobile" aria-label={t.addAria} onClick={openSheet} style={{ width: 46, height: 46, padding: 0, borderRadius: 14, fontSize: 24 }}><span aria-hidden="true">+</span></button>
-          </>
-        ) : null}
-      </PageHeader>
+      {/* En el teléfono el encabezado lleva título, meses y filtros juntos (el orden lo pone el CSS); en escritorio, los filtros van después de los niveles. */}
+      <div className={css.head}>
+        <PageHeader title={header.title} eyebrow={<span className="only-desktop">{header.eyebrow}</span>}>
+          {canWrite ? (
+            <>
+              <button type="button" className="btn only-desktop" aria-expanded={panel} onClick={() => { setEditId(null); setPanel((p) => !p); }}>{t.add}</button>
+              <button type="button" className="btn only-mobile" aria-label={t.addAria} onClick={openSheet} style={{ width: 46, height: 46, padding: 0, borderRadius: 14, fontSize: 24 }}><span aria-hidden="true">+</span></button>
+            </>
+          ) : null}
+        </PageHeader>
+        {months}
+      </div>
 
       {children}
 
@@ -176,7 +197,7 @@ export function Detail({ header, children, rows, categories, accounts, linesByYe
           </div>
           <div className={css.fld}>
             <label htmlFor="f-estado">{t.filters.state}</label>
-            <select id="f-estado" className={css.fsel} value={filter.state} onChange={(e) => set({ state: e.target.value as StateFilter })}>
+            <select id="f-estado" className={css.fsel} value={filter.state} onChange={(e) => pickState(e.target.value as StateFilter)}>
               {STATES.map((v) => <option key={v} value={v}>{stateLabel[v]}</option>)}
             </select>
           </div>
@@ -194,7 +215,7 @@ export function Detail({ header, children, rows, categories, accounts, linesByYe
         {filter.line && lineName ? (
           <div className="banner banner-info" style={{ padding: "10px 14px" }}>
             <span>{fill(t.filters.line, { name: lineName })}</span>
-            <button type="button" className="link" onClick={() => { set({ line: "" }); router.replace(movHref({ ...query, linea: "", mes: period.kind === "any" ? "" : query.mes })); }}>{t.filters.clearLine}</button>
+            <button type="button" className="link" onClick={() => { set({ line: "" }); router.replace(movHref({ ...query, nivel: query.nivel || "detail", linea: "", mes: period.kind === "any" ? "" : query.mes })); }}>{t.filters.clearLine}</button>
           </div>
         ) : null}
       </div>

@@ -10,7 +10,8 @@ import type { RecFrequency } from "./lib";
 import css from "./mov.module.css";
 import type { Acc, Cat, Ctx, LineOpt } from "./types";
 
-export type RecItem = { id: string; description: string; amountCents: Cents; frequency: RecFrequency; nextDate: ISODate; active: boolean };
+/** `anchorDay`: día del mes de un mensual (1–31); la próxima fecha puede caer antes en un mes corto. */
+export type RecItem = { id: string; description: string; amountCents: Cents; frequency: RecFrequency; nextDate: ISODate; anchorDay: number | null; active: boolean };
 
 /** Recurrentes: se registran solos en su fecha. Aquí se crean, se pausan y se borran. */
 export function Recurring({ items, categories, accounts, linesByYear, ctx }: { items: RecItem[]; categories: Cat[]; accounts: Acc[]; linesByYear: Record<string, LineOpt[]>; ctx: Ctx }) {
@@ -27,7 +28,7 @@ export function Recurring({ items, categories, accounts, linesByYear, ctx }: { i
   const freqLabel: Record<RecFrequency, string> = { weekly: t.rec.weekly, fortnightly: t.rec.fortnightly, monthly: t.rec.monthly };
 
   const when = (r: RecItem) => {
-    if (r.frequency === "monthly") return `${freqLabel.monthly} · ${fill(t.rec.day, { d: parts(r.nextDate).d })}`;
+    if (r.frequency === "monthly") return `${freqLabel.monthly} · ${fill(t.rec.day, { d: r.anchorDay ?? parts(r.nextDate).d })}`;
     if (r.frequency === "weekly") return `${freqLabel.weekly} · ${weekdayName(r.nextDate, locale)}`;
     return `${freqLabel.fortnightly} · ${fill(t.rec.next, { date: formatDate(r.nextDate, locale, "short") })}`;
   };

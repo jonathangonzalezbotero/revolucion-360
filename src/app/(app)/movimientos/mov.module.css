@@ -16,6 +16,8 @@
 .line { display: flex; align-items: center; gap: 12px; min-height: 56px; border-top: 1px solid var(--linea-2); padding: 6px 0; }
 .totalInput { font-size: 16px; font-weight: 600; width: 120px; height: 44px; padding: 0 12px; border: 1.5px solid var(--linea-campo); border-radius: var(--r-lg); text-align: right; background: var(--blanco); }
 
+/* encabezado de "Cada movimiento": título y meses (los meses solo se ven en el teléfono, donde además se le pegan los filtros) */
+.head { display: flex; flex-direction: column; gap: 12px; }
 .filters { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
 .filterRow { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
 .fsel { font-size: 14px; font-weight: 600; height: 42px; padding: 0 12px; border: 1px solid var(--linea); border-radius: var(--r-md); background: var(--blanco); color: var(--tinta); min-width: 0; }
@@ -37,7 +39,7 @@
 .list { list-style: none; margin: 0; padding: 0 10px 10px; }
 .rowBtn { width: 100%; text-align: left; color: var(--tinta); border: 0; display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: var(--r-lg); background: transparent; }
 button.rowBtn:hover { background: var(--papel-3); }
-.rowBtn[data-review=true] { background: color-mix(in srgb, var(--ambar-fondo) 45%, var(--blanco)); }
+.rowBtn[data-review=true] { background: var(--revisar-fondo); }
 .rowBtn[aria-pressed=true] { background: var(--amarillo-suave); }
 .avatar { width: 40px; height: 40px; border-radius: var(--r-lg); flex: none; background: var(--papel); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
 .rowMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -71,6 +73,7 @@ select.in { padding: 0 8px; }
 .types > button[aria-checked=true] { border-color: var(--tinta); background: var(--amarillo-suave); color: var(--tinta); }
 .csvBox { border: 2px dashed var(--linea-punteada); border-radius: var(--r-2xl); padding: 28px 18px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; background: var(--amarillo-suave); }
 .del { font-size: 13px; min-height: 42px; border-radius: var(--r-md); width: 100%; }
+.edit .del { border-color: var(--rojo-borde); }
 
 .recCard { padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; }
 .recGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; }
@@ -82,7 +85,8 @@ select.in { padding: 0 8px; }
   .levelCard { padding: 14px; }
   .levels { grid-template-columns: minmax(0, 1fr); }
   .rowsCard { padding: 6px 14px; }
-  .filters { padding: 0; border: 0; background: transparent; gap: 10px; }
+  .head { order: -2; }
+  .filters { padding: 0; border: 0; background: transparent; gap: 10px; order: -1; margin-top: -2px; }
   .filterRow[data-open=false], .chips, .fmonth { display: none; }
   .mobileFilters { display: flex; gap: 8px; }
   .mobileFilters > select { flex: 1; height: 44px; border-radius: var(--r-lg); }
@@ -109,7 +113,7 @@ select.in { padding: 0 8px; }
   .amt { width: auto; font-size: 14px; }
   .rowPill { font-size: 10px; padding: 2px 7px; }
   .emptyList { padding: 32px 12px; }
-  .sideWrap { position: fixed; inset: 0; z-index: 50; max-width: none; display: flex; align-items: flex-end; background: color-mix(in srgb, var(--tinta) 45%, transparent); }
+  .sideWrap { position: fixed; inset: 0; z-index: 50; max-width: none; display: flex; align-items: flex-end; background: var(--velo); }
   .sideWrap[data-desktop=closed] { display: flex; }
   .sideWrap[data-mobile=closed] { display: none; }
   .side { width: 100%; max-height: 92dvh; overflow-y: auto; border: 0; border-radius: 18px 18px 0 0; box-shadow: var(--sombra-hoja); padding: 12px 18px max(26px, env(safe-area-inset-bottom)); }

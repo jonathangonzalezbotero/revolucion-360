@@ -175,7 +175,8 @@ export function EditPanel({ row, categories, accounts, linesByYear, recurring, c
           </>
         ) : null}
 
-        {recurring && row.source !== "recurring" && !d.transfer ? (
+        {/* "Se repite" solo si este movimiento no generó ni nació ya de un recurrente */}
+        {recurring && !row.recurringId && !d.transfer ? (
           <div className={css.fld}>
             <label htmlFor="e-rep">{t.edit.repeat}</label>
             <select id="e-rep" className={css.in} value={d.repeat} onChange={(e) => up({ repeat: e.target.value as "" | RecFrequency })}>

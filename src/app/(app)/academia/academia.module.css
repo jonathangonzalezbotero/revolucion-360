@@ -1,0 +1,73 @@
+/* Academia: medidas del mockup (escritorio 1440 y móvil 390), corte en 900 px. */
+
+.hero { background: var(--bloque-oscuro); color: var(--blanco); border-radius: 26px; overflow: hidden; display: flex; flex-wrap: wrap; }
+.heroCover { flex: 1 1 300px; min-height: 240px; position: relative; overflow: hidden; background: var(--oscuro-1); }
+.heroBody { flex: 2 1 420px; padding: 28px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.heroTitle { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+.nextLink { text-decoration: none; color: var(--blanco); background: var(--oscuro-3); border: 1px solid var(--oscuro-linea); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.nextLink:hover { border-color: var(--amarillo); }
+
+.gam { background: var(--blanco); border: 1px solid var(--linea); border-radius: 14px; padding: 22px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 24px; }
+.duo { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+.duo > * { flex: 1 1 320px; min-width: 0; }
+.duo > .gam { flex: 2 1 520px; }
+.gamCol { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.levels { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.weeks { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; list-style: none; margin: 0; padding: 0; }
+.badges { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.badge { background: var(--papel-3); border: 1px solid var(--linea); border-radius: 14px; padding: 10px 6px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; min-width: 0; }
+.badgeImg { width: 58px; height: 58px; border-radius: 50%; overflow: hidden; flex: none; display: block; }
+.badgeImg img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.14) translateY(2%); display: block; }
+.gamLink { color: var(--tinta); font-size: 13px; font-weight: 600; padding: 4px 0; align-self: flex-start; }
+
+.stageHead { display: flex; align-items: center; gap: 12px; }
+.stageIcon { width: 42px; height: 42px; border-radius: 13px; background: var(--tinta); display: flex; align-items: center; justify-content: center; flex: none; box-shadow: var(--sombra-portada); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
+.card { background: var(--blanco); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--sombra-tarjeta); }
+
+.bottom { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 18px; align-items: start; }
+.reco { text-decoration: none; color: var(--tinta); background: var(--blanco); border-radius: 14px; border: 1px solid var(--linea); padding: 20px; display: flex; gap: 14px; align-items: center; }
+.reco:hover { border-color: var(--linea-punteada); }
+.ptsGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 13px; }
+.ptsGrid > span { background: var(--papel); border-radius: 10px; padding: 10px; }
+
+/* Clase */
+.lessonLayout { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+.lessonMain { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+.lessonAside { flex: 1 1 320px; max-width: 380px; }
+.player { position: relative; border-radius: 16px; overflow: hidden; background: var(--oscuro-1); aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; }
+.player iframe, .player video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--oscuro-1); }
+.lessonHead { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.lessonTitle { margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; }
+.lessonActions { display: flex; gap: 8px; }
+.iconBtn { text-decoration: none; width: 48px; height: 48px; border-radius: 12px; border: 1px solid var(--linea); background: var(--blanco); display: flex; align-items: center; justify-content: center; color: var(--gris-2); font-size: 18px; flex: none; }
+.mainBtn { font: inherit; font-size: 15px; font-weight: 600; min-height: 48px; padding: 0 22px; border: 0; background: var(--tinta); color: var(--blanco); border-radius: 12px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.mainBtn:disabled { opacity: .6; cursor: default; }
+.cta { text-decoration: none; color: var(--tinta); background: var(--ambar-fondo); border-radius: 16px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
+.box { background: var(--blanco); border-radius: 14px; border: 1px solid var(--linea); padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+.star { font: inherit; width: 44px; height: 44px; border: 0; background: transparent; font-size: 26px; cursor: pointer; border-radius: 10px; }
+.star:disabled { cursor: default; }
+.module > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--papel-3); border-radius: 12px; padding: 12px; min-height: 44px; }
+.module > summary::-webkit-details-marker { display: none; }
+.module[open] > summary { background: transparent; padding: 0 0 6px; min-height: 0; }
+.module > summary .chev { transition: transform .15s; }
+.module[open] > summary .chev { transform: rotate(180deg); }
+.lessonRow:hover { background: var(--papel-3); }
+.lessonRow[aria-current="page"]:hover { background: var(--tinta); }
+.navRow { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+@media (max-width: 899px) {
+  .hero { border-radius: 16px; }
+  .heroCover { flex-basis: 100%; min-height: 170px; }
+  .heroBody { flex-basis: 100%; padding: 20px; }
+  .heroTitle { font-size: 22px; }
+  .gam { padding: 16px; }
+  .cards { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x mandatory; }
+  .cards > .card { flex: none; width: 270px; scroll-snap-align: start; }
+  .reco { padding: 16px; }
+  .box { padding: 16px; }
+  .lessonAside { flex-basis: 100%; max-width: none; }
+  .lessonTitle { font-size: 22px; }
+  .lessonActions { width: 100%; }
+  .lessonActions .mainBtn { flex: 1; }
+}

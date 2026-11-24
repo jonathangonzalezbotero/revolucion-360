@@ -115,14 +115,14 @@ isOneToOne: false
                   ]
                 },"categories": {
                   Row: {
-                    "color": string,"created_at": string,"id": string,"is_basic": boolean,"kind": string,"name": string,"sort": number,"user_id": string
+                    "color": string,"created_at": string,"id": string,"is_basic": boolean,"kind": string,"name": string,"original_name": string | null,"sort": number,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "color"?: string,"created_at"?: string,"id"?: string,"is_basic"?: boolean,"kind": string,"name": string,"sort"?: number,"user_id": string
+                    "color"?: string,"created_at"?: string,"id"?: string,"is_basic"?: boolean,"kind": string,"name": string,"original_name"?: string | null,"sort"?: number,"user_id": string
                   }
                   Update: {
-                    "color"?: string,"created_at"?: string,"id"?: string,"is_basic"?: boolean,"kind"?: string,"name"?: string,"sort"?: number,"user_id"?: string
+                    "color"?: string,"created_at"?: string,"id"?: string,"is_basic"?: boolean,"kind"?: string,"name"?: string,"original_name"?: string | null,"sort"?: number,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -481,6 +481,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"lesson_comments": {
+                  Row: {
+                    "author_name": string,"body": string,"created_at": string,"hidden_at": string | null,"id": string,"lesson_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "author_name"?: string,"body": string,"created_at"?: string,"hidden_at"?: string | null,"id"?: string,"lesson_id": string,"user_id": string
+                  }
+                  Update: {
+                    "author_name"?: string,"body"?: string,"created_at"?: string,"hidden_at"?: string | null,"id"?: string,"lesson_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lesson_comments_lesson_id_fkey"
+      columns: ["lesson_id"]
+isOneToOne: false
+      referencedRelation: "lessons"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"lesson_media": {
                   Row: {
                     "lesson_id": string,"video_url": string
@@ -773,14 +793,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "country": string,"created_at": string,"currency": string,"email": string,"first_steps": NonNullable<Json>,"id": string,"last_active_at": string | null,"locale": string,"mov_level": string,"name": string,"onboarding_step": string,"pay_frequency": string,"prefs": NonNullable<Json>,"role": string,"suspended_at": string | null,"terms": NonNullable<Json>,"timezone": string,"wizard": NonNullable<Json>
+                    "country": string,"created_at": string,"currency": string,"email": string,"first_steps": NonNullable<Json>,"id": string,"last_active_at": string | null,"last_name": string,"locale": string,"mov_level": string,"name": string,"onboarding_step": string,"password_changed_at": string | null,"pay_frequency": string,"phone": string,"prefs": NonNullable<Json>,"role": string,"suspended_at": string | null,"terms": NonNullable<Json>,"timezone": string,"wizard": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "country"?: string,"created_at"?: string,"currency"?: string,"email": string,"first_steps"?: NonNullable<Json>,"id": string,"last_active_at"?: string | null,"locale"?: string,"mov_level"?: string,"name"?: string,"onboarding_step"?: string,"pay_frequency"?: string,"prefs"?: NonNullable<Json>,"role"?: string,"suspended_at"?: string | null,"terms"?: NonNullable<Json>,"timezone"?: string,"wizard"?: NonNullable<Json>
+                    "country"?: string,"created_at"?: string,"currency"?: string,"email": string,"first_steps"?: NonNullable<Json>,"id": string,"last_active_at"?: string | null,"last_name"?: string,"locale"?: string,"mov_level"?: string,"name"?: string,"onboarding_step"?: string,"password_changed_at"?: string | null,"pay_frequency"?: string,"phone"?: string,"prefs"?: NonNullable<Json>,"role"?: string,"suspended_at"?: string | null,"terms"?: NonNullable<Json>,"timezone"?: string,"wizard"?: NonNullable<Json>
                   }
                   Update: {
-                    "country"?: string,"created_at"?: string,"currency"?: string,"email"?: string,"first_steps"?: NonNullable<Json>,"id"?: string,"last_active_at"?: string | null,"locale"?: string,"mov_level"?: string,"name"?: string,"onboarding_step"?: string,"pay_frequency"?: string,"prefs"?: NonNullable<Json>,"role"?: string,"suspended_at"?: string | null,"terms"?: NonNullable<Json>,"timezone"?: string,"wizard"?: NonNullable<Json>
+                    "country"?: string,"created_at"?: string,"currency"?: string,"email"?: string,"first_steps"?: NonNullable<Json>,"id"?: string,"last_active_at"?: string | null,"last_name"?: string,"locale"?: string,"mov_level"?: string,"name"?: string,"onboarding_step"?: string,"password_changed_at"?: string | null,"pay_frequency"?: string,"phone"?: string,"prefs"?: NonNullable<Json>,"role"?: string,"suspended_at"?: string | null,"terms"?: NonNullable<Json>,"timezone"?: string,"wizard"?: NonNullable<Json>
                   }
                   Relationships: [
                     

@@ -86,8 +86,8 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
   // ───── Recurrentes (debajo de cualquier nivel, si el plan lo incluye) ─────
   let recurring: React.ReactNode = null;
   if (hasMov && hasRec) {
-    const rec = must(await s.supabase.from("recurring").select("id, description, amount_cents, frequency, next_date, active").order("active", { ascending: false }).order("next_date"));
-    const items: RecItem[] = rec.map((r) => ({ id: r.id, description: r.description, amountCents: r.amount_cents, frequency: r.frequency as RecFrequency, nextDate: r.next_date, active: r.active }));
+    const rec = must(await s.supabase.from("recurring").select("id, description, amount_cents, frequency, next_date, anchor_day, active").order("active", { ascending: false }).order("next_date"));
+    const items: RecItem[] = rec.map((r) => ({ id: r.id, description: r.description, amountCents: r.amount_cents, frequency: r.frequency as RecFrequency, nextDate: r.next_date, anchorDay: r.anchor_day, active: r.active }));
     recurring = <Recurring items={items} categories={cats} accounts={accs} linesByYear={{ [s.year]: await linesOf(s.year) }} ctx={ctx} />;
   } else if (hasMov) {
     recurring = <ProWall s={s} title={m.pro.recTitle} text={m.pro.recText} />;
@@ -173,9 +173,9 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
 
   return (
     <main className="page">
-      <Detail header={{ title: m.title, eyebrow }} rows={rows} categories={cats} accounts={accs} linesByYear={linesByYear} period={period} years={years}
+      <Detail header={{ title: m.title, eyebrow }} months={months} rows={rows} categories={cats} accounts={accs} linesByYear={linesByYear} period={period} years={years}
         initial={initial} lineName={lineName} query={query} flags={{ csv, recurring: hasRec }} locked={!hasMov} ctx={ctx}>
-        {months}{banners}{picker}
+        {banners}{picker}
         {!hasMov ? <ProWall s={s} title={m.pro.title} text={m.pro.text} bullets={m.pro.bullets} /> : null}
         {!hasMov && rows.length > 0 ? <h2>{m.pro.yours}</h2> : null}
       </Detail>

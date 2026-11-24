@@ -1,0 +1,59 @@
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.head > div { display: flex; flex-direction: column; gap: 4px; }
+.summary { border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--linea); padding: 28px 0; display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: space-between; }
+.summary > div:first-child { display: flex; flex-direction: column; gap: 8px; max-width: 620px; }
+.summaryText { font-size: 22px; font-weight: 600; line-height: 1.4; }
+.hl { color: var(--rojo); }
+.counts { display: flex; gap: 10px; flex-wrap: wrap; }
+.count { font-size: 13px; font-weight: 600; padding: 8px 12px; border-radius: var(--r-pill); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.card { background: var(--blanco); border-radius: var(--r-xl); border: 1px solid var(--linea); padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+.card[data-priority="true"] { border-color: var(--tinta); }
+.cardHead { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.level { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: var(--r-pill); white-space: nowrap; }
+.value { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.value .big { font-size: 34px; font-weight: 500; letter-spacing: -0.03em; }
+.unit { font-size: 13px; color: var(--gris); }
+.ref { font-size: 12px; color: var(--gris); }
+.note { font-size: 13px; color: var(--tinta-2); line-height: 1.5; border-top: 1px solid var(--linea-2); padding-top: 10px; }
+
+.h2 { margin: 8px 0 0; font-size: 20px; font-weight: 600; }
+.focus { background: var(--blanco); border-radius: var(--r-xl); border: 1px solid var(--linea); padding: 22px; display: flex; gap: 14px; align-items: flex-start; max-width: 760px; }
+.focusIcon { width: 42px; height: 42px; border-radius: var(--r-lg); background: var(--papel); display: flex; align-items: center; justify-content: center; flex: none; }
+.focusBody { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.focusBody h3 { font-size: 16px; }
+.focusBody p { font-size: 14px; color: var(--tinta-2); line-height: 1.55; }
+.focusBody a { font-size: 14px; font-weight: 600; padding: 4px 0; align-self: flex-start; }
+
+.lead { border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--linea); padding: 28px 0; display: flex; flex-direction: column; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand span { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--verde); }
+.leadTitle { font-size: 26px; font-weight: 600; line-height: 1.2; }
+.leadText { font-size: 14px; color: var(--gris); line-height: 1.55; }
+.leadBtn { text-decoration: none; align-self: flex-start; font-size: 15px; font-weight: 600; padding: 14px 20px; background: var(--amarillo); color: var(--tinta); border-radius: var(--r-lg); min-height: 44px; }
+.leadBtn:hover { color: var(--tinta); }
+
+.student { text-decoration: none; color: var(--tinta); background: var(--blanco); border: 1px solid var(--linea); border-radius: var(--r-xl); padding: 28px 32px; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.student:hover { color: var(--tinta); border-color: var(--tinta); }
+.cover { width: 160px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r-lg); flex: none; background: var(--papel-3); }
+.studentBody { flex: 1 1 220px; display: flex; flex-direction: column; gap: 6px; }
+.eyebrow2 { font-size: 12px; font-weight: 500; color: var(--gris); }
+.studentBody strong { font-size: 20px; font-weight: 600; }
+.txt { font-size: 14px; color: var(--tinta-2); line-height: 1.5; }
+.go { font-size: 14px; font-weight: 600; }
+
+@media (max-width: 899px) {
+  .summary { padding: 18px 0; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .summaryText { font-size: 17px; line-height: 1.45; }
+  .count { font-size: 12px; padding: 6px 10px; }
+  .grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .card, .focus { padding: 16px; }
+  .value .big { font-size: 28px; }
+  .h2 { font-size: 17px; margin: 6px 4px 0; }
+  .lead { padding: 20px 0; }
+  .leadTitle { font-size: 20px; }
+  .student { padding: 20px; }
+  .studentBody strong { font-size: 17px; }
+}
