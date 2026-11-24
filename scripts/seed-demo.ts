@@ -9,11 +9,12 @@ const EMAIL = process.env.DEMO_EMAIL!, ADMIN_EMAIL = process.env.DEMO_ADMIN_EMAI
 if (!/127\.0\.0\.1|localhost/.test(URL)) throw new Error("seed:demo solo corre contra Supabase local.");
 if (!EMAIL || !ADMIN_EMAIL || !PASSWORD) throw new Error("Faltan DEMO_EMAIL, DEMO_ADMIN_EMAIL o DEMO_PASSWORD en .env.local");
 const db = createClient(URL, SERVICE, { auth: { persistSession: false } });
-const must = <T>(r: { data: T; error: { message: string } | null }): NonNullable<T> => { if (r.error) throw new Error(r.error.message); return r.data as NonNullable<T>; };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const must = (r: { data: any; error: { message: string } | null }): any => { if (r.error) throw new Error(r.error.message); return r.data; };
 
 async function freshUser(email: string, name: string) {
   const list = must(await db.auth.admin.listUsers({ perPage: 1000 }));
-  const old = list.users.find((u) => u.email === email);
+  const old = list.users.find((u: { email?: string }) => u.email === email);
   if (old) must(await db.auth.admin.deleteUser(old.id));
   return must(await db.auth.admin.createUser({ email, password: PASSWORD, email_confirm: true, user_metadata: { name } })).user.id;
 }

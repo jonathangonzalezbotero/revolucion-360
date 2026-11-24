@@ -39,7 +39,7 @@ export async function touchWeek(s: Session): Promise<void> {
 }
 
 export async function notify(s: Session, kind: string, title: string, body: string, href: string | null, dedupe: string): Promise<void> {
-  await s.supabase.rpc("notify_me", { p_kind: kind, p_title: title, p_body: body, p_href: href, p_dedupe: dedupe });
+  await s.supabase.rpc("notify_me", { p_kind: kind, p_title: title, p_body: body, p_href: href ?? "", p_dedupe: dedupe });
 }
 
 /** Eventos del embudo del producto (sin montos). */

@@ -1,0 +1,32 @@
+import type { Messages } from "@/i18n";
+
+export const M = {
+  es: {
+    title: "Inicio", hello: "Hola, {name}", closeCta: "Hacer el cierre de {month}", closeCtaShort: "Cierre del mes",
+    heroPlan: "Según tu plan, en {month} te sobra", heroShort: "En {month} te sobra", heroMissing: "Según tu plan, en {month} te falta", heroMissingShort: "En {month} te falta",
+    yourMonth: "Tu mes", in: "Entra", out: "Sale", paid: "Ya pagado", toPay: "Falta por pagar", allPaid: "Todo lo del mes está pagado.", more: "y {n} más",
+    today: "Para hoy", review: "{n} movimientos por revisar", reviewOne: "1 movimiento por revisar", reviewSub: "Elige su categoría y la app aprende para la próxima.",
+    company: "Clasifica {amount} de retiros de {name}", companySub: "Sueldo, dividendo, devolución o préstamo.",
+    closure: "Cierre de {month}", closureSub: "5 minutos para revisar el mes y ajustar {next}.",
+    balances: "Actualiza el saldo de tus cuentas", balancesSub: "Hace más de un mes que no los escribes.",
+    wildcard: "Tu racha se puede salvar", wildcardSub: "La semana pasada no registraste nada. Tienes 1 comodín este mes.",
+    nothing: "Nada pendiente por hoy", nothingSub: "Tu plan está al día. Registra el café de hoy si quieres.",
+    goals: "Tus metas", newGoal: "+ Nueva meta", saved: "Ahorrado", ofTarget: "de {target}", noDate: "Sin fecha", noGoals: "Aún no tienes metas", noGoalsSub: "Ponle nombre y fecha a lo que quieres lograr. La app calcula cuánto apartar.", createGoal: "Crear una meta",
+    year: "Tu año, mes a mes", openPlan: "Abrir Plan anual ›", thisMonth: "este mes", plan: "plan", left: "Te sobra", missing: "Te falta", pickMonth: "Elige un mes", legendOut: "Sale", legendIn: "Entra", aria: "{month}: entra {in}, sale {out}",
+    diag: "Tu diagnóstico financiero", diagSub: "5 indicadores de tu situación y en qué enfocarte. Se actualiza en cada cierre de mes.", see: "Ver ›",
+  },
+  en: {
+    title: "Home", hello: "Hi, {name}", closeCta: "Close {month}", closeCtaShort: "Month close",
+    heroPlan: "By your plan, in {month} you have left over", heroShort: "In {month} you have left", heroMissing: "By your plan, in {month} you're short", heroMissingShort: "In {month} you're short",
+    yourMonth: "Your month", in: "In", out: "Out", paid: "Already paid", toPay: "Still to pay", allPaid: "Everything for this month is paid.", more: "and {n} more",
+    today: "For today", review: "{n} transactions to review", reviewOne: "1 transaction to review", reviewSub: "Pick its category and the app learns for next time.",
+    company: "Classify {amount} of withdrawals from {name}", companySub: "Salary, dividend, repayment or loan.",
+    closure: "Close {month}", closureSub: "5 minutes to review the month and adjust {next}.",
+    balances: "Update your account balances", balancesSub: "You haven't written them in over a month.",
+    wildcard: "Your streak can be saved", wildcardSub: "You logged nothing last week. You have 1 wildcard this month.",
+    nothing: "Nothing pending today", nothingSub: "Your plan is up to date. Log today's coffee if you like.",
+    goals: "Your goals", newGoal: "+ New goal", saved: "Saved", ofTarget: "of {target}", noDate: "No date", noGoals: "You don't have goals yet", noGoalsSub: "Name what you want and set a date. The app works out how much to set aside.", createGoal: "Create a goal",
+    year: "Your year, month by month", openPlan: "Open yearly plan ›", thisMonth: "this month", plan: "plan", left: "Left over", missing: "Short", pickMonth: "Pick a month", legendOut: "Out", legendIn: "In", aria: "{month}: in {in}, out {out}",
+    diag: "Your financial check-up", diagSub: "5 indicators of where you stand and what to focus on. Updated at every month close.", see: "View ›",
+  },
+} satisfies Messages<unknown>;

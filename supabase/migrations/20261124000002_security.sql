@@ -57,7 +57,10 @@ begin
     values (new.user_id, new.id, case when new.deleted_at is not null and old.deleted_at is null then 'delete' else 'update' end, to_jsonb(old), to_jsonb(new));
     return new;
   else
-    insert into public.transaction_history (user_id, transaction_id, action, before) values (old.user_id, old.id, 'delete', to_jsonb(old));
+    -- si la cuenta entera se está borrando, no hay historial que guardar
+    if exists (select 1 from auth.users where id = old.user_id) then
+      insert into public.transaction_history (user_id, transaction_id, action, before) values (old.user_id, old.id, 'delete', to_jsonb(old));
+    end if;
     return old;
   end if;
 end $$;
@@ -70,7 +73,7 @@ declare t text;
 begin
   foreach t in array array[
     'categories','accounts','goals','goal_entries','debts','debt_payments','investments','investment_entries',
-    'plan_lines','plan_cells','plan_marks','csv_imports','csv_formats','recurring','transactions','category_rules',
+    'plan_lines','plan_cells','plan_marks','plan_years','csv_imports','csv_formats','recurring','transactions','category_rules',
     'month_totals','watched_merchants','month_closures','forecast_scenarios','tax_settings','tax_entries','company_entries'
   ] loop
     execute format('alter table public.%I enable row level security', t);
@@ -144,7 +147,7 @@ create policy own_cancel on public.privacy_requests for update to authenticated 
 do $$
 declare t text;
 begin
-  foreach t in array array['app_config','countries','price_regions','faqs','courses','course_modules','lessons'] loop
+  foreach t in array array['app_config','countries','price_regions','faqs'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('create policy read_all on public.%I for select to authenticated using (true)', t);
     execute format('create policy admin_write on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())', t);
@@ -154,6 +157,61 @@ begin
     execute format('create policy admin_all on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())', t);
   end loop;
 end $$;
+-- Academia: el usuario solo lee lo publicado; el video de una clase Pro exige tener Pro
+create or replace function public.my_tier() returns text
+language sql stable security definer set search_path = public as $$
+  select case when exists (select 1 from public.entitlements e where e.user_id = auth.uid() and (
+      e.state in ('pro','fundador','read_only')
+      or (e.state = 'trial' and e.trial_ends_at > now())
+      or (e.state = 'alumno' and (e.access_until is null or e.access_until > now())))) then 'pro' else 'free' end;
+$$;
+create or replace function public.course_live(p_course uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.courses c where c.id = p_course and (c.status = 'published' or (c.status = 'scheduled' and c.publish_at <= now())));
+$$;
+alter table public.courses enable row level security;
+create policy read_live on public.courses for select to authenticated using (public.is_admin() or status = 'published' or (status = 'scheduled' and publish_at <= now()));
+create policy admin_write on public.courses for all to authenticated using (public.is_admin()) with check (public.is_admin());
+alter table public.course_modules enable row level security;
+create policy read_live on public.course_modules for select to authenticated using (public.is_admin() or public.course_live(course_id));
+create policy admin_write on public.course_modules for all to authenticated using (public.is_admin()) with check (public.is_admin());
+alter table public.lessons enable row level security;
+create policy read_live on public.lessons for select to authenticated using (public.is_admin() or public.course_live(course_id));
+create policy admin_write on public.lessons for all to authenticated using (public.is_admin()) with check (public.is_admin());
+alter table public.lesson_media enable row level security;
+create policy read_allowed on public.lesson_media for select to authenticated using (
+  public.is_admin() or exists (select 1 from public.lessons l join public.courses c on c.id = l.course_id
+    where l.id = lesson_id and public.course_live(c.id) and ((l.tier = 'free' and c.tier = 'free') or public.my_tier() = 'pro')));
+create policy admin_write on public.lesson_media for all to authenticated using (public.is_admin()) with check (public.is_admin());
+
+-- Un dato del usuario solo puede apuntar a otro dato del MISMO usuario (las llaves foráneas no pasan por RLS)
+create or replace function public.same_owner() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare i int := 0; ref uuid; owner uuid;
+begin
+  while i < tg_nargs loop
+    execute format('select ($1).%I', tg_argv[i]) into ref using new;
+    if ref is not null then
+      execute format('select user_id from public.%I where id = $1', tg_argv[i + 1]) into owner using ref;
+      if owner is distinct from new.user_id then raise exception 'referencia ajena en %', tg_argv[i] using errcode = '42501'; end if;
+    end if;
+    i := i + 2;
+  end loop;
+  return new;
+end $$;
+create trigger same_owner before insert or update on public.plan_lines for each row execute function public.same_owner('category_id','categories','debt_id','debts','goal_id','goals','investment_id','investments');
+create trigger same_owner before insert or update on public.plan_cells for each row execute function public.same_owner('line_id','plan_lines');
+create trigger same_owner before insert or update on public.plan_marks for each row execute function public.same_owner('line_id','plan_lines');
+create trigger same_owner before insert or update on public.transactions for each row execute function public.same_owner('account_id','accounts','category_id','categories','plan_line_id','plan_lines','parent_id','transactions','import_id','csv_imports','recurring_id','recurring');
+create trigger same_owner before insert or update on public.goal_entries for each row execute function public.same_owner('goal_id','goals');
+create trigger same_owner before insert or update on public.debt_payments for each row execute function public.same_owner('debt_id','debts');
+create trigger same_owner before insert or update on public.investment_entries for each row execute function public.same_owner('investment_id','investments');
+create trigger same_owner before insert or update on public.recurring for each row execute function public.same_owner('account_id','accounts','category_id','categories','plan_line_id','plan_lines');
+create trigger same_owner before insert or update on public.category_rules for each row execute function public.same_owner('category_id','categories','plan_line_id','plan_lines');
+create trigger same_owner before insert or update on public.month_totals for each row execute function public.same_owner('category_id','categories');
+create trigger same_owner before insert or update on public.csv_imports for each row execute function public.same_owner('account_id','accounts');
+create trigger same_owner before insert or update on public.tax_settings for each row execute function public.same_owner('account_id','accounts');
+
 -- Países y precios también se leen antes de entrar (registro y onboarding)
 create policy read_anon on public.countries for select to anon using (enabled);
 create policy read_anon on public.price_regions for select to anon using (true);
@@ -217,7 +275,12 @@ begin
     when 'check' then exists (select 1 from public.month_closures where user_id = uid)
     when 'flame' then (select count(*) from public.month_closures where user_id = uid) >= 3
     when 'unlock' then exists (select 1 from public.debts where user_id = uid and closed_at is not null)
-    when 'shield' then true   -- la condición (fondo ≥ 1 mes de gastos básicos) la calcula el motor en el servidor
+    when 'shield' then (
+      select greatest(
+        coalesce((select sum(ge.amount_cents) from public.goal_entries ge join public.goals g on g.id = ge.goal_id where g.user_id = uid and g.is_emergency_fund and g.archived_at is null), 0),
+        coalesce((select sum(a.balance_cents) from public.accounts a where a.user_id = uid and a.is_emergency_fund and a.archived_at is null), 0))
+      >= nullif((select coalesce(sum(pc.amount_cents), 0) from public.plan_cells pc join public.plan_lines pl on pl.id = pc.line_id join public.categories c on c.id = pl.category_id
+                  where pl.user_id = uid and c.is_basic and pl.archived_at is null and pl.year = extract(year from now())::int and pc.month = extract(month from now())::int), 0))
     when 'flag' then exists (select 1 from public.goals where user_id = uid and completed_at is not null)
     when 'cap' then exists (select 1 from public.point_events where user_id = uid and kind = 'course')
     when 'sprout' then exists (select 1 from public.investments where user_id = uid)
@@ -403,4 +466,4 @@ begin
   );
 end $$;
 
-revoke execute on function public.handle_new_user(), public.protect_profile(), public.log_transaction() from public, anon, authenticated;
+revoke execute on function public.handle_new_user(), public.protect_profile(), public.log_transaction(), public.same_owner() from public, anon, authenticated;

@@ -11,7 +11,7 @@ src/app/legal/…             términos y privacidad (públicas)
 src/app/api/…               stripe/webhook, cron/*, export
 src/lib/engine/             CÁLCULOS: funciones puras con pruebas (dinero, fechas, plan, finanzas, diagnóstico, proyección, logros, CSV, accesos)
 src/lib/supabase/           server.ts (sesión del usuario, con RLS) · admin.ts (clave de servicio, uso mínimo)
-src/server/                 session.ts · config.ts · action.ts (run) · data.ts (cargadores) · rewards.ts · closure.ts
+src/server/                 session.ts · config.ts · action.ts (run) · data.ts (cargadores, must, fetchAll) · plan-write.ts (createLine, setCell, setCells, updateLine, archiveLine, setMark, createDefaultCategories) · rewards.ts · closure.ts · terms.ts
 src/components/ui/          Icon · basics (PageHeader, Money, Ledger, Bar, Pill, Empty, ListLink, Ring, Disclaimer) · client (Modal, useToast, Switch, Segmented, SubmitButton, ConfirmButton)
 src/components/shell/       AppShell (menú lateral + barra móvil) · ProWall
 src/i18n/                   index.ts (Locale, Messages, fill) · common.ts (textos compartidos: s.t)
@@ -76,3 +76,16 @@ Tablas y permisos en `supabase/migrations/`. Resumen:
 - Otros: notifications, email_log, push_subscriptions, support_tickets, ticket_messages, privacy_requests, product_events, lesson_progress.
 
 Signo de los movimientos: entra positivo, sale negativo. Las transferencias (`kind = 'transfer'`) y los padres divididos (`is_split`) no cuentan como ingreso ni gasto (`counts(t)` en `data.ts`).
+
+## Consultas
+- Los clientes de Supabase están tipados (`src/lib/supabase/database.types.ts`, se regenera con `npm run db:types`). Una columna mal escrita no compila.
+- **Nunca `data ?? []` a ciegas**: una consulta que falla se pinta como "sin datos" o "$0". Usa `must(await s.supabase.from(…)…)` (lanza el error).
+- **La API devuelve máximo 1,000 filas.** Todo lo que pueda pasar de ahí (movimientos, celdas, historial) se trae con `fetchAll((a, b) => consulta.range(a, b))`.
+- Cambio de año: `loadPlan(s, año)` copia el plan del año anterior la primera vez que se pide el año en curso o el siguiente (`ensurePlanYear`). Usa siempre `s.year`/`s.month`, nunca un año fijo.
+- Videos de la Academia: `lesson_media.video_url` (la base solo lo entrega si la clase es gratis o el usuario tiene Pro).
+- 2 pasos: las acciones `mfaStart`, `mfaConfirm`, `mfaDisable`, `mfaStatus` y `signOut` están en `src/app/(auth)/actions.ts`.
+
+## Entorno local
+- Node 22: `export PATH="$HOME/.nvm/versions/node/v22.17.1/bin:$PATH"`.
+- Supabase local (Docker): API 54321, correos de prueba en http://127.0.0.1:54324. Usuario de demostración: `npm run seed:demo` (correo y contraseña en `.env.local`).
+- Pantallas de referencia ya terminadas: `src/app/(auth)/*` y `src/app/(app)/inicio/*`.

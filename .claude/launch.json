@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "revolucion-360",
+      "runtimeExecutable": "/Users/jonathangonzalezbotero/.nvm/versions/node/v22.17.1/bin/node",
+      "runtimeArgs": ["/Users/jonathangonzalezbotero/Documents/Workspace/personal/Revolucion del dinero/revolucion-360/node_modules/next/dist/bin/next", "dev", "/Users/jonathangonzalezbotero/Documents/Workspace/personal/Revolucion del dinero/revolucion-360"],
+      "port": 3000
+    }
+  ]
+}

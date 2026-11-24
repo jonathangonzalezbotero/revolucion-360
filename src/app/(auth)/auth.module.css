@@ -1,0 +1,21 @@
+.wrap { display: flex; flex-wrap: wrap; min-height: 100dvh; }
+.aside { background: var(--bloque-oscuro); color: var(--blanco); flex: 1 1 520px; padding: 48px 56px; display: flex; flex-direction: column; justify-content: space-between; gap: 40px; min-height: 100dvh; }
+.main { flex: 1 1 520px; padding: 40px 56px; display: flex; flex-direction: column; gap: 32px; background: #FBFCFA; }
+.box { width: 100%; max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; padding-top: 48px; }
+.mobileLogo { display: none; }
+.footDesktop { margin: auto 0 0; font-size: 12px; color: var(--gris); text-align: center; }
+.footMobile { display: none; }
+.input { font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid var(--linea-campo); border-radius: 12px; background: var(--blanco); width: 100%; }
+.cta { font-size: 15px; font-weight: 600; min-height: 52px; padding: 0 18px; border-radius: 12px; border: 0; background: var(--tinta); color: var(--blanco); width: 100%; }
+.textBtn { font-size: 14px; font-weight: 600; color: var(--tinta); border: 0; background: transparent; padding: 8px 4px; min-height: 40px; text-decoration: none; display: inline-flex; align-items: center; }
+.alert { margin: 0; font-size: 13px; font-weight: 600; color: var(--rojo); background: var(--rojo-fondo); border-radius: 10px; padding: 10px 12px; }
+.oauth { font-size: 14px; font-weight: 600; min-height: 48px; border: 1px solid var(--linea-campo); background: var(--blanco); border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+.codeBox { height: 62px; border-radius: 12px; background: var(--blanco); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; }
+@media (max-width: 899px) {
+  .aside { display: none; }
+  .main { padding: 20px 20px 32px; gap: 20px; min-height: 100dvh; }
+  .box { padding-top: 8px; }
+  .mobileLogo { display: flex; }
+  .footDesktop { display: none; }
+  .footMobile { display: block; margin: auto 0 0; font-size: 12px; color: var(--gris); text-align: center; }
+}

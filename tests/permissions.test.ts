@@ -37,7 +37,9 @@ describe.skipIf(!local)("permisos en la base de datos", () => {
     const tx = await ana.from("transactions").insert({ user_id: anaId, account_id: acc.data!.id, date: "2026-11-03", amount_cents: -133000, description: "Home" }).select("id").single();
     anaTx = tx.data!.id;
   });
-  afterAll(async () => { for (const id of ids) await admin.auth.admin.deleteUser(id); });
+  afterAll(async () => {
+    for (const id of ids) { const r = await admin.auth.admin.deleteUser(id); if (r.error && !/not found/i.test(r.error.message)) throw r.error; }
+  });
 
   it("al registrarse nace con perfil y plan Gratis", async () => {
     const p = await ana.from("profiles").select("role, onboarding_step").single();
@@ -130,6 +132,54 @@ describe.skipIf(!local)("permisos en la base de datos", () => {
     const h = await ana.from("transaction_history").select("action").eq("transaction_id", anaTx).order("at");
     expect(h.data?.map((x) => x.action)).toEqual(["create", "update"]);
     expect((await ana.from("transaction_history").delete().eq("transaction_id", anaTx).select()).data).toEqual([]);
+  });
+
+  it("más de 1,000 filas: la API corta en 1,000 y por eso los cargadores paginan", async () => {
+    const rows = Array.from({ length: 1250 }, (_, i) => ({ user_id: betoId, date: "2026-03-10", amount_cents: -100, description: `fila ${i}` }));
+    expect((await beto.from("transactions").insert(rows)).error).toBeNull();
+    expect((await beto.from("transactions").select("id").limit(5000)).data).toHaveLength(1000); // el tope del servidor
+    const all: unknown[] = [];
+    for (let from = 0; ; from += 1000) {
+      const { data } = await beto.from("transactions").select("id").order("id").range(from, from + 999);
+      all.push(...(data ?? []));
+      if ((data ?? []).length < 1000) break;
+    }
+    expect(all).toHaveLength(1250);
+  });
+
+  it("un dato no puede apuntar a un dato de otro usuario", async () => {
+    const r = await beto.from("transactions").insert({ user_id: betoId, date: "2026-11-05", amount_cents: -1, description: "x", category_id: anaCat });
+    expect(r.error).not.toBeNull();
+  });
+
+  it("borrar la cuenta borra todos sus datos", async () => {
+    const { c, id } = await user("caro");
+    const cat = await c.from("categories").insert({ user_id: id, name: "Hogar", kind: "expense" }).select("id").single();
+    const line = await c.from("plan_lines").insert({ user_id: id, year: 2026, category_id: cat.data!.id, name: "Home", kind: "expense" }).select("id").single();
+    await c.from("plan_cells").insert({ user_id: id, line_id: line.data!.id, month: 11, amount_cents: 133000 });
+    await c.from("transactions").insert({ user_id: id, date: "2026-11-03", amount_cents: -133000, description: "Home", plan_line_id: line.data!.id, category_id: cat.data!.id });
+    expect((await c.from("categories").delete().eq("id", cat.data!.id)).error).not.toBeNull(); // una categoría con líneas no se borra
+    const del = await admin.auth.admin.deleteUser(id);
+    expect(del.error).toBeNull();
+    for (const t of ["profiles", "categories", "plan_lines", "plan_cells", "transactions", "transaction_history", "entitlements"] as const) {
+      const col = t === "profiles" ? "id" : "user_id";
+      expect((await admin.from(t).select("*", { count: "exact", head: true }).eq(col, id)).count, t).toBe(0);
+    }
+  });
+
+  it("los borradores de la Academia y los videos Pro no se leen por la API", async () => {
+    expect((await beto.from("courses").select("slug")).data?.map((x) => x.slug)).toEqual(["empieza-aqui"]);
+    const pro = await admin.from("courses").select("id").eq("slug", "sal-de-deudas").single();
+    await admin.from("courses").update({ status: "published" }).eq("id", pro.data!.id);
+    const lesson = await admin.from("lessons").insert({ course_id: pro.data!.id, title: "Clase Pro", tier: "pro" }).select("id").single();
+    await admin.from("lesson_media").insert({ lesson_id: lesson.data!.id, video_url: "https://video.test/pro" });
+    expect((await beto.from("lessons").select("title").eq("id", lesson.data!.id)).data).toHaveLength(1);       // ve que existe
+    expect((await beto.from("lesson_media").select("video_url").eq("lesson_id", lesson.data!.id)).data).toEqual([]); // pero no el video
+    await admin.from("entitlements").update({ state: "alumno", access_until: null }).eq("user_id", betoId);
+    expect((await beto.from("lesson_media").select("video_url").eq("lesson_id", lesson.data!.id)).data).toHaveLength(1);
+    await admin.from("entitlements").update({ state: "free" }).eq("user_id", betoId);
+    await admin.from("lessons").delete().eq("id", lesson.data!.id);
+    await admin.from("courses").update({ status: "draft" }).eq("id", pro.data!.id);
   });
 
   it("sin sesión no se lee nada", async () => {

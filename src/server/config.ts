@@ -36,7 +36,8 @@ const DEFAULTS: AppConfig = {
 export const getConfig = cache(async (): Promise<AppConfig> => {
   const supabase = await createClient();
   const { data } = await supabase.from("app_config").select("key, value");
-  const v = Object.fromEntries((data ?? []).map((r) => [r.key, r.value]));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const v: Record<string, any> = Object.fromEntries((data ?? []).map((r) => [r.key, r.value]));
   const m = v.matching as { amount_pct?: number; days?: number; duplicate_days?: number } | undefined;
   return {
     menu: { ...DEFAULTS.menu, ...(v.menu ?? {}) },

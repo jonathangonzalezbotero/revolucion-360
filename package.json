@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "db:reset": "supabase db reset",
     "db:start": "supabase start",
-    "seed:demo": "tsx scripts/seed-demo.ts"
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "db:types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

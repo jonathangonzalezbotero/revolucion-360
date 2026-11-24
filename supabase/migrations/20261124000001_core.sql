@@ -227,7 +227,7 @@ create table public.plan_lines (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   year int not null,
-  category_id uuid not null references public.categories(id) on delete restrict,
+  category_id uuid not null references public.categories(id),  -- NO ACTION: no deja borrar una categoría con líneas, pero sí borrar la cuenta completa
   name text not null,
   kind text not null check (kind in ('income','expense')),
   frequency text not null default 'monthly' check (frequency in ('monthly','fortnightly','weekly','yearly','once','custom')),
@@ -241,6 +241,14 @@ create table public.plan_lines (
   created_at timestamptz not null default now()
 );
 create index on public.plan_lines(user_id, year);
+-- Un renglón por año de plan creado: evita copiar dos veces el plan al cambiar de año
+create table public.plan_years (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  year int not null,
+  copied_from int,
+  created_at timestamptz not null default now(),
+  primary key (user_id, year)
+);
 create table public.plan_cells (
   line_id uuid not null references public.plan_lines(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -423,13 +431,17 @@ create table public.lessons (
   module_id uuid references public.course_modules(id) on delete set null,
   title text not null,
   description text not null default '',
-  video_url text not null default '',
   duration_sec int not null default 0,
   points int not null default 10,
   cta_screen text,                    -- pantalla de "Hazlo ahora en la app"
   tier text not null default 'free' check (tier in ('free','pro')),
   required boolean not null default false,
   sort int not null default 0
+);
+-- El video vive aparte para que una clase Pro no se pueda leer por la API sin tener Pro
+create table public.lesson_media (
+  lesson_id uuid primary key references public.lessons(id) on delete cascade,
+  video_url text not null default ''
 );
 create table public.lesson_progress (
   user_id uuid not null references auth.users(id) on delete cascade,

@@ -57,8 +57,9 @@ export const getSession = cache(async (): Promise<Session | null> => {
   const { y, m } = parts(today);
   const profile: Profile = {
     id: p.id, email: p.email, name: p.name, country: p.country, currency: p.currency, timezone: p.timezone, locale,
-    role: p.role, terms: p.terms ?? {}, prefs: p.prefs ?? {}, movLevel: p.mov_level, payFrequency: p.pay_frequency,
-    onboardingStep: p.onboarding_step, wizard: p.wizard ?? {}, firstSteps: p.first_steps ?? {}, suspended: !!p.suspended_at, createdAt: p.created_at,
+    role: p.role as Profile["role"], terms: (p.terms ?? {}) as Record<string, string>, prefs: (p.prefs ?? {}) as Record<string, unknown>,
+    movLevel: p.mov_level as Profile["movLevel"], payFrequency: p.pay_frequency as Profile["payFrequency"],
+    onboardingStep: p.onboarding_step, wizard: (p.wizard ?? {}) as Record<string, unknown>, firstSteps: (p.first_steps ?? {}) as Record<string, boolean>, suspended: !!p.suspended_at, createdAt: p.created_at,
   };
   return {
     userId, aal: (claims?.claims?.aal as "aal1" | "aal2") ?? "aal1", profile, entitlement, tier,
