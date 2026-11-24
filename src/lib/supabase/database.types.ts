@@ -449,14 +449,14 @@ isOneToOne: false
                   ]
                 },"investments": {
                   Row: {
-                    "archived_at": string | null,"contributed_cents": number,"created_at": string,"id": string,"name": string,"platform": string,"user_id": string,"value_cents": number,"value_date": string
+                    "archived_at": string | null,"contributed_cents": number,"created_at": string,"id": string,"kind": string,"name": string,"platform": string,"user_id": string,"value_cents": number,"value_date": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "archived_at"?: string | null,"contributed_cents"?: number,"created_at"?: string,"id"?: string,"name"?: string,"platform": string,"user_id": string,"value_cents"?: number,"value_date"?: string
+                    "archived_at"?: string | null,"contributed_cents"?: number,"created_at"?: string,"id"?: string,"kind"?: string,"name"?: string,"platform": string,"user_id": string,"value_cents"?: number,"value_date"?: string
                   }
                   Update: {
-                    "archived_at"?: string | null,"contributed_cents"?: number,"created_at"?: string,"id"?: string,"name"?: string,"platform"?: string,"user_id"?: string,"value_cents"?: number,"value_date"?: string
+                    "archived_at"?: string | null,"contributed_cents"?: number,"created_at"?: string,"id"?: string,"kind"?: string,"name"?: string,"platform"?: string,"user_id"?: string,"value_cents"?: number,"value_date"?: string
                   }
                   Relationships: [
                     

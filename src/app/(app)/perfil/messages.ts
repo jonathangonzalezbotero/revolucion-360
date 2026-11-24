@@ -64,7 +64,7 @@ export const M = {
       academy: { t: "Nuevas clases en la Academia", d: "Cuando se libera un curso o una clase" },
       news: { t: "Novedades de Revolución del Dinero", d: "Eventos, talleres y clases en vivo" },
     },
-    closeDay: "Día del recordatorio de cierre", closeDays: { last: "Último día del mes", first: "Día 1" },
+    closeDay: "Día del recordatorio de cierre", closeDays: { last: "En los últimos 10 días del mes", first: "En los primeros 5 días del mes siguiente" },
     channel: "Recibir por", channels: { both: "Correo y notificación", email: "Solo correo", app: "Solo notificación" },
     // Seguridad
     password: "Contraseña", passwordSub: "Usa una frase larga que no uses en otro lado.", passwordChanged: "Cambiada por última vez el {date}", passwordNever: "Cambiada por última vez: Nunca", changePassword: "Cambiar contraseña", newPassword: "Contraseña nueva",
@@ -150,7 +150,7 @@ export const M = {
       academy: { t: "New Academy lessons", d: "When a course or lesson is released" },
       news: { t: "Revolución del Dinero news", d: "Events, workshops and live classes" },
     },
-    closeDay: "Month close reminder day", closeDays: { last: "Last day of the month", first: "Day 1" },
+    closeDay: "Month close reminder day", closeDays: { last: "In the last 10 days of the month", first: "In the first 5 days of the next month" },
     channel: "Receive by", channels: { both: "Email and notification", email: "Email only", app: "Notification only" },
     password: "Password", passwordSub: "Use a long phrase you don't use anywhere else.", passwordChanged: "Last changed on {date}", passwordNever: "Last changed: Never", changePassword: "Change password", newPassword: "New password",
     show: "Show", hide: "Hide", pwHint: "At least 8 characters. A long phrase is better, e.g. \"my-trip-to-cali-2027\".",

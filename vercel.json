@@ -1,0 +1,24 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    { "path": "/api/cron/bienvenida", "schedule": "5 * * * *" },
+    { "path": "/api/cron/pagos", "schedule": "35 * * * *" },
+    { "path": "/api/cron/vencimientos", "schedule": "0 20 * * *" },
+    { "path": "/api/cron/cierre", "schedule": "0 22 * * *" },
+    { "path": "/api/cron/borrados", "schedule": "0 16 * * *" },
+    { "path": "/api/cron/racha", "schedule": "0 21 * * 1" }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [{ "key": "Content-Type", "value": "application/manifest+json" }]
+    }
+  ]
+}

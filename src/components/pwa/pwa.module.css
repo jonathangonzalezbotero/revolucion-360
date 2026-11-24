@@ -1,0 +1,16 @@
+/* Aviso flotante para instalar la app y activar notificaciones. Solo tokens de globals.css. */
+.card {
+  position: fixed; right: 24px; bottom: 24px; z-index: 55; width: 340px; max-width: calc(100vw - 32px);
+  background: var(--blanco); border: 1px solid var(--linea); border-radius: var(--r-2xl); box-shadow: var(--sombra-tarjeta);
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;
+}
+.label { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--gris); }
+.title { margin: 0; font-size: 16px; font-weight: 600; color: var(--tinta); }
+.text { margin: 0; font-size: 14px; line-height: 1.5; color: var(--tinta-2); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.status { margin: 0; font-size: 13px; color: var(--gris); }
+@media (max-width: 899px) {
+  /* Encima de la barra inferior de AppShell */
+  .card { left: 16px; right: 16px; width: auto; bottom: calc(88px + env(safe-area-inset-bottom)); }
+  .actions :global(.btn) { min-height: 44px; }
+}
