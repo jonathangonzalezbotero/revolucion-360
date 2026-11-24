@@ -81,7 +81,7 @@ export function SubmitButton({ children, pendingText, className = "btn", ...rest
 }
 
 /** Eliminar con doble confirmación: el primer toque pide confirmar, el segundo ejecuta. */
-export function ConfirmButton({ onConfirm, label, confirmLabel, className = "btn btn-danger" }: { onConfirm: () => void | Promise<void>; label: string; confirmLabel: string; className?: string }) {
+export function ConfirmButton({ onConfirm, label, confirmLabel, className = "btn btn-danger", ariaLabel, confirmAriaLabel }: { onConfirm: () => void | Promise<void>; label: React.ReactNode; confirmLabel: React.ReactNode; className?: string; ariaLabel?: string; confirmAriaLabel?: string }) {
   const [armed, setArmed] = useState(false);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -90,7 +90,7 @@ export function ConfirmButton({ onConfirm, label, confirmLabel, className = "btn
     return () => clearTimeout(t);
   }, [armed]);
   return (
-    <button type="button" className={className} disabled={busy} style={armed ? { background: "var(--rojo)", color: "var(--blanco)", borderColor: "var(--rojo)" } : undefined}
+    <button type="button" className={className} disabled={busy} aria-label={armed ? confirmAriaLabel ?? ariaLabel : ariaLabel} style={armed ? { background: "var(--rojo)", color: "var(--blanco)", borderColor: "var(--rojo)" } : undefined}
       onClick={async () => { if (!armed) return setArmed(true); setBusy(true); try { await onConfirm(); } finally { setBusy(false); setArmed(false); } }}>
       {armed ? confirmLabel : label}
     </button>

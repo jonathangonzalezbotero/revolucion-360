@@ -45,7 +45,8 @@
   --exito-borde: #B9DFD0;    /* círculo y borde de la pantalla de éxito */
   --exito-anillo: #8FD3B9;
   --tinta-2: #3A3D36;
-  --papel-claro: #FBFCFA;        /* texto fuerte secundario */
+  --papel-claro: #FBFCFA;
+  --velo-claro: rgba(255,255,255,.88); /* difumina contenido bloqueado del plan Gratis */        /* texto fuerte secundario */
   --ambar-oscuro: #7A4A0C;  /* fondo detrás de ventanas y hojas */
   /* Bloque oscuro (solo Inicio, Academia, acceso y muro de Pro) */
   --oscuro-1: #0B0C0A;
@@ -115,7 +116,7 @@ main > *:nth-child(n+5), .mb > *:nth-child(n+5) { animation-delay: .16s; }
 .page { flex: 1; min-width: 0; padding: 40px 48px 72px; display: flex; flex-direction: column; gap: 24px; max-width: 1220px; }
 .page-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
 .tabbar { display: none; }
-.only-mobile { display: none !important; }
+.only-mobile, .only-mobile-flex, .only-mobile-grid { display: none !important; }
 @media (max-width: 899px) {
   .shell { flex-direction: column; }
   .sidenav { display: none; }
@@ -124,6 +125,8 @@ main > *:nth-child(n+5), .mb > *:nth-child(n+5) { animation-delay: .16s; }
   .tabbar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--papel-2); border-top: 1px solid var(--linea); padding: 8px 4px max(14px, env(safe-area-inset-bottom)); }
   .only-desktop { display: none !important; }
   .only-mobile { display: revert !important; }
+  .only-mobile-flex { display: flex !important; }
+  .only-mobile-grid { display: grid !important; }
 }
 .grid-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 18px; align-items: start; }
 .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 14px; }

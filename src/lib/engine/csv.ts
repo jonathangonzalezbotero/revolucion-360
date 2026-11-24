@@ -101,12 +101,18 @@ export function guessMapping(rows: string[][]): CsvMapping {
       .sort((a, b) => b[1] - a[1]);
     description = texty[0]?.[0] ?? 1;
   }
+  // Sin encabezado: el saldo suele ser la última columna numérica distinta del monto.
+  let balanceCol = balance;
+  if (balanceCol === null && !hasHeader) {
+    const nums = idx.filter((i) => i !== date && i !== amount && ratio(i, isNum) > 0.8);
+    balanceCol = nums.length ? nums[nums.length - 1] : null;
+  }
   // Formato de fecha: si algún primer número pasa de 12 es día/mes; si el segundo pasa de 12 es mes/día.
   let dateFormat: DateFormat = "DMY";
   const nums = sample.map((r) => (r[date!] ?? "").split(/[\/\-.]/).map((x) => +x));
   if (nums.some((n) => n[0] > 31)) dateFormat = "YMD";
   else if (!nums.some((n) => n[0] > 12) && nums.some((n) => n[1] > 12)) dateFormat = "MDY";
-  return { hasHeader, date, description, amount: debit !== null && credit !== null ? null : amount, debit: amount === null ? debit : null, credit: amount === null ? credit : null, balance, dateFormat };
+  return { hasHeader, date, description, amount: debit !== null && credit !== null ? null : amount, debit: amount === null ? debit : null, credit: amount === null ? credit : null, balance: balanceCol, dateFormat };
 }
 
 export type CsvRow = { line: number; date: ISODate; description: string; amountCents: Cents; balanceCents: Cents | null };
@@ -131,9 +137,23 @@ export function mapRows(rows: string[][], m: CsvMapping): CsvResult {
   return { rows: out, skipped };
 }
 
-/** Conciliación del saldo: saldo final del archivo frente al saldo que da la app. */
+/**
+ * Conciliación del saldo: saldo final del archivo frente al saldo que da la app.
+ * Toma la fecha más reciente; si hay varias filas ese día, usa el orden del archivo
+ * (de viejo a nuevo → la última fila; de nuevo a viejo → la primera).
+ */
 export function closingBalance(rows: CsvRow[]): Cents | null {
   const withBal = rows.filter((r) => r.balanceCents !== null);
   if (withBal.length === 0) return null;
-  return [...withBal].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.line - b.line))[0].balanceCents;
+  const byLine = [...rows].sort((a, b) => a.line - b.line);
+  const ascending = byLine.length > 1 && byLine[0].date < byLine[byLine.length - 1].date;
+  const last = withBal.reduce((m, r) => (r.date > m ? r.date : m), withBal[0].date);
+  const sameDay = withBal.filter((r) => r.date === last).sort((a, b) => a.line - b.line);
+  return (ascending ? sameDay[sameDay.length - 1] : sameDay[0]).balanceCents;
+}
+
+/** true si el mapeo lee bien al menos la mitad de las filas (para avisar "no reconocemos las columnas"). */
+export function mappingWorks(rows: string[][], m: CsvMapping): boolean {
+  const body = rows.length - (m.hasHeader ? 1 : 0);
+  return body > 0 && mapRows(rows, m).rows.length / body >= 0.5;
 }

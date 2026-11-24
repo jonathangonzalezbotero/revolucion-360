@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  addMonths, annualTotals, applyRules, badgeProgress, bnplSchedule, closingBalance, consecutiveClosures, debtPayoff, diagnose,
+  addMonths, annualTotals, mappingWorks, applyRules, badgeProgress, bnplSchedule, closingBalance, consecutiveClosures, debtPayoff, diagnose,
   expectedBalance, findDuplicate, findTransferPair, forecast, formatMoney, goalPlan, guessMapping, hasFeature, levelFor,
   lineMonthStatus, mapRows, monthAmounts, monthsUntil, netWorth, nextStateOnExpiry, parseCsv, parseDate, parseMoney,
   payDatesInMonth, priority, recomputeCells, splitEven, splitIsValid, streak, suggestLine, taxToSetAside, tierOf, todayIn,
@@ -268,6 +268,19 @@ describe("importar CSV", () => {
     expect(m.amount).toBe(1);
     const r = mapRows(rows, m);
     expect(r.rows[0]).toMatchObject({ date: "2026-11-24", amountCents: -8600 });
+  });
+  it("saldo final según el orden del archivo", () => {
+    const asc = mapRows(parseCsv("Date,Description,Amount,Balance\n01/11/2026,A,-10,90\n03/11/2026,B,-5,85\n03/11/2026,C,-5,80\n"), guessMapping(parseCsv("Date,Description,Amount,Balance\n01/11/2026,A,-10,90\n")));
+    expect(closingBalance(asc.rows)).toBe(8000);
+    const desc = mapRows(parseCsv("Date,Description,Amount,Balance\n03/11/2026,C,-5,80\n03/11/2026,B,-5,85\n01/11/2026,A,-10,90\n"), guessMapping(parseCsv("Date,Description,Amount,Balance\n01/11/2026,A,-10,90\n")));
+    expect(closingBalance(desc.rows)).toBe(8000);
+  });
+  it("sin encabezado adivina la columna de saldo", () => {
+    const rows = parseCsv("24 Nov 26,-86.00,,,MISCELLANEOUS DEBIT,WOOLWORTHS 1234,4914.00\n23 Nov 26,1540.00,,,TRANSFER CREDIT,Sueldo,5000.00\n");
+    const m = guessMapping(rows);
+    expect(m.balance).toBe(6);
+    expect(mappingWorks(rows, m)).toBe(true);
+    expect(mappingWorks([["hola", "mundo"], ["x", "y"]], guessMapping([["hola", "mundo"], ["x", "y"]]))).toBe(false);
   });
   it("fechas", () => {
     expect(parseDate("2026-11-24", "YMD")).toBe("2026-11-24");

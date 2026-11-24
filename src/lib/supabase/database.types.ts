@@ -999,14 +999,14 @@ isOneToOne: false
                   ]
                 },"watched_merchants": {
                   Row: {
-                    "created_at": string,"id": string,"name": string,"pattern": string,"user_id": string
+                    "created_at": string,"id": string,"limit_cents": number | null,"name": string,"pattern": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"name": string,"pattern": string,"user_id": string
+                    "created_at"?: string,"id"?: string,"limit_cents"?: number | null,"name": string,"pattern": string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"name"?: string,"pattern"?: string,"user_id"?: string
+                    "created_at"?: string,"id"?: string,"limit_cents"?: number | null,"name"?: string,"pattern"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
