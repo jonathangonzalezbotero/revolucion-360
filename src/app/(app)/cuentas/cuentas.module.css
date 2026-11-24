@@ -1,0 +1,53 @@
+.totals { border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--linea); padding: 26px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.totals > div { display: flex; flex-direction: column; gap: 6px; }
+.totals .k { font-size: 13px; color: var(--gris); }
+.totals .main { font-size: 36px; }
+.totals .side { font-size: 26px; }
+
+.mobileActions { display: none; }
+.layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); gap: 20px; align-items: start; }
+.aside { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; }
+
+.account { background: var(--blanco); border-radius: var(--r-xl); border: 1px solid var(--linea); padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; outline: 2px solid transparent; }
+.account[data-selected="true"] { outline-color: var(--tinta); }
+.pick { flex: 1 1 200px; display: flex; align-items: center; gap: 12px; border: 0; background: transparent; padding: 0; text-align: left; color: var(--tinta); min-height: 44px; min-width: 0; }
+.initial { width: 40px; height: 40px; border-radius: var(--r-lg); color: var(--blanco); font-weight: 600; display: flex; align-items: center; justify-content: center; flex: none; }
+.balance { display: flex; flex-direction: column; gap: 4px; width: 170px; }
+.balance label { font-size: 11px; font-weight: 500; color: var(--gris); }
+.balance input { font-size: 16px; font-weight: 600; height: 42px; padding: 0 12px; border: 1px solid var(--linea); border-radius: var(--r-md); background: var(--papel-3); width: 100%; text-align: right; }
+.diff { flex-basis: 100%; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; font-size: 13px; background: var(--ambar-fondo); color: var(--ambar-texto); border-radius: var(--r-md); padding: 10px 12px; }
+.diff a { font-weight: 600; color: var(--ambar-texto); }
+.saveRow { flex-basis: 100%; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border-radius: var(--r-pill); border: 2px solid var(--linea); background: var(--blanco); color: var(--tinta); }
+.chip[aria-checked="true"] { border-color: var(--tinta); background: var(--amarillo-suave); }
+.formTitle { font-size: 20px; }
+.option { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--linea-2); }
+.option > span { display: flex; flex-direction: column; gap: 2px; }
+.moves { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.moves li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--linea-2); font-size: 14px; }
+.moves li > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.companyNote { font-size: 13px; color: var(--azul-oscuro); background: var(--azul-fondo); border-radius: var(--r-lg); padding: 12px 14px; line-height: 1.5; }
+.companyNote a { color: var(--azul-oscuro); font-weight: 600; }
+.textBtn { align-self: flex-start; font-size: 13px; font-weight: 600; border: 0; background: transparent; color: var(--gris); padding: 8px 0; min-height: 44px; }
+.textBtn:hover { color: var(--tinta); }
+
+@media (max-width: 899px) {
+  .totals { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 18px 0; }
+  .totals > div:first-child { grid-column: 1 / -1; }
+  .totals .main { font-size: 30px; }
+  .totals .side { font-size: 20px; font-family: var(--sans); font-weight: 600; letter-spacing: 0; }
+  .mobileActions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .aside { display: none; }
+  .account { padding: 14px 16px; }
+  .balance { width: 100%; }
+  .balance input { text-align: left; height: 44px; }
+  .saveRow button { min-height: 44px; }
+  .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); }
+  .formTitle { font-size: 17px; }
+  .chip { min-height: 44px; }
+}

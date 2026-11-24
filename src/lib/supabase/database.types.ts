@@ -375,17 +375,23 @@ isOneToOne: false
                   ]
                 },"goals": {
                   Row: {
-                    "archived_at": string | null,"completed_at": string | null,"created_at": string,"id": string,"is_emergency_fund": boolean,"kind": string,"name": string,"target_cents": number,"target_date": string | null,"user_id": string
+                    "account_id": string | null,"archived_at": string | null,"completed_at": string | null,"created_at": string,"id": string,"is_emergency_fund": boolean,"kind": string,"name": string,"target_cents": number,"target_date": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "archived_at"?: string | null,"completed_at"?: string | null,"created_at"?: string,"id"?: string,"is_emergency_fund"?: boolean,"kind"?: string,"name": string,"target_cents"?: number,"target_date"?: string | null,"user_id": string
+                    "account_id"?: string | null,"archived_at"?: string | null,"completed_at"?: string | null,"created_at"?: string,"id"?: string,"is_emergency_fund"?: boolean,"kind"?: string,"name": string,"target_cents"?: number,"target_date"?: string | null,"user_id": string
                   }
                   Update: {
-                    "archived_at"?: string | null,"completed_at"?: string | null,"created_at"?: string,"id"?: string,"is_emergency_fund"?: boolean,"kind"?: string,"name"?: string,"target_cents"?: number,"target_date"?: string | null,"user_id"?: string
+                    "account_id"?: string | null,"archived_at"?: string | null,"completed_at"?: string | null,"created_at"?: string,"id"?: string,"is_emergency_fund"?: boolean,"kind"?: string,"name"?: string,"target_cents"?: number,"target_date"?: string | null,"user_id"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "goals_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "accounts"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"group_members": {
                   Row: {
@@ -795,14 +801,14 @@ isOneToOne: false
                   ]
                 },"recurring": {
                   Row: {
-                    "account_id": string | null,"active": boolean,"amount_cents": number,"category_id": string | null,"created_at": string,"description": string,"frequency": string,"id": string,"next_date": string,"plan_line_id": string | null,"user_id": string
+                    "account_id": string | null,"active": boolean,"amount_cents": number,"anchor_day": number | null,"category_id": string | null,"created_at": string,"description": string,"frequency": string,"id": string,"next_date": string,"plan_line_id": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "account_id"?: string | null,"active"?: boolean,"amount_cents": number,"category_id"?: string | null,"created_at"?: string,"description": string,"frequency": string,"id"?: string,"next_date": string,"plan_line_id"?: string | null,"user_id": string
+                    "account_id"?: string | null,"active"?: boolean,"amount_cents": number,"anchor_day"?: number | null,"category_id"?: string | null,"created_at"?: string,"description": string,"frequency": string,"id"?: string,"next_date": string,"plan_line_id"?: string | null,"user_id": string
                   }
                   Update: {
-                    "account_id"?: string | null,"active"?: boolean,"amount_cents"?: number,"category_id"?: string | null,"created_at"?: string,"description"?: string,"frequency"?: string,"id"?: string,"next_date"?: string,"plan_line_id"?: string | null,"user_id"?: string
+                    "account_id"?: string | null,"active"?: boolean,"amount_cents"?: number,"anchor_day"?: number | null,"category_id"?: string | null,"created_at"?: string,"description"?: string,"frequency"?: string,"id"?: string,"next_date"?: string,"plan_line_id"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     {

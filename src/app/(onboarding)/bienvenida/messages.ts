@@ -1,0 +1,131 @@
+import type { Messages } from "@/i18n";
+
+export const M = {
+  es: {
+    meta: "Bienvenida",
+    brandAlt: "Revolución del Dinero",
+    steps: ["Bienvenida", "Metas", "Cuenta", "Seguridad", "Listo"], stepsLabel: "Pasos",
+    stepWelcome: "Bienvenida", stepWelcomeMobile: "Menos de 3 min", stepOf: "Paso {n} de 4",
+    side: [
+      ["Tu dinero, con calma.", "Una herramienta para planear tu año y ver con claridad cada dólar."],
+      ["Cada meta empieza con una decisión.", "Dinos qué quieres lograr y armamos tu plan alrededor de eso."],
+      ["Tu espacio, solo tuyo.", "Nadie más ve tus números. Ni siquiera necesitamos tus claves del banco."],
+      ["Seguridad de verdad.", "Con la verificación en dos pasos, tu contraseña sola no basta para entrar."],
+      ["Todo listo.", "Ahora, tu plan del año en 3 minutos."],
+    ],
+    sideMobile: [
+      ["Deja de adivinar a dónde se va tu dinero.", "Planea tu año completo y decide viendo los 12 meses juntos."],
+      ["¿Qué quieres lograr este año?", "Elige todas las que quieras."],
+      ["Cuéntanos de ti", "Nadie más ve tus números. No pedimos tus claves del banco."],
+      ["Protege tu cuenta", "Con la verificación en dos pasos, tu contraseña sola no basta."],
+      ["Todo listo", "Ahora, tu plan del año en 3 minutos."],
+    ],
+    chips: ["Sin claves del banco", "Verificación en 2 pasos", "Tus datos, siempre tuyos"],
+    deco: { plan: "Tu plan anual", goal: "Meta", goalName: "Viaje soñado", pill: "Todo tu año en una vista" },
+    welcome: {
+      badge: "Menos de 3 minutos", title: "Deja de adivinar a dónde se va tu dinero.",
+      text: "Planea tu año completo, registra tus movimientos y toma decisiones viendo los 12 meses juntos.",
+      perks: [
+        ["Plan anual editable", "Ajusta los 12 meses y mira el efecto al instante"],
+        ["Metas con seguimiento", "Viajes, emergencias, salir de deudas"],
+        ["Metas con fecha", "Cuánto apartar al mes para llegar"],
+      ],
+    },
+    goals: {
+      title: "¿Qué quieres lograr este año?", text: "Elige todas las que quieras. Así armamos tus primeras metas.", group: "Metas",
+      names: { debts: "Salir de deudas", trip: "Ahorrar para un viaje", emergency: "Fondo de emergencia", clarity: "Saber a dónde va mi dinero", invest: "Empezar a invertir", business: "Separar mi dinero del negocio" },
+    },
+    account: {
+      title: "Cuéntanos de ti", name: "¿Cómo te llamas?", country: "¿Dónde vives?", currency: "Moneda",
+      currencies: {
+        AUD: "AUD · dólar australiano", USD: "USD · dólar", NZD: "NZD · dólar neozelandés", GBP: "GBP · libra esterlina", EUR: "EUR · euro", COP: "COP · peso colombiano",
+        MXN: "MXN · peso mexicano", CLP: "CLP · peso chileno", PEN: "PEN · sol peruano", ARS: "ARS · peso argentino", CAD: "CAD · dólar canadiense",
+      },
+      countries: { AU: "Australia", OTHER: "Otro país" },
+    },
+    secure: {
+      title: "Protege tu cuenta", text: "Escanea el código con tu app de autenticación y escribe los 6 dígitos que te muestre.",
+      qr: "Código QR", loading: "Cargando…", code: "Código de verificación", codeMobile: "Código de 6 dígitos",
+      secret: "¿No puedes escanear? Escribe esta clave en tu app:",
+      skip: "Ahora no. La activo después en Mi perfil.",
+      already: "Ya tienes activa la verificación en 2 pasos. No hay nada más que hacer aquí.",
+      unavailable: "No pudimos cargar el código. Sigue sin problema: la activas después en Mi perfil.",
+      needCode: "Escribe los 6 dígitos, o toca “Ahora no”.",
+    },
+    done: {
+      title: "¡Listo, {name}! Tu espacio está creado.", titleNoName: "¡Listo! Tu espacio está creado.", titleMobile: "¡Listo, {name}!", titleMobileNoName: "¡Listo!",
+      text: "Creamos estas metas para ti. Ahora armamos tu plan del año con unas preguntas simples.",
+      textNoGoals: "Ahora armamos tu plan del año con unas preguntas simples.",
+      pending: "Monto y fecha: por definir",
+      cta: "Armar mi plan · 3 min", blank: "Empezar en blanco",
+      backupTitle: "Guarda tus códigos de respaldo", backupText: "Si pierdes tu teléfono, cada código te deja entrar una vez. No los volvemos a mostrar.",
+    },
+    nav: { back: "Atrás", start: "Empezar", next: "Continuar", create: "Crear mi espacio", saving: "Guardando…" },
+    foot: "Una herramienta de Revolución del Dinero", terms: "Términos", privacy: "Privacidad",
+    errors: { name: "Falta tu nombre.", country: "Elige dónde vives." },
+  },
+  en: {
+    meta: "Welcome",
+    brandAlt: "Revolución del Dinero",
+    steps: ["Welcome", "Goals", "Account", "Security", "Done"], stepsLabel: "Steps",
+    stepWelcome: "Welcome", stepWelcomeMobile: "Under 3 min", stepOf: "Step {n} of 4",
+    side: [
+      ["Your money, calmly.", "A tool to plan your year and see every dollar clearly."],
+      ["Every goal starts with a decision.", "Tell us what you want and we build your plan around it."],
+      ["Your space, only yours.", "Nobody else sees your numbers. We don't even need your bank passwords."],
+      ["Real security.", "With two-step verification, your password alone isn't enough to get in."],
+      ["All set.", "Now, your plan for the year in 3 minutes."],
+    ],
+    sideMobile: [
+      ["Stop guessing where your money goes.", "Plan your whole year and decide with all 12 months in view."],
+      ["What do you want this year?", "Pick as many as you like."],
+      ["Tell us about you", "Nobody else sees your numbers. We never ask for bank passwords."],
+      ["Protect your account", "With two-step verification, your password alone isn't enough."],
+      ["All set", "Now, your plan for the year in 3 minutes."],
+    ],
+    chips: ["No bank passwords", "Two-step verification", "Your data, always yours"],
+    deco: { plan: "Your yearly plan", goal: "Goal", goalName: "Dream trip", pill: "Your whole year in one view" },
+    welcome: {
+      badge: "Under 3 minutes", title: "Stop guessing where your money goes.",
+      text: "Plan your whole year, log your transactions and decide with all 12 months in view.",
+      perks: [
+        ["Editable yearly plan", "Adjust the 12 months and see the effect right away"],
+        ["Goals you can track", "Trips, emergencies, getting out of debt"],
+        ["Goals with a date", "How much to set aside each month to get there"],
+      ],
+    },
+    goals: {
+      title: "What do you want this year?", text: "Pick as many as you like. They become your first goals.", group: "Goals",
+      names: { debts: "Get out of debt", trip: "Save for a trip", emergency: "Emergency fund", clarity: "Know where my money goes", invest: "Start investing", business: "Separate my money from the business" },
+    },
+    account: {
+      title: "Tell us about you", name: "What's your name?", country: "Where do you live?", currency: "Currency",
+      currencies: {
+        AUD: "AUD · Australian dollar", USD: "USD · US dollar", NZD: "NZD · New Zealand dollar", GBP: "GBP · pound sterling", EUR: "EUR · euro", COP: "COP · Colombian peso",
+        MXN: "MXN · Mexican peso", CLP: "CLP · Chilean peso", PEN: "PEN · Peruvian sol", ARS: "ARS · Argentine peso", CAD: "CAD · Canadian dollar",
+      },
+      countries: { AU: "Australia", OTHER: "Another country" },
+    },
+    secure: {
+      title: "Protect your account", text: "Scan the code with your authenticator app and type the 6 digits it shows.",
+      qr: "QR code", loading: "Loading…", code: "Verification code", codeMobile: "6-digit code",
+      secret: "Can't scan? Type this key into your app:",
+      skip: "Not now. I'll turn it on later in My profile.",
+      already: "Two-step verification is already on. Nothing else to do here.",
+      unavailable: "We couldn't load the code. Carry on: you can turn it on later in My profile.",
+      needCode: "Type the 6 digits, or tap “Not now”.",
+    },
+    done: {
+      title: "Done, {name}! Your space is ready.", titleNoName: "Done! Your space is ready.", titleMobile: "Done, {name}!", titleMobileNoName: "Done!",
+      text: "We created these goals for you. Now let's build your plan for the year with a few simple questions.",
+      textNoGoals: "Now let's build your plan for the year with a few simple questions.",
+      pending: "Amount and date: to be set",
+      cta: "Build my plan · 3 min", blank: "Start from scratch",
+      backupTitle: "Save your backup codes", backupText: "If you lose your phone, each code lets you in once. We won't show them again.",
+    },
+    nav: { back: "Back", start: "Start", next: "Continue", create: "Create my space", saving: "Saving…" },
+    foot: "A tool by Revolución del Dinero", terms: "Terms", privacy: "Privacy",
+    errors: { name: "Your name is missing.", country: "Pick where you live." },
+  },
+} satisfies Messages<unknown>;
+export type WelcomeMessages = (typeof M)["es"];

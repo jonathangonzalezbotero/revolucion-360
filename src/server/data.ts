@@ -112,12 +112,12 @@ export const loadAccounts = cache(async (s: Session): Promise<Account[]> => {
 export type Tx = {
   id: string; accountId: string | null; date: ISODate; amountCents: Cents; description: string; rawDescription: string;
   categoryId: string | null; planLineId: string | null; kind: "normal" | "transfer"; status: "ok" | "review";
-  source: "manual" | "csv" | "recurring"; parentId: string | null; isSplit: boolean; note: string; edited: boolean;
+  source: "manual" | "csv" | "recurring"; parentId: string | null; isSplit: boolean; note: string; edited: boolean; recurringId: string | null; createdAt: string;
 };
-type TxRow = { id: string; account_id: string | null; date: string; amount_cents: number; description: string; raw_description: string; category_id: string | null; plan_line_id: string | null; kind: "normal" | "transfer"; status: "ok" | "review"; source: "manual" | "csv" | "recurring"; parent_id: string | null; is_split: boolean; note: string; edited_at: string | null };
+type TxRow = { id: string; account_id: string | null; date: string; amount_cents: number; description: string; raw_description: string; category_id: string | null; plan_line_id: string | null; kind: "normal" | "transfer"; status: "ok" | "review"; source: "manual" | "csv" | "recurring"; parent_id: string | null; is_split: boolean; note: string; edited_at: string | null; recurring_id: string | null; created_at: string };
 export const toTx = (r: TxRow): Tx => ({
   id: r.id, accountId: r.account_id, date: r.date, amountCents: r.amount_cents, description: r.description, rawDescription: r.raw_description,
-  categoryId: r.category_id, planLineId: r.plan_line_id, kind: r.kind, status: r.status, source: r.source, parentId: r.parent_id, isSplit: r.is_split, note: r.note, edited: !!r.edited_at,
+  categoryId: r.category_id, planLineId: r.plan_line_id, kind: r.kind, status: r.status, source: r.source, parentId: r.parent_id, isSplit: r.is_split, note: r.note, edited: !!r.edited_at, recurringId: r.recurring_id, createdAt: r.created_at,
 });
 
 /** Movimientos vivos entre dos fechas (sin eliminados). Los padres divididos vienen con isSplit = true y NO cuentan en sumas. */

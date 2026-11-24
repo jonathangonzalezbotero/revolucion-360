@@ -3,7 +3,7 @@ import { addDays, addMonths, monthsUntil, type ISODate } from "./dates";
 import type { Cents } from "./money";
 
 // ───────── Cuentas y conciliación ─────────
-export type AccountKind = "bank" | "savings" | "card" | "cash" | "business";
+export type AccountKind = "bank" | "savings" | "card" | "cash" | "business" | "other";
 export type AccountLite = { id: string; kind: AccountKind; balanceCents: Cents; balanceDate: ISODate; inNetworth: boolean; inForecast: boolean };
 export type TxLite = { accountId: string | null; date: ISODate; amountCents: Cents };
 

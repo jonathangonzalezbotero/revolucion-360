@@ -1,0 +1,105 @@
+/* Onboarding y "Arma tu plan": medidas copiadas de los mockups (escritorio 1440, móvil 390; corte en 900 px). */
+.sombraBoton { box-shadow: 0 8px 20px color-mix(in srgb, var(--tinta) 22%, transparent); }
+
+/* ───────── Piezas comunes ───────── */
+.inp { font-size: 16px; font-weight: 600; height: 46px; padding: 0 12px; border: 1.5px solid var(--linea-campo); border-radius: 12px; background: var(--blanco); min-width: 0; width: 100%; }
+.inp::placeholder { color: var(--gris-4); font-weight: 500; }
+.sel { font-size: 14px; font-weight: 600; height: 46px; padding: 0 8px; border: 1.5px solid var(--linea-campo); border-radius: 12px; background: var(--blanco); min-width: 0; }
+.big { font-size: 16px; height: 52px; padding: 0 16px; border: 1.5px solid var(--linea-campo); border-radius: 14px; background: var(--blanco); width: 100%; min-width: 0; }
+.bigSel { font-size: 15px; height: 52px; padding: 0 10px; border: 1.5px solid var(--linea-campo); border-radius: 14px; background: var(--blanco); width: 100%; min-width: 0; }
+.dashed { font-size: 14px; font-weight: 600; min-height: 46px; border: 1.5px dashed var(--linea-punteada); background: transparent; color: var(--tinta); border-radius: 12px; }
+.dashed:hover { background: var(--amarillo-suave); }
+.next { font-size: 16px; font-weight: 600; min-height: 54px; padding: 0 30px; border: 0; background: var(--tinta); color: var(--blanco); border-radius: 14px; box-shadow: 0 8px 20px color-mix(in srgb, var(--tinta) 22%, transparent); }
+.back { font-size: 15px; font-weight: 600; min-height: 52px; padding: 0 20px; border: 0; background: transparent; color: var(--oscuro-linea); border-radius: 14px; }
+.cta { text-decoration: none; text-align: center; font-size: 16px; font-weight: 600; padding: 17px; background: var(--tinta); color: var(--blanco); border-radius: 14px; border: 0; width: 100%; }
+.cta:hover { color: var(--blanco); }
+.ctaSecondary { text-decoration: none; text-align: center; font-size: 15px; font-weight: 600; padding: 17px; background: var(--blanco); color: var(--tinta); border-radius: 14px; border: 1.5px solid var(--oscuro-texto); width: 100%; }
+.textLink { text-align: center; font-size: 14px; font-weight: 600; padding: 8px; border: 0; background: transparent; text-decoration: underline; text-decoration-color: var(--amarillo); text-decoration-thickness: 2px; text-underline-offset: 3px; min-height: 44px; }
+.alert { margin: 0; font-size: 13px; font-weight: 600; color: var(--rojo); background: var(--rojo-fondo); border-radius: 10px; padding: 10px 12px; }
+.x { width: 44px; height: 44px; flex: none; border: 0; background: var(--papel); border-radius: 12px; color: var(--gris); font-size: 18px; }
+.info { font-size: 13px; color: var(--azul-oscuro); background: color-mix(in srgb, var(--azul) 16%, var(--blanco)); border-radius: 12px; padding: 10px 12px; line-height: 1.5; }
+.warn { margin: 0; font-size: 13px; color: var(--rojo-texto); background: var(--rojo-fondo); border-radius: 12px; padding: 12px 14px; line-height: 1.5; }
+
+/* ───────── Bienvenida ───────── */
+.wrap { min-height: 100dvh; display: flex; flex-wrap: wrap; padding: 20px; gap: 20px; }
+.aside { flex: 1 1 420px; background: var(--bloque-oscuro); color: var(--blanco); border-radius: 28px; padding: 44px; display: flex; flex-direction: column; gap: 32px; position: relative; overflow: hidden; min-height: calc(100dvh - 40px); }
+.main { flex: 999 1 520px; min-width: 0; display: flex; justify-content: center; align-items: center; padding: 32px 24px; }
+.col { width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 30px; }
+.mobileHeader { display: none; }
+.h2 { margin: 0; font-size: 34px; line-height: 1.12; font-weight: 600; letter-spacing: -0.03em; }
+.h2hero { margin: 0; font-size: 44px; line-height: 1.08; font-weight: 600; letter-spacing: -0.035em; }
+.h2done { margin: 0; font-size: 38px; line-height: 1.1; font-weight: 600; letter-spacing: -0.03em; }
+.goalGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.goalBtn { text-align: left; min-height: 96px; padding: 16px; border-radius: 14px; border: 2px solid var(--linea); background: var(--blanco); color: var(--tinta); display: flex; flex-direction: column; gap: 10px; }
+.goalBtn[aria-checked=true] { border-color: var(--tinta); background: var(--amarillo-suave); }
+.goalName { font-size: 15px; font-weight: 600; }
+.nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.backIcon { display: none; }
+.foot { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; color: var(--gris); }
+.footLinks { display: inline; }
+.twoCtas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.qrRow { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; background: var(--blanco); border-radius: 14px; padding: 20px; border: 1px solid var(--linea); }
+.code { font-size: 26px; font-weight: 600; letter-spacing: .35em; height: 58px; padding: 0 16px; border: 1.5px solid var(--linea-campo); border-radius: 14px; background: var(--blanco); width: 100%; min-width: 0; }
+
+@media (max-width: 899px) {
+  .wrap { padding: 0; gap: 0; flex-direction: column; flex-wrap: nowrap; }
+  .aside { display: none; }
+  .mobileHeader { display: flex; flex-direction: column; gap: 18px; background: var(--bloque-oscuro); color: var(--blanco); border-radius: 0 0 32px 32px; padding: 22px 22px 26px; position: relative; overflow: hidden; }
+  .main { flex: 1; padding: 22px 20px 16px; align-items: stretch; }
+  .col { gap: 16px; max-width: none; flex: 1; }
+  .deskOnly { display: none !important; }
+  .h2done { font-size: 22px; letter-spacing: 0; line-height: 1.2; }
+  .goalGrid { gap: 10px; }
+  .goalBtn { min-height: 92px; padding: 12px; border-radius: 16px; justify-content: space-between; gap: 8px; }
+  .goalName { font-size: 13px; line-height: 1.3; }
+  .nav { margin-top: auto; gap: 10px; }
+  .nav .next { flex: 1; height: 54px; padding: 0 16px; }
+  .nav .back { width: 54px; height: 54px; padding: 0; background: var(--blanco); font-size: 18px; flex: none; }
+  .backText { display: none; }
+  .backIcon { display: inline; }
+  .foot { gap: 8px; font-size: 11px; }
+  .footLinks { display: none; }
+  .twoCtas { grid-template-columns: 1fr; gap: 0; }
+  .twoCtas .ctaSecondary { border: 0; background: transparent; font-size: 14px; padding: 12px; text-decoration: underline; text-decoration-color: var(--amarillo); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+  .qrRow { flex-direction: column; align-items: stretch; gap: 14px; background: transparent; border: 0; padding: 0; }
+  .code { text-align: center; }
+}
+@media (min-width: 900px) { .mobOnly { display: none !important; } }
+
+/* ───────── Arma tu plan ───────── */
+.wz { min-height: 100dvh; padding: 40px 56px 64px; display: flex; flex-direction: column; gap: 28px; }
+.wzTop { display: flex; align-items: center; gap: 16px; }
+.wzCols { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.wzForm { flex: 999 1 460px; min-width: 0; max-width: 620px; display: flex; flex-direction: column; gap: 22px; }
+.wzAside { border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--linea); padding: 22px 0; display: flex; flex-direction: column; gap: 14px; flex: 1 1 280px; max-width: 340px; }
+.wzStrip { display: none; }
+.wzH2 { margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
+.wzNav { display: flex; justify-content: space-between; gap: 10px; }
+.wzNav .next { padding: 0 28px; }
+.wzNav .back { padding: 0 16px; }
+.card { background: var(--blanco); border-radius: 14px; border: 1px solid var(--linea); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.cardOpen { background: var(--blanco); border-radius: 14px; border: 1.5px solid var(--tinta); box-shadow: 5px 5px 0 var(--amarillo); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.chip { font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--linea-campo); background: var(--blanco); color: var(--oscuro-linea); }
+.chip[aria-pressed=true], .chip[aria-checked=true] { border-color: var(--tinta); background: var(--tinta); color: var(--blanco); }
+.chipSm { font-size: 13px; min-height: 38px; padding: 0 12px; }
+.yesNo { font-size: 15px; font-weight: 600; min-height: 54px; border-radius: 14px; border: 2px solid var(--linea-campo); background: var(--blanco); color: var(--tinta); }
+.yesNo[aria-pressed=true] { border-color: var(--tinta); background: var(--tinta); color: var(--blanco); }
+.debtRow { border-radius: 14px; border: 2px solid var(--linea); background: var(--blanco); padding: 6px 6px 6px 14px; display: flex; align-items: center; gap: 10px; min-height: 52px; }
+.debtRow[data-on=true] { border-color: var(--tinta); background: var(--amarillo-suave); }
+.debtToggle { flex: 1; text-align: left; font-size: 15px; font-weight: 600; border: 0; background: transparent; min-height: 44px; color: var(--tinta); display: flex; align-items: center; gap: 10px; min-width: 0; }
+.debtMark { width: 24px; height: 24px; border-radius: 50%; background: var(--blanco); border: 1.5px solid var(--linea); display: flex; align-items: center; justify-content: center; font-size: 13px; flex: none; }
+.debtRow[data-on=true] .debtMark { border-color: var(--tinta); }
+.totals { border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--linea); padding: 18px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.asideRow { display: flex; justify-content: space-between; font-size: 14px; color: var(--gris); gap: 12px; }
+
+@media (max-width: 899px) {
+  .wz { padding: 22px 16px 24px; gap: 12px; }
+  .wzLogo { display: none !important; }
+  .wzTop { flex-wrap: wrap; gap: 12px; justify-content: space-between; padding: 0 4px; }
+  .wzTop ol { order: 3; flex: 1 1 100% !important; }
+  .wzCols { gap: 12px; }
+  .wzForm { gap: 18px; max-width: none; flex: 1 1 100%; order: 2; }
+  .wzAside { display: none; }
+  .wzStrip { order: 1; flex: 1 1 100%; display: flex; justify-content: space-between; align-items: center; border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--linea); padding: 12px 0; }
+  .wzH2 { font-size: 24px; }
+}

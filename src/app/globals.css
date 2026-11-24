@@ -34,6 +34,13 @@
   --naranja: #C46A2A;
   --azul: #4C7FB5;
   --azul-oscuro: #2D5C8A;
+  --azul-fondo: #E3ECF6;     /* aviso informativo (cuenta de empresa) */
+  --teal: #3E8C7A;           /* ahorro y fondo de emergencia (no es el verde de dinero que entra) */
+  --gris-verde: #7A8A83;
+  --azul-texto: #24496E;     /* texto sobre --azul-fondo (Transferencia) */
+  --teal-fondo: #E5F1ED;
+  --revisar-fondo: #FFF8F0;  /* fila por revisar */
+  --rojo-borde: #F0D2C4;
   /* Bloque oscuro (solo Inicio, Academia, acceso y muro de Pro) */
   --oscuro-1: #0B0C0A;
   --oscuro-2: #1C1E19;
