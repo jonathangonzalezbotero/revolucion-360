@@ -54,7 +54,23 @@ export async function ensurePlanYear(s: Session, year: number): Promise<boolean>
   if (!s.canEdit) return false;
   const claim = await s.supabase.from("plan_years").insert({ user_id: s.userId, year, copied_from: year - 1 });
   if (claim.error) return false; // ya existe: otro proceso lo creó
-  const prev = (await loadLines(s, year - 1)).map(toLine).filter((l) => l.frequency !== "once");
+  const [prevLines, debtsRes, goalsRes] = await Promise.all([
+    loadLines(s, year - 1),
+    s.supabase.from("debts").select("id, kind, closed_at, balance_cents"),
+    s.supabase.from("goals").select("id, completed_at, archived_at, target_date"),
+  ]);
+  const debts = new Map(must(debtsRes).map((d) => [d.id, d]));
+  const goals = new Map(must(goalsRes).map((g) => [g.id, g]));
+  // No se copian: pagos únicos, cuotas de deudas saldadas o de compra-ahora-paga-después (son de 4 pagos),
+  // ni aportes a metas cumplidas, archivadas o con fecha antes del año nuevo.
+  const prev = prevLines.map(toLine).filter((l) => {
+    if (l.frequency === "once") return false;
+    const d = l.debtId ? debts.get(l.debtId) : null;
+    if (d && (d.closed_at || d.kind === "bnpl")) return false;
+    const g = l.goalId ? goals.get(l.goalId) : null;
+    if (g && (g.completed_at || g.archived_at || (g.target_date && g.target_date < `${year}-01-01`))) return false;
+    return true;
+  });
   if (prev.length === 0) return false;
   const prevCells = await fetchAll<{ line_id: string; month: number; amount_cents: number }>((a, b) =>
     s.supabase.from("plan_cells").select("line_id, month, amount_cents").in("line_id", prev.map((l) => l.id)).range(a, b));
