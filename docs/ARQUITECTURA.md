@@ -87,5 +87,5 @@ Signo de los movimientos: entra positivo, sale negativo. Las transferencias (`ki
 
 ## Entorno local
 - Node 22: `export PATH="$HOME/.nvm/versions/node/v22.17.1/bin:$PATH"`.
-- Supabase local (Docker): API 54321, correos de prueba en http://127.0.0.1:54324. Usuario de demostración: `npm run seed:demo` (correo y contraseña en `.env.local`).
+- Sin Docker: la app corre en local contra la base de producción (`.env`). **La base nunca se resetea ni se borra** (CLAUDE.md, regla 0). Migraciones con `npm run db:migrate`; usuario de demostración con `npm run seed:demo` (solo crea; correo y contraseña en `.env`).
 - Pantallas de referencia ya terminadas: `src/app/(auth)/*` y `src/app/(app)/inicio/*`.

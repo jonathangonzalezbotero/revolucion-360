@@ -16,7 +16,7 @@ Varias personas trabajan a la vez en otras pantallas del mismo repositorio. Resp
 - **Congelado (no editar):** `src/app/globals.css`, `src/i18n/*`, `src/lib/**`, `src/server/**`, `src/components/**`, `src/proxy.ts`, `src/app/layout.tsx`, `src/app/(app)/layout.tsx`, `supabase/**`, `package.json`, `tests/engine.test.ts`, `tests/permissions.test.ts`, y las carpetas de otras pantallas.
   Si te falta algo ahí (un ícono, un token, una columna, una función del motor), **no lo edites**: resuélvelo dentro de tu carpeta y repórtalo al final en "Necesito de la base".
 - Si de verdad necesitas un cambio de base de datos, escribe el SQL en el archivo de migración que te asignaron (solo ese) con RLS como en `20261124000002_security.sql`, **no lo apliques**, y usa `as never` puntual en esas consultas hasta que se regeneren los tipos.
-- **Prohibido:** `supabase db reset`, `supabase stop/start`, `npm install` (no agregues librerías), arrancar o matar servidores (`next dev` ya corre en :3000 y no es tuyo), usar el navegador, `git commit`, `git stash`, `git checkout`.
+- **Prohibido:** resetear o borrar la base por cualquier vía (`supabase db reset`, `seed.sql`, `DROP`, `TRUNCATE`, borrar usuarios o filas existentes; es la base de producción, CLAUDE.md regla 0), aplicar migraciones, `supabase stop/start`, `npm install` (no agregues librerías), arrancar o matar servidores (`next dev` ya corre en :3000 y no es tuyo), usar el navegador, `git commit`, `git stash`, `git checkout`.
 
 ## Cómo debe quedar
 - Todo lo que el mockup muestra debe **funcionar de verdad** contra la base de datos: nada de datos de ejemplo escritos en el código, nada de botones sin acción, nada de "TODO". Los `[N]`, `[MONTO]`, `[FECHA]` del mockup salen de datos reales.

@@ -133,6 +133,9 @@ Separado del producto. Nunca ve las finanzas de nadie. Usuarios y accesos, gesti
 | 
 Legal | 
 Términos y privacidad en lenguaje simple, como borrador para revisar con abogado en Australia. | 
+| 
+Entorno de desarrollo (25 nov 2026) | 
+Sin Docker. La app se prueba en local (`npm run dev`) contra la base de producción (claves en `.env`, fuera de git). Jonathan acepta el riesgo con una condición: la base nunca se resetea ni se borra, ni en pruebas, ni con scripts nuevos, ni en un deploy (CLAUDE.md, regla 0). Barreras: hook `.claude/hooks/proteger-base.sh`, scripts que solo crean, pruebas de permisos solo contra Supabase local, migraciones que solo agregan y se revisan antes de `db:migrate`. Reemplaza la regla anterior "nunca se usan datos de producción en desarrollo". | 
 
 ## Alcance por fases
 Se construye todo lo diseñado, pero en 4 fases: cada una termina con algo usable por personas reales y con un criterio claro para pasar a la siguiente.

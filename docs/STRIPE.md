@@ -24,7 +24,7 @@ Sin claves la app funciona igual: `/suscripcion` muestra los planes y avisa que 
 
 ## Configurar (modo prueba)
 1. En el panel de Stripe, **modo prueba**: copia la clave secreta `sk_test_…` y la publicable `pk_test_…`.
-2. En `.env.local` (nunca en el repositorio):
+2. En `.env` (nunca en el repositorio):
    ```
    STRIPE_SECRET_KEY=sk_test_...
    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...

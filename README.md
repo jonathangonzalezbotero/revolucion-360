@@ -13,50 +13,35 @@ App web (escritorio y móvil) para planear y registrar las finanzas personales d
 
 ## Correr en local
 
-Necesitas **Node 22** (ver `.nvmrc`), **Docker Desktop** abierto y la **CLI de Supabase** (`brew install supabase/tap/supabase`, o usa la que trae el proyecto con `npx supabase`).
+> **La base de datos nunca se resetea ni se borra** (CLAUDE.md, regla 0). Desarrollamos en local contra la base de producción, sin Docker.
+
+Necesitas **Node 22** (ver `.nvmrc`) y la **CLI de Supabase** (`npx supabase`). Las claves están en `.env` (no se sube a git).
 
 ```bash
-nvm use                      # Node 22
+nvm use                                                # Node 22
 npm install
-npx supabase start           # levanta Postgres, Auth y el buzón de correos de prueba en Docker
-npx supabase db reset        # aplica TODAS las migraciones de supabase/migrations y supabase/seed.sql
-cp .env.example .env.local   # solo si no tienes ya .env.local
-```
-
-Llena `.env.local` con lo que imprime `npx supabase status -o env`:
-- `NEXT_PUBLIC_SUPABASE_URL` = `API_URL` (http://127.0.0.1:54321)
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` = `SERVICE_ROLE_KEY`
-- `DEMO_PASSWORD` = una contraseña cualquiera para los usuarios de demostración
-
-```bash
-npm run db:types             # regenera src/lib/supabase/database.types.ts desde la base local
-npm run seed:demo            # crea demo@revolucion360.test (con el plan 2026 del mockup) y admin@revolucion360.test
-npm run dev                  # http://localhost:3000
+npx supabase link --project-ref rzfaseleufqbfxyrcgyz   # una sola vez (pide la contraseña de la base)
+npm run db:migrate                                     # aplica SOLO las migraciones nuevas (nunca borra)
+npm run db:types                                       # regenera src/lib/supabase/database.types.ts
+npm run seed:demo                                      # solo crea demo@ y admin@revolucion360.test; si ya existen no toca nada
+npm run dev                                            # http://localhost:3000
 ```
 
 Entra con `demo@revolucion360.test` o `admin@revolucion360.test` y la contraseña de `DEMO_PASSWORD`.
-
-| Servicio local | Dirección |
-|---|---|
-| App | http://localhost:3000 |
-| Supabase Studio (ver la base) | http://127.0.0.1:54323 |
-| Correos de prueba (confirmar cuenta, recuperar acceso) | http://127.0.0.1:54324 |
 
 ## Comandos
 
 | Comando | Qué hace |
 |---|---|
 | `npm run dev` | App en desarrollo |
-| `npm test` | Todas las pruebas (las de permisos se saltan si Supabase local no está corriendo) |
+| `npm test` | Todas las pruebas (las de permisos solo corren contra un Supabase local; con la base remota se saltan) |
 | `npm run typecheck` | Revisa tipos |
 | `npm run lint` | Linter |
-| `npm run db:reset` | Borra la base local y aplica migraciones + seed (luego corre `seed:demo`) |
+| `npm run db:migrate` | Aplica las migraciones nuevas (solo agregan; revisarlas antes) |
 | `npm run db:types` | Regenera los tipos de la base |
-| `npm run seed:demo` | Usuarios de demostración (solo contra Supabase local) |
-| `npx supabase stop` | Apaga Supabase local (los datos se guardan) |
+| `npm run seed:demo` | Crea los usuarios de demostración (nunca borra) |
 
 ## Claves y entornos
 
-- `.env.local` → desarrollo (Supabase local, Stripe **modo prueba**). `.env.production.local` → valores de producción para copiar a Vercel. Ninguno se sube a git.
-- Nunca uses claves `sk_live_` ni la base de producción para desarrollar.
+- `.env` → la base de producción, usada también para desarrollar en local (decisión del 25 nov 2026). No se sube a git. Sus valores se copian a Vercel.
+- Stripe en desarrollo siempre con claves de prueba (`sk_test_`). La base nunca se resetea ni se borra.

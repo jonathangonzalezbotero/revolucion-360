@@ -1,5 +1,5 @@
 // Prepara Stripe en MODO PRUEBA para Revolución 360 (ver docs/STRIPE.md).
-// Uso: npx tsx scripts/stripe-setup.ts   (lee .env.local; se niega a correr si la clave no empieza con sk_test_)
+// Uso: npx tsx scripts/stripe-setup.ts   (lee .env; se niega a correr si la clave no empieza con sk_test_)
 //
 // 1. Crea (o reutiliza) el producto "Revolución 360 Pro".
 // 2. Por cada región de price_regions con monto, crea (o reutiliza) los precios mensual y anual y guarda sus ids.
@@ -11,11 +11,11 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { studentCouponId, toStripeAmount, type Interval } from "../src/app/(app)/suscripcion/lib";
 
-process.loadEnvFile(".env.local");
+process.loadEnvFile(".env");
 const KEY = (process.env.STRIPE_SECRET_KEY ?? "").trim();
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!, SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 if (!KEY.startsWith("sk_test_")) throw new Error("stripe-setup solo corre con una clave de PRUEBA (sk_test_…). Nunca con claves de producción.");
-if (!URL || !SERVICE) throw new Error("Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local");
+if (!URL || !SERVICE) throw new Error("Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env");
 
 const stripe = new Stripe(KEY, { appInfo: { name: "Revolucion 360 setup" } });
 const db = createClient(URL, SERVICE, { auth: { persistSession: false } });

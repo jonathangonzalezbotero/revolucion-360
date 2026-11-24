@@ -1,25 +1,32 @@
-// Crea en Supabase LOCAL un usuario de demostración con el plan 2026 del mockup y un administrador.
-// Uso: npm run seed:demo   (lee .env.local; se niega a correr contra algo que no sea local)
+// Crea un usuario de demostración con el plan 2026 del mockup y un administrador.
+// Uso: npm run seed:demo   (lee .env)
+// SOLO CREA: nunca borra ni reemplaza. Si alguno de los dos usuarios ya existe, se detiene sin tocar nada (CLAUDE.md, regla 0).
 import { createClient } from "@supabase/supabase-js";
 import { GROUPS } from "../tests/fixtures/plan2026";
 
-process.loadEnvFile(".env.local");
+process.loadEnvFile(".env");
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!, SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const EMAIL = process.env.DEMO_EMAIL!, ADMIN_EMAIL = process.env.DEMO_ADMIN_EMAIL!, PASSWORD = process.env.DEMO_PASSWORD!;
-if (!/127\.0\.0\.1|localhost/.test(URL)) throw new Error("seed:demo solo corre contra Supabase local.");
-if (!EMAIL || !ADMIN_EMAIL || !PASSWORD) throw new Error("Faltan DEMO_EMAIL, DEMO_ADMIN_EMAIL o DEMO_PASSWORD en .env.local");
+if (!URL || !SERVICE) throw new Error("Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env");
+if (!EMAIL || !ADMIN_EMAIL || !PASSWORD) throw new Error("Faltan DEMO_EMAIL, DEMO_ADMIN_EMAIL o DEMO_PASSWORD en .env");
 const db = createClient(URL, SERVICE, { auth: { persistSession: false } });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const must = (r: { data: any; error: { message: string } | null }): any => { if (r.error) throw new Error(r.error.message); return r.data; };
 
+async function existing(email: string) {
+  for (let page = 1; ; page++) {
+    const { users } = must(await db.auth.admin.listUsers({ page, perPage: 1000 }));
+    if (users.some((u: { email?: string }) => u.email === email)) return true;
+    if (users.length < 1000) return false;
+  }
+}
+
 async function freshUser(email: string, name: string) {
-  const list = must(await db.auth.admin.listUsers({ perPage: 1000 }));
-  const old = list.users.find((u: { email?: string }) => u.email === email);
-  if (old) must(await db.auth.admin.deleteUser(old.id));
   return must(await db.auth.admin.createUser({ email, password: PASSWORD, email_confirm: true, user_metadata: { name } })).user.id;
 }
 
 async function main() {
+  for (const e of [EMAIL, ADMIN_EMAIL]) if (await existing(e)) throw new Error(`${e} ya existe. seed:demo solo crea usuarios nuevos y nunca borra: no se tocó nada.`);
   const uid = await freshUser(EMAIL, "Jonathan");
   const adminId = await freshUser(ADMIN_EMAIL, "Admin");
   must(await db.from("profiles").update({ role: "admin", onboarding_step: "done", name: "Admin" }).eq("id", adminId).select());
@@ -106,6 +113,6 @@ async function main() {
     { user_id: uid, kind: "logro", title: "Nueva insignia: Primer cierre", body: "", href: "/perfil#insignias", dedupe: "badge-check" },
   ]).select("id"));
   void save;
-  console.log(`Listo.\n  Usuario: ${EMAIL}\n  Admin:   ${ADMIN_EMAIL}\n  La contraseña de ambos está en DEMO_PASSWORD de .env.local`);
+  console.log(`Listo.\n  Usuario: ${EMAIL}\n  Admin:   ${ADMIN_EMAIL}\n  La contraseña de ambos está en DEMO_PASSWORD de .env`);
 }
 main().catch((e) => { console.error(e.message); process.exit(1); });

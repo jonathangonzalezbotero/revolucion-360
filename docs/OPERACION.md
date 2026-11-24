@@ -1,7 +1,7 @@
 # Operación: correos, tareas programadas, app instalable, respaldos y monitoreo
 
 ## Variables de entorno
-Todas viven en `.env.local` (local) y en Vercel → Project → Settings → Environment Variables (producción y previews). Nunca en el repositorio.
+Todas viven en `.env` (local, apunta a la base de producción) y en Vercel → Project → Settings → Environment Variables (producción y previews). Nunca en el repositorio.
 
 | Variable | Para qué | Si falta |
 |---|---|---|
@@ -54,7 +54,7 @@ Todas procesan de a 500, son idempotentes y devuelven un JSON con conteos. Ningu
 - Las tareas `bienvenida` y `pagos` quedan solo como **red de seguridad** diaria: reintentan los correos que no salieron en su momento. `email_log` impide que alguien reciba el mismo correo dos veces.
 
 ### Probar cada tarea en local
-Con `npm run dev` corriendo y `CRON_SECRET=local-cron-secret` en `.env.local`:
+Con `npm run dev` corriendo y `CRON_SECRET=local-cron-secret` en `.env`:
 ```bash
 curl -s -H "Authorization: Bearer local-cron-secret" http://localhost:3000/api/cron/bienvenida | jq
 curl -s -H "Authorization: Bearer local-cron-secret" http://localhost:3000/api/cron/cierre | jq
@@ -65,7 +65,7 @@ curl -s -H "Authorization: Bearer local-cron-secret" http://localhost:3000/api/c
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/api/cron/cierre                     # sin clave → 401
 ```
 Correr dos veces seguidas debe dar `sent: 0` / `notified: 0` la segunda vez (idempotencia).
-Con `RESEND_API_KEY` en `.env.local` los correos salen de verdad, pero solo a `@revolucion360.test`. Para no enviar nada, deja `RESEND_API_KEY` vacía.
+Con `RESEND_API_KEY` en `.env` los correos salen de verdad, pero solo a `@revolucion360.test`. Para no enviar nada, deja `RESEND_API_KEY` vacía.
 Para forzar casos: en Supabase Studio local (http://127.0.0.1:54323) cambia `entitlements.access_until`, `payment_failed_at`, `profiles.prefs` o `privacy_requests.due_at` del usuario de demostración.
 
 ## App instalable (PWA) y push

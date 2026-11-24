@@ -31,15 +31,16 @@ Actualizado: 24 de noviembre de 2026. Todo el código está en `main` en GitHub.
 
 ## Lo que falta, en orden
 
-### 1. Poner al día la base local (con Docker encendido)
+### 1. Poner al día la base (sin Docker, contra la base de producción)
+Desde el 25 nov 2026 no se usa Docker: la app corre en local contra la base de producción (`.env`). **La base nunca se resetea ni se borra** (CLAUDE.md, regla 0).
 ```bash
-npx supabase start
-npx supabase migration up     # aplica las migraciones nuevas sin borrar datos
+npx supabase link --project-ref rzfaseleufqbfxyrcgyz   # una vez
+npx supabase migration list   # qué migraciones faltan en la base
+npm run db:migrate            # aplica solo las nuevas (revisarlas antes)
 npm run db:types
-npm run typecheck && npm test # incluye las pruebas de permisos
+npm run typecheck && npm test # las pruebas de permisos se saltan: solo corren contra un Supabase local
 ```
-Si `migration up` se queja de que una migración va "antes de la última", renómbrala con un número mayor al último aplicado (el orden importa) o usa `npx supabase db reset` y luego `npm run seed:demo` (borra los datos locales).
-Migraciones que pueden estar sin aplicar en tu base local: las que traigan los módulos de admin (`…023_admin.sql`) y correos (`…024_correos.sql`), si existen.
+Si una migración va "antes de la última" aplicada, renómbrala con un número mayor (el orden importa).
 
 ### 2. Recorrer la app en el navegador (escritorio 1440 y móvil 390, comparando con `docs/mockup`)
 Con `demo@revolucion360.test`:
@@ -83,11 +84,11 @@ Todos los textos tienen versión `en` en los `messages.ts` de cada pantalla. Fal
 
 ### 5. Publicar
 1. Cambiar las claves que se compartieron en el chat (Stripe, Resend, webhook, contraseña de la base).
-2. Stripe en **modo prueba** en `.env.local` (`sk_test_`, `pk_test_`), correr `scripts/stripe-setup.ts` y probar un pago (ver `docs/STRIPE.md`).
-3. Supabase producción: pegar `anon` y `service_role` en `.env.production.local`; `npx supabase link --project-ref rzfaseleufqbfxyrcgyz` y `npx supabase db push`. Pegar las plantillas de `supabase/templates/` en Authentication → Emails; activar MFA (TOTP); poner la URL del sitio y las de redirección; contraseña mínima 8.
-4. En producción NO correr `seed.sql` (desactiva los 2 pasos de admin) ni `seed:demo`. Crear tu usuario y darle `role = 'admin'` desde el SQL Editor.
+2. Stripe en **modo prueba** en `.env` (`sk_test_`, `pk_test_`), correr `scripts/stripe-setup.ts` y probar un pago (ver `docs/STRIPE.md`).
+3. Supabase producción: las claves ya están en `.env`; las migraciones se aplican con `npm run db:migrate`. Pegar las plantillas de `supabase/templates/` en Authentication → Emails; activar MFA (TOTP); poner la URL del sitio y las de redirección; contraseña mínima 8.
+4. NUNCA correr `seed.sql` (desactiva los 2 pasos de admin). Antes de lanzar, Jonathan decide si quita a mano los usuarios de demostración `@revolucion360.test`. Crear tu usuario y darle `role = 'admin'` desde el SQL Editor.
 5. Resend: verificar el dominio `revoluciondeldinero.com`.
-6. Vercel: importar el repo, región Sydney (`syd1`), copiar las variables de `.env.production.local`, `CRON_SECRET`, dominio `app.revoluciondeldinero.com`. El webhook de Stripe apunta a `https://app.revoluciondeldinero.com/api/stripe/webhook`.
+6. Vercel: importar el repo, región Sydney (`syd1`), copiar las variables de `.env`, `CRON_SECRET`, dominio `app.revoluciondeldinero.com`. El webhook de Stripe apunta a `https://app.revoluciondeldinero.com/api/stripe/webhook`.
 7. Respaldos diarios y prueba de restauración (ver `docs/OPERACION.md`).
 
 ### 6. Contenido tuyo

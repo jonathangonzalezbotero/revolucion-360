@@ -14,13 +14,19 @@ Antes de usar una API de Next, lee su guía en `node_modules/next/dist/docs/` (v
 - `docs/reglas/` — reglas de negocio cerradas, con ejemplos.
 
 ## Innegociables
+0. **La base de datos nunca se resetea ni se borra. Por ningún motivo: ni en desarrollo, ni al correr pruebas, ni en un deploy.** Desarrollamos contra la base de producción (`.env`), así que todo cambio cae sobre datos reales.
+   - Prohibido: `supabase db reset`, `supabase start/stop`, correr `supabase/seed.sql`, `DROP` / `TRUNCATE`, `DELETE` o `UPDATE` sin `WHERE`, borrar el proyecto. El hook `.claude/hooks/proteger-base.sh` los bloquea; no se desactiva ni se esquiva.
+   - Las migraciones solo agregan (tablas, columnas, funciones, políticas). Quitar o renombrar algo que tiene datos se consulta con Jonathan antes, con respaldo previo.
+   - Las pruebas no escriben en la base: las de `tests/permissions.test.ts` solo corren contra un Supabase local y con la base remota se saltan. Una prueba nueva que necesite la base se consulta antes.
+   - Datos de prueba: solo crear (usuarios `@revolucion360.test`), nunca borrar usuarios ni filas existentes. `seed:demo` se detiene si los usuarios ya existen.
+   - Un deploy (Vercel) nunca toca la base; las migraciones se aplican aparte con `npm run db:migrate` y solo después de revisarlas.
 1. **Dinero en centavos enteros** (`bigint` en la base, `Cents` en el código). Nunca decimales sueltos. Se muestra con `formatMoney` / `<Money>`.
 2. **Fechas en la zona horaria del usuario** (`s.today`, `s.year`, `s.month`), nunca la del servidor. Semana de lunes a domingo.
 3. **Cada usuario solo ve lo suyo y lo impone la base de datos (RLS).** Toda tabla nueva con datos del usuario lleva `user_id` y las 4 políticas `own_*` con `can_write()`.
 4. **Admin nunca ve montos, movimientos, cuentas ni deudas.** El panel solo usa las funciones `admin_*` y tablas sin datos financieros. Nunca la clave de servicio para leer finanzas.
 5. **Ninguna pantalla habla directo con la base de datos.** Los componentes de cliente llaman acciones del servidor (`"use server"`), que pasan por `run()`.
 6. **Qué es Gratis o Pro y qué sección se ve sale de `app_config`** (`s.has("ana")`, `s.config.menu`), nunca queda escrito en el código.
-7. **Las claves secretas viven solo en `.env.local`** (ver `.env.example`). Nunca en el repositorio ni en una conversación. Nunca se usan claves ni datos de producción en desarrollo.
+7. **Las claves secretas viven solo en `.env`** (ver `.env.example`; `.env*` está en `.gitignore`). Nunca en el repositorio, en un commit ni en una conversación: no se imprime ni se lee su contenido. `.env` apunta a la base de producción (decisión del 25 nov 2026, ver regla 0). Stripe en desarrollo, siempre con claves de prueba (`sk_test_`).
 8. **Si un cálculo de dinero no tiene prueba, no existe.** Los cálculos viven en `src/lib/engine` (funciones puras) con pruebas en `tests/`.
 9. **Si deja de pagar: solo lectura.** Los datos nunca se borran por no pagar y siempre se pueden exportar.
 10. **No es asesoría financiera.** Diagnóstico, proyección y consejos llevan el aviso visible (`s.t.disclaimer`). Sin recomendaciones de inversión.
@@ -37,7 +43,7 @@ Antes de usar una API de Next, lee su guía en `node_modules/next/dist/docs/` (v
 - Nunca un gráfico vacío: estado vacío que explica qué falta.
 
 ## Trabajo
-- `npm run dev` · `npm test` · `npm run typecheck` · `npm run lint` · `npm run db:reset` (Supabase local en Docker) · `npm run seed:demo`.
-- Cambios de base de datos: un archivo nuevo en `supabase/migrations/` (nunca editar uno ya aplicado en producción). Los revisa una persona.
+- `npm run dev` · `npm test` · `npm run typecheck` · `npm run lint` · `npm run db:migrate` (aplica migraciones nuevas a la base) · `npm run db:types` · `npm run seed:demo` (solo crea). Sin Docker.
+- Cambios de base de datos: un archivo nuevo en `supabase/migrations/` (nunca editar uno ya aplicado), solo cambios que agregan (regla 0). Los revisa una persona antes de `db:migrate`.
 - No se agregan librerías sin justificar por qué.
 - Una decisión nueva se anota en `docs/plan-de-implementacion.md` en el mismo cambio.
