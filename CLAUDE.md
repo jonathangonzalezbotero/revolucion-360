@@ -27,7 +27,7 @@ Antes de usar una API de Next, lee su guía en `node_modules/next/dist/docs/` (v
 3. **Cada usuario solo ve lo suyo y lo impone la base de datos (RLS).** Toda tabla nueva con datos del usuario lleva `user_id` y las 4 políticas `own_*` con `can_write()`.
 4. **Admin nunca ve montos, movimientos, cuentas ni deudas.** El panel solo usa las funciones `admin_*` y tablas sin datos financieros. Nunca la clave de servicio para leer finanzas.
 5. **Ninguna pantalla habla directo con la base de datos.** Los componentes de cliente llaman acciones del servidor (`"use server"`), que pasan por `run()`.
-6. **Qué es Gratis o Pro y qué sección se ve sale de `app_config`** (`s.has("ana")`, `s.config.menu`), nunca queda escrito en el código.
+6. **Un solo plan, todo incluido (desde el 25 nov 2026).** No hay Gratis ni Pro: o la cuenta está activa (pagando, primer mes, alumno o fundador) o está sin activar (`free` = se registró y no ha pagado: solo bienvenida, asistente y diagnóstico) o en solo lectura. Qué sección se ve sale de `app_config.menu` (`s.config.menu`), nunca escrito en el código.
 7. **Las claves secretas viven solo en `.env`** (ver `.env.example`; `.env*` está en `.gitignore`). Nunca en el repositorio, en un commit ni en una conversación: no se imprime ni se lee su contenido. `.env` apunta a la base de producción (decisión del 25 nov 2026, ver regla 0). Stripe en desarrollo, siempre con claves de prueba (`sk_test_`).
 8. **Si un cálculo de dinero no tiene prueba, no existe.** Los cálculos viven en `src/lib/engine` (funciones puras) con pruebas en `tests/`.
 9. **Si deja de pagar: solo lectura.** Los datos nunca se borran por no pagar y siempre se pueden exportar.
@@ -38,7 +38,7 @@ Antes de usar una API de Next, lee su guía en `node_modules/next/dist/docs/` (v
 - Tokens en `src/app/globals.css`. **Ningún color suelto en las pantallas**: usa `var(--tinta)`, `var(--papel)`, `var(--amarillo)`…
 - Verde solo para dinero que entra; rojo óxido para lo que falta. **Puntos, niveles y rachas siempre en amarillo, nunca en verde.**
 - Newsreader para títulos y cifras protagonistas (`h1`, `.big`); Geist para la interfaz. Máximo dos pesos por tarjeta; no existe el 800.
-- Un botón principal, un número protagonista y un bloque oscuro como máximo por pantalla. El bloque oscuro solo va en Inicio, Academia, acceso y muro de Pro.
+- Un botón principal, un número protagonista y un bloque oscuro como máximo por pantalla. El bloque oscuro solo va en Inicio, Academia, acceso y la pantalla de pago.
 - Estados siempre con texto, nunca solo color. Lo que se puede tocar para cambiar de estado lleva borde punteado (`.pill-tap`).
 - Accesible: `<button>`, `<a>`, `<label>` reales; botones de 44 px en móvil; `aria-label` en botones de solo ícono; el amarillo nunca como texto pequeño.
 - Voz: tú, nunca usted. "Plata" o "dinero", nunca "fondos". Frases cortas, números antes que adjetivos. Ej.: "Falta el monto.", "Noviembre, cerrado. +30 puntos."

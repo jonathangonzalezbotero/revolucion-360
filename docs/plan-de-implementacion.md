@@ -146,6 +146,19 @@ Cada país tiene idioma por defecto (se aplica al primer guardado de la bienveni
 Diagnóstico para alumnos (25 nov 2026) | 
 El siguiente paso para alumnos es automático (curso de su prioridad), un curso fijo o nada; se edita en Menú y funciones. La clase gratuita para quien no es alumno se edita en Contenido por país. | 
 
+## Cambios del 25 nov 2026 (plan y diseño actualizados por Jonathan)
+Reemplazan lo que digan otras secciones de este documento.
+- **Un solo plan, sin plan gratis.** Primer mes $1 USD, después $8 USD al mes; o $80 USD al año pagados de entrada (2 meses gratis). Siempre en USD; Stripe muestra la conversión. Un cambio de precio solo aplica a suscripciones nuevas. Desaparecen los precios por región, la prueba gratis, el muro de Pro y Gratis/Pro por sección o por clase.
+- **Cobro técnico:** mensual = suscripción de $8 con 30 días de prueba más un cargo único de $1 en el mismo pago; el aviso "tu primer mes termina en 3 días" sale con el evento `customer.subscription.trial_will_end` de Stripe. La tarjeta se pone dentro de la app (Stripe Embedded Checkout, librerías oficiales `@stripe/stripe-js` y `@stripe/react-stripe-js`).
+- **Sin activar:** quien se registra y no paga (estado `free`) puede hacer la bienvenida, el asistente y ver su diagnóstico; para usar el resto de la app ve "Activa tu cuenta". Un código de alumno en esa pantalla da acceso sin tarjeta.
+- **Solo lectura:** al cancelar (al final del periodo), si falla el pago y no se arregla, o al vencer un acceso gratis. Ve y exporta todo; no edita. Nada se borra.
+- **Academia:** cada curso es visible para todos o solo para un grupo de alumnos.
+- **Hábito:** "Hoy puedes gastar $X" en Inicio = lo que queda para gastos no fijos del mes ÷ días que faltan (todo gasto que no es un pago fijo del plan). Repaso semanal el domingo. Notificaciones: máximo una al día, nunca de noche (21:00 a 8:00 hora del usuario), cada persona elige cuáles.
+- **Metas amables:** cada meta unida a una cuenta (las transferencias a esa cuenta cuentan solas como aporte), "Aporte a…" / "Pagado con…" en Movimientos, hitos 25/50/75/100% (+20 puntos), frase de "para qué", retos opcionales, y al cerrar el mes "te sobraron $X, ¿a qué meta va?".
+- **Inversiones por activo:** activos con símbolo, tipo y plataforma; operaciones compra, venta y dividendo; cantidad, costo promedio, valor y resultado; precios escritos a mano; compras recurrentes ligadas al plan. Tablas nuevas; las anteriores se conservan.
+- **Subroles de admin:** Dueño (todo), Contenido (Academia y países), Soporte (soporte y usuarios). Solo el Dueño invita y asigna rol. 2 pasos obligatorios.
+- **CRM** (contactos, campañas, automatizaciones con Resend): diseñado; se construye después del cobro y el hábito.
+
 ## Alcance por fases
 Se construye todo lo diseñado, pero en 4 fases: cada una termina con algo usable por personas reales y con un criterio claro para pasar a la siguiente.
 Fase 0 · Preparación (sin código de producto)
