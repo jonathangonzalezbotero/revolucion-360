@@ -1,0 +1,44 @@
+/* Planes y precios: rejilla de regiones, prueba gratis, funciones Gratis/Pro y formulario de cupón. */
+.prices { display: flex; flex-direction: column; gap: 14px; }
+.regionHead, .regionRow { display: grid; grid-template-columns: minmax(0, 1.4fr) 52px minmax(0, 1fr) minmax(0, 1fr) 64px; gap: 8px; align-items: center; }
+.regionHead { font-size: 12px; color: var(--gris); font-weight: 600; }
+.regionRow { font-size: 14px; }
+.name { min-width: 0; overflow-wrap: anywhere; }
+.cur { font-weight: 600; }
+.info { grid-column: 1 / -1; font-size: 12px; color: var(--gris); margin-top: -4px; }
+.infoPending { color: var(--ambar-texto); font-weight: 600; }
+.cell { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+/* Etiqueta visible solo en móvil (en escritorio la da la cabecera; los lectores de pantalla la leen siempre). */
+.mLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.trial { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--linea-2); padding-top: 14px; }
+.trial strong { font-size: 14px; font-weight: 600; }
+.days { width: 70px; }
+.note { margin: 0; font-size: 12px; color: var(--gris); line-height: 1.5; }
+
+.feats { gap: 4px; }
+.feats h2 { margin-bottom: 8px; }
+.feat { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 50px; border-top: 1px solid var(--linea-2); font-size: 14px; }
+.tier { flex: none; width: 84px; font-size: 12px; font-weight: 600; min-height: 34px; border: 0; border-radius: var(--r-pill); }
+.tierPro { background: var(--tinta); color: var(--blanco); }
+.tierFree { background: var(--verde-fondo); color: var(--verde-fuerte); }
+
+.cupHead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.addBtn { font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 14px; border: 1.5px dashed var(--linea-punteada); background: transparent; color: var(--tinta); border-radius: var(--r-md); }
+.cupForm { background: var(--papel-3); border-radius: var(--r-xl); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.cupGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.code { font-weight: 600; letter-spacing: .06em; }
+.cupFoot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 14px; }
+
+@media (max-width: 899px) {
+  .regionHead { display: none; }
+  .regionRow { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 6px; border-top: 1px solid var(--linea-2); padding-top: 12px; }
+  .regionRow > .name { grid-column: 1 / span 2; font-weight: 600; }
+  .regionRow > .cur { text-align: right; }
+  .info { margin-top: 0; }
+  .mLabel { position: static; width: auto; height: auto; clip: auto; overflow: visible; font-size: 12px; font-weight: 500; color: var(--gris); }
+  .tier { min-height: 44px; }
+  .addBtn, .tap { min-height: 44px; }
+  .cupGrid { grid-template-columns: minmax(0, 1fr); }
+  .cupForm { padding: 16px; }
+}

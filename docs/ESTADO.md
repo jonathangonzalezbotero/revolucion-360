@@ -26,7 +26,7 @@ Actualizado: 24 de noviembre de 2026. Todo el código está en `main` en GitHub.
 | `/perfil`, `/notificaciones`, `/ayuda`, `/mas` | Perfil, Notificaciones, Ayuda, Mas-movil | Construido; las 5 pantallas cargan con el usuario demo |
 | `/legal/terminos`, `/legal/privacidad` | Legal | Construido (borrador para abogado) |
 | `/admin`, `/admin/usuarios`, `/admin/usuarios/[id]`, `/admin/grupos`, `/admin/soporte`, `/admin/actividad` | Admin, AdminUsuarios, AdminUsuario, AdminSoporte, AdminActividad | Construido (parte 1), sin probar; mejoras en 3b |
-| `/admin/menu`, `/admin/academia`, `/admin/planes`, `/admin/paises` | AdminMenu, AdminAcademia, AdminPlanes, AdminPaises | **❌ Falta construir** (parte 2; ver brief abajo) |
+| `/admin/menu`, `/admin/academia`, `/admin/planes`, `/admin/paises` | AdminMenu, AdminAcademia, AdminPlanes, AdminPaises | Construido (parte 2, 25 nov), sin probar en pantalla |
 | Correos, `/api/cron/*`, PWA, push | Correos | Ver sección "Correos y app instalable" |
 
 ## Lo que falta, en orden
@@ -57,13 +57,15 @@ Con `demo@revolucion360.test`:
 10. Con `admin@revolucion360.test`: `/admin` y cada sección; dar acceso de alumno al demo; confirmar que el panel no muestra montos.
 11. Solo lectura: en Studio pon `entitlements.state = 'read_only'` al demo y comprueba que se ve todo y no se puede editar.
 
-### 3. Panel de administración, parte 2 (falta construir)
-Rutas `src/app/admin/menu/`, `academia/`, `planes/`, `paises/`, reutilizando el layout y `src/app/admin/_shared/` de la parte 1. Mockups `AdminMenu`, `AdminAcademia`, `AdminPlanes`, `AdminPaises`. Todo con `requireAdmin()`, registrar cada cambio con `admin_log`, nunca ver montos.
-- **Menú y funciones:** `app_config.menu` (cada sección visible / próximamente / oculta), `app_config.features` (Gratis o Pro), `app_config.flags` (CSV, comercios, remesas, multimoneda), `limits.free_goals`, `gamification_enabled`, `admin_mfa_required`, puntos (`points`) y niveles (`levels`).
-- **Academia:** cursos (`courses`: crear, editar, portada, etapa, tier, prioridad del diagnóstico, borrador / programado con `publish_at` / publicado), módulos, clases (`lessons`: título, descripción, duración, puntos, `cta_screen`, tier, obligatoria, orden) y su video en `lesson_media.video_url`; moderar `lesson_comments` (`hidden_at`). Portadas: hoy son URLs (las de `public/cursos/`); subir archivos necesitaría Supabase Storage.
-- **Planes y precios:** `price_regions` (montos por región, descuento de alumno), prueba gratis (`app_config.trial`), cupones (`coupons`; crearlos también en Stripe con `src/lib/stripe.ts`, y el script `scripts/stripe-setup.ts` sincroniza precios), acceso fundador.
-- **Contenido por país:** `countries` (moneda, zona horaria, frecuencia de pago sugerida, términos locales, categorías sugeridas, referencias del diagnóstico `benchmarks`, habilitar), y `app_config.diag_cta` (texto y enlace de la clase gratuita del Diagnóstico) y `app_config.legal` (razón social, ABN, contacto).
-Para construirlo con Claude Code: pídele que lea `docs/BRIEF-AGENTES.md` y estos cuatro mockups.
+### 3. Panel de administración, parte 2 — construido el 25 nov, sin probar en pantalla
+`/admin/menu`, `/admin/academia`, `/admin/planes` y `/admin/paises`. Pasan tipos, linter, build y sus pruebas (`tests/admin-*.test.ts`). Nada se borra: cursos, cupones y países se pasan a borrador o se pausan. Las escrituras en `app_config` mezclan con lo guardado (dos pantallas editan `features` y `points` sin pisarse).
+**Decisiones pendientes de Jonathan:**
+- **Precios en Stripe producción:** cambiar un monto en `/admin/planes` actualiza la app, pero Stripe cobra el precio viejo hasta correr `scripts/stripe-setup.ts`, que solo acepta `sk_test_`. Falta decidir cómo se sincroniza en producción.
+- **Cupones "Aplica a" y "Vence"** (están en el mockup): necesitan columnas nuevas en `coupons` (migración). `coupons.redemptions` no lo escribe nadie; los usos salen de Stripe.
+- **Diagnóstico, siguiente paso para alumnos** (`diag_cta.student`; mockup AdminMenu "automático / curso fijo / nada"): no se edita en ninguna pantalla y el mockup no coincide con lo que guarda la base.
+- **Academia:** una clase o un módulo sueltos no se pueden ocultar (no hay columna de estado en `lessons`); "dónde abandonan" necesita una función de base.
+- **Países:** "Idioma por defecto" y "Apartado para impuestos" del mockup no tienen columna. Si un país pasa a borrador, sus usuarios no pueden guardar su región en Perfil; una moneda fuera de las 11 conocidas no se puede elegir en Perfil. La bandera `remesas` depende del nombre exacto de la categoría "Familia y remesas".
+- **Menú:** `flags.multimoneda` y el plan de "Plan anual" (`features.plan`) se guardan pero ninguna pantalla los usa.
 
 ### 3b. Mejoras pendientes del panel (parte 1)
 - Función de base `admin_emails(uuid[])` para traer correos en lote (hoy se piden de a uno con `admin_user`; pesado con miles de usuarios).

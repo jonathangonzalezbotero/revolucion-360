@@ -1,0 +1,66 @@
+/* Menú y funciones (mockup AdminMenu). Corte móvil en 900 px. */
+.layout { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.mainCol { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+.card { background: var(--blanco); border-radius: var(--r-xl); border: 1px solid var(--linea); padding: 8px 22px 14px; min-width: 0; }
+.card h2 { margin: 0; padding: 16px 0 6px; font-size: 17px; font-weight: 600; }
+.cardSub { margin: 0 0 6px; font-size: 13px; color: var(--gris); line-height: 1.5; }
+.head { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 12px; color: var(--gris); }
+.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-height: 60px; border-top: 1px solid var(--linea-2); padding: 8px 0; }
+.name { flex: 1 1 160px; font-size: 15px; font-weight: 600; min-width: 0; }
+.nameCol { flex: 1 1 200px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.nameCol strong { font-size: 14px; }
+.nameCol span { font-size: 12px; color: var(--gris); line-height: 1.45; }
+.help { margin: 8px 0 0; font-size: 12px; color: var(--gris); line-height: 1.5; }
+
+/* Estado: Visible / Próximamente / Oculto */
+.states { display: flex; gap: 2px; background: var(--papel); border-radius: var(--r-md); padding: 3px; }
+.state { font-size: 12px; font-weight: 600; min-height: 36px; padding: 0 12px; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--gris); }
+.state:hover { color: var(--tinta); }
+.state[aria-checked="true"][data-v="on"] { background: var(--tinta); color: var(--blanco); }
+.state[aria-checked="true"][data-v="soon"] { background: var(--amarillo-oscuro); color: var(--tinta); }
+.state[aria-checked="true"][data-v="off"] { background: var(--ambar-texto); color: var(--blanco); }
+
+/* Plan mínimo: Gratis / Pro */
+.plan { width: 78px; font-size: 12px; font-weight: 600; min-height: 36px; border: 1px solid var(--linea-campo); border-radius: var(--r-sm); background: var(--blanco); color: var(--tinta-2); flex: none; }
+.plan[aria-pressed="true"] { background: var(--tinta); color: var(--blanco); border-color: var(--tinta); }
+.planFixed { width: 78px; flex: none; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--gris); text-align: center; }
+
+/* Funciones con interruptor */
+.switchRow { display: flex; align-items: center; gap: 14px; min-height: 62px; border-top: 1px solid var(--linea-2); padding: 8px 0; }
+.warn { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--ambar-texto); background: var(--ambar-fondo); border-radius: var(--r-md); padding: 8px 10px; line-height: 1.45; }
+.numInput { width: 88px; flex: none; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Puntos y niveles */
+.pointsGrid { display: grid; grid-template-columns: minmax(0, 1fr) 88px; gap: 8px 12px; align-items: center; font-size: 13px; padding: 6px 0 10px; }
+.levels { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--linea-2); padding-top: 12px; }
+.levelsHead { display: flex; flex-direction: column; gap: 2px; }
+.levelsHead strong { font-size: 14px; }
+.levelsHead span { font-size: 12px; color: var(--gris); }
+.level { display: grid; grid-template-columns: 28px minmax(0, 1fr) 110px 44px; gap: 8px; align-items: center; }
+.levelN { font-size: 13px; font-weight: 600; color: var(--gris); text-align: center; }
+.minWrap { position: relative; display: flex; align-items: center; }
+.minWrap input { padding-right: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+.minWrap span { position: absolute; right: 10px; font-size: 12px; color: var(--gris); pointer-events: none; }
+.iconBtn { width: 44px; min-height: 44px; padding: 0; }
+
+/* Vista previa */
+.aside { flex: 1 1 260px; max-width: 300px; background: var(--blanco); border-radius: var(--r-xl); border: 1px solid var(--linea); padding: 20px; display: flex; flex-direction: column; gap: 6px; position: sticky; top: 24px; }
+.aside h2 { margin: 0 0 8px; font-size: 14px; font-weight: 600; }
+.pv { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--r-md); font-size: 14px; color: var(--tinta-2); background: var(--papel-3); }
+.pvSoon { color: var(--gris-4); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--linea-campo); flex: none; }
+.soonTag { font-size: 10px; font-weight: 600; color: var(--ambar-texto); }
+.proTag { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 6px; background: var(--tinta); color: var(--blanco); }
+
+.status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--gris); }
+
+@media (max-width: 899px) {
+  .card { padding: 4px 16px 12px; }
+  .aside { max-width: none; position: static; }
+  .state { min-height: 44px; padding: 0 10px; flex: 1 1 auto; }
+  .states { flex: 1 1 220px; }
+  .plan, .planFixed, .small { min-height: 44px; }
+  .level { grid-template-columns: 22px minmax(0, 1fr) 96px 44px; gap: 6px; }
+  .pointsGrid { grid-template-columns: minmax(0, 1fr) 80px; }
+  .numInput { width: 80px; }
+}

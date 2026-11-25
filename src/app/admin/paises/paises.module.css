@@ -1,0 +1,56 @@
+/* Contenido por país: medidas del mockup AdminPaises (escritorio); en móvil todo pasa a una columna. */
+.layout { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.list { flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.item { text-align: left; text-decoration: none; background: var(--blanco); border: 2px solid var(--linea); border-radius: var(--r-xl); padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--tinta); min-height: 44px; }
+.item:hover { color: var(--tinta); background: var(--papel-3); }
+.item[aria-current="page"] { background: var(--amarillo-suave); border-color: var(--tinta); }
+.itemName { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.itemName strong { font-size: 15px; }
+.itemName span { font-size: 12px; color: var(--gris); }
+.listNote { margin: 4px 2px 0; font-size: 12px; color: var(--gris); line-height: 1.5; }
+
+.editor { flex: 999 1 520px; min-width: 0; background: var(--blanco); border-radius: var(--r-xl); border: 1px solid var(--linea); padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+.editor h2 { margin: 0; font-size: 22px; font-weight: 600; }
+.editor h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.block { display: flex; flex-direction: column; gap: 8px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end; }
+.termRow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; border-top: 1px solid var(--linea-2); padding-top: 8px; }
+.termRow label { font-size: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; padding: 3px 3px 3px 12px; border-radius: var(--r-pill); background: var(--papel); min-height: 36px; }
+.chipName { border: 0; background: transparent; padding: 0; font: inherit; font-size: 13px; font-weight: 600; color: var(--tinta); display: inline-flex; align-items: center; gap: 4px; min-height: 30px; }
+.chipName:hover { text-decoration: underline; text-decoration-color: var(--amarillo); }
+.check { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 13px; min-height: 44px; }
+.check > input { width: 18px; height: 18px; }
+.chipKind { font-size: 11px; font-weight: 500; color: var(--gris); }
+.chipX { border: 0; background: transparent; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--gris); }
+.chipX:hover { background: var(--seleccion); color: var(--tinta); }
+.addChip { font-size: 13px; font-weight: 600; padding: 0 12px; min-height: 36px; border-radius: var(--r-pill); border: 1.5px dashed var(--linea-punteada); background: transparent; color: var(--tinta); }
+.addChip:hover { background: var(--amarillo-suave); }
+.catForm { display: grid; grid-template-columns: minmax(0, 1fr) 160px auto auto; gap: 8px; align-items: end; }
+.panel { display: flex; flex-direction: column; gap: 10px; background: var(--papel-3); border-radius: var(--r-xl); padding: 16px; }
+.benchHead, .benchRow { display: grid; grid-template-columns: minmax(0, 1fr) 110px 110px; gap: 10px; align-items: center; }
+.benchHead { font-size: 12px; font-weight: 500; color: var(--gris); }
+.benchRow { border-top: 1px solid var(--linea-2); padding-top: 8px; }
+.benchRow > span { font-size: 14px; }
+.unit { position: relative; }
+.unit > input { padding-right: 40px; text-align: right; }
+.unit > span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--gris); pointer-events: none; }
+.publish { display: flex; align-items: center; gap: 12px; }
+.actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; align-items: center; }
+
+@media (max-width: 899px) {
+  .layout { gap: 14px; }
+  .list { max-width: none; flex-basis: 100%; }
+  .editor { padding: 20px 16px; gap: 16px; }
+  .editor h2 { font-size: 20px; }
+  .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); }
+  .termRow { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .catForm { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .benchHead { grid-template-columns: minmax(0, 1fr) 96px 96px; }
+  .benchRow { grid-template-columns: minmax(0, 1fr) 96px 96px; }
+  .chipX, .addChip { min-height: 44px; }
+  .chipX { width: 44px; height: 44px; }
+  .actions > :global(.btn) { flex: 1 1 auto; }
+}
