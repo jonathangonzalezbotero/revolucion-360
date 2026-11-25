@@ -620,6 +620,24 @@
    "h": 844,
    "title": "Recorrido general · Móvil",
    "is_interactive": true
+  },
+  "InicioRetoA.dc.html": {
+   "x": 4450,
+   "y": 16172,
+   "w": 1440,
+   "h": 1640,
+   "title": "Inicio con reto · Opción A (junto a Hoy puedes gastar)",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "InicioRetoB.dc.html": {
+   "x": 5970,
+   "y": 16172,
+   "w": 1440,
+   "h": 1820,
+   "title": "Inicio con reto · Opción B (reto primero)",
+   "is_interactive": true,
+   "expand": "fill"
   }
  },
  "order": [
@@ -641,6 +659,8 @@
   "Mas-movil.dc.html",
   "Recorrido.dc.html",
   "Recorrido-movil.dc.html",
+  "InicioRetoA.dc.html",
+  "InicioRetoB.dc.html",
   "Plan.dc.html",
   "Plan-movil.dc.html",
   "Presupuesto.dc.html",
