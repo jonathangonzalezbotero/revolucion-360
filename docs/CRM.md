@@ -87,6 +87,7 @@ así que esa es la única puerta.
 
 Decisiones de Jonathan: los leads de formularios web entran **sin doble confirmación** (la casilla marcada basta) y el
 teléfono que llega con el consentimiento se toma como **verificado** (lo verifican sus formularios; no hay código por SMS).
+El **clic de confirmación por correo** de una conexión con "Pedir confirmación" sí levanta una baja de correo previa (decisión del 25 nov 2026: el clic desde su propio correo demuestra que es suya y que lo quiere); nunca un rebote ni una queja.
 
 **Quién levanta una baja** (`crm_apply_consent(…, p_lift)`): una alta con supresión activa (o con baja propia del contacto)
 solo se aplica si `p_lift = true`, y solo pasan `true` las altas explícitas de la persona. Un rebote o una queja **nunca**

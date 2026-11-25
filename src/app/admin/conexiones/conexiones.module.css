@@ -42,7 +42,7 @@
 .log li > span:first-child { display: flex; justify-content: space-between; gap: 8px; }
 .log strong { overflow-wrap: anywhere; }
 .rules { margin: 0; padding-left: 18px; font-size: 13px; color: var(--tinta-2); line-height: 1.7; }
-.rules code { composes: mono; }
+.rules code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
 .badge { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: var(--r-pill); white-space: nowrap; }
 .badgeOk { composes: badge; background: var(--verde-fondo); color: var(--verde-fuerte); }
 .badgeOff { composes: badge; background: var(--ambar-fondo); color: var(--ambar-texto); }

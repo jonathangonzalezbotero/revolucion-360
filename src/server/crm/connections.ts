@@ -105,13 +105,15 @@ export async function receiveSubmission(db: Db, conn: Pick<ConnectionRow, "id" |
   }
   for (const tagId of toAdd) await addTag(db, id, tagId, "ingest");
 
-  // Consentimiento: solo con la casilla marcada; nunca levanta una baja ni una supresión (p_lift = false).
+  // Consentimiento: solo con la casilla marcada. Un envío normal nunca levanta una baja (p_lift = false).
+  // El clic de confirmación desde el propio correo sí levanta una baja de correo (decisión de Jonathan, 25 nov 2026):
+  // demuestra que la dirección es suya y que lo quiere. Rebotes y quejas nunca se levantan (crm_apply_consent).
   let result: ReceiveResult = via === "test" ? "test" : via === "confirm" ? "confirmed" : created ? "created" : "updated";
   if (via !== "test") {
     const evidence = { text: sub.evidence.text || DEFAULT_CONSENT_TEXT, url: sub.evidence.url, ip: sub.evidence.ip, userAgent: sub.evidence.userAgent, form: `conexion:${conn.slug}`, confirmedAt: opts.confirmedAt };
     const source = `conexion:${conn.slug}`.slice(0, 60);
     if (sub.consentEmail) {
-      const r = must(await db.rpc("crm_apply_consent", { p_contact: id, p_channel: "email", p_on: true, p_source: source, p_lift: false, p_evidence: evidence })) as string;
+      const r = must(await db.rpc("crm_apply_consent", { p_contact: id, p_channel: "email", p_on: true, p_source: source, p_lift: via === "confirm", p_evidence: evidence })) as string;
       if (r === "suppressed") result = "suppressed";
     } else if (!existing?.email_consent && via !== "confirm") result = "no_consent";
     if (sub.consentSms) {
