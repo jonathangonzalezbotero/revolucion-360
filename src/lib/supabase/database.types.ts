@@ -1263,14 +1263,14 @@ isOneToOne: false
                   ]
                 },"recurring": {
                   Row: {
-                    "account_id": string | null,"active": boolean,"amount_cents": number,"anchor_day": number | null,"category_id": string | null,"created_at": string,"description": string,"frequency": string,"id": string,"next_date": string,"plan_line_id": string | null,"user_id": string
+                    "account_id": string | null,"active": boolean,"amount_cents": number,"anchor_day": number | null,"category_id": string | null,"created_at": string,"description": string,"frequency": string,"goal_id": string | null,"id": string,"next_date": string,"plan_line_id": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "account_id"?: string | null,"active"?: boolean,"amount_cents": number,"anchor_day"?: number | null,"category_id"?: string | null,"created_at"?: string,"description": string,"frequency": string,"id"?: string,"next_date": string,"plan_line_id"?: string | null,"user_id": string
+                    "account_id"?: string | null,"active"?: boolean,"amount_cents": number,"anchor_day"?: number | null,"category_id"?: string | null,"created_at"?: string,"description": string,"frequency": string,"goal_id"?: string | null,"id"?: string,"next_date": string,"plan_line_id"?: string | null,"user_id": string
                   }
                   Update: {
-                    "account_id"?: string | null,"active"?: boolean,"amount_cents"?: number,"anchor_day"?: number | null,"category_id"?: string | null,"created_at"?: string,"description"?: string,"frequency"?: string,"id"?: string,"next_date"?: string,"plan_line_id"?: string | null,"user_id"?: string
+                    "account_id"?: string | null,"active"?: boolean,"amount_cents"?: number,"anchor_day"?: number | null,"category_id"?: string | null,"created_at"?: string,"description"?: string,"frequency"?: string,"goal_id"?: string | null,"id"?: string,"next_date"?: string,"plan_line_id"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -1284,6 +1284,12 @@ isOneToOne: false
       columns: ["category_id"]
 isOneToOne: false
       referencedRelation: "categories"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "recurring_goal_id_fkey"
+      columns: ["goal_id"]
+isOneToOne: false
+      referencedRelation: "goals"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "recurring_plan_line_id_fkey"
