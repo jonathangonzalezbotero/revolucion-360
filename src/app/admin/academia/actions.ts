@@ -18,7 +18,6 @@ function refreshAcademia() {
 }
 
 const Id = z.string().uuid();
-const Tier = z.enum(["free", "pro"]);
 /** Número entero escrito en un campo: vacío o con letras no vale (z.coerce convertiría "" en 0). */
 const digits = (max: number) => z.union([z.string(), z.number()]).transform(String).pipe(z.string().regex(/^\d{1,4}$/)).transform(Number).pipe(z.number().int().min(0).max(max));
 const text = (max: number) => z.string().max(max).default("").transform((v) => v.trim());
@@ -34,7 +33,7 @@ async function courseExists(s: Session, id: string) {
 const CourseIn = z.object({
   id: Id.nullable().default(null),
   title: text(120), stage: text(60), number: digits(999).pipe(z.number().min(1)),
-  description: text(1000), cover: text(500), tier: Tier,
+  description: text(1000), cover: text(500), groupId: Id.nullable().default(null),
   priority: z.enum(PRIORITIES).nullable().default(null),
 });
 
@@ -48,17 +47,36 @@ export async function saveCourse(input: unknown) {
     if (!d.title || !d.stage) return fail(t.errors.title);
     const cover = checkCover(d.cover);
     if (cover === null) return fail(t.errors.cover);
-    const row = { title: d.title, stage: d.stage, number: d.number, sort: d.number, description: d.description, cover_url: cover, tier: d.tier, priority: d.priority };
+    if (d.groupId) {
+      const g = await s.supabase.from("groups").select("id").eq("id", d.groupId).maybeSingle();
+      if (g.error) throw new Error(`db: ${g.error.message}`);
+      if (!g.data) return fail(t.errors.group);
+    }
+    const row = { title: d.title, stage: d.stage, number: d.number, sort: d.number, description: d.description, cover_url: cover, priority: d.priority };
+    // "Visible para": null = todos. La columna llega con la migración 20261125000029_un_plan.sql (tipos sin regenerar: `as never`).
+    // Sin la migración, "Todos" se guarda igual; "Solo un grupo" avisa que falta aplicarla.
+    const withGroup = { ...row, visible_group_id: d.groupId } as never;
+    const missingColumn = (e: { code?: string } | null) => e?.code === "42703" || e?.code === "PGRST204";
     if (d.id) {
-      const r = must(await s.supabase.from("courses").update(row).eq("id", d.id).select("id").single());
-      await audit(s, "curso_editar", null, { course: r.id, name: d.title, tier: d.tier });
+      let r = await s.supabase.from("courses").update(withGroup).eq("id", d.id).select("id").single();
+      if (missingColumn(r.error)) {
+        if (d.groupId) return fail(t.errors.groupPending);
+        r = await s.supabase.from("courses").update(row).eq("id", d.id).select("id").single();
+      }
+      const saved = must(r);
+      await audit(s, "curso_editar", null, { course: saved.id, name: d.title, group: d.groupId ?? undefined });
       refreshAcademia();
-      return ok(r.id);
+      return ok(saved.id);
     }
     const slug = slugify(d.title) || `curso-${d.number}`;
-    const { data, error } = await s.supabase.from("courses").insert({ ...row, slug, status: "draft" }).select("id").single();
-    if (error) return fail(error.code === "23505" ? t.errors.slug : adminText(s).errors.generic);
-    await audit(s, "curso_crear", null, { course: data.id, name: d.title });
+    let ins = await s.supabase.from("courses").insert({ ...(withGroup as object), slug, status: "draft" } as never).select("id").single();
+    if (missingColumn(ins.error)) {
+      if (d.groupId) return fail(t.errors.groupPending);
+      ins = await s.supabase.from("courses").insert({ ...row, slug, status: "draft" }).select("id").single();
+    }
+    const { data, error } = ins as { data: { id: string } | null; error: { code?: string } | null };
+    if (error || !data) return fail(error?.code === "23505" ? t.errors.slug : adminText(s).errors.generic);
+    await audit(s, "curso_crear", null, { course: data.id, name: d.title, group: d.groupId ?? undefined });
     return ok(data.id);
   });
 }
@@ -165,10 +183,10 @@ export async function createLesson(input: unknown) {
 
 const LessonIn = z.object({
   id: Id, moduleId: Id.nullable().default(null), title: text(160), duration: text(10), video: text(500),
-  cta: text(120), points: digits(1000), tier: Tier, description: text(2000), required: z.boolean(),
+  cta: text(120), points: digits(1000), description: text(2000), required: z.boolean(),
 });
 
-/** Guarda título, duración, video, pantalla del botón, puntos, plan, descripción, obligatoria y módulo. */
+/** Guarda título, duración, video, pantalla del botón, puntos, descripción, obligatoria y módulo. (La columna `tier` ya no se usa.) */
 export async function saveLesson(input: unknown) {
   return adminAction(PATHS, async (s) => {
     const t = m(s);
@@ -190,10 +208,10 @@ export async function saveLesson(input: unknown) {
     const sort = moved ? (await lessonsIn(s, cur.data.course_id, d.moduleId)).reduce((a, x) => Math.max(a, x.sort), 0) + 1 : cur.data.sort;
 
     must(await s.supabase.from("lessons").update({
-      title: d.title, description: d.description, duration_sec: duration, points: d.points, cta_screen: cta, tier: d.tier, required: d.required, module_id: d.moduleId, sort,
+      title: d.title, description: d.description, duration_sec: duration, points: d.points, cta_screen: cta, required: d.required, module_id: d.moduleId, sort,
     }).eq("id", d.id).select("id").single());
     must(await s.supabase.from("lesson_media").upsert({ lesson_id: d.id, video_url: d.video }, { onConflict: "lesson_id" }).select("lesson_id").single());
-    await audit(s, "clase_editar", null, { course: cur.data.course_id, lesson: d.id, name: d.title, tier: d.tier, video: d.video ? "si" : "no" });
+    await audit(s, "clase_editar", null, { course: cur.data.course_id, lesson: d.id, name: d.title, video: d.video ? "si" : "no" });
     refreshAcademia();
     return ok(undefined);
   });

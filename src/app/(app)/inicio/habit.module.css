@@ -1,0 +1,17 @@
+/* "Hoy puedes gastar" (mockup Main.dc.html y Inicio-movil.dc.html, sección "hg"). */
+.block { background: var(--amarillo-suave); border: 1px solid var(--amarillo-borde); border-radius: 14px; padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 18px 32px; align-items: center; justify-content: space-between; }
+.main { display: flex; flex-direction: column; gap: 4px; flex: 1 1 320px; }
+.title { margin: 0; font-size: 14px; font-weight: 600; color: var(--amarillo-texto); }
+.amount { font-size: 40px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; }
+.text { font-size: 14px; color: var(--tinta-2); line-height: 1.5; }
+.repaso { text-decoration: none; flex: 0 1 320px; background: var(--blanco); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; color: var(--tinta); }
+.repasoSub { font-size: 13px; color: var(--gris); }
+
+@media (max-width: 899px) {
+  .block { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 4px; padding: 16px 18px; }
+  .main { flex: none; }
+  .title { font-size: 13px; }
+  .amount { font-size: 34px; }
+  .text { font-size: 13px; }
+  .repaso { margin-top: 8px; flex: none; flex-direction: row; justify-content: space-between; gap: 8px; border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: 600; min-height: 44px; align-items: center; box-sizing: border-box; }
+}

@@ -1,6 +1,7 @@
-// Plantillas HTML de los 4 correos (docs/mockup/Correos.dc.html). PURAS: reciben datos ya calculados y devuelven asunto, HTML y texto.
+// Plantillas HTML de los correos (docs/mockup/Correos.dc.html). PURAS: reciben datos ya calculados y devuelven asunto, HTML y texto.
 // HTML para clientes de correo: tablas, estilos en línea, 600 px, sin CSS externo ni variables (los clientes de correo no las leen).
-// Nunca llevan montos ni datos financieros: solo nombre, mes, fecha, racha, puntos y porcentaje de descuento.
+// Nunca llevan montos ni datos financieros del usuario: solo nombre, mes, fecha, racha, puntos, últimos 4 de la tarjeta
+// y el PRECIO del plan (correos 3 y 5, ya formateado: "$8").
 import { fill, type Locale } from "@/i18n";
 import { formatDate, monthName, type ISODate } from "@/lib/engine";
 import { escapeHtml, firstName, type EmailKind, type Period } from "./lib";
@@ -27,10 +28,18 @@ type Base = { locale: Locale; appUrl: string };
 export type WelcomeData = Base & { name: string };
 /** `late`: el aviso sale cuando el mes ya terminó (prefs.close_day = "first"). */
 export type CloseData = Base & { period: Period; streak: number; points: number | null; showStreak: boolean; late?: boolean };
-export type AccessData = Base & { until: ISODate; daysLeft: number; discountPct: number | null };
+/** `monthly` / `yearly`: precio del plan ya formateado ("$8", "$80"), de app_config.billing. */
+export type AccessData = Base & { until: ISODate; daysLeft: number; monthly: string; yearly: string };
 export type PaymentData = Base & { failedOn: ISODate };
 /** Acceso gratis dado desde el panel: tipo y hasta cuándo (null = de por vida). Nunca montos. */
 export type GrantData = Base & { name: string; kind: "alumno" | "fundador"; until: ISODate | null };
+/**
+ * 5 · Fin del primer mes. `chargeOn`: día del primer cobro completo (fin de la prueba de Stripe, en la zona del usuario).
+ * `price`: lo que se cobra ese día ("$8"); `yearly`: precio anual ("$80"); `last4`: últimos 4 de la tarjeta (o null).
+ * Sin los recuadros de "movimientos registrados" y "apartaste para tus metas" del mockup: leerlos exigiría la clave de servicio
+ * sobre datos financieros (CLAUDE.md regla 4) y los correos nunca llevan montos del usuario.
+ */
+export type FirstMonthData = Base & { name: string; chargeOn: ISODate; daysLeft: number; price: string; yearly: string; last4: string | null };
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const url = (base: string, path: string) => `${base.replace(/\/+$/, "")}${path}`;
@@ -139,9 +148,9 @@ export function accessEmail(d: AccessData): Rendered {
     t, appUrl: d.appUrl, locale: d.locale, preheader: subject, label: t.access.label, title: fill(t.access.title, { date }),
     blocks: [
       { kind: "p", text: t.access.p1 },
-      { kind: "p", text: d.discountPct && d.discountPct > 0 ? fill(t.access.p2Discount, { pct: d.discountPct }) : t.access.p2 },
+      { kind: "p", text: fill(t.access.p2, { monthly: d.monthly, yearly: d.yearly }) },
     ],
-    cta: { text: t.access.cta, href: url(d.appUrl, "/suscripcion") },
+    cta: { text: t.access.cta, href: url(d.appUrl, "/activar") },
     footer: t.footer.access,
   };
   return finish(l, subject);
@@ -176,12 +185,29 @@ export function grantEmail(d: GrantData): Rendered {
   return finish(l, t.grant.subject);
 }
 
+export function firstMonthEmail(d: FirstMonthData): Rendered {
+  const t = M[d.locale];
+  const name = firstName(d.name);
+  const date = formatDate(d.chargeOn, d.locale, "day");
+  const subject = d.daysLeft <= 1 ? t.firstMonth.subjectOne : fill(t.firstMonth.subject, { n: d.daysLeft });
+  const vars = { date, price: d.price, yearly: d.yearly, last4: d.last4 ?? "" };
+  const l: Layout = {
+    t, appUrl: d.appUrl, locale: d.locale, preheader: subject, label: t.firstMonth.label,
+    title: name ? fill(t.firstMonth.titleName, { name }) : t.firstMonth.titleNoName,
+    blocks: [{ kind: "p", text: fill(d.last4 ? t.firstMonth.p1Card : t.firstMonth.p1, vars) }, { kind: "p", text: t.firstMonth.p2 }],
+    cta: { text: t.firstMonth.cta, href: url(d.appUrl, "/suscripcion") },
+    footer: t.footer.firstCharge,
+  };
+  return finish(l, subject);
+}
+
 export type AnyEmail =
   | { kind: "welcome"; data: WelcomeData }
   | { kind: "close_reminder"; data: CloseData }
   | { kind: "access_expiring"; data: AccessData }
   | { kind: "payment_failed"; data: PaymentData }
-  | { kind: "access_granted"; data: GrantData };
+  | { kind: "access_granted"; data: GrantData }
+  | { kind: "first_month_ending"; data: FirstMonthData };
 
 export function renderEmail(e: AnyEmail): Rendered {
   switch (e.kind) {
@@ -190,6 +216,7 @@ export function renderEmail(e: AnyEmail): Rendered {
     case "access_expiring": return accessEmail(e.data);
     case "payment_failed": return paymentEmail(e.data);
     case "access_granted": return grantEmail(e.data);
+    case "first_month_ending": return firstMonthEmail(e.data);
   }
 }
-export const EMAIL_KINDS: EmailKind[] = ["welcome", "close_reminder", "access_expiring", "payment_failed", "access_granted"];
+export const EMAIL_KINDS: EmailKind[] = ["welcome", "close_reminder", "access_expiring", "payment_failed", "access_granted", "first_month_ending"];

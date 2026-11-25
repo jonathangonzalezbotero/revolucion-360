@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { fill } from "@/i18n";
 import { Empty, ListLink, PageHeader } from "@/components/ui/basics";
-import { ProWall } from "@/components/shell/ProWall";
 import { monthShort } from "@/lib/engine";
 import { loadAccounts, loadPlan, must } from "@/server/data";
 import { requireUser } from "@/server/session";
@@ -26,8 +25,6 @@ export default async function ProyeccionPage({ searchParams }: { searchParams: S
       </main>
     );
   }
-  if (!s.has("proy")) return <main className="page"><PageHeader title={m.title} /><ProWall s={s} title={m.proTitle} bullets={m.proBullets} /></main>;
-
   const [plan, accounts] = await Promise.all([loadPlan(s, s.year), loadAccounts(s)]);
   const inForecast = accounts.filter((a) => a.inForecast);
   if (inForecast.length === 0 || plan.lines.length === 0) {
@@ -56,8 +53,7 @@ export default async function ProyeccionPage({ searchParams }: { searchParams: S
   const savingLineIds = [...plan.lines, ...(next?.lines ?? [])].filter((l) => savingCats.has(l.categoryId)).map((l) => l.id);
   const known: LineKey[] = [...plan.lines, ...(next?.lines ?? [])];
 
-  const canScenarios = s.has("escenarios");
-  const rows = canScenarios ? must(await s.supabase.from("forecast_scenarios").select("id, name, config").order("created_at")) : [];
+  const rows = must(await s.supabase.from("forecast_scenarios").select("id, name, config").order("created_at"));
   // Líneas apagadas que ya no están en el plan (otro año): se leen para buscarlas por nombre y categoría.
   const missing = [...new Set(rows.flatMap((r) => offIdsOf(r.config)))].filter((id) => /^[0-9a-f-]{36}$/i.test(id) && !known.some((k) => k.id === id));
   const oldRows = missing.length ? must(await s.supabase.from("plan_lines").select("id, name, category_id, kind").in("id", missing)) : [];
@@ -83,9 +79,9 @@ export default async function ProyeccionPage({ searchParams }: { searchParams: S
       <Forecast
         months={months} plan1={plan1} plan2={plan2} startCents={startCents} savingLineIds={savingLineIds}
         usesDecember={extended && !next?.lines.length} nextYear={s.year + 1}
-        scenarios={scenarios} canScenarios={canScenarios} canEdit={s.canEdit}
+        scenarios={scenarios} canScenarios canEdit={s.canEdit}
         fmt={s.fmt} locale={s.locale} m={m}
-        lock={canScenarios ? null : <ProWall s={s} title={m.lockTitle} text={m.lockText} bullets={m.lockBullets} />}
+        lock={null}
       />
       <p className="xs muted">{s.t.disclaimer}</p>
     </main>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseMoney } from "@/lib/engine";
 import {
-  centsToInput, changedFeatures, checkCoupon, checkTrial, couponExpiry, stripeExpiry, cleanCouponCode, parsePrice, priceSync, regionPatch, regionSync, sortRegions,
+  BILLING_DEFAULTS, billingFrom, billingToInput, centsToInput, checkBilling, checkCoupon, couponExpiry, mergeBilling, monthlyIncome, stripeExpiry, cleanCouponCode, parsePrice, yearlyEquivalent,
 } from "@/app/admin/planes/lib";
 
 describe("precio en el campo y de vuelta", () => {
@@ -25,54 +25,50 @@ describe("precio en el campo y de vuelta", () => {
   });
 });
 
-describe("cambios de una región", () => {
-  const row = { region: "AU", monthly_cents: 1499, yearly_cents: 14900, student_discount_pct: 0 };
-  it("sin cambios no escribe nada", () => expect(regionPatch(row, { region: "AU", monthly: "14.99", yearly: "149", student: "0" })).toEqual({ ok: true, patch: {} }));
-  it("solo lo que cambió", () => expect(regionPatch(row, { region: "AU", monthly: "16.99", yearly: "149", student: "50" })).toEqual({ ok: true, patch: { monthly_cents: 1699, student_discount_pct: 50 } }));
-  it("vaciar un precio lo deja en null", () => expect(regionPatch(row, { region: "AU", monthly: "14.99", yearly: "", student: "" })).toEqual({ ok: true, patch: { yearly_cents: null } }));
-  it("errores por campo", () => {
-    expect(regionPatch(row, { region: "AU", monthly: "0", yearly: "149", student: "0" })).toEqual({ ok: false, error: "monthly" });
-    expect(regionPatch(row, { region: "AU", monthly: "14.99", yearly: "x", student: "0" })).toEqual({ ok: false, error: "yearly" });
-    expect(regionPatch(row, { region: "AU", monthly: "14.99", yearly: "149", student: "101" })).toEqual({ ok: false, error: "student" });
-    expect(regionPatch(row, { region: "AU", monthly: "14.99", yearly: "149", student: "12.5" })).toEqual({ ok: false, error: "student" });
+describe("precios del plan único (app_config.billing)", () => {
+  it("sin la clave: los valores aprobados ($1, $8, $80, aviso 3 días)", () => {
+    expect(billingFrom(undefined)).toEqual({ first_month_cents: 100, monthly_cents: 800, yearly_cents: 8000, notify_before_days: 3, notify_first_charge: true });
+    expect(billingFrom(null)).toEqual(BILLING_DEFAULTS);
   });
-  it("orden del mockup", () => expect(sortRegions([{ region: "EU" }, { region: "NZ" }, { region: "AU" }, { region: "DEFAULT" }]).map((r) => r.region)).toEqual(["AU", "DEFAULT", "EU", "NZ"]));
-});
-
-describe("sincronía con Stripe", () => {
-  it("sin monto no hay nada que sincronizar", () => expect(priceSync(null, null, null, null, "AUD")).toBe("none"));
-  it("monto sin precio en Stripe = pendiente", () => expect(priceSync(1499, null, null, 1499, "AUD")).toBe("pending"));
-  it("mismo monto y moneda = al día", () => expect(priceSync(1499, "price_1", { amount: 1499, currency: "aud" }, 1499, "AUD")).toBe("ok"));
-  it("monto distinto o precio apagado = pendiente", () => {
-    expect(priceSync(1699, "price_1", { amount: 1499, currency: "aud" }, 1699, "AUD")).toBe("pending");
-    expect(priceSync(1699, "price_1", null, 1699, "AUD")).toBe("pending");
+  it("un valor raro cae al valor por defecto; lo válido se respeta", () => {
+    expect(billingFrom({ monthly_cents: 900, yearly_cents: -1, first_month_cents: 1.5, notify_before_days: 99, notify_first_charge: false }))
+      .toEqual({ first_month_cents: 100, monthly_cents: 900, yearly_cents: 8000, notify_before_days: 3, notify_first_charge: false });
   });
-  it("sin respuesta de Stripe = no se sabe", () => expect(priceSync(1499, "price_1", undefined, 1499, "AUD")).toBe("unknown"));
-  it("la región toma el peor estado", () => {
-    expect(regionSync(["ok", "pending"])).toBe("pending");
-    expect(regionSync(["ok", "none"])).toBe("ok");
-    expect(regionSync(["none", "none"])).toBe("none");
-    expect(regionSync(["ok", "unknown"])).toBe("unknown");
+  it("al formulario y de vuelta sin perder centavos", () => {
+    const b = { ...BILLING_DEFAULTS, monthly_cents: 799 };
+    expect(billingToInput(b)).toEqual({ first: "1", monthly: "7.99", yearly: "80", notifyDays: "3" });
+    expect(checkBilling(billingToInput(b))).toEqual({ ok: true, values: { first_month_cents: 100, monthly_cents: 799, yearly_cents: 8000, notify_before_days: 3 } });
   });
-});
-
-describe("prueba gratis", () => {
-  it("días de 1 a 90", () => {
-    expect(checkTrial(true, "14")).toEqual({ ok: true, trial: { enabled: true, days: 14 } });
-    expect(checkTrial(false, 7)).toEqual({ ok: true, trial: { enabled: false, days: 7 } });
-    expect(checkTrial(true, "0").ok).toBe(false);
-    expect(checkTrial(true, "91").ok).toBe(false);
-    expect(checkTrial(true, "1.5").ok).toBe(false);
+  it("los tres precios son obligatorios y mayores a cero; aviso de 1 a 30 días", () => {
+    const ok = { first: "1", monthly: "8", yearly: "80", notifyDays: "3" };
+    expect(checkBilling({ ...ok, first: "" })).toEqual({ ok: false, error: "first" });
+    expect(checkBilling({ ...ok, monthly: "0" })).toEqual({ ok: false, error: "monthly" });
+    expect(checkBilling({ ...ok, yearly: "abc" })).toEqual({ ok: false, error: "yearly" });
+    expect(checkBilling({ ...ok, notifyDays: "0" })).toEqual({ ok: false, error: "notify" });
+    expect(checkBilling({ ...ok, notifyDays: "31" })).toEqual({ ok: false, error: "notify" });
+    expect(checkBilling({ ...ok, notifyDays: "2.5" })).toEqual({ ok: false, error: "notify" });
   });
-});
-
-describe("qué incluye cada plan", () => {
-  it("solo manda las funciones que cambiaron", () => {
-    expect(changedFeatures({ plan: "free", mov: "pro" }, { plan: "free", mov: "free" })).toEqual({ mov: "free" });
-    expect(changedFeatures({ plan: "free" }, { plan: "free" })).toEqual({});
+  it("mezcla con lo guardado: conserva notify_first_charge y claves que no conoce; solo lista lo que cambió", () => {
+    const stored = { first_month_cents: 100, monthly_cents: 800, yearly_cents: 8000, notify_before_days: 3, notify_first_charge: false, stripe_price_monthly: "price_x" };
+    const r = mergeBilling(stored, { first_month_cents: 100, monthly_cents: 900, yearly_cents: 8000, notify_before_days: 3 });
+    expect(r.changed).toEqual(["monthly_cents"]);
+    expect(r.value).toEqual({ ...stored, monthly_cents: 900 });
+    expect(mergeBilling(stored, { first_month_cents: 100, monthly_cents: 800, yearly_cents: 8000, notify_before_days: 3 }).changed).toEqual([]);
   });
-  it("sin valor cuenta como Gratis", () => expect(changedFeatures({}, { plan: "free", ana: "pro" })).toEqual({ ana: "pro" }));
-  it("ignora funciones que esta pantalla no muestra", () => expect(changedFeatures({ csv: "pro" }, { csv: "free" })).toEqual({}));
+  it("sin la clave guardada: se escribe completa la primera vez", () => {
+    const r = mergeBilling(undefined, { first_month_cents: 100, monthly_cents: 800, yearly_cents: 8000, notify_before_days: 3 });
+    expect(r.changed).toHaveLength(4);
+    expect(r.value).toEqual(BILLING_DEFAULTS);
+  });
+  it("anual equivale a $6.67 al mes y ahorra 17%", () => {
+    expect(yearlyEquivalent(800, 8000)).toEqual({ perMonth: 667, savingsPct: 17 });
+    expect(yearlyEquivalent(800, 12000)).toEqual({ perMonth: 1000, savingsPct: 0 });
+    expect(yearlyEquivalent(0, 8000).savingsPct).toBe(0);
+  });
+  it("ingreso de un mes: primer mes + mensual + anual ÷ 12", () => {
+    expect(monthlyIncome(BILLING_DEFAULTS, { firstMonth: 3, monthly: 10, yearly: 6 })).toBe(300 + 8000 + 4000);
+    expect(monthlyIncome(BILLING_DEFAULTS, { firstMonth: 0, monthly: 0, yearly: 1 })).toBe(667);
+  });
 });
 
 describe("cupones", () => {

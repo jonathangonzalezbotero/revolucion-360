@@ -80,17 +80,6 @@
 .mGrid > div { background: var(--papel); border-radius: var(--r-xl); padding: 12px; display: flex; flex-direction: column; gap: 2px; }
 .varRow { font-size: 14px; display: flex; flex-direction: column; gap: 2px; }
 
-/* Bloqueo suave (plan Gratis) */
-.lockHero { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.lockHero > div { display: flex; flex-direction: column; gap: 4px; }
-.lockPill { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: var(--r-pill); background: var(--oscuro-3); color: var(--oscuro-texto); white-space: nowrap; }
-.blurBox { position: relative; overflow: hidden; }
-.blur { display: flex; flex-direction: column; gap: 12px; filter: blur(5px); opacity: .6; }
-.blur > div { height: 14px; border-radius: 7px; background: var(--tinta); }
-.overlay { position: absolute; inset: 56px 12px 12px; background: var(--velo-claro); border-radius: var(--r-xl); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 12px; }
-.proTag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: var(--tinta); color: var(--blanco); }
-.upsell { background: var(--blanco); border-radius: var(--r-2xl); padding: 20px; box-shadow: var(--sombra-hoja); display: flex; flex-direction: column; gap: 12px; max-width: 560px; }
-.upsell ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7; color: var(--tinta-2); }
 
 @media (max-width: 899px) {
   .hero { padding: 20px 0; gap: 14px; }
@@ -104,7 +93,6 @@
   .barIn, .barOut { width: 7px; }
   .netPill { display: none; }
   .rows li { font-size: 13px; }
-  .upsell { margin-top: 8px; }
   .iconBtn,   .watchCol :global(.btn), .editForm :global(.btn) { min-height: 44px; }
   .monthSelect { height: 44px; }
 }

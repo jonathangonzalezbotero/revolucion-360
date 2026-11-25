@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { fill } from "@/i18n";
-import { ProWall } from "@/components/shell/ProWall";
 import { Empty, PageHeader } from "@/components/ui/basics";
 import { Icon } from "@/components/ui/Icon";
 import { cellMap, cellOf, expectedBalance, formatDate, monthName } from "@/lib/engine";
@@ -13,6 +12,7 @@ import { Cierre, type CierreProps } from "./Cierre";
 import { cardShown, deviations, nextPeriod, parsePeriod, pendingOptions, periodOfDate, readSnapshot, realTotals, type Period } from "./lib";
 import { M } from "./messages";
 import { closeData } from "./server";
+import { leftoverFor, raw } from "../metas/server";
 
 export const metadata: Metadata = { title: "Cierre de mes" };
 
@@ -31,15 +31,6 @@ export default async function CierrePage({ searchParams }: { searchParams: Promi
       </main>
     );
   }
-  if (!s.has("cierre")) {
-    return (
-      <main className="page">
-        <PageHeader title={m.title} />
-        <ProWall s={s} title={m.pro.title} text={m.pro.text} bullets={m.pro.bullets} />
-      </main>
-    );
-  }
-
   const today = { year: s.year, month: s.month };
   const target = await closureTarget(s);
   const asked = parsePeriod(sp.anio, sp.mes, today, periodOfDate(s.profile.createdAt));
@@ -61,12 +52,22 @@ export default async function CierrePage({ searchParams }: { searchParams: Promi
     loadPlan(s, next.year), loadPlan(s, period.year), loadAccounts(s),
     invOn ? s.supabase.from("investments").select("id, platform, name, value_cents, value_date").is("archived_at", null).order("created_at") : Promise.resolve({ data: [], error: null }),
   ]);
+  // Lo que sobró: ¿a qué meta va? Una sola decisión por mes (aunque se reabra y se cierre de nuevo).
+  const [goalsRes, decidedRes] = await Promise.all([
+    s.config.menu.metas === "on" ? s.supabase.from("goals").select("id, name").is("archived_at", null).is("completed_at", null).order("created_at") : Promise.resolve({ data: [], error: null }),
+    raw(s).from("goal_leftovers").select("year").eq("year", period.year).eq("month", period.month),
+  ]);
+  const decided = (must(decidedRes) as unknown[]).length > 0;
   const investments: CierreProps["investments"] = must(invRes).map((i) => ({ id: i.id, name: [i.platform, i.name].filter(Boolean).join(" · "), valueCents: i.value_cents, dateLabel: formatDate(i.value_date, s.locale, "short") }));
   const closures = must(closuresRes);
   if (reviewRes.error) throw new Error(`db: ${reviewRes.error.message}`);
   const view = data.view;
   const row = closures.find((r) => r.year === period.year && r.month === period.month);
   const closedSnap = row && !row.reopened_at ? readSnapshot(row.snapshot) : null; // puede faltar (snapshot vacío): el mes sigue cerrado
+  const leftover: CierreProps["leftover"] = {
+    goals: must(goalsRes).map((g) => ({ id: g.id, name: g.name })), decided,
+    closedCents: row && !row.reopened_at && !decided && s.canEdit ? await leftoverFor(s, period, row.snapshot) : 0,
+  };
 
   // 1. Revisa
   const nextIds = new Set(nextPlan.lines.map((l) => l.id));
@@ -111,7 +112,7 @@ export default async function CierrePage({ searchParams }: { searchParams: Promi
     pending, over, review: reviewRes.count ?? 0, unplanned: view.unplanned.length,
     compare: { plan: data.plan, real, devs: deviations(data.cats) },
     adjust: { year: next.year, month: next.month, income: nextIncome, lines: nextLines },
-    balances, investments, list,
+    balances, investments, list, leftover,
     links: { review: s.config.menu.movimientos === "on" ? "/movimientos?ver=revisar" : null, monthPlan: planMonthHref(period, s.year), nextPlan: planMonthHref(next, s.year), cuentas: "/cuentas" },
   };
 

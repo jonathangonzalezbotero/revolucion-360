@@ -9,7 +9,7 @@ import type { MenuState } from "@/lib/engine";
 import adm from "../_shared/admin.module.css";
 import { AdminHeader } from "../_shared/ui";
 import { saveDiagStudent, saveMenuConfig } from "./actions";
-import { FLAG_KEYS, INNER_FEATURES, MAX_LEVELS, MENU_KEYS, MENU_STATES, POINT_KEYS, SECTION_FEATURE, STUDENT_MODES, formToValues, menuPreview, sameJson, touchedKeys, type MenuForm, type StudentForm, type StudentMode } from "./lib";
+import { FLAG_KEYS, MAX_LEVELS, MENU_KEYS, MENU_STATES, POINT_KEYS, STUDENT_MODES, formToValues, menuPreview, sameJson, touchedKeys, type MenuForm, type StudentForm, type StudentMode } from "./lib";
 import type { MenuText } from "./messages";
 import css from "./menu.module.css";
 
@@ -30,7 +30,7 @@ export function MenuView({ m, names, initial, aal2, student, courses }: {
   const dirty = menuDirty || stDirty;
   // Un curso guardado que ya no existe se sigue mostrando como opción (para no cambiarlo sin querer).
   const courseOptions = student.course && !courses.some((x) => x.slug === student.course) ? [...courses, { slug: student.course, label: fill(m.courseMissing, { slug: student.course }) }] : courses;
-  const preview = useMemo(() => menuPreview(f.menu, f.features), [f.menu, f.features]);
+  const preview = useMemo(() => menuPreview(f.menu), [f.menu]);
   const radios = useRef<Record<string, HTMLButtonElement | null>>({});
   const mfaBlocked = f.adminMfa && !initial.adminMfa && !aal2;
 
@@ -45,7 +45,6 @@ export function MenuView({ m, names, initial, aal2, student, courses }: {
     pickState(k, next);
     radios.current[`${k}-${next}`]?.focus();
   };
-  const togglePlan = (fk: keyof MenuForm["features"]) => set("features", { ...f.features, [fk]: f.features[fk] === "pro" ? "free" : "pro" });
 
   const save = () => {
     if (menuDirty && mfaBlocked) { setError(m.errors.mfa); return; }
@@ -74,14 +73,6 @@ export function MenuView({ m, names, initial, aal2, student, courses }: {
     });
   };
 
-  const planButton = (fk: keyof MenuForm["features"], name: string) => {
-    const pro = f.features[fk] === "pro";
-    const label = pro ? m.pro : m.free;
-    return (
-      <button type="button" className={css.plan} aria-pressed={pro} aria-label={fill(m.planOf, { name, plan: label })} onClick={() => togglePlan(fk)}>{label}</button>
-    );
-  };
-
   return (
     <>
       <AdminHeader eyebrow={m.eyebrow} title={m.title}>
@@ -99,7 +90,6 @@ export function MenuView({ m, names, initial, aal2, student, courses }: {
             <h2 id="secs">{m.sections}</h2>
             <div className={css.head}><span>{m.alwaysHome}</span><span>{m.colHead}</span></div>
             {MENU_KEYS.map((k) => {
-              const fk = SECTION_FEATURE[k];
               return (
                 <div key={k} className={css.row}>
                   <strong className={css.name}>{names[k]}</strong>
@@ -112,25 +102,12 @@ export function MenuView({ m, names, initial, aal2, student, courses }: {
                       );
                     })}
                   </div>
-                  {fk ? planButton(fk, names[k]) : <span className={css.planFixed}><span aria-hidden="true">{m.free}</span><span className="sr-only">{fill(m.alwaysFree, { name: names[k] })}</span></span>}
                 </div>
               );
             })}
             <p className={css.help}>
-              <strong>{m.helpSoonL}</strong> {m.helpSoon} <strong>{m.helpOffL}</strong> {m.helpOff} <strong>{m.helpPlanL}</strong> {m.helpPlan}
+              <strong>{m.helpSoonL}</strong> {m.helpSoon} <strong>{m.helpOffL}</strong> {m.helpOff}
             </p>
-          </section>
-
-          {/* ── Funciones dentro de las secciones (Gratis o Pro) ── */}
-          <section aria-labelledby="inner" className={css.card}>
-            <h2 id="inner">{m.inner}</h2>
-            <p className={css.cardSub}>{m.innerSub}</p>
-            {INNER_FEATURES.map((k) => (
-              <div key={k} className={css.row}>
-                <span className={css.nameCol}><strong>{m.innerItems[k][0]}</strong><span>{m.innerItems[k][1]}</span></span>
-                {planButton(k, m.innerItems[k][0])}
-              </div>
-            ))}
           </section>
 
           {/* ── Funciones encendidas o apagadas ── */}
@@ -170,13 +147,9 @@ export function MenuView({ m, names, initial, aal2, student, courses }: {
             </div>
           </section>
 
-          {/* ── Plan Gratis, logros y seguridad ── */}
+          {/* ── Logros y seguridad ── */}
           <section aria-labelledby="rules" className={css.card}>
             <h2 id="rules">{m.rules}</h2>
-            <div className={css.switchRow}>
-              <span className={css.nameCol}><label htmlFor="free-goals" style={{ fontSize: 14, fontWeight: 600 }}>{m.freeGoals}</label><span id="free-goals-sub">{m.freeGoalsSub}</span></span>
-              <input id="free-goals" className={`input ${css.numInput}`} inputMode="numeric" aria-describedby="free-goals-sub" maxLength={3} value={f.freeGoals} onChange={(e) => set("freeGoals", e.target.value)} />
-            </div>
             <div className={css.switchRow}>
               <span className={css.nameCol}><strong>{m.gamification}</strong><span>{m.gamificationSub}</span></span>
               <Switch checked={f.gamification} label={m.gamification} onChange={(v) => set("gamification", v)} />
@@ -235,7 +208,6 @@ export function MenuView({ m, names, initial, aal2, student, courses }: {
               <span aria-hidden="true" className={css.dot} />
               <span style={{ flex: 1 }}>{names[p.key]}</span>
               {p.soon ? <span className={css.soonTag}>{m.soon}</span> : null}
-              {p.pro ? <span className={css.proTag}>{m.proBadge}</span> : null}
             </div>
           ))}
         </aside>

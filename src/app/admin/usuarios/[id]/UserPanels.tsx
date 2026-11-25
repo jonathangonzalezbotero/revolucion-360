@@ -10,7 +10,7 @@ import { ConfirmEmail } from "../../_shared/ConfirmEmail";
 import { GrantFields, type GrantValue } from "../../_shared/GrantFields";
 import type { AdminText } from "../../_shared/messages";
 import { deleteAccount, markExportDone } from "../../soporte/actions";
-import { addNote, addToGroup, deleteNote, grantOne, removeFromGroup, revokeAccess, sendPasswordReset, setRole, setSuspended, resetMfa } from "./actions";
+import { addNote, addToGroup, deleteNote, grantOne, moveToPaid, removeFromGroup, revokeAccess, sendPasswordReset, setRole, setSuspended, resetMfa } from "./actions";
 import type { UserText } from "./messages";
 
 type R = { ok: true; data?: unknown } | { ok: false; error: string };
@@ -28,7 +28,7 @@ function useAct() {
   return { act, busy, router, toast };
 }
 
-export function AccessPanel({ t, m, locale, today, userId, state, from, kind }: { t: AdminText; m: UserText; locale: string; today: string; userId: string; state: string; from?: string; kind: "alumno" | "fundador" }) {
+export function AccessPanel({ t, m, locale, today, userId, state, from, kind, paidText }: { t: AdminText; m: UserText; locale: string; today: string; userId: string; state: string; from?: string; kind: "alumno" | "fundador"; paidText: string }) {
   const { act, busy } = useAct();
   const free = state === "alumno" || state === "fundador";
   const [v, setV] = useState<GrantValue>({ kind, mode: "meses", months: free ? "3" : "12", until: "", notify: true });
@@ -45,8 +45,12 @@ export function AccessPanel({ t, m, locale, today, userId, state, from, kind }: 
         <div><button type="button" className="btn" disabled={busy} onClick={() => act(() => grantOne({ userId, ...v }), grantedText)}>{free ? m.extendBtn : m.giveBtn}</button></div>
       </div>
       {free ? (
-        <div className="row wrap" style={{ borderTop: "1px solid var(--linea-2)", paddingTop: 14 }}>
-          <ConfirmButton className={`btn btn-danger ${css.btnDanger}`} label={m.revoke} confirmLabel={m.revokeConfirm} onConfirm={() => act(() => revokeAccess({ userId }), m.revoked).then(() => undefined)} />
+        <div className="stack" style={{ gap: 8, borderTop: "1px solid var(--linea-2)", paddingTop: 14 }}>
+          <div className="row wrap">
+            <ConfirmButton className="btn btn-secondary" label={m.toPaid} confirmLabel={m.toPaidConfirm} onConfirm={() => act(() => moveToPaid({ userId }), paidText).then(() => undefined)} />
+            <ConfirmButton className={`btn btn-danger ${css.btnDanger}`} label={m.revoke} confirmLabel={m.revokeConfirm} onConfirm={() => act(() => revokeAccess({ userId }), m.revoked).then(() => undefined)} />
+          </div>
+          <span className="xs muted">{m.toPaidHelp}</span>
         </div>
       ) : null}
     </>

@@ -1,7 +1,7 @@
 // Cálculos propios de la Academia: enlaces de video, estado de las clases y avance del curso.
 import { describe, expect, it } from "vitest";
 import {
-  courseProgress, durationLabel, isLockedForTier, lessonStates, neighbors, nextLessonId, orderLessons, safeCta, splitOn, videoEmbed, isUpcoming, countdown, cleanComment, localParts, type LessonLite,
+  courseProgress, durationLabel, lessonStates, neighbors, nextLessonId, orderLessons, safeCta, splitOn, videoEmbed, isUpcoming, countdown, cleanComment, localParts, type LessonLite,
 } from "@/app/(app)/academia/lib";
 
 describe("videoEmbed", () => {
@@ -101,12 +101,6 @@ describe("formato y acceso", () => {
     expect(safeCta("https://otro.com")).toBeNull();
     expect(safeCta("//otro.com")).toBeNull();
     expect(safeCta(null)).toBeNull();
-  });
-  it("Pro bloquea a Gratis si el curso o la clase es Pro", () => {
-    expect(isLockedForTier("free", "free", "free")).toBe(false);
-    expect(isLockedForTier("pro", "free", "free")).toBe(true);
-    expect(isLockedForTier("free", "pro", "free")).toBe(true);
-    expect(isLockedForTier("pro", "pro", "pro")).toBe(false);
   });
   it("partir un texto para resaltar un valor", () => {
     expect(splitOn("Tienes {n} puntos · Nivel {level}", "n", { level: 2 })).toEqual(["Tienes ", " puntos · Nivel 2"]);

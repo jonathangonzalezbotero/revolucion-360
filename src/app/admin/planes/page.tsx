@@ -1,72 +1,52 @@
 import type { Metadata } from "next";
 import { fill } from "@/i18n";
-import { addDays, formatDate, formatMoney } from "@/lib/engine";
-import { getStripe } from "@/lib/stripe";
+import { addDays, formatDate } from "@/lib/engine";
+import { getStripe, loadStripePrices } from "@/lib/stripe";
 import { fetchAll, must } from "@/server/data";
 import { requireAdmin } from "@/server/session";
-import { asAppliesTo, discounted, toStripeAmount, yearlySavingsPct } from "@/app/(app)/suscripcion/lib";
+import { asAppliesTo } from "@/app/(app)/suscripcion/lib";
 import css from "../_shared/admin.module.css";
 import { A } from "../_shared/messages";
-import { PLAN_FEATURES, centsToInput, couponExpiry, currencyFmt, priceSync, regionSync, sortRegions, tierOf } from "./lib";
+import { billingFrom, billingToInput, couponExpiry } from "./lib";
 import { M } from "./messages";
-import { PlansView, type CouponView, type RegionView } from "./PlansView";
+import { PlansView, type CouponView } from "./PlansView";
 
 export const metadata: Metadata = { title: "Planes y precios" };
 const MAX_STRIPE_LOOKUPS = 100;
 
-type StripePrice = { amount: number | null; currency: string } | null;
-
 export default async function AdminPlanes() {
   const s = await requireAdmin();
   const t = A[s.locale], m = M[s.locale];
-  const [regionsRes, coupons] = await Promise.all([
-    s.supabase.from("price_regions").select("*"),
+  const [billingRes, coupons] = await Promise.all([
+    // `billing` puede no existir todavía: se muestran los valores aprobados ($1, $8, $80, 3 días).
+    s.supabase.from("app_config").select("value").eq("key", "billing").maybeSingle(),
     fetchAll((a, b) => s.supabase.from("coupons").select("*").order("created_at", { ascending: false }).order("id").range(a, b)),
   ]);
-  const regions = sortRegions(must(regionsRes));
+  const billing = billingFrom(must(billingRes)?.value);
 
-  // ── Stripe (solo lectura): ¿los precios guardados coinciden con los montos? ¿cuántas veces se usó cada código? ──
+  // ── Stripe (solo lectura): cuántas veces se usó cada código ──
   const stripe = getStripe();
-  const prices = new Map<string, StripePrice>();
   const promos = new Map<string, number>();
   if (stripe) {
-    const priceIds = [...new Set(regions.flatMap((r) => [r.stripe_price_monthly, r.stripe_price_yearly]).filter((x): x is string => !!x))].slice(0, MAX_STRIPE_LOOKUPS);
     const promoIds = coupons.map((c) => c.stripe_promo_id).filter((x): x is string => !!x).slice(0, MAX_STRIPE_LOOKUPS);
-    await Promise.all([
-      ...priceIds.map(async (id) => {
-        try {
-          const p = await stripe.prices.retrieve(id);
-          prices.set(id, p.active ? { amount: p.unit_amount, currency: p.currency } : null);
-        } catch { /* sin respuesta: queda "no pudimos revisar" */ }
-      }),
-      ...promoIds.map(async (id) => {
-        try { promos.set(id, (await stripe.promotionCodes.retrieve(id)).times_redeemed); } catch { /* se muestra solo el tope */ }
-      }),
-    ]);
+    await Promise.all(promoIds.map(async (id) => {
+      try { promos.set(id, (await stripe.promotionCodes.retrieve(id)).times_redeemed); } catch { /* se muestra solo el tope */ }
+    }));
   }
-  const stripeState = (id: string | null): StripePrice | undefined => (id ? (prices.has(id) ? prices.get(id)! : undefined) : null);
 
-  const regionRows: RegionView[] = regions.map((r) => {
-    const fmt = currencyFmt(r.currency);
-    const expect = (c: number | null) => (c ? toStripeAmount(c, r.currency) : null);
-    const sync = stripe
-      ? regionSync([
-        priceSync(r.monthly_cents, r.stripe_price_monthly, stripeState(r.stripe_price_monthly), expect(r.monthly_cents), r.currency),
-        priceSync(r.yearly_cents, r.stripe_price_yearly, stripeState(r.stripe_price_yearly), expect(r.yearly_cents), r.currency),
-      ])
-      : (r.monthly_cents || r.yearly_cents ? null : "none");
-    const savings = yearlySavingsPct(r.monthly_cents, r.yearly_cents);
-    const info = [
-      savings ? fill(m.prices.savings, { pct: savings }) : "",
-      r.student_discount_pct > 0 && r.monthly_cents ? fill(m.prices.studentPrice, { amount: formatMoney(discounted(r.monthly_cents, r.student_discount_pct), fmt) }) : "",
-      sync ? m.prices.sync[sync] : "",
-    ].filter(Boolean).join(" · ");
-    return {
-      region: r.region, name: m.prices.names[r.region.toUpperCase()] ?? r.region, currency: r.currency,
-      monthly: centsToInput(r.monthly_cents), yearly: centsToInput(r.yearly_cents), student: String(r.student_discount_pct),
-      info, pending: sync === "pending",
-    };
-  });
+  // ¿Los precios de Stripe dicen lo mismo que esta pantalla? Si no, el pago se niega hasta correr scripts/stripe-setup.ts.
+  let sync: "ok" | "pending" | "unknown" | null = null;
+  if (stripe) {
+    try {
+      const ids = await loadStripePrices(s.supabase);
+      const want = [[ids.first, billing.first_month_cents], [ids.monthly, billing.monthly_cents], [ids.yearly, billing.yearly_cents]] as const;
+      if (want.some(([id]) => !id)) sync = "pending";
+      else {
+        const got = await Promise.all(want.map(([id]) => stripe.prices.retrieve(id!).catch(() => null)));
+        sync = got.every((p, i) => !!p && p.active && p.unit_amount === want[i][1] && p.currency.toLowerCase() === "usd") ? "ok" : "pending";
+      }
+    } catch { sync = "unknown"; }
+  }
 
   const now = new Date();
   const couponRows: CouponView[] = coupons.map((c) => {
@@ -82,15 +62,12 @@ export default async function AdminPlanes() {
       expired: exp.kind === "expired",
     };
   });
-
-  const features = Object.fromEntries(PLAN_FEATURES.map((k) => [k, tierOf(s.config.features, k)]));
+  const prices = billingToInput(billing);
 
   return (
     <main className={css.page}>
       {/* La clave cambia cuando cambia lo guardado: después de guardar, el formulario arranca de los valores nuevos. */}
-      <PlansView key={JSON.stringify([regionRows.map((r) => [r.region, r.monthly, r.yearly, r.student]), s.config.trial, features])} m={m} stripeOn={!!stripe} regions={regionRows} coupons={couponRows}
-        trial={{ enabled: s.config.trial.enabled !== false, days: String(s.config.trial.days ?? 14) }}
-        features={features} freeGoals={s.config.limits.free_goals} minUntil={addDays(s.today, 1)} />
+      <PlansView key={JSON.stringify(prices)} m={m} stripeOn={!!stripe} prices={prices} sync={sync} coupons={couponRows} minUntil={addDays(s.today, 1)} />
     </main>
   );
 }

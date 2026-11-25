@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { fill } from "@/i18n";
 import { Icon } from "@/components/ui/Icon";
-import { durationLabel, isLockedForTier } from "./lib";
+import { durationLabel } from "./lib";
 import type { AcadMessages } from "./messages";
 import type { CourseView, Lesson } from "./server";
 import css from "./academia.module.css";
@@ -17,10 +17,9 @@ export function Cover({ src, dim }: { src: string; dim?: boolean }) {
 const coverPill: React.CSSProperties = { position: "absolute", top: 12, left: 12, fontSize: 12, fontWeight: 600, padding: "5px 10px", borderRadius: 999, display: "inline-flex", alignItems: "center", gap: 5 };
 
 /** `release`: texto "Se libera el …" de un curso programado a futuro (no se abre). */
-export function CourseCard({ cv, m, tier, featured, showMeta = true, release }: { cv: CourseView; m: AcadMessages; tier: "free" | "pro"; featured?: boolean; showMeta?: boolean; release?: string }) {
+export function CourseCard({ cv, m, featured, showMeta = true, release }: { cv: CourseView; m: AcadMessages; featured?: boolean; showMeta?: boolean; release?: string }) {
   const { course, lessons, progress, nextId } = cv;
   const soon = lessons.length === 0;
-  const proLocked = isLockedForTier(course.tier, "free", tier);
   const started = progress.done > 0 && !progress.complete;
   const dur = durationLabel(lessons.reduce((a, l) => a + l.durationSec, 0), m.dur);
   const count = lessons.length === 1 ? m.lessonsOne : fill(m.lessonsN, { n: lessons.length });
@@ -31,7 +30,6 @@ export function CourseCard({ cv, m, tier, featured, showMeta = true, release }: 
   let action: React.ReactNode;
   if (upcoming) action = <span style={{ ...btn, background: "var(--ambar-fondo)", color: "var(--ambar-texto)" }}>{release}</span>;
   else if (soon) action = <span style={{ ...btn, background: "var(--ambar-fondo)", color: "var(--ambar-texto)" }}>{m.cardSoon}</span>;
-  else if (proLocked) action = <Link href={`/academia/${course.slug}`} style={{ ...btn, background: "var(--papel-3)", color: "var(--tinta)", border: "1px solid var(--linea)" }}><Icon name="lock" size={14} /> {m.proLocked}</Link>;
   else if (progress.complete) action = <Link href={`/academia/${course.slug}`} style={{ ...btn, background: "var(--papel-3)", color: "var(--tinta)", border: "1px solid var(--linea)" }}>{m.review}</Link>;
   else if (started) action = <Link href={target} style={{ ...btn, background: "var(--tinta)", color: "var(--blanco)" }}>{m.continue}</Link>;
   else action = <Link href={target} style={{ ...btn, background: "var(--amarillo-suave)", color: "var(--tinta)" }}>{m.start}</Link>;
@@ -42,7 +40,6 @@ export function CourseCard({ cv, m, tier, featured, showMeta = true, release }: 
         <Cover src={course.coverUrl} />
         {upcoming ? <span style={{ ...coverPill, background: "var(--ambar-fondo)", color: "var(--ambar-texto)" }}>{m.comingSoon}</span>
           : soon ? <span style={{ ...coverPill, background: "var(--ambar-fondo)", color: "var(--ambar-texto)" }}>{m.soon}</span>
-          : proLocked ? <span style={{ ...coverPill, background: "var(--tinta)", color: "var(--amarillo)" }}><Icon name="lock" size={12} /> {m.pro}</span>
           : progress.complete ? <span style={{ ...coverPill, background: "var(--blanco)", color: "var(--tinta)" }}><Icon name="tick" size={12} /> {m.completed}</span>
           : started ? <span style={{ ...coverPill, background: "var(--blanco)", color: "var(--tinta)" }}>{fill(m.yourCourse, { pct: progress.pct })}</span> : null}
         <div aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 5, background: "var(--oscuro-linea)" }}><div style={{ height: 5, width: `${progress.pct}%`, background: "var(--amarillo)" }} /></div>

@@ -102,6 +102,8 @@ export async function commitPlan(input: unknown) {
     const points = await firstStep(s, "plan");
     await track(s, "wizard_done");
     await touchWeek(s);
-    return ok({ next: p.data.to === "plan" ? "/plan" : "/diagnostico", lines: made.lines.length }, { points });
+    // Sin activar (se registró y no pagó): al terminar el asistente va a "Activa tu cuenta" (su diagnóstico sí lo puede ver).
+    const next = p.data.to === "diagnostico" ? "/diagnostico" : s.plan === "free" ? "/activar" : "/plan";
+    return ok({ next, lines: made.lines.length }, { points });
   });
 }

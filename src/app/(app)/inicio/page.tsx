@@ -7,6 +7,8 @@ import { addDays, diffDays, formatDate, formatMoney, goalPlan, monthName, streak
 import { closureTarget } from "@/server/closure";
 import { loadAccounts, loadMonthView, loadPlan, must } from "@/server/data";
 import { requireUser } from "@/server/session";
+import { loadHabit } from "../repaso/data";
+import { HabitToday } from "./HabitToday";
 import { M } from "./messages";
 import { YearChart } from "./YearChart";
 
@@ -35,6 +37,7 @@ export default async function InicioPage() {
   const cat = new Map(plan.categories.map((c) => [c.id, c]));
   const year = yearTotals(plan.lines, plan.cells);
   const hasPlan = plan.lines.length > 0;
+  const habit = hasPlan ? await loadHabit(s) : null;
 
   const todo: React.ReactNode[] = [];
   if (review > 0 && s.config.menu.movimientos === "on") todo.push(<ListLink key="rev" href="/movimientos?ver=revisar" icon="mov" iconColor="var(--naranja)" title={review === 1 ? m.reviewOne : fill(m.review, { n: review })} text={m.reviewSub} />);
@@ -84,6 +87,8 @@ export default async function InicioPage() {
           </div>
         </section>
       ) : null}
+
+      {habit ? <HabitToday s={s} a={habit.allowance} t={m.habit} /> : null}
 
       <div className="grid-auto">
         <section aria-labelledby="hoy" className="stack">

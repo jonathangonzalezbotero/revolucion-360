@@ -1,9 +1,124 @@
-// Suscripción: cálculos puros (sin red ni base de datos). Los usan la pantalla, las rutas de Stripe y las pruebas.
+// Suscripción: cálculos puros (sin red ni base de datos). Los usan la pantalla, /activar, las rutas de Stripe y las pruebas.
 import type { PlanState } from "@/lib/engine";
 
 export type Interval = "month" | "year";
 
-// ───────── Precios por región ─────────
+// ───────── Un solo plan en USD (desde el 25 nov 2026) ─────────
+/**
+ * `app_config.billing` (lo edita el admin). Montos en centavos de USD.
+ * Cambiar un monto solo afecta suscripciones NUEVAS: hay que volver a correr scripts/stripe-setup.ts (crea el precio nuevo).
+ */
+export type BillingConfig = { firstMonthCents: number; monthlyCents: number; yearlyCents: number; notifyBeforeDays: number; notifyFirstCharge: boolean };
+export const BILLING_DEFAULTS: BillingConfig = { firstMonthCents: 100, monthlyCents: 800, yearlyCents: 8000, notifyBeforeDays: 3, notifyFirstCharge: true };
+export const BILLING_CURRENCY = "USD";
+/** Días del primer mes (prueba de Stripe sobre la suscripción mensual; el $1 se cobra hoy como cargo único). */
+export const FIRST_MONTH_DAYS = 30;
+
+/** Lee `app_config.billing` con valores por defecto: un valor faltante, negativo o roto nunca deja la pantalla sin precio. */
+export function readBilling(raw: unknown): BillingConfig {
+  const v = raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  const cents = (x: unknown, d: number, min: number) => (typeof x === "number" && Number.isInteger(x) && x >= min ? x : d);
+  return {
+    firstMonthCents: cents(v.first_month_cents, BILLING_DEFAULTS.firstMonthCents, 0),
+    monthlyCents: cents(v.monthly_cents, BILLING_DEFAULTS.monthlyCents, 1),
+    yearlyCents: cents(v.yearly_cents, BILLING_DEFAULTS.yearlyCents, 1),
+    notifyBeforeDays: cents(v.notify_before_days, BILLING_DEFAULTS.notifyBeforeDays, 1),
+    notifyFirstCharge: typeof v.notify_first_charge === "boolean" ? v.notify_first_charge : BILLING_DEFAULTS.notifyFirstCharge,
+  };
+}
+
+/** "$8" / "$6.67": dólares sin ".00" cuando son exactos (textos como "$8 USD al mes"). Centavos enteros, nunca decimales sueltos. */
+export function usdShort(cents: number): string {
+  const c = Math.round(cents);
+  const a = Math.abs(c);
+  const whole = Math.floor(a / 100).toLocaleString("en-US");
+  return `${c < 0 ? "-" : ""}$${whole}${a % 100 === 0 ? "" : `.${String(a % 100).padStart(2, "0")}`}`;
+}
+/** "$1.00 USD": siempre con centavos (Hoy pagas, historial). */
+export function usdFull(cents: number): string {
+  const c = Math.round(cents);
+  const a = Math.abs(c);
+  return `${c < 0 ? "-" : ""}$${Math.floor(a / 100).toLocaleString("en-US")}.${String(a % 100).padStart(2, "0")} ${BILLING_CURRENCY}`;
+}
+
+/** Meses gratis del anual frente a 12 mensuales ($80 contra 12 × $8 = 2 meses). 0 si no hay ahorro. */
+export function freeMonths(monthlyCents: number, yearlyCents: number): number {
+  if (monthlyCents <= 0 || yearlyCents <= 0) return 0;
+  return Math.max(0, Math.round((monthlyCents * 12 - yearlyCents) / monthlyCents));
+}
+
+/** Ids de los precios en Stripe (fila 'DEFAULT' de price_regions, los guarda scripts/stripe-setup.ts). */
+export type StripePrices = { monthly: string | null; yearly: string | null; first: string | null };
+
+/**
+ * ¿Le toca el primer mes a $1? Solo a quien nunca activó (estado free) y nunca tuvo suscripción.
+ * Quien vuelve (solo lectura, acceso gratis vencido o ya pagó antes) paga $8 o $80 desde hoy, sin primer mes.
+ */
+export const firstMonthApplies = (state: PlanState, hadSubscription: boolean) => state === "free" && !hadSubscription;
+
+/** Lo que se le pide a Stripe Checkout (sin cliente, cupón ni URLs): precios, prueba y lo que paga hoy. */
+export type CheckoutPlan = {
+  lineItems: { price: string; quantity: 1 }[];
+  trialDays: number | null;
+  todayCents: number;           // lo que paga hoy (antes de cupón)
+  thenCents: number;            // lo que paga en cada renovación
+  firstMonth: boolean;
+};
+
+/**
+ * Armado puro del pago:
+ * - mensual con primer mes: suscripción de $8 con 30 días de prueba + cargo único de $1 en el mismo pago (se cobra hoy).
+ * - mensual sin primer mes: $8 hoy. Anual: $80 hoy, sin prueba.
+ * Devuelve null si falta un precio en Stripe (la pantalla dice que los pagos aún no están activos).
+ */
+export function checkoutPlan(interval: Interval, first: boolean, prices: StripePrices, b: BillingConfig): CheckoutPlan | null {
+  if (interval === "year") {
+    if (!prices.yearly) return null;
+    return { lineItems: [{ price: prices.yearly, quantity: 1 }], trialDays: null, todayCents: b.yearlyCents, thenCents: b.yearlyCents, firstMonth: false };
+  }
+  if (!prices.monthly) return null;
+  if (!first) return { lineItems: [{ price: prices.monthly, quantity: 1 }], trialDays: null, todayCents: b.monthlyCents, thenCents: b.monthlyCents, firstMonth: false };
+  if (!prices.first) return null;
+  return {
+    lineItems: [{ price: prices.monthly, quantity: 1 }, { price: prices.first, quantity: 1 }],
+    trialDays: FIRST_MONTH_DAYS, todayCents: b.firstMonthCents, thenCents: b.monthlyCents, firstMonth: true,
+  };
+}
+
+/** ¿El precio guardado en Stripe sigue diciendo lo mismo que Administración? Si no, no se cobra (hay que correr stripe-setup). */
+export function priceMatches(p: { unit_amount: number | null; currency: string; active: boolean; recurring: { interval: string } | null } | null, cents: number, interval: Interval | "once"): boolean {
+  if (!p || !p.active || p.unit_amount !== cents || p.currency.toUpperCase() !== BILLING_CURRENCY) return false;
+  return interval === "once" ? !p.recurring : p.recurring?.interval === interval;
+}
+
+/** Fecha en que termina el primer mes / se renueva (ahora + días o + 1 año). Para "Desde el {date}…" antes de pagar. */
+export function renewalDate(interval: Interval, first: boolean, now: Date = new Date()): Date {
+  const d = new Date(now.getTime());
+  if (interval === "year") { d.setUTCFullYear(d.getUTCFullYear() + 1); return d; }
+  if (first) return new Date(now.getTime() + FIRST_MONTH_DAYS * 86_400_000);
+  d.setUTCMonth(d.getUTCMonth() + 1);
+  return d;
+}
+
+/** Qué ve el usuario en "Tu suscripción" (bloque superior de /suscripcion). */
+export type SubView = "first" | "monthly" | "yearly" | "failed" | "ending" | "gift" | "read_only" | "inactive";
+export function subView(a: { state: PlanState; stripeStatus: string | null; interval: string | null; paymentFailed: boolean; cancelPending: boolean }): SubView {
+  if (a.state === "read_only") return "read_only";
+  if (a.state === "alumno" || a.state === "fundador" || a.state === "trial") return "gift"; // 'trial': filas viejas, ya no se usa
+  if (a.state !== "pro") return "inactive";
+  if (a.paymentFailed && isPaying(a.stripeStatus)) return "failed";
+  if (a.cancelPending) return "ending";
+  if (a.stripeStatus === "trialing") return "first";
+  return a.interval === "year" ? "yearly" : "monthly";
+}
+
+/** Concepto de una factura: el primer pago mensual lleva el cargo único de $1 ("Primer mes"); si no, mensual o anual por su periodo. */
+export function invoiceConcept(i: { billingReason: string | null; hasOneTime: boolean; periodStart: number | null; periodEnd: number | null }): "first" | Interval {
+  if (i.hasOneTime && i.billingReason === "subscription_create") return "first";
+  return invoiceInterval(i.periodStart, i.periodEnd);
+}
+
+// ───────── Precios por región (ya no se usan para cobrar: siempre la fila DEFAULT en USD) ─────────
 export type PriceRegion = {
   region: string;            // código de país, 'EU' o 'DEFAULT'
   currency: string;
@@ -162,14 +277,6 @@ export function isStaleEvent(storedSubId: string | null, storedStatus: string | 
 /** Respuesta de la encuesta de cancelación → valor que entiende Stripe. */
 export const CANCEL_REASONS = { caro: "too_expensive", no_uso: "unused", falta: "missing_features" } as const;
 export type CancelReason = keyof typeof CANCEL_REASONS;
-
-// ───────── Prueba gratis ─────────
-export function canStartTrial(trial: { enabled: boolean; days: number }, e: { state: PlanState; trialUsed: boolean }): boolean {
-  return trial.enabled && trial.days > 0 && !e.trialUsed && e.state === "free";
-}
-
-/** Fin de la prueba: ahora + días. */
-export const trialEnd = (days: number, now: Date = new Date()) => new Date(now.getTime() + days * 86_400_000).toISOString();
 
 // ───────── Montos en Stripe ─────────
 /** Monedas sin decimales en Stripe: ahí el monto va en unidades enteras, no en centavos. */

@@ -1,7 +1,7 @@
 import "server-only";
 import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { SubLike } from "@/app/(app)/suscripcion/lib";
+import { priceMatches, readBilling, type BillingConfig, type CheckoutPlan, type Interval, type StripePrices, type SubLike } from "@/app/(app)/suscripcion/lib";
 
 /**
  * Stripe solo en el servidor. Sin STRIPE_SECRET_KEY la app sigue funcionando: los pagos se muestran como "aún no activos".
@@ -67,3 +67,41 @@ export function toSubLike(sub: Stripe.Subscription): SubLike {
 }
 
 export const customerId = (c: string | { id: string } | null | undefined) => (typeof c === "string" ? c : c?.id ?? null);
+
+// ───────── Un solo plan en USD: configuración y precios ─────────
+type Db = Pick<ReturnType<typeof createAdminClient>, "from">;
+
+/**
+ * `app_config.billing` → montos del plan (con valores por defecto). Con la sesión del usuario (RLS deja leer app_config)
+ * o con la clave de servicio en páginas públicas y avisos de Stripe.
+ */
+export async function loadBilling(db: Db): Promise<BillingConfig> {
+  const { data, error } = await db.from("app_config").select("value").eq("key", "billing").maybeSingle();
+  if (error) throw new Error(`db: ${error.message}`);
+  return readBilling(data?.value);
+}
+
+/**
+ * Ids de los precios de Stripe: fila 'DEFAULT' (USD) de price_regions. El de $1 vive en la columna nueva
+ * `stripe_price_first` (migración 20261125000028_cobro.sql); se lee sin tipo hasta regenerar database.types.ts.
+ */
+export async function loadStripePrices(db: Db): Promise<StripePrices> {
+  const { data, error } = await db.from("price_regions").select("*").eq("region", "DEFAULT").maybeSingle();
+  if (error) throw new Error(`db: ${error.message}`);
+  const row = (data ?? {}) as Record<string, unknown>;
+  const str = (x: unknown) => (typeof x === "string" && x ? x : null);
+  return { monthly: str(row.stripe_price_monthly), yearly: str(row.stripe_price_yearly), first: str(row.stripe_price_first) };
+}
+
+/**
+ * Comprueba en Stripe que cada precio del pago diga lo mismo que Administración (monto, USD, frecuencia, activo).
+ * Si el admin cambió un monto y nadie corrió stripe-setup, no se cobra un precio distinto al que ve el usuario.
+ */
+export async function pricesInSync(stripe: Stripe, plan: CheckoutPlan, interval: Interval, b: BillingConfig): Promise<boolean> {
+  const want = plan.lineItems.map((li, i) => ({ id: li.price, cents: i === 0 ? (interval === "year" ? b.yearlyCents : b.monthlyCents) : b.firstMonthCents, kind: (i === 0 ? interval : "once") as Interval | "once" }));
+  const got = await Promise.all(want.map((w) => stripe.prices.retrieve(w.id).catch(() => null)));
+  return want.every((w, i) => {
+    const p = got[i];
+    return priceMatches(p ? { unit_amount: p.unit_amount, currency: p.currency, active: p.active, recurring: p.recurring ? { interval: p.recurring.interval } : null } : null, w.cents, w.kind);
+  });
+}

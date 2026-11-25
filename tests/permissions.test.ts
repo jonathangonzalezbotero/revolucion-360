@@ -196,3 +196,114 @@ describe.skipIf(!local)("permisos en la base de datos", () => {
     for (const t of ["transactions", "profiles", "app_config", "admin_audit"]) expect((await anon.from(t).select("*")).data ?? [], t).toEqual([]);
   });
 });
+
+// Subroles de administrador (migración 20261125000033): la base, no la pantalla, decide qué puede cada uno.
+describe.skipIf(!local)("subroles de administrador en la base de datos", () => {
+  const admin = createClient(URL, SERVICE, { auth: { persistSession: false } });
+  const stamp = Date.now();
+  const pw = `Prueba-${stamp}-r7`;
+  const ids: string[] = [];
+  let duena: SupabaseClient, conte: SupabaseClient, sopo: SupabaseClient;
+  let duenaId = "", conteId = "", sopoId = "", userId = "", userEmail = "";
+  type Rpc = { data: unknown; error: { message: string } | null };
+  const rpc = (c: SupabaseClient, fn: string, args: Record<string, unknown> = {}) => c.rpc(fn as never, args as never) as unknown as Promise<Rpc>;
+
+  async function user(name: string) {
+    const email = `${name}-${stamp}@prueba.test`;
+    const { data, error } = await admin.auth.admin.createUser({ email, password: pw, email_confirm: true, user_metadata: { name } });
+    if (error) throw error;
+    ids.push(data.user.id);
+    const c = createClient(URL, ANON, { auth: { persistSession: false } });
+    const r = await c.auth.signInWithPassword({ email, password: pw });
+    if (r.error) throw r.error;
+    return { c, id: data.user.id, email };
+  }
+
+  beforeAll(async () => {
+    ({ c: duena, id: duenaId } = await user("duena"));
+    ({ c: conte, id: conteId } = await user("conte"));
+    ({ c: sopo, id: sopoId } = await user("sopo"));
+    ({ id: userId, email: userEmail } = await user("usuaria"));
+    // La dueña queda con admin_role null: así es la cuenta admin que existe hoy (null en un admin = Dueño).
+    await admin.from("profiles").update({ role: "admin" }).eq("id", duenaId);
+    await admin.from("profiles").update({ role: "admin", admin_role: "content" } as never).eq("id", conteId);
+    await admin.from("profiles").update({ role: "admin", admin_role: "support" } as never).eq("id", sopoId);
+    await admin.from("app_config").update({ value: false }).eq("key", "admin_mfa_required");
+  });
+  afterAll(async () => {
+    for (const id of ids) { const r = await admin.auth.admin.deleteUser(id); if (r.error && !/not found/i.test(r.error.message)) throw r.error; }
+  });
+
+  it("un admin sin subrol es Dueño; cada quien sabe su rol", async () => {
+    expect((await rpc(duena, "my_admin_role")).data).toBe("owner");
+    expect((await rpc(conte, "my_admin_role")).data).toBe("content");
+    expect((await rpc(sopo, "my_admin_role")).data).toBe("support");
+  });
+
+  it("nadie se sube el rol ni el subrol desde su propia fila", async () => {
+    await conte.from("profiles").update({ admin_role: "owner" } as never).eq("id", conteId);
+    await sopo.from("profiles").update({ role: "user", admin_role: "owner" } as never).eq("id", sopoId);
+    const rows = await admin.from("profiles").select("id, role, admin_role" as never).in("id", [conteId, sopoId]);
+    expect(rows.data).toEqual(expect.arrayContaining([
+      { id: conteId, role: "admin", admin_role: "content" }, { id: sopoId, role: "admin", admin_role: "support" },
+    ]));
+  });
+
+  it("Contenido escribe la Academia y los países, no los precios, cupones, soporte ni accesos", async () => {
+    const c = await conte.from("courses").insert({ slug: `prueba-${stamp}`, title: "Curso de prueba" }).select("id").single();
+    expect(c.error).toBeNull();
+    expect((await sopo.from("courses").update({ title: "x" }).eq("id", c.data!.id).select("id")).data).toEqual([]);
+    expect((await conte.from("coupons").select("*")).data).toEqual([]);
+    expect((await conte.from("price_regions").update({ monthly_cents: 1 }).eq("region", "DEFAULT").select("region")).data).toEqual([]);
+    expect((await conte.from("support_tickets").select("*")).data).toEqual([]);
+    expect((await rpc(conte, "admin_grant_access", { p_user: userId, p_kind: "alumno", p_expires: null })).error).not.toBeNull();
+    expect((await rpc(conte, "admin_users_v2")).error).not.toBeNull();
+    await admin.from("courses").delete().eq("id", c.data!.id);
+  });
+
+  it("app_config: Contenido solo toca sus claves; los 2 pasos del panel solo el Dueño", async () => {
+    expect((await conte.from("app_config").update({ value: true }).eq("key", "admin_mfa_required").select("key")).data).toEqual([]);
+    expect((await sopo.from("app_config").update({ value: true }).eq("key", "admin_mfa_required").select("key")).data).toEqual([]);
+    const pts = await admin.from("app_config").select("value").eq("key", "points").single();
+    expect((await conte.from("app_config").update({ value: pts.data!.value }).eq("key", "points").select("key")).data).toHaveLength(1);
+    expect((await duena.from("app_config").update({ value: false }).eq("key", "admin_mfa_required").select("key")).data).toHaveLength(1);
+  });
+
+  it("Soporte da accesos y no puede suspender ni ver la ficha de otro admin", async () => {
+    expect((await rpc(sopo, "admin_grant_access", { p_user: userId, p_kind: "alumno", p_expires: null })).error).toBeNull();
+    expect((await rpc(sopo, "admin_set_suspended", { p_user: duenaId, p_on: true })).error).not.toBeNull();
+    expect((await rpc(sopo, "admin_user", { p_user: duenaId })).data).toBeNull();
+    expect((await rpc(sopo, "admin_user", { p_user: userId })).data).not.toBeNull();
+    expect((await sopo.from("courses").insert({ slug: `nope-${stamp}`, title: "x" })).error).not.toBeNull();
+  });
+
+  it("solo el Dueño invita y cambia roles, y todo queda en el registro", async () => {
+    expect((await rpc(sopo, "admin_invite", { p_email: userEmail, p_role: "support" })).error).not.toBeNull();
+    expect((await rpc(conte, "admin_set_role", { p_user: userId, p_role: "admin" })).error).not.toBeNull();
+    expect((await rpc(duena, "admin_invite", { p_email: `nadie-${stamp}@prueba.test`, p_role: "content" })).data).toBe("not_found");
+    expect((await rpc(duena, "admin_invite", { p_email: userEmail.toUpperCase(), p_role: "content" })).data).toBe("ok");
+    expect((await rpc(duena, "admin_set_admin_role", { p_user: userId, p_role: "support" })).error).toBeNull();
+    expect((await rpc(duena, "admin_set_admin_role", { p_user: duenaId, p_role: "none" })).error).not.toBeNull(); // nunca a sí misma
+    expect((await rpc(duena, "admin_set_admin_role", { p_user: userId, p_role: "none" })).error).toBeNull();
+    const p = await admin.from("profiles").select("role, admin_role" as never).eq("id", userId).single();
+    expect(p.data).toEqual({ role: "user", admin_role: null });
+    const log = await duena.from("admin_audit").select("action").eq("target_user", userId);
+    expect(log.data?.map((l) => l.action)).toEqual(expect.arrayContaining(["cambiar_rol_invitar", "cambiar_rol_admin", "cambiar_rol_quitar"]));
+  });
+
+  it("el registro: el Dueño ve todo, los demás solo lo suyo, y nadie lo borra", async () => {
+    const own = await sopo.from("admin_audit").select("admin_id");
+    expect(own.data?.length).toBeGreaterThan(0);
+    expect(own.data?.every((r) => r.admin_id === sopoId)).toBe(true);
+    expect((await duena.from("admin_audit").select("admin_id").eq("admin_id", sopoId)).data?.length).toBeGreaterThan(0);
+    expect((await duena.from("admin_audit").delete().eq("admin_id", sopoId).select("id")).data ?? []).toEqual([]);
+  });
+
+  it("la tabla de administradores dice el rol y si tiene los 2 pasos, solo a un admin", async () => {
+    const team = (await rpc(conte, "admin_admins")).data as { id: string; admin_role: string; mfa: boolean }[];
+    expect(team.find((a) => a.id === duenaId)).toMatchObject({ admin_role: "owner", mfa: false });
+    const u = createClient(URL, ANON, { auth: { persistSession: false } });
+    await u.auth.signInWithPassword({ email: userEmail, password: pw });
+    expect((await rpc(u, "admin_admins")).error).not.toBeNull();
+  });
+});

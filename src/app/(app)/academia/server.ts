@@ -4,11 +4,12 @@ import { fetchAll, must } from "@/server/data";
 import type { Session } from "@/server/session";
 import { courseProgress, isUpcoming, lessonStates, nextLessonId, orderLessons, type LessonState } from "./lib";
 
-// Lectura de la Academia. La base solo devuelve cursos publicados (o programados ya vencidos) y sus clases.
+// Lectura de la Academia. La base solo devuelve cursos publicados (o programados ya vencidos) y sus clases,
+// y un curso de un grupo solo a sus miembros (y al admin): la regla vive en la base (RLS), no aquí.
 
-export type Course = { id: string; slug: string; stage: string; number: number; title: string; description: string; coverUrl: string; tier: "free" | "pro"; priority: string | null; sort: number; publishAt: string | null; upcoming: boolean };
+export type Course = { id: string; slug: string; stage: string; number: number; title: string; description: string; coverUrl: string; priority: string | null; sort: number; publishAt: string | null; upcoming: boolean };
 export type Module = { id: string; courseId: string; title: string; sort: number };
-export type Lesson = { id: string; courseId: string; moduleId: string | null; title: string; description: string; durationSec: number; points: number; ctaScreen: string | null; tier: "free" | "pro"; required: boolean; sort: number };
+export type Lesson = { id: string; courseId: string; moduleId: string | null; title: string; description: string; durationSec: number; points: number; ctaScreen: string | null; required: boolean; sort: number };
 export type CourseView = {
   course: Course; modules: Module[]; lessons: Lesson[];          // clases en el orden del curso
   states: Map<string, LessonState>; nextId: string | null;
@@ -16,10 +17,10 @@ export type CourseView = {
 };
 export type Catalog = { courses: CourseView[]; done: Set<string>; ratings: Map<string, number | null>; nowMs: number };
 
-type CourseRow = { id: string; slug: string; stage: string; number: number; title: string; description: string; cover_url: string; tier: string; priority: string | null; sort: number; status: string; publish_at: string | null };
-type LessonRow = { id: string; course_id: string; module_id: string | null; title: string; description: string; duration_sec: number; points: number; cta_screen: string | null; tier: string; required: boolean; sort: number };
-const toCourse = (c: CourseRow, nowMs: number): Course => ({ id: c.id, slug: c.slug, stage: c.stage, number: c.number, title: c.title, description: c.description, coverUrl: c.cover_url, tier: c.tier === "pro" ? "pro" : "free", priority: c.priority, sort: c.sort, publishAt: c.publish_at, upcoming: isUpcoming(c.status, c.publish_at, nowMs) });
-const toLesson = (l: LessonRow): Lesson => ({ id: l.id, courseId: l.course_id, moduleId: l.module_id, title: l.title, description: l.description, durationSec: l.duration_sec, points: l.points, ctaScreen: l.cta_screen, tier: l.tier === "pro" ? "pro" : "free", required: l.required, sort: l.sort });
+type CourseRow = { id: string; slug: string; stage: string; number: number; title: string; description: string; cover_url: string; priority: string | null; sort: number; status: string; publish_at: string | null };
+type LessonRow = { id: string; course_id: string; module_id: string | null; title: string; description: string; duration_sec: number; points: number; cta_screen: string | null; required: boolean; sort: number };
+const toCourse = (c: CourseRow, nowMs: number): Course => ({ id: c.id, slug: c.slug, stage: c.stage, number: c.number, title: c.title, description: c.description, coverUrl: c.cover_url, priority: c.priority, sort: c.sort, publishAt: c.publish_at, upcoming: isUpcoming(c.status, c.publish_at, nowMs) });
+const toLesson = (l: LessonRow): Lesson => ({ id: l.id, courseId: l.course_id, moduleId: l.module_id, title: l.title, description: l.description, durationSec: l.duration_sec, points: l.points, ctaScreen: l.cta_screen, required: l.required, sort: l.sort });
 
 function view(course: Course, modules: Module[], lessons: Lesson[], done: Set<string>): CourseView {
   const mods = modules.filter((m) => m.courseId === course.id).sort((a, b) => a.sort - b.sort);
@@ -30,9 +31,9 @@ function view(course: Course, modules: Module[], lessons: Lesson[], done: Set<st
 /** Todos los cursos visibles con sus clases y el avance del usuario. */
 export const loadCatalog = cache(async (s: Session): Promise<Catalog> => {
   const [courses, modules, lessons, progress] = await Promise.all([
-    s.supabase.from("courses").select("id, slug, stage, number, title, description, cover_url, tier, priority, sort, status, publish_at").order("sort").order("number"),
+    s.supabase.from("courses").select("id, slug, stage, number, title, description, cover_url, priority, sort, status, publish_at").order("sort").order("number"),
     fetchAll<{ id: string; course_id: string; title: string; sort: number }>((a, b) => s.supabase.from("course_modules").select("id, course_id, title, sort").order("sort").order("id").range(a, b)),
-    fetchAll<LessonRow>((a, b) => s.supabase.from("lessons").select("id, course_id, module_id, title, description, duration_sec, points, cta_screen, tier, required, sort").order("sort").order("id").range(a, b)),
+    fetchAll<LessonRow>((a, b) => s.supabase.from("lessons").select("id, course_id, module_id, title, description, duration_sec, points, cta_screen, required, sort").order("sort").order("id").range(a, b)),
     fetchAll<{ lesson_id: string; rating: number | null }>((a, b) => s.supabase.from("lesson_progress").select("lesson_id, rating").eq("user_id", s.userId).order("lesson_id").range(a, b)),
   ]);
   const nowMs = Date.now();
@@ -57,7 +58,7 @@ export async function totalPoints(s: Session): Promise<number> {
   return rows.reduce((a, r) => a + r.points, 0);
 }
 
-/** Video de la clase. Vacío si no hay fila: o no se subió, o la base no lo entrega porque no tiene acceso (eso se decide antes). */
+/** Video de la clase. Vacío si no hay fila: o no se subió, o la base no lo entrega porque no tiene acceso. */
 export async function loadVideoUrl(s: Session, lessonId: string): Promise<string> {
   const r = await s.supabase.from("lesson_media").select("video_url").eq("lesson_id", lessonId).maybeSingle();
   if (r.error) throw new Error(`db: ${r.error.message}`);

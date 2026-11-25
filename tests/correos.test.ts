@@ -4,7 +4,7 @@ import {
   allowsApp, allowsEmail, canGetCloseReminder, closeReminderPeriod, closureStreakBefore, currentWeekOf, escapeHtml, expiryBucket, expiryRef,
   expiryTransition, grantRef, isClosed, mayEmail, paymentRef, periodRef, readPrefs, safeToday, streakToSave,
 } from "@/lib/email/lib";
-import { accessEmail, closeEmail, grantEmail, paymentEmail, renderEmail, welcomeEmail, type AnyEmail } from "@/lib/email/templates";
+import { accessEmail, closeEmail, EMAIL_KINDS, firstMonthEmail, grantEmail, paymentEmail, renderEmail, welcomeEmail, type AnyEmail } from "@/lib/email/templates";
 import { nextStateOnExpiry, type ISODate } from "@/lib/engine";
 
 const APP = "https://app.revoluciondeldinero.com";
@@ -65,10 +65,11 @@ describe("día de cierre en la zona horaria de cada usuario", () => {
     expect(closureStreakBefore([{ year: 2026, month: 12, reopened_at: null }], { year: 2027, month: 1 })).toBe(1);
     expect(periodRef({ year: 2026, month: 3 })).toBe("2026-03");
   });
-  it("el recordatorio es Pro por defecto; Admin puede ponerlo Gratis o apagar la sección", () => {
-    expect(canGetCloseReminder("free", {}, "on", "free")).toBe(false);
+  it("el recordatorio es para toda cuenta activa (un solo plan); Admin puede apagar la sección", () => {
+    expect(canGetCloseReminder("free", {}, "on", "free")).toBe(false); // sin activar
+    expect(canGetCloseReminder("free", { cierre: "free" }, "on", "free")).toBe(false); // la configuración ya no decide
     expect(canGetCloseReminder("pro", {}, "on", "pro")).toBe(true);
-    expect(canGetCloseReminder("free", { cierre: "free" }, "on", "free")).toBe(true);
+    expect(canGetCloseReminder("pro", { cierre: "pro" }, "on", "alumno")).toBe(true);
     expect(canGetCloseReminder("pro", {}, "off", "pro")).toBe(false);
     expect(canGetCloseReminder("pro", {}, "on", "read_only")).toBe(false); // solo lectura no puede cerrar
   });
@@ -91,8 +92,9 @@ describe("vencimientos", () => {
     const alumno = { ...base, state: "alumno" as const, accessUntil: "2026-11-23T00:00:00Z" };
     const pro = { ...base, state: "pro" as const, proUntil: "2026-11-01T00:00:00Z" };
     expect(expiryTransition(trial, [], now)).toEqual({ state: nextStateOnExpiry(trial, now) });
-    expect(expiryTransition(trial, [], now)?.state).toBe("free");
-    expect(expiryTransition(alumno, [], now)?.state).toBe("free");
+    expect(expiryTransition(trial, [], now)?.state).toBe("read_only"); // desde el 25 nov 2026: nunca a Gratis (= sin activar)
+    expect(expiryTransition(alumno, [], now)?.state).toBe("read_only");
+    expect(expiryTransition({ ...base, state: "fundador" as const, accessUntil: "2026-11-23T00:00:00Z" }, [], now)?.state).toBe("read_only");
     expect(expiryTransition(pro, [], now)?.state).toBe("read_only");
     expect(expiryTransition({ ...alumno, accessUntil: "2027-01-01T00:00:00Z" }, [], now)).toBeNull(); // vigente
     expect(expiryTransition({ ...base, state: "free" }, [], now)).toBeNull();
@@ -107,7 +109,9 @@ describe("vencimientos", () => {
     const pro = { state: "pro" as const, trialEndsAt: null, proUntil: "2026-11-01T00:00:00Z", accessUntil: null, stripeStatus: "canceled" };
     expect(expiryTransition(pro, [{ kind: "fundador", expires_at: null, revoked_at: null }], now)).toEqual({ state: "fundador", accessUntil: null });
     const alumno = { state: "alumno" as const, trialEndsAt: null, proUntil: null, accessUntil: "2026-11-23T00:00:00Z", stripeStatus: null };
-    expect(expiryTransition(alumno, [{ kind: "alumno", expires_at: "2026-11-23T00:00:00Z", revoked_at: null }], now)?.state).toBe("free");
+    expect(expiryTransition(alumno, [{ kind: "alumno", expires_at: "2026-11-23T00:00:00Z", revoked_at: null }], now)?.state).toBe("read_only");
+    // alumno vencido que ya paga en Stripe (pagó antes de que venciera) → Pro
+    expect(expiryTransition({ ...alumno, stripeStatus: "active" }, [], now)).toEqual({ state: "pro" });
     expect(expiryTransition(alumno, [{ kind: "alumno", expires_at: "2027-06-01T00:00:00Z", revoked_at: null }], now)).toEqual({ state: "alumno", accessUntil: "2027-06-01T00:00:00Z" });
   });
 });
@@ -135,18 +139,21 @@ describe("plantillas", () => {
   const all: AnyEmail[] = [
     { kind: "welcome", data: { locale: "es", appUrl: APP, name: "Ana María" } },
     { kind: "close_reminder", data: { locale: "es", appUrl: APP, period: { year: 2026, month: 11 }, streak: 3, points: 30, showStreak: true } },
-    { kind: "access_expiring", data: { locale: "es", appUrl: APP, until: "2027-03-01", daysLeft: 7, discountPct: 30 } },
+    { kind: "access_expiring", data: { locale: "es", appUrl: APP, until: "2027-03-01", daysLeft: 7, monthly: "$8", yearly: "$80" } },
     { kind: "payment_failed", data: { locale: "es", appUrl: APP, failedOn: "2026-11-24" } },
     { kind: "access_granted", data: { locale: "es", appUrl: APP, name: "Ana María", kind: "alumno", until: "2027-11-30" } },
     { kind: "access_granted", data: { locale: "es", appUrl: APP, name: "", kind: "fundador", until: null } },
+    { kind: "first_month_ending", data: { locale: "es", appUrl: APP, name: "Ana María", chargeOn: "2026-12-25", daysLeft: 3, price: "$8", yearly: "$80", last4: "4821" } },
   ];
+  /** Correos que llevan el PRECIO del plan (nunca montos del usuario). */
+  const PRICED = new Set(["access_expiring", "first_month_ending"]);
   const withEn = [...all, ...all.map((e) => ({ ...e, data: { ...e.data, locale: "en" as const } }) as AnyEmail)];
   /** Texto visible del HTML (sin etiquetas ni estilos). */
   const visible = (html: string) => html.replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ");
   const MONEY = [/\$/, /€|£/, /\b(AUD|USD|COP|MXN|EUR|NZD|GBP|CAD|CLP|PEN|ARS)\b/, /\d+[.,]\d{2}\b/, /\d{1,3}(,\d{3})+/, /\[PRECIO\]|\[MONTO\]/];
 
   it("ningún correo lleva montos ni datos financieros (ni en el HTML visible ni en el texto)", () => {
-    for (const e of withEn) {
+    for (const e of withEn.filter((x) => !PRICED.has(x.kind))) {
       const r = renderEmail(e);
       for (const text of [visible(r.html), r.text, r.subject]) for (const re of MONEY) expect(text, `${e.kind}/${e.data.locale}: ${re}`).not.toMatch(re);
     }
@@ -165,8 +172,10 @@ describe("plantillas", () => {
     const a = accessEmail(all[2].data as never);
     expect(a.subject).toBe("Tu acceso de alumno termina en 7 días");
     expect(a.html).toContain("Tu acceso de alumno termina el 1 de marzo.");
-    expect(a.html).toContain("30% de descuento");
-    expect(accessEmail({ ...(all[2].data as never as Parameters<typeof accessEmail>[0]), discountPct: null }).html).not.toContain("descuento");
+    expect(a.html).toContain("Si quieres seguir, son $8 USD al mes o $80 USD al año. Pones tu tarjeta una vez y sigues sin cortes.");
+    expect(a.html).toContain("Seguir con mi cuenta");
+    expect(a.html).toContain(`${APP}/activar`);
+    expect(a.html).not.toContain("Pro");
     const p = paymentEmail(all[3].data as never);
     expect(p.html).toContain("rechazada el 24 de noviembre");
     expect(p.html).toContain("no se puede desactivar");
@@ -244,5 +253,43 @@ describe("aviso de acceso gratis dado desde el panel", () => {
     expect(grantRef("2026-11-25", "alumno", "2027-11-25")).not.toBe(grantRef("2026-11-25", "alumno", "2028-02-25"));
     expect(grantRef("2026-11-25", "alumno", null)).not.toBe(grantRef("2026-11-26", "alumno", null));
     expect(grantRef("2026-11-25", "alumno", null)).not.toBe(grantRef("2026-11-25", "fundador", null));
+  });
+});
+
+describe("correo 5 · fin del primer mes", () => {
+  const d = { locale: "es" as const, appUrl: APP, name: "Ana María", chargeOn: "2026-12-25", daysLeft: 3, price: "$8", yearly: "$80", last4: "4821" };
+  const visible = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ");
+  it("textos del mockup", () => {
+    const r = firstMonthEmail(d);
+    expect(r.subject).toBe("Tu primer mes termina en 3 días");
+    expect(r.html).toContain("Ana, ya llevas casi un mes con tu plan.");
+    expect(r.html).toContain("El 25 de diciembre cobramos $8 USD a tu tarjeta terminada en 4821 y sigues igual. Si prefieres el plan anual ($80 USD, 2 meses gratis), puedes cambiarlo antes.");
+    expect(r.html).toContain("cancelas en un toque desde Suscripción");
+    expect(r.html).toContain("Ver mi suscripción");
+    expect(r.html).toContain(`${APP}/suscripcion`);
+    expect(r.html).toContain("Te escribimos porque se acerca tu primer cobro completo.");
+    expect(r.text).toContain("Ver mi suscripción");
+  });
+  it("sin tarjeta guardada, sin nombre y a 1 día", () => {
+    const r = firstMonthEmail({ ...d, last4: null, name: "", daysLeft: 1 });
+    expect(r.subject).toBe("Tu primer mes termina mañana");
+    expect(r.html).toContain("Ya llevas casi un mes con tu plan.");
+    expect(r.html).toContain("cobramos $8 USD a tu tarjeta y sigues igual");
+    expect(r.html).not.toContain("terminada en");
+  });
+  it("solo lleva el precio del plan: ningún monto del usuario", () => {
+    for (const locale of ["es", "en"] as const) {
+      const r = firstMonthEmail({ ...d, locale });
+      const amounts = [...visible(r.html).matchAll(/\$[\d,.]+/g), ...r.text.matchAll(/\$[\d,.]+/g)].map((x) => x[0]);
+      expect(new Set(amounts)).toEqual(new Set(["$8", "$80"]));
+    }
+  });
+  it("inglés", () => {
+    const r = firstMonthEmail({ ...d, locale: "en" });
+    expect(r.subject).toBe("Your first month ends in 3 days");
+    expect(r.text).toContain("Ana, you're almost a month into your plan.");
+  });
+  it("está registrado entre los tipos de correo", () => {
+    expect(EMAIL_KINDS).toContain("first_month_ending");
   });
 });

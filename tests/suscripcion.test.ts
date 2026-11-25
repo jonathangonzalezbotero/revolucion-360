@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  activeGrant, asAppliesTo, canStartTrial, couponExpired, couponUsable, discounted, fromStripeAmount, toStripeAmount, invoiceInterval, isStaleEvent, isStudent, mapSubscription, monthlyEquivalent,
-  pickRegion, priceFor, stateAfterSubscription, stripePriceFor, trialEnd, yearlySavingsPct, type Grant, type PriceRegion, type SubLike,
+  activeGrant, asAppliesTo, BILLING_DEFAULTS, checkoutPlan, couponExpired, couponUsable, discounted, firstMonthApplies, freeMonths, fromStripeAmount, toStripeAmount, invoiceConcept, invoiceInterval,
+  isStaleEvent, isStudent, mapSubscription, monthlyEquivalent, pickRegion, priceFor, priceMatches, readBilling, renewalDate, stateAfterSubscription, stripePriceFor, subView, usdFull, usdShort,
+  yearlySavingsPct, type Grant, type PriceRegion, type SubLike,
 } from "@/app/(app)/suscripcion/lib";
 
 const NOW = new Date("2026-11-24T00:00:00Z");
@@ -161,17 +162,104 @@ describe("avisos repetidos o desordenados", () => {
   });
 });
 
-describe("prueba gratis", () => {
-  const trial = { enabled: true, days: 14 };
-  it("solo en Gratis, una vez, y si está activada", () => {
-    expect(canStartTrial(trial, { state: "free", trialUsed: false })).toBe(true);
-    expect(canStartTrial(trial, { state: "free", trialUsed: true })).toBe(false);
-    expect(canStartTrial(trial, { state: "read_only", trialUsed: false })).toBe(false);
-    expect(canStartTrial({ enabled: false, days: 14 }, { state: "free", trialUsed: false })).toBe(false);
-    expect(canStartTrial({ enabled: true, days: 0 }, { state: "free", trialUsed: false })).toBe(false);
+describe("un solo plan en USD: configuración", () => {
+  it("app_config.billing con valores por defecto ($1, $8, $80, aviso 3 días)", () => {
+    expect(readBilling(undefined)).toEqual(BILLING_DEFAULTS);
+    expect(BILLING_DEFAULTS).toEqual({ firstMonthCents: 100, monthlyCents: 800, yearlyCents: 8000, notifyBeforeDays: 3, notifyFirstCharge: true });
+    expect(readBilling({ first_month_cents: 200, monthly_cents: 900, yearly_cents: 9000, notify_before_days: 5, notify_first_charge: false }))
+      .toEqual({ firstMonthCents: 200, monthlyCents: 900, yearlyCents: 9000, notifyBeforeDays: 5, notifyFirstCharge: false });
   });
-  it("termina en ahora + días", () => {
-    expect(trialEnd(14, NOW)).toBe("2026-12-08T00:00:00.000Z");
+  it("un valor roto, negativo o con decimales nunca deja la pantalla sin precio", () => {
+    const b = readBilling({ first_month_cents: -1, monthly_cents: 8.5, yearly_cents: "8000", notify_before_days: 0, notify_first_charge: "no" });
+    expect(b).toEqual(BILLING_DEFAULTS);
+    expect(readBilling({ monthly_cents: 0 }).monthlyCents).toBe(800);
+    expect(readBilling([1, 2]).yearlyCents).toBe(8000);
+  });
+  it("meses gratis del anual: $80 contra 12 × $8 = 2", () => {
+    expect(freeMonths(800, 8000)).toBe(2);
+    expect(freeMonths(800, 9600)).toBe(0);
+    expect(freeMonths(800, 12000)).toBe(0);
+    expect(freeMonths(0, 8000)).toBe(0);
+    expect(monthlyEquivalent(8000)).toBe(667);
+  });
+  it("formato de dólares", () => {
+    expect(usdShort(800)).toBe("$8");
+    expect(usdShort(8000)).toBe("$80");
+    expect(usdShort(667)).toBe("$6.67");
+    expect(usdShort(100)).toBe("$1");
+    expect(usdShort(5)).toBe("$0.05");
+    expect(usdShort(1234500)).toBe("$12,345");
+    expect(usdFull(100)).toBe("$1.00 USD");
+    expect(usdFull(8000)).toBe("$80.00 USD");
+    expect(usdFull(0)).toBe("$0.00 USD");
+  });
+});
+
+describe("pago: primer mes a $1 solo una vez", () => {
+  const prices = { monthly: "price_m", yearly: "price_y", first: "price_1" };
+  it("solo quien nunca activó ni tuvo suscripción", () => {
+    expect(firstMonthApplies("free", false)).toBe(true);
+    expect(firstMonthApplies("free", true)).toBe(false);       // ya pagó antes
+    expect(firstMonthApplies("read_only", false)).toBe(false); // reactiva por $8
+    expect(firstMonthApplies("alumno", false)).toBe(false);
+  });
+  it("mensual con primer mes: $8 con 30 días de prueba + cargo único de $1 (hoy paga $1)", () => {
+    expect(checkoutPlan("month", true, prices, BILLING_DEFAULTS)).toEqual({
+      lineItems: [{ price: "price_m", quantity: 1 }, { price: "price_1", quantity: 1 }], trialDays: 30, todayCents: 100, thenCents: 800, firstMonth: true,
+    });
+  });
+  it("mensual sin primer mes: $8 hoy, sin prueba", () => {
+    expect(checkoutPlan("month", false, prices, BILLING_DEFAULTS)).toEqual({ lineItems: [{ price: "price_m", quantity: 1 }], trialDays: null, todayCents: 800, thenCents: 800, firstMonth: false });
+  });
+  it("anual: $80 hoy, sin prueba ni $1 (aunque le toque el primer mes)", () => {
+    expect(checkoutPlan("year", true, prices, BILLING_DEFAULTS)).toEqual({ lineItems: [{ price: "price_y", quantity: 1 }], trialDays: null, todayCents: 8000, thenCents: 8000, firstMonth: false });
+  });
+  it("sin el precio en Stripe no hay pago", () => {
+    expect(checkoutPlan("month", true, { ...prices, first: null }, BILLING_DEFAULTS)).toBeNull();
+    expect(checkoutPlan("month", false, { ...prices, first: null }, BILLING_DEFAULTS)).not.toBeNull();
+    expect(checkoutPlan("month", false, { ...prices, monthly: null }, BILLING_DEFAULTS)).toBeNull();
+    expect(checkoutPlan("year", false, { ...prices, yearly: null }, BILLING_DEFAULTS)).toBeNull();
+  });
+  it("el precio de Stripe debe decir lo mismo que Administración", () => {
+    const p = (o: Partial<{ unit_amount: number | null; currency: string; active: boolean; recurring: { interval: string } | null }>) => ({ unit_amount: 800, currency: "usd", active: true, recurring: { interval: "month" }, ...o });
+    expect(priceMatches(p({}), 800, "month")).toBe(true);
+    expect(priceMatches(p({ unit_amount: 999 }), 800, "month")).toBe(false); // el admin cambió el monto y no corrió stripe-setup
+    expect(priceMatches(p({ currency: "aud" }), 800, "month")).toBe(false);
+    expect(priceMatches(p({ active: false }), 800, "month")).toBe(false);
+    expect(priceMatches(p({ recurring: { interval: "year" } }), 800, "month")).toBe(false);
+    expect(priceMatches(p({ unit_amount: 100, recurring: null }), 100, "once")).toBe(true);
+    expect(priceMatches(p({ unit_amount: 100 }), 100, "once")).toBe(false);
+    expect(priceMatches(null, 800, "month")).toBe(false);
+  });
+  it("fecha del próximo cobro antes de pagar", () => {
+    expect(renewalDate("month", true, NOW).toISOString()).toBe("2026-12-24T00:00:00.000Z");
+    expect(renewalDate("month", false, NOW).toISOString()).toBe("2026-12-24T00:00:00.000Z");
+    expect(renewalDate("year", false, NOW).toISOString()).toBe("2027-11-24T00:00:00.000Z");
+    expect(renewalDate("month", true, new Date("2027-01-31T00:00:00Z")).toISOString()).toBe("2027-03-02T00:00:00.000Z"); // 30 días exactos
+  });
+});
+
+describe("pantalla de suscripción", () => {
+  const v = (o: Partial<Parameters<typeof subView>[0]>) => subView({ state: "pro", stripeStatus: "active", interval: "month", paymentFailed: false, cancelPending: false, ...o });
+  it("primer mes, mensual, anual", () => {
+    expect(v({ stripeStatus: "trialing" })).toBe("first");
+    expect(v({})).toBe("monthly");
+    expect(v({ interval: "year" })).toBe("yearly");
+  });
+  it("pago pendiente, por terminar, acceso gratis y solo lectura", () => {
+    expect(v({ stripeStatus: "past_due", paymentFailed: true })).toBe("failed");
+    expect(v({ stripeStatus: "canceled", paymentFailed: true })).toBe("monthly"); // ya no cobra: no es "pendiente"
+    expect(v({ cancelPending: true })).toBe("ending");
+    expect(v({ cancelPending: true, stripeStatus: "trialing" })).toBe("ending");
+    expect(v({ state: "alumno" })).toBe("gift");
+    expect(v({ state: "fundador" })).toBe("gift");
+    expect(v({ state: "read_only" })).toBe("read_only");
+    expect(v({ state: "free" })).toBe("inactive");
+  });
+  it("concepto de cada factura", () => {
+    expect(invoiceConcept({ billingReason: "subscription_create", hasOneTime: true, periodStart: sec("2026-11-24T00:00:00Z"), periodEnd: sec("2026-12-24T00:00:00Z") })).toBe("first");
+    expect(invoiceConcept({ billingReason: "subscription_cycle", hasOneTime: false, periodStart: sec("2026-12-24T00:00:00Z"), periodEnd: sec("2027-01-24T00:00:00Z") })).toBe("month");
+    expect(invoiceConcept({ billingReason: "subscription_create", hasOneTime: false, periodStart: sec("2026-11-24T00:00:00Z"), periodEnd: sec("2027-11-24T00:00:00Z") })).toBe("year");
   });
 });
 

@@ -83,3 +83,12 @@
   .steps .label { font-size: 10px; }
   .opt { min-height: 44px; }
 }
+
+/* Lo que sobró: ¿a qué meta va? (mismo bloque que en Metas) */
+.leftover { width: 100%; box-sizing: border-box; background: var(--amarillo-suave); border: 1px solid var(--amarillo-borde); border-radius: var(--r-xl); padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+.lfTitle { font-size: 18px; }
+.lfText { font-size: 14px; color: var(--tinta-2); }
+.lfPicks { display: flex; flex-wrap: wrap; gap: 8px; }
+.lfGoal { font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 14px; border-radius: var(--r-pill); border: 1.5px solid var(--tinta); background: var(--blanco); color: var(--tinta); }
+.lfNo { font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 12px; border: 0; background: transparent; color: var(--gris); }
+@media (max-width: 899px) { .leftover { padding: 16px; } .lfTitle { font-size: 16px; } }

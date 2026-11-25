@@ -32,10 +32,9 @@ export const M = {
       "/asistente": "Asistente", "/plan": "Plan anual", "/movimientos": "Movimientos", "/cuentas": "Cuentas", "/metas": "Metas", "/proyeccion": "Proyección",
       "/analisis": "Análisis", "/deudas": "Deudas", "/inversiones": "Inversiones", "/cierre": "Cierre de mes", "/diagnostico": "Diagnóstico",
     } as Record<string, string>,
-    points: "Puntos al completarla", available: "Disponible en", tiers: { free: "Gratis y Pro", pro: "Solo Pro" },
+    points: "Puntos al completarla",
     about: "Sobre esta clase", required: "Obligatoria para avanzar a la siguiente clase", requiredLabel: "Obligatoria para avanzar",
     saveLesson: "Guardar clase", lessonSaved: "Clase guardada.",
-    proCourseNote: "El curso es Solo Pro: todas sus clases piden Pro.",
 
     // Comentarios
     comments: "Comentarios de esta clase", commentsEmpty: "Nadie ha comentado esta clase todavía.", hidden: "Oculto", visible: "Visible",
@@ -45,7 +44,9 @@ export const M = {
     // Formulario del curso
     newCourseTitle: "Nuevo curso", courseTitle: "Título", courseTitlePh: "Ej. Sal de deudas con método", stage: "Etapa", number: "Número",
     description: "Descripción", cover: "Portada", coverPh: "/cursos/curso-01.jpg", coverHelp: "Una imagen de /cursos/ o un enlace https.",
-    tier: "Disponible en", priority: "Prioridad del diagnóstico", priorityHelp: "Se recomienda a quien tenga este indicador como prioridad.", priorityNone: "Ninguna",
+    visibleFor: "Visible para", visibleAll: "Todos", visibleGroup: "Solo un grupo de alumnos", pickGroup: "Grupo", noGroups: "Aún no hay grupos.", createGroup: "Crear uno en Grupos",
+    visibleHelp: "Un curso de grupo solo lo ven sus miembros (y los administradores). Los demás no lo ven en la Academia.", onlyGroup: "Solo {name}",
+    priority: "Prioridad del diagnóstico", priorityHelp: "Se recomienda a quien tenga este indicador como prioridad.", priorityNone: "Ninguna",
     indicators: { surplus: "Lo que te sobra", saving: "Ahorro", debt: "Deudas", emergency: "Fondo de emergencia", dependency: "Dependencia de un ingreso" } as Record<string, string>,
     slug: "Enlace en la app: /academia/{slug}", slugNew: "El enlace sale del título y no cambia después.",
     createCourse: "Crear curso", saveCourse: "Guardar curso", courseCreated: "Curso creado como borrador.", courseSaved: "Curso guardado.",
@@ -60,7 +61,7 @@ export const M = {
     levels: "Niveles: {list}", levelsEdit: "(editables)", savePts: "Guardar puntos", ptsSaved: "Puntos guardados.",
 
     errors: {
-      title: "Falta el título.", duration: "Escribe la duración como 8:30.", video: "Ese enlace no se puede mostrar. Usa YouTube no listado, Vimeo, Mux o un archivo .mp4.",
+      title: "Falta el título.", group: "Elige el grupo que puede ver el curso.", groupPending: "Para limitar un curso a un grupo falta aplicar la migración 20261125000029_un_plan.sql.", duration: "Escribe la duración como 8:30.", video: "Ese enlace no se puede mostrar. Usa YouTube no listado, Vimeo, Mux o un archivo .mp4.",
       cover: "La portada tiene que ser una ruta como /cursos/curso-01.jpg o un enlace https.", points: "Escribe puntos entre 0 y 1,000.", number: "Escribe un número entre 1 y 999.",
       date: "Elige un día y una hora después de ahora.", slug: "Ya hay un curso con ese nombre. Cambia el título.", cta: "Elige una pantalla de la lista.",
       module: "Falta el nombre del módulo.", missing: "Ese curso o clase ya no existe.",
@@ -94,10 +95,9 @@ export const M = {
       "/asistente": "Setup", "/plan": "Yearly plan", "/movimientos": "Transactions", "/cuentas": "Accounts", "/metas": "Goals", "/proyeccion": "Forecast",
       "/analisis": "Analysis", "/deudas": "Debts", "/inversiones": "Investments", "/cierre": "Month close", "/diagnostico": "Check-up",
     } as Record<string, string>,
-    points: "Points for finishing it", available: "Available on", tiers: { free: "Free and Pro", pro: "Pro only" },
+    points: "Points for finishing it",
     about: "About this lesson", required: "Required to move on to the next lesson", requiredLabel: "Required to move on",
     saveLesson: "Save lesson", lessonSaved: "Lesson saved.",
-    proCourseNote: "The course is Pro only: all its lessons need Pro.",
 
     comments: "Comments on this lesson", commentsEmpty: "Nobody has commented on this lesson yet.", hidden: "Hidden", visible: "Visible",
     hide: "Hide", show: "Show", hideOf: "Hide {name}'s comment", showOf: "Show {name}'s comment",
@@ -105,7 +105,9 @@ export const M = {
 
     newCourseTitle: "New course", courseTitle: "Title", courseTitlePh: "E.g. Get out of debt with a method", stage: "Stage", number: "Number",
     description: "Description", cover: "Cover", coverPh: "/cursos/curso-01.jpg", coverHelp: "An image from /cursos/ or an https link.",
-    tier: "Available on", priority: "Check-up priority", priorityHelp: "Recommended to whoever has this indicator as their priority.", priorityNone: "None",
+    visibleFor: "Visible to", visibleAll: "Everyone", visibleGroup: "Only one student group", pickGroup: "Group", noGroups: "There are no groups yet.", createGroup: "Create one in Groups",
+    visibleHelp: "A group course is only seen by its members (and administrators). Everyone else doesn't see it in the Academy.", onlyGroup: "Only {name}",
+    priority: "Check-up priority", priorityHelp: "Recommended to whoever has this indicator as their priority.", priorityNone: "None",
     indicators: { surplus: "What you have left", saving: "Saving", debt: "Debts", emergency: "Emergency fund", dependency: "Reliance on one income" } as Record<string, string>,
     slug: "Link in the app: /academia/{slug}", slugNew: "The link comes from the title and doesn't change later.",
     createCourse: "Create course", saveCourse: "Save course", courseCreated: "Course created as a draft.", courseSaved: "Course saved.",
@@ -118,7 +120,7 @@ export const M = {
     levels: "Levels: {list}", levelsEdit: "(editable)", savePts: "Save points", ptsSaved: "Points saved.",
 
     errors: {
-      title: "The title is missing.", duration: "Write the length like 8:30.", video: "That link can't be shown. Use unlisted YouTube, Vimeo, Mux or an .mp4 file.",
+      title: "The title is missing.", group: "Pick the group that can see the course.", groupPending: "To limit a course to a group, migration 20261125000029_un_plan.sql still has to be applied.", duration: "Write the length like 8:30.", video: "That link can't be shown. Use unlisted YouTube, Vimeo, Mux or an .mp4 file.",
       cover: "The cover has to be a path like /cursos/curso-01.jpg or an https link.", points: "Enter points between 0 and 1,000.", number: "Enter a number between 1 and 999.",
       date: "Pick a day and time after now.", slug: "There's already a course with that name. Change the title.", cta: "Pick a screen from the list.",
       module: "The module name is missing.", missing: "That course or lesson no longer exists.",

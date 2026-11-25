@@ -12,12 +12,27 @@ export const EXPORT_TABLES = [
   ["recurring", ["id"]], ["csv_imports", ["created_at", "id"]], ["csv_formats", ["id"]],
   ["goals", ["created_at", "id"]], ["goal_entries", ["date", "id"]], ["debts", ["created_at", "id"]], ["debt_payments", ["date", "id"]],
   ["investments", ["created_at", "id"]], ["investment_entries", ["date", "id"]],
+  ["assets", ["created_at", "id"]], ["asset_operations", ["date", "id"]],
   ["month_closures", ["year", "month"]], ["forecast_scenarios", ["id"]], ["watched_merchants", ["id"]],
   ["tax_settings", ["user_id"]], ["tax_entries", ["date", "id"]], ["company_entries", ["date", "id"]],
   ["point_events", ["at", "id"]], ["user_badges", ["badge"]], ["activity_weeks", ["week_start"]], ["lesson_progress", ["lesson_id"]],
   ["notifications", ["created_at", "id"]], ["support_tickets", ["created_at", "id"]], ["privacy_requests", ["requested_at", "id"]],
 ] as const;
 export type ExportTable = (typeof EXPORT_TABLES)[number][0];
+
+/**
+ * Tablas de migraciones que pueden no estar aplicadas todavía (20261125000032: inversiones por activo).
+ * Si la base aún no las tiene, el archivo sale sin ellas en vez de fallar entero (regla 9: siempre se puede exportar).
+ * Cualquier otro error sí detiene la exportación.
+ */
+export const OPTIONAL_TABLES: readonly string[] = ["assets", "asset_operations"];
+/** Columnas numeric con decimales (cantidades, precios por unidad): como texto, para no perder precisión en JSON. */
+export const SELECT_OVERRIDE: Partial<Record<string, string>> = {
+  assets: "id, user_id, name, kind, platform, by_units, unit_price_cents::text, balance_cents, price_date, price_at, plan_line_id, recurring_from, legacy_investment_id, archived_at, created_at",
+  asset_operations: "id, user_id, asset_id, date, kind, quantity::text, unit_price_cents::text, amount_cents, source, recurring_month, deleted_at, created_at",
+};
+/** Error de PostgREST/Postgres cuando la tabla no existe. */
+export const isMissingTable = (e: { code?: string } | null) => !!e && (e.code === "PGRST205" || e.code === "42P01");
 
 /** Columnas de `entitlements` que sí se exportan (los identificadores de Stripe se quedan fuera). */
 export const ENTITLEMENT_COLUMNS = "state, trial_ends_at, trial_used, pro_until, access_until, billing_interval, cancel_at_period_end, updated_at";

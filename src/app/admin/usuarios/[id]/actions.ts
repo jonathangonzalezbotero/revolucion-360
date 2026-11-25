@@ -46,6 +46,22 @@ export async function revokeAccess(input: unknown) {
   });
 }
 
+/**
+ * "Pasar a plan pagado": quita su acceso gratis (misma función que "Quitar acceso gratis"; su cuenta queda sin activar)
+ * para que en su próxima visita la app le pida la tarjeta. No cobra nada ni le escribe: lo decide al poner la tarjeta.
+ * Queda en el registro como un paso a plan pagado, además del "quitó el acceso" que anota la base.
+ */
+export async function moveToPaid(input: unknown) {
+  return onUser(input, {}, async (s, d) => {
+    const u = await loadUser(s, d.userId);
+    if (!u) return fail(adminText(s).errors.notFound);
+    if (u.state !== "alumno" && u.state !== "fundador") return fail(M[s.locale].errNotFree);
+    must(await s.supabase.rpc("admin_revoke_access", { p_user: d.userId }));
+    await audit(s, "quitar_acceso_pagado", d.userId, { kind: u.state });
+    return ok(undefined);
+  });
+}
+
 export async function setSuspended(input: unknown) {
   return onUser(input, { on: z.boolean() }, async (s, d) => {
     if (d.userId === s.userId) return fail(adminText(s).errors.self);

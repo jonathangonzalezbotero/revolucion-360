@@ -15,6 +15,7 @@ export type NotifView = { id: string; kind: Kind; title: string; body: string; h
 const LOOK: Record<Kind, { icon: IconName; bg: string; fg: string }> = {
   cierre: { icon: "check", bg: "var(--ambar-fondo)", fg: "var(--ambar-texto)" },
   pago: { icon: "bell", bg: "var(--rojo-fondo)", fg: "var(--rojo)" },
+  habito: { icon: "flame", bg: "var(--amarillo-suave)", fg: "var(--amarillo-texto)" },
   logro: { icon: "spark", bg: "var(--amarillo-pastel)", fg: "var(--amarillo-texto)" },
   academia: { icon: "cap", bg: "var(--verde-fondo)", fg: "var(--tinta)" },
   acceso: { icon: "card", bg: "var(--azul-fondo)", fg: "var(--azul-oscuro)" },

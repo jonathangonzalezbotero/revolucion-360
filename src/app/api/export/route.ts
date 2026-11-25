@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { fetchAll, must } from "@/server/data";
 import { getSession } from "@/server/session";
-import { ENTITLEMENT_COLUMNS, EXPORT_TABLES, exportFilename, transactionsCsv, type TxCsvRow } from "./lib";
+import { ENTITLEMENT_COLUMNS, EXPORT_TABLES, exportFilename, isMissingTable, OPTIONAL_TABLES, SELECT_OVERRIDE, transactionsCsv, type TxCsvRow } from "./lib";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +29,13 @@ export async function GET(request: NextRequest) {
     } else {
       const tables: Record<string, unknown[]> = {};
       await Promise.all(EXPORT_TABLES.map(async ([table, order]) => {
+        if (OPTIONAL_TABLES.includes(table)) {
+          const probe = await s.supabase.from(table as "accounts").select("user_id").limit(1); // GET, no HEAD: el error trae su código
+          if (isMissingTable(probe.error)) return; // migración aún sin aplicar: el resto se exporta igual
+        }
         tables[table] = await fetchAll<unknown>((a, b) => {
           // Nombre de tabla dinámico: el tipo de una sola tabla basta para armar la consulta (todas tienen user_id).
-          let q = s.supabase.from(table as "accounts").select("*").eq("user_id", s.userId);
+          let q = s.supabase.from(table as "accounts").select(SELECT_OVERRIDE[table] ?? "*").eq("user_id", s.userId);
           for (const col of order) q = q.order(col as "id");
           return q.range(a, b);
         });

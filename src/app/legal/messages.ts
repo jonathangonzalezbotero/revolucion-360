@@ -7,7 +7,7 @@ export type LegalMessages = {
   termsSections: Section[]; privacySections: Section[];
 };
 
-// {company}, {abn}, {contact} y {address} salen de app_config.legal (los edita el admin).
+// {company}, {abn}, {contact} y {address} salen de app_config.legal; {first}, {monthly} y {yearly}, de app_config.billing (los edita el admin).
 export const M = {
   es: {
     title: "Términos y privacidad",
@@ -18,7 +18,7 @@ export const M = {
     termsSections: [
       { h: "1. Qué es Revolución 360", p: "Una herramienta para planear y registrar tus finanzas personales, ofrecida por {company}, ABN {abn}. No es un banco, no mueve tu dinero y no da asesoría financiera personal." },
       { h: "2. Tu cuenta", p: "Debes tener 18 años o más. Eres responsable de tu contraseña y de activar la verificación en 2 pasos. Avísanos si alguien entra sin tu permiso." },
-      { h: "3. Planes y pagos", p: "El plan Gratis no tiene costo. Pro se cobra por mes o por año y se renueva solo hasta que lo canceles. Puedes cancelar en cualquier momento desde Suscripción; sigues con Pro hasta el final del periodo pagado." },
+      { h: "3. Planes y pagos", p: "Hay un solo plan con todas las funciones. El primer mes cuesta {first} USD; después se cobran {monthly} USD al mes o {yearly} USD al año, en dólares americanos, y se renueva solo hasta que lo canceles. Te avisamos antes del primer cobro completo. Puedes cancelar en cualquier momento desde Suscripción: sigues con acceso hasta el final del periodo pagado y luego tu cuenta queda en solo lectura." },
       { h: "4. Accesos de alumno", p: "Revolución del Dinero puede darte acceso gratis por un tiempo definido o de por vida. Al terminar, tus datos quedan en modo lectura y siempre puedes exportarlos." },
       { h: "5. Información general", p: "Los indicadores, diagnósticos y proyecciones son información general basada en los datos que tú registras. No consideran toda tu situación. Para decisiones importantes consulta a un asesor con licencia (AFSL)." },
       { h: "6. Fin del servicio", p: "Puedes borrar tu cuenta cuando quieras. Si cerramos el servicio, te avisaremos con 60 días para que exportes tus datos." },
@@ -41,7 +41,7 @@ export const M = {
     termsSections: [
       { h: "1. What Revolución 360 is", p: "A tool to plan and track your personal finances, offered by {company}, ABN {abn}. It isn't a bank, it doesn't move your money and it doesn't give personal financial advice." },
       { h: "2. Your account", p: "You must be 18 or older. You're responsible for your password and for turning on 2-step verification. Tell us if someone gets in without your permission." },
-      { h: "3. Plans and payments", p: "The Free plan costs nothing. Pro is charged monthly or yearly and renews on its own until you cancel. You can cancel any time from Subscription; you keep Pro until the end of the paid period." },
+      { h: "3. Plans and payments", p: "There's one plan with every feature. The first month costs {first} USD; after that it's {monthly} USD a month or {yearly} USD a year, in US dollars, and it renews on its own until you cancel. We'll let you know before the first full charge. You can cancel any time from Subscription: you keep access until the end of the paid period and then your account becomes read-only." },
       { h: "4. Student access", p: "Revolución del Dinero may give you free access for a set time or for life. When it ends, your data stays read-only and you can always export it." },
       { h: "5. General information", p: "Indicators, check-ups and forecasts are general information based on the data you enter. They don't consider your whole situation. For important decisions, talk to a licensed adviser (AFSL)." },
       { h: "6. End of service", p: "You can delete your account whenever you want. If we shut the service down, we'll give you 60 days' notice to export your data." },

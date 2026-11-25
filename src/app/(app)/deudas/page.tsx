@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
-import { ProWall } from "@/components/shell/ProWall";
 import { cellMap, cellOf, todayIn, yearTotals } from "@/lib/engine";
 import { fetchAll, loadAccounts, loadPlan, must } from "@/server/data";
 import { requireUser } from "@/server/session";
@@ -25,9 +24,6 @@ export default async function DeudasPage() {
         <Empty icon="receipt" title={m.soonTitle} text={m.soonText}><Link href="/inicio" className="btn btn-secondary btn-sm">{m.goHome}</Link></Empty>
       </main>
     );
-  }
-  if (!s.has("deudas")) {
-    return <main className="page"><PageHeader title={m.title} eyebrow={m.eyebrow} /><ProWall s={s} title={m.proTitle} bullets={m.proBullets} /></main>;
   }
 
   const jan1 = `${s.year}-01-01`;

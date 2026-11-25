@@ -1,48 +1,56 @@
 "use client";
-import { useState, useTransition } from "react";
-import { fill, type Locale } from "@/i18n";
+import { useRef, useState, useTransition } from "react";
+import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
 import { ConfirmButton, useToast } from "@/components/ui/client";
-import { formatCompact, formatDate, formatMoney, investmentResult, type Cents, type ISODate, type MoneyFormat } from "@/lib/engine";
+import { formatMoney, type Cents, type ISODate, type MoneyFormat } from "@/lib/engine";
+import { ASSET_KINDS, type AssetKind, type Group, type OpKind, type Totals } from "@/lib/engine/inversiones";
 import type { Result } from "@/server/action";
-import { addInvestmentEntry, createInvestment, setArchived, updateInvestment } from "./actions";
-import { chartPoints, distribution, INV_TYPES, invTotals, TYPE_COLOR, type EntryKind, type InvType } from "./lib";
+import { addOperation, createAsset, removeOperation, setAssetArchived, setAssetPrice, updateAsset } from "./actions";
+import { resultText, resultTone } from "./lib";
 import type { InversionesMessages } from "./messages";
 import css from "./inversiones.module.css";
 
-export type InvView = {
-  id: string; platform: string; type: InvType; contributedCents: Cents; valueCents: Cents; valueDate: ISODate; archived: boolean;
-  line: { id: string; name: string; yearCents: Cents } | null;
-  entries: { id: string; date: ISODate; kind: EntryKind; amountCents: Cents }[];
+export type AssetView = {
+  id: string; name: string; ticker: string; kind: AssetKind; kindLabel: string; color: string; ink: string; platform: string | null; byUnits: boolean; archived: boolean;
+  qtyText: string | null; avgText: string | null;
+  valueCents: Cents; costCents: Cents; gainCents: Cents; dividendsCents: Cents; hasPrice: boolean;
+  priceInput: string; priceDateLabel: string | null; lineId: string | null;
+  recurring: { line: string; amountCents: Cents } | null; recNeedsPrice: boolean;
+  ops: { id: string; kind: OpKind; dateLabel: string; detail: string; amountCents: Cents }[];
 };
-type LineOpt = { id: string; name: string; takenBy: string | null };
+export type GroupView = Group & { name: string; color: string };
 type Props = {
-  items: InvView[]; series: { date: ISODate; cents: Cents }[]; lines: LineOpt[]; planCents: Cents; incomeCents: Cents; types: Record<InvType, string>; retirement: string; showSuper: boolean;
-  fmt: MoneyFormat; locale: Locale; today: ISODate; year: number; canEdit: boolean; planOn: boolean; category: string;
+  assets: AssetView[]; totals: Totals; byPlatform: GroupView[]; byKind: GroupView[]; lines: { id: string; name: string; takenBy: string | null }[];
+  kinds: Record<AssetKind, string>; retirement: string; category: string;
+  fmt: MoneyFormat; today: ISODate; canEdit: boolean; planOn: boolean;
   m: InversionesMessages; t: { cancel: string; save: string; add: string; disclaimer: string };
 };
 type Run = <T>(fn: () => Promise<Result<T>>, after: (r: Extract<Result<T>, { ok: true }>) => void, onError: (e: string) => void) => void;
-
-const resultText = (contributed: Cents, value: Cents, fmt: MoneyFormat) => {
-  const r = investmentResult(contributed, value);
-  return `${formatMoney(r.gainCents, fmt, { sign: true })}${contributed > 0 ? ` (${(r.gainPct * 100).toFixed(1)}%)` : ""}`;
-};
-const tone = (gain: Cents) => (gain < 0 ? "var(--ambar-texto)" : gain > 0 ? "var(--verde-fuerte)" : "var(--gris)");
+type View = "asset" | "platform" | "kind";
 
 export function Inversiones(p: Props) {
   const { m, fmt, canEdit } = p;
   const toast = useToast();
   const [pending, start] = useTransition();
   const [showNew, setShowNew] = useState(false);
+  const [view, setView] = useState<View>("asset");
+  const active = p.assets.filter((a) => !a.archived), archived = p.assets.filter((a) => a.archived);
+  const [selId, setSelId] = useState<string | null>(null);
+  const sel = active.find((a) => a.id === selId) ?? active[0] ?? null;
+  const detailRef = useRef<HTMLElement>(null);
   const run: Run = (fn, after, onError) => start(async () => {
     const r = await fn();
     if (r.ok) after(r); else onError(r.error);
   });
-  const active = p.items.filter((i) => !i.archived), archived = p.items.filter((i) => i.archived);
-  const tot = invTotals(active);
-  const dist = distribution(active);
   const money = (c: Cents) => formatMoney(c, fmt);
-  const result = tot.contributedCents || tot.valueCents ? resultText(tot.contributedCents, tot.valueCents, fmt) : money(0);
+  const res = resultText(p.totals.gainCents, p.totals.costCents, fmt);
+  const pick = (id: string) => {
+    setSelId(id);
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 899px)").matches) requestAnimationFrame(() => detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
+  const groups = view === "platform" ? p.byPlatform : p.byKind;
+  const countText = (n: number, one: string, many: string) => (n === 1 ? one : fill(many, { n }));
 
   return (
     <>
@@ -56,52 +64,96 @@ export function Inversiones(p: Props) {
       </PageHeader>
 
       <section aria-label={m.totals} className={css.totals}>
-        <div><span className={css.k}>{m.worth}</span><span className={`num big ${css.vMain}`}>{money(tot.valueCents)}</span></div>
-        <div className={css.deskOnly}><span className={css.k}>{m.put}</span><span className={`num big ${css.v}`}>{money(tot.contributedCents)}</span></div>
-        <div className={css.deskOnly}><span className={css.k}>{m.result}</span><span className={`num big ${css.v}`} style={{ color: tot.gainCents < 0 ? "var(--rojo)" : tot.gainCents > 0 ? "var(--verde)" : undefined }}>{result}</span></div>
-        <div className={css.deskOnly}>
-          <span className={css.k}>{fill(m.planYear, { year: p.year })}</span><span className={`num big ${css.v}`}>{money(p.planCents)}</span>
-          {p.incomeCents > 0 ? <span className={css.note}>{fill(m.ofIncome, { pct: `${((p.planCents / p.incomeCents) * 100).toFixed(1)}%` })}</span> : null}
+        <div>
+          <span className={css.k}>{m.worth}</span><span className={`num big ${css.vMain}`}>{money(p.totals.valueCents)}</span>
+          <span className={`${css.note} ${css.deskOnly}`}>{countText(active.length, m.countOne, m.count)}</span>
         </div>
+        <div className={css.deskOnly}><span className={css.k}>{m.put}</span><span className={`num big ${css.v}`}>{money(p.totals.costCents)}</span></div>
+        <div className={css.deskOnly}><span className={css.k}>{m.result}</span><span className={`num big ${css.v}`}>{res}</span></div>
+        <div className={css.deskOnly}><span className={css.k}>{m.dividends}</span><span className={`num big ${css.v}`}>{money(p.totals.dividendsCents)}</span></div>
         <div className={css.mobileRow}>
-          <span>{m.put} <strong className="num" style={{ color: "var(--tinta)" }}>{money(tot.contributedCents)}</strong></span>
-          <span>{m.result} <strong className="num" style={{ color: tot.gainCents < 0 ? "var(--rojo)" : tot.gainCents > 0 ? "var(--verde)" : "var(--tinta)" }}>{result}</strong></span>
+          <span>{m.putShort} <strong className="num">{money(p.totals.costCents)}</strong></span>
+          <span>{m.result} <strong className="num">{res}</strong></span>
         </div>
       </section>
 
-      {showNew && canEdit ? <InvForm p={p} run={run} pending={pending} onClose={() => setShowNew(false)} onSaved={(warn) => { setShowNew(false); toast(warn || m.tCreated); }} /> : null}
+      {showNew && canEdit ? (
+        <NewAsset p={p} run={run} pending={pending} onClose={() => setShowNew(false)} onSaved={(id) => { setShowNew(false); setSelId(id); setView("asset"); toast(m.tCreated); }} />
+      ) : null}
 
       {active.length === 0 ? (
-        <Empty icon="sprout" title={m.emptyTitle} text={m.emptyText}>{canEdit && !showNew ? <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowNew(true)}>{m.emptyCta}</button> : null}</Empty>
+        <Empty icon="sprout" title={m.emptyTitle} text={fill(m.emptyText, { retirement: p.retirement })}>
+          {canEdit && !showNew ? <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowNew(true)}>{m.emptyCta}</button> : null}
+        </Empty>
       ) : (
-        <div className={css.cards}>
-          {active.map((i) => <InvCard key={i.id} i={i} p={p} total={tot.valueCents} run={run} pending={pending} toast={toast} />)}
+        <div className={css.main}>
+          <section aria-label={m.listSection} className={css.listCard}>
+            <div role="radiogroup" aria-label={m.views} className={css.seg}>
+              {([["asset", m.viewAsset], ["platform", m.viewPlatform], ["kind", m.viewKind]] as const).map(([k, label]) => (
+                <button key={k} type="button" role="radio" aria-checked={view === k} onClick={() => setView(k)}>{label}</button>
+              ))}
+            </div>
+            {view === "asset" ? (
+              <ul aria-label={m.list} className={css.rows}>
+                {active.map((a) => (
+                  <li key={a.id}>
+                    <button type="button" className={css.row} aria-pressed={sel?.id === a.id} onClick={() => pick(a.id)}>
+                      <span aria-hidden="true" className={css.tile} style={{ background: a.color, color: a.ink }}>{a.ticker}</span>
+                      <span className={css.rowMid}>
+                        <strong>{a.name}</strong>
+                        <span>{[a.kindLabel, a.platform, a.qtyText ?? m.balance].filter(Boolean).join(" · ")}</span>
+                      </span>
+                      <span className={css.rowEnd}>
+                        <strong className="num">{money(a.valueCents)}</strong>
+                        <span className="num" style={{ color: resultTone(a.gainCents) }}>{resultText(a.gainCents, a.costCents, fmt)}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <ul className={css.groups}>
+                {groups.map((g) => (
+                  <li key={g.key}>
+                    <div className={css.groupHead}>
+                      <span className={css.groupName}><strong>{g.name}</strong><span>{countText(g.n, m.assetOne, m.assets)}</span></span>
+                      <span className={css.groupNums}>
+                        <span className="num" style={{ color: resultTone(g.gainCents) }}>{resultText(g.gainCents, 0, fmt)}</span>
+                        <strong className="num">{money(g.valueCents)}</strong>
+                      </span>
+                    </div>
+                    <div aria-hidden="true" className={css.track}><div style={{ width: `${(g.share * 100).toFixed(1)}%`, background: g.color }} /></div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+          {sel ? <Detail key={`${sel.id}:${sel.priceInput}`} a={sel} p={p} run={run} pending={pending} toast={toast} sectionRef={detailRef} /> : null}
         </div>
       )}
 
-      {active.length ? <Chart p={p} /> : null}
-
       <div className={css.bottom}>
-        <section aria-labelledby="dist" className={css.dist}>
-          <h2 id="dist">{m.dist}</h2>
-          {dist.length ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <div aria-hidden="true" className={css.stack}>{dist.map((d) => <div key={d.type} style={{ background: TYPE_COLOR[d.type], width: `${(d.share * 100).toFixed(1)}%` }} />)}</div>
-              {dist.map((d) => (
-                <div key={d.type} className={css.distRow}>
-                  <span aria-hidden="true" className={css.swatch} style={{ background: TYPE_COLOR[d.type] }} />
-                  <span style={{ flex: 1 }}>{p.types[d.type]}</span>
-                  <span className="num muted">{(d.share * 100).toFixed(0)}%</span>
-                  <strong className="num" style={{ minWidth: 80, textAlign: "right" }}>{money(d.valueCents)}</strong>
-                </div>
-              ))}
-            </div>
-          ) : <p className="small muted" style={{ lineHeight: 1.5 }}>{m.distEmpty}</p>}
-        </section>
-        <div className="stack">
-          {p.showSuper ? <p className={css.note}><strong>{fill(m.superNote1, { retirement: p.retirement })}</strong> {m.superNote2}</p> : null}
-          <p className="xs muted">{m.tracking}</p>
-          <p className="xs muted">{p.t.disclaimer}</p>
+        {active.length ? (
+          <section aria-labelledby="inv-dist" className={`${css.dist} ${css.deskOnlyBlock}`}>
+            <h2 id="inv-dist">{m.dist}</h2>
+            {p.totals.valueCents > 0 ? (
+              <div className="stack" style={{ gap: 12 }}>
+                <div aria-hidden="true" className={css.stackBar}>{p.byKind.filter((d) => d.share > 0).map((d) => <div key={d.key} style={{ background: d.color, width: `${(d.share * 100).toFixed(1)}%` }} />)}</div>
+                {p.byKind.filter((d) => d.share > 0).map((d) => (
+                  <div key={d.key} className={css.distRow}>
+                    <span aria-hidden="true" className={css.swatch} style={{ background: d.color }} />
+                    <span style={{ flex: 1 }}>{d.name}</span>
+                    <span className="num muted">{(d.share * 100).toFixed(0)}%</span>
+                    <strong className="num" style={{ minWidth: 80, textAlign: "right" }}>{money(d.valueCents)}</strong>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="small muted" style={{ lineHeight: 1.5 }}>{m.distEmpty}</p>}
+          </section>
+        ) : null}
+        <div className="stack" style={{ gap: 8 }}>
+          <p className={css.fine}>{m.tracking}</p>
+          <p className={css.fine}>{p.t.disclaimer}</p>
         </div>
       </div>
 
@@ -109,10 +161,10 @@ export function Inversiones(p: Props) {
         <details className={css.archived}>
           <summary>{fill(m.archived, { n: archived.length })}</summary>
           <ul>
-            {archived.map((i) => (
-              <li key={i.id}>
-                <span>{i.platform} <span className="xs muted">· {p.types[i.type]} · {money(i.valueCents)}</span></span>
-                {canEdit ? <button type="button" className="btn btn-secondary btn-sm" disabled={pending} onClick={() => run(() => setArchived({ id: i.id, archived: false }), () => toast(m.tRestored), (e) => toast(e))}>{m.restore}</button> : null}
+            {archived.map((a) => (
+              <li key={a.id}>
+                <span>{a.name} <span className="xs muted">· {a.kindLabel} · {money(a.valueCents)}</span></span>
+                {canEdit ? <button type="button" className="btn btn-secondary btn-sm" disabled={pending} onClick={() => run(() => setAssetArchived({ id: a.id, archived: false }), () => toast(m.tRestored), (e) => toast(e))}>{m.restore}</button> : null}
               </li>
             ))}
           </ul>
@@ -122,154 +174,196 @@ export function Inversiones(p: Props) {
   );
 }
 
-function LinkSelect({ p, id, value, onChange, own }: { p: Props; id: string; value: string; onChange: (v: string) => void; own?: string }) {
+function NewAsset({ p, run, pending, onClose, onSaved }: { p: Props; run: Run; pending: boolean; onClose: () => void; onSaved: (id: string) => void }) {
   const { m } = p;
-  const opts = p.lines.filter((l) => !l.takenBy || l.takenBy === own);
-  return (
-    <select id={id} className={css.input} value={value} onChange={(e) => onChange(e.target.value)}>
-      <option value="">{m.noLink}</option>
-      {opts.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-      <option value="new">{fill(m.newLine, { category: p.category })}</option>
-    </select>
-  );
-}
-
-function InvForm({ p, run, pending, onClose, onSaved, inv }: { p: Props; run: Run; pending: boolean; onClose: () => void; onSaved: (warn: string) => void; inv?: InvView }) {
-  const { m, fmt } = p;
-  const uid = inv?.id ?? "new";
-  const [f, setF] = useState({ platform: inv?.platform ?? "", type: inv?.type ?? ("super" as InvType), contributed: "", value: "", link: inv?.line?.id ?? "", monthly: "" });
+  const [f, setF] = useState({ name: "", kind: "etf" as AssetKind, platform: "" });
   const [error, setError] = useState("");
-  const zero = formatMoney(0, fmt);
   return (
-    <form aria-labelledby={`if-${uid}`} className={inv ? "stack" : css.form} style={inv ? { gap: 14 } : undefined} onSubmit={(e) => {
-      e.preventDefault(); setError("");
-      if (inv) run(() => updateInvestment({ id: inv.id, platform: f.platform, type: f.type, link: f.link, monthly: f.monthly }), () => onSaved(""), setError);
-      else run(() => createInvestment(f), (r) => onSaved(r.data.linkError ?? ""), setError);
-    }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        <h2 id={`if-${uid}`} className={inv ? "label" : css.formTitle}>{inv ? fill(m.editTitle, { name: inv.platform }) : m.newTitle}</h2>
-        {inv ? null : <span className="small muted">{m.newSub}</span>}
+    <form aria-labelledby="inv-new" className={css.form} onSubmit={(e) => { e.preventDefault(); setError(""); run(() => createAsset(f), (r) => onSaved(r.data), setError); }}>
+      <div className="stack" style={{ gap: 4 }}>
+        <h2 id="inv-new" className={css.formTitle}>{m.newTitle}</h2>
+        <span className="small muted" style={{ lineHeight: 1.5 }}>{fill(m.newSub, { retirement: p.retirement })}</span>
       </div>
-      <div className={inv ? "stack" : css.grid2}>
-        <div className="field"><label htmlFor={`in-${uid}`}>{m.name}</label><input id={`in-${uid}`} className={css.input} value={f.platform} onChange={(e) => setF({ ...f, platform: e.target.value })} placeholder={m.namePh} maxLength={80} required /></div>
-        {p.planOn ? <div className="field"><label htmlFor={`il-${uid}`}>{m.link}</label><LinkSelect p={p} id={`il-${uid}`} value={f.link} onChange={(link) => setF({ ...f, link })} own={inv?.id} /></div> : null}
-        {f.link === "new" ? <div className="field"><label htmlFor={`im-${uid}`}>{m.monthly}</label><input id={`im-${uid}`} className={`${css.input} num`} inputMode="decimal" value={f.monthly} onChange={(e) => setF({ ...f, monthly: e.target.value })} placeholder={zero} required /><span className="hint">{m.monthlyHint}</span></div> : null}
-        {inv ? null : <>
-          <div className="field"><label htmlFor={`ia-${uid}`}>{m.contributed}</label><input id={`ia-${uid}`} className={`${css.input} num`} inputMode="decimal" value={f.contributed} onChange={(e) => setF({ ...f, contributed: e.target.value })} placeholder={zero} /></div>
-          <div className="field"><label htmlFor={`iv-${uid}`}>{m.value}</label><input id={`iv-${uid}`} className={`${css.input} num`} inputMode="decimal" value={f.value} onChange={(e) => setF({ ...f, value: e.target.value })} placeholder={zero} /></div>
-        </>}
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <span id={`it-${uid}`} className="label">{m.type}</span>
-        <div role="radiogroup" aria-labelledby={`it-${uid}`} className={css.chips}>
-          {INV_TYPES.map((t) => <button key={t} type="button" role="radio" aria-checked={f.type === t} className={css.chip} onClick={() => setF({ ...f, type: t })}>{p.types[t]}</button>)}
-        </div>
+      <div className={css.grid3}>
+        <div className="field"><label htmlFor="inv-n">{m.name}</label><input id="inv-n" className={css.input} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder={m.namePh} maxLength={80} required /></div>
+        <div className="field"><label htmlFor="inv-k">{m.type}</label><KindSelect id="inv-k" p={p} value={f.kind} onChange={(kind) => setF({ ...f, kind })} /></div>
+        <div className="field"><label htmlFor="inv-p">{m.platform}</label><input id="inv-p" className={css.input} value={f.platform} onChange={(e) => setF({ ...f, platform: e.target.value })} placeholder={m.platformPh} maxLength={80} /></div>
       </div>
       {error ? <p role="alert" className="error">{error}</p> : null}
-      <div className={css.actions} style={inv ? { justifyContent: "space-between" } : undefined}>
-        {inv ? <ConfirmButton label={m.archive} confirmLabel={m.archiveConfirm} className="btn btn-danger" onConfirm={async () => { const r = await setArchived({ id: inv.id, archived: true }); if (r.ok) onSaved(m.tArchived); else setError(r.error); }} /> : null}
-        <span className="row" style={{ gap: 10 }}>
-          <button type="button" className="btn btn-secondary" onClick={onClose}>{p.t.cancel}</button>
-          <button type="submit" className="btn" disabled={pending}>{inv ? p.t.save : p.t.add}</button>
-        </span>
+      <div className={css.actions}>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{p.t.cancel}</button>
+        <button type="submit" className="btn" disabled={pending}>{p.t.add}</button>
       </div>
-      {inv ? <p className="xs muted">{m.archiveHint}</p> : null}
     </form>
   );
 }
 
-function InvCard({ i, p, total, run, pending, toast }: { i: InvView; p: Props; total: Cents; run: Run; pending: boolean; toast: (t: string, pts?: number) => void }) {
-  const { m, fmt, locale, canEdit, today } = p;
-  const [open, setOpen] = useState<"" | "log" | "history" | "edit">("");
-  const [value, setValue] = useState("");
-  const [log, setLog] = useState({ kind: "aporte" as EntryKind, amount: "", date: today });
-  const [error, setError] = useState("");
-  const has = i.contributedCents > 0 || i.valueCents > 0;
-  const gain = i.valueCents - i.contributedCents;
-  const toggle = (k: typeof open) => { setOpen(open === k ? "" : k); setError(""); };
+function KindSelect({ id, p, value, onChange }: { id: string; p: Props; value: AssetKind; onChange: (k: AssetKind) => void }) {
   return (
-    <article className={`${css.card} ${open === "edit" ? css.cardOpen : ""}`}>
-      <div className="row">
-        <span aria-hidden="true" className={css.avatar} style={{ background: TYPE_COLOR[i.type], color: i.type === "cripto" ? "var(--tinta)" : "var(--blanco)" }}>{i.platform.charAt(0).toUpperCase()}</span>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-          <h3>{i.platform}</h3>
-          <span className="xs muted">{p.types[i.type]}{total > 0 ? ` · ${fill(m.share, { pct: ((i.valueCents / total) * 100).toFixed(0) })}` : ""}</span>
-        </div>
-      </div>
-      {open === "edit" ? <InvForm p={p} inv={i} run={run} pending={pending} onClose={() => setOpen("")} onSaved={(text) => { setOpen(""); toast(text || m.tSaved); }} /> : <>
-        <div className={css.boxes}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}><span className={css.lbl}>{m.put}</span><span className={`${css.box} num`}>{formatMoney(i.contributedCents, fmt)}</span></div>
-          <form style={{ display: "flex", flexDirection: "column", gap: 5 }} onSubmit={(e) => {
-            e.preventDefault(); setError("");
-            run(() => addInvestmentEntry({ id: i.id, kind: "valor", amount: value, date: "" }), () => { setValue(""); toast(m.tValue); }, setError);
-          }}>
-            <label htmlFor={`v-${i.id}`}>{m.worth}</label>
-            <span className={css.valueRow}>
-              <input id={`v-${i.id}`} className={`${css.box} num`} inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} placeholder={formatMoney(i.valueCents, fmt)} disabled={!canEdit} aria-label={fill(m.valueAria, { name: i.platform })} />
-              {canEdit && value.trim() ? <button type="submit" className="btn" disabled={pending}>{m.saveValue}</button> : null}
-            </span>
-          </form>
-        </div>
-        <div className="row-between small"><span className="muted">{m.result}</span><strong className="num" style={{ color: has ? tone(gain) : "var(--gris)" }}>{has ? resultText(i.contributedCents, i.valueCents, fmt) : m.resultEmpty}</strong></div>
-        {i.line ? <span className={css.linked}>{fill(m.linked, { line: i.line.name, amount: formatMoney(i.line.yearCents, fmt), year: p.year })}</span> : null}
-        <span className="xs muted">{fill(m.updated, { date: formatDate(i.valueDate, locale, "short") })}</span>
-        {error && open !== "log" ? <p role="alert" className="error">{error}</p> : null}
-        <div className={css.cardBtns}>
-          {canEdit ? <button type="button" className="btn" aria-expanded={open === "log"} onClick={() => toggle("log")}>{m.register}</button> : null}
-          <button type="button" className="btn btn-secondary" aria-expanded={open === "history"} onClick={() => toggle("history")}>{open === "history" ? m.hideHistory : m.history}</button>
-          {canEdit ? <button type="button" className="btn btn-secondary" aria-expanded={false} onClick={() => toggle("edit")}>{m.edit}</button> : null}
-        </div>
-        {open === "log" ? (
-          <form className={css.panel} onSubmit={(e) => {
-            e.preventDefault(); setError("");
-            run(() => addInvestmentEntry({ id: i.id, ...log }), () => { setOpen(""); setLog({ ...log, amount: "" }); toast(m.tEntry); }, setError);
-          }}>
-            <div role="radiogroup" aria-label={m.kindAria} className={css.modes}>
-              {(["aporte", "retiro", "valor"] as const).map((k) => <button key={k} type="button" role="radio" aria-checked={log.kind === k} onClick={() => setLog({ ...log, kind: k })}>{m.kinds[k]}</button>)}
-            </div>
-            <div className={css.boxes}>
-              <div className="field"><label htmlFor={`la-${i.id}`}>{m.amount}</label><input id={`la-${i.id}`} className={`${css.input} num`} inputMode="decimal" value={log.amount} onChange={(e) => setLog({ ...log, amount: e.target.value })} placeholder={formatMoney(0, fmt)} required /></div>
-              <div className="field"><label htmlFor={`ld-${i.id}`}>{m.date}</label><input id={`ld-${i.id}`} className={css.input} type="date" value={log.date} max={today} onChange={(e) => setLog({ ...log, date: e.target.value })} /></div>
-            </div>
-            {error ? <p role="alert" className="error">{error}</p> : null}
-            <div className={css.actions} style={{ gap: 8 }}>
-              <button type="button" className="btn btn-secondary" onClick={() => toggle("log")}>{p.t.cancel}</button>
-              <button type="submit" className="btn" disabled={pending}>{m.register}</button>
-            </div>
-          </form>
-        ) : null}
-        {open === "history" ? (
-          i.entries.length ? (
-            <ul className={css.history}>
-              {i.entries.map((e) => <li key={e.id}><span>{m.kindsPast[e.kind]} · <span className="muted">{formatDate(e.date, locale, "short")} {e.date.slice(0, 4)}</span></span><strong className="num">{e.kind === "retiro" ? "−" : e.kind === "aporte" ? "+" : ""}{formatMoney(e.amountCents, fmt)}</strong></li>)}
-            </ul>
-          ) : <p className="small muted">{m.noHistory}</p>
-        ) : null}
-      </>}
-    </article>
+    <select id={id} className={css.input} value={value} onChange={(e) => onChange(e.target.value as AssetKind)}>
+      {ASSET_KINDS.map((k) => <option key={k} value={k}>{p.kinds[k]}</option>)}
+    </select>
   );
 }
 
-/** Evolución de lo que vale todo (SVG a mano). Con menos de 2 fechas, explica qué falta: nunca un gráfico vacío. */
-function Chart({ p }: { p: Props }) {
-  const { m, fmt, locale, series } = p;
-  const g = chartPoints(series);
+function Detail({ a, p, run, pending, toast, sectionRef }: { a: AssetView; p: Props; run: Run; pending: boolean; toast: (t: string, pts?: number) => void; sectionRef: React.RefObject<HTMLElement | null> }) {
+  const { m, fmt, canEdit, today } = p;
+  const [price, setPrice] = useState(a.priceInput);
+  const [open, setOpen] = useState<"" | "op" | "edit">("");
+  const [op, setOp] = useState({ kind: "buy" as OpKind, date: today, qty: "", price: "" });
+  const [error, setError] = useState("");
+  const money = (c: Cents) => formatMoney(c, fmt);
+  const kindNames = a.byUnits ? m.opKinds : m.opKindsBalance;
+  const showQty = a.byUnits && op.kind !== "dividend";
+  const toggle = (k: typeof open) => { setOpen(open === k ? "" : k); setError(""); };
+  const opColor = (k: OpKind) => (k === "sell" ? "var(--ambar-texto)" : k === "dividend" ? "var(--verde-fuerte)" : "var(--tinta)");
+
   return (
-    <section aria-labelledby="evo" className={css.chartCard}>
-      <h2 id="evo">{m.chart}</h2>
-      {series.length < 2 ? <p className="small muted" style={{ lineHeight: 1.5 }}>{m.chartEmpty}</p> : (
+    <section ref={sectionRef} aria-labelledby={`inv-a-${a.id}`} className={css.detail}>
+      <div className={css.detailHead}>
+        <div className="stack" style={{ gap: 2, minWidth: 0 }}>
+          <span className="xs muted">{a.platform ? fill(m.inPlatform, { type: a.kindLabel, platform: a.platform }) : a.kindLabel}</span>
+          <h2 id={`inv-a-${a.id}`} className={css.detailTitle}>{a.name}</h2>
+        </div>
+        <strong className={`num big ${css.detailValue}`}>{money(a.valueCents)}</strong>
+      </div>
+
+      {open === "edit" && canEdit ? (
+        <EditAsset a={a} p={p} run={run} pending={pending} onClose={() => setOpen("")} onSaved={(text) => { setOpen(""); toast(text); }} />
+      ) : (
         <>
-          <div className={css.chart} role="img" aria-label={m.chartAria}>
-            {[0, 1, 2, 3, 4].map((k) => <div key={k} className={css.grid} style={{ bottom: `${k * 25}%`, borderTopStyle: k === 0 ? "solid" : "dashed" }}><span className="num">{formatCompact((g.max / 4) * k)}</span></div>)}
-            <svg aria-hidden="true" viewBox="0 0 1000 100" preserveAspectRatio="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible" }}>
-              <polyline points={g.points.map((pt) => `${pt.x},${pt.y}`).join(" ")} fill="none" stroke="var(--tinta)" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-            </svg>
-            {g.points.map((pt, k) => <span key={k} aria-hidden="true" className={css.dot} style={{ left: `${pt.x / 10}%`, top: `${pt.y}%` }} title={fill(m.chartPoint, { date: formatDate(series[k].date, locale, "short"), amount: formatMoney(series[k].cents, fmt) })} />)}
+          <dl className={css.facts}>
+            <div><dt>{m.has}</dt><dd className="num">{a.qtyText ?? m.balance}</dd>{a.avgText ? <dd className={`num ${css.sub}`}>{fill(m.avg, { price: a.avgText })}</dd> : null}</div>
+            <div><dt>{m.put}</dt><dd className="num">{money(a.costCents)}</dd></div>
+            <div><dt>{m.result}</dt><dd className="num" style={{ color: resultTone(a.gainCents) }}>{resultText(a.gainCents, a.costCents, fmt)}</dd></div>
+            <div><dt>{m.div}</dt><dd className="num">{money(a.dividendsCents)}</dd></div>
+          </dl>
+
+          <form className={css.priceBox} onSubmit={(e) => {
+            e.preventDefault(); setError("");
+            run(() => setAssetPrice({ id: a.id, price }), () => toast(m.tPrice), setError);
+          }}>
+            <div className="field" style={{ flex: "1 1 180px", minWidth: 0 }}>
+              <label htmlFor={`inv-pr-${a.id}`}>{a.byUnits ? m.priceUnit : m.priceBalance}</label>
+              <span className={css.priceRow}>
+                <input id={`inv-pr-${a.id}`} className={`${css.input} num`} inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} placeholder={formatMoney(0, fmt)} disabled={!canEdit} />
+                {canEdit && price.trim() && price !== a.priceInput ? <button type="submit" className="btn" disabled={pending}>{m.savePrice}</button> : null}
+              </span>
+            </div>
+            <span className={css.updated}>{a.priceDateLabel ? fill(m.updated, { date: a.priceDateLabel }) : m.notUpdated}</span>
+          </form>
+          {!a.hasPrice && a.ops.length ? <p className="xs muted">{m.noPriceNote}</p> : null}
+
+          {a.recurring ? (
+            <span className={css.rec}>{fill(m.recurring, { kind: a.byUnits ? m.recBuy : m.recAdd, amount: money(a.recurring.amountCents), line: a.recurring.line })}</span>
+          ) : null}
+          {a.recNeedsPrice ? <p className={css.warn}>{m.recNeedsPrice}</p> : null}
+          {error && open !== "op" ? <p role="alert" className="error">{error}</p> : null}
+
+          <div className={css.opsHead}>
+            <h3>{m.ops}</h3>
+            {canEdit ? (
+              <span className="row" style={{ gap: 8 }}>
+                <button type="button" className={`btn btn-secondary ${css.small}`} onClick={() => toggle("edit")}>{m.edit}</button>
+                <button type="button" className={`btn btn-secondary ${css.small}`} aria-expanded={open === "op"} onClick={() => toggle("op")}>{m.addOp}</button>
+              </span>
+            ) : null}
           </div>
-          <div className={css.xAxis} aria-hidden="true"><span>{formatDate(series[0].date, locale, "short")} {series[0].date.slice(0, 4)}</span><span>{formatDate(series[series.length - 1].date, locale, "short")} {series[series.length - 1].date.slice(0, 4)}</span></div>
-          <ul className="sr-only">{series.map((s) => <li key={s.date}>{fill(m.chartPoint, { date: formatDate(s.date, locale), amount: formatMoney(s.cents, fmt) })}</li>)}</ul>
+
+          {open === "op" && canEdit ? (
+            <form className={css.opForm} onSubmit={(e) => {
+              e.preventDefault(); setError("");
+              run(() => addOperation({ id: a.id, ...op, qty: showQty ? op.qty : "" }), (r) => {
+                setOpen(""); setOp({ kind: "buy", date: today, qty: "", price: "" });
+                toast((a.byUnits ? m.tOp : m.tOpBalance)[r.data.kind as OpKind]);
+              }, setError);
+            }}>
+              <div className="stack" style={{ gap: 8 }}>
+                <span id={`inv-ok-${a.id}`} className={css.lbl}>{m.opKind}</span>
+                <div role="radiogroup" aria-labelledby={`inv-ok-${a.id}`} className={css.chips}>
+                  {(["buy", "sell", "dividend"] as const).map((k) => <button key={k} type="button" role="radio" aria-checked={op.kind === k} className={css.chip} onClick={() => setOp({ ...op, kind: k })}>{kindNames[k]}</button>)}
+                </div>
+              </div>
+              <div className={showQty ? css.grid3 : css.grid2}>
+                <div className="field"><label htmlFor={`inv-od-${a.id}`}>{m.date}</label><input id={`inv-od-${a.id}`} className={css.input} type="date" value={op.date} max={today} onChange={(e) => setOp({ ...op, date: e.target.value })} /></div>
+                {showQty ? <div className="field"><label htmlFor={`inv-oq-${a.id}`}>{m.qty}</label><input id={`inv-oq-${a.id}`} className={`${css.input} num`} inputMode="decimal" value={op.qty} onChange={(e) => setOp({ ...op, qty: e.target.value })} placeholder="0" required /></div> : null}
+                <div className="field"><label htmlFor={`inv-op-${a.id}`}>{showQty ? m.priceOrAmount : m.amount}</label><input id={`inv-op-${a.id}`} className={`${css.input} num`} inputMode="decimal" value={op.price} onChange={(e) => setOp({ ...op, price: e.target.value })} placeholder={formatMoney(0, fmt)} required /></div>
+              </div>
+              {error ? <p role="alert" className="error">{error}</p> : null}
+              <div className={css.actions}>
+                <button type="button" className="btn btn-secondary" onClick={() => toggle("op")}>{p.t.cancel}</button>
+                <button type="submit" className="btn" disabled={pending}>{p.t.save}</button>
+              </div>
+            </form>
+          ) : null}
+
+          {a.ops.length ? (
+            <ul className={css.ops}>
+              {a.ops.map((o) => (
+                <li key={o.id}>
+                  <span className="stack" style={{ gap: 2, minWidth: 0 }}>
+                    <strong style={{ color: opColor(o.kind) }}>{kindNames[o.kind]}</strong>
+                    <span className={`num ${css.sub}`}>{o.dateLabel} · {o.detail}</span>
+                  </span>
+                  <span className={css.opEnd}>
+                    <strong className="num">{o.kind === "buy" ? money(o.amountCents) : `+${money(o.amountCents)}`}</strong>
+                    {canEdit ? (
+                      <ConfirmButton className={`btn btn-secondary ${css.remove}`} label={m.removeOp} confirmLabel={m.removeOpConfirm}
+                        ariaLabel={fill(m.removeOpAria, { kind: kindNames[o.kind], date: o.dateLabel })} confirmAriaLabel={fill(m.removeOpConfirmAria, { kind: kindNames[o.kind], date: o.dateLabel })}
+                        onConfirm={() => run(() => removeOperation({ id: o.id }), () => toast(m.tOpRemoved), setError)} />
+                    ) : null}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : <p className="small muted">{m.noOps}</p>}
         </>
       )}
     </section>
+  );
+}
+
+function EditAsset({ a, p, run, pending, onClose, onSaved }: { a: AssetView; p: Props; run: Run; pending: boolean; onClose: () => void; onSaved: (text: string) => void }) {
+  const { m } = p;
+  const options = p.lines.filter((l) => !l.takenBy || l.takenBy === a.id);
+  // Si su línea ya no está en el plan de este año, el campo arranca en "Ninguna" (y guardar la desliga).
+  const [f, setF] = useState({ name: a.name, kind: a.kind, platform: a.platform ?? "", link: options.some((l) => l.id === a.lineId) ? (a.lineId as string) : "", monthly: "" });
+  const [error, setError] = useState("");
+  return (
+    <form aria-labelledby={`inv-e-${a.id}`} className="stack" style={{ gap: 14 }} onSubmit={(e) => {
+      e.preventDefault(); setError("");
+      run(() => updateAsset({ id: a.id, ...f }), () => onSaved(m.tSaved), setError);
+    }}>
+      <h3 id={`inv-e-${a.id}`} className={css.lbl}>{fill(m.editTitle, { name: a.name })}</h3>
+      <div className={css.grid3}>
+        <div className="field"><label htmlFor={`inv-en-${a.id}`}>{m.name}</label><input id={`inv-en-${a.id}`} className={css.input} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} maxLength={80} required /></div>
+        <div className="field"><label htmlFor={`inv-ek-${a.id}`}>{m.type}</label><KindSelect id={`inv-ek-${a.id}`} p={p} value={f.kind} onChange={(kind) => setF({ ...f, kind })} /></div>
+        <div className="field"><label htmlFor={`inv-ep-${a.id}`}>{m.platform}</label><input id={`inv-ep-${a.id}`} className={css.input} value={f.platform} onChange={(e) => setF({ ...f, platform: e.target.value })} placeholder={m.platformPh} maxLength={80} /></div>
+      </div>
+      {p.planOn ? (
+        <div className={css.grid2}>
+          <div className="field">
+            <label htmlFor={`inv-el-${a.id}`}>{m.link}</label>
+            <select id={`inv-el-${a.id}`} className={css.input} value={f.link} onChange={(e) => setF({ ...f, link: e.target.value })}>
+              <option value="">{m.noLink}</option>
+              {options.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+              <option value="new">{fill(m.newLine, { category: p.category })}</option>
+            </select>
+          </div>
+          {f.link === "new" ? (
+            <div className="field"><label htmlFor={`inv-em-${a.id}`}>{m.monthly}</label><input id={`inv-em-${a.id}`} className={`${css.input} num`} inputMode="decimal" value={f.monthly} onChange={(e) => setF({ ...f, monthly: e.target.value })} placeholder={formatMoney(0, p.fmt)} required /><span className="hint">{m.monthlyHint}</span></div>
+          ) : null}
+        </div>
+      ) : null}
+      {error ? <p role="alert" className="error">{error}</p> : null}
+      <div className={css.actions} style={{ justifyContent: "space-between" }}>
+        <ConfirmButton label={m.archive} confirmLabel={m.archiveConfirm} className="btn btn-danger" onConfirm={() => run(() => setAssetArchived({ id: a.id, archived: true }), () => onSaved(m.tArchived), setError)} />
+        <span className="row" style={{ gap: 10 }}>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>{p.t.cancel}</button>
+          <button type="submit" className="btn" disabled={pending}>{p.t.save}</button>
+        </span>
+      </div>
+      <p className="xs muted">{m.archiveHint}</p>
+    </form>
   );
 }

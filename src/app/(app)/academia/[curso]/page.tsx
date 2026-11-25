@@ -3,11 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
-import { ProWall } from "@/components/shell/ProWall";
 import { requireUser } from "@/server/session";
 import { formatDate } from "@/lib/engine";
 import { Countdown } from "../Countdown";
-import { isLockedForTier, localParts } from "../lib";
+import { localParts } from "../lib";
 import { M } from "../messages";
 import { loadCatalog, loadCourse } from "../server";
 import { Cover, LessonList } from "../ui";
@@ -25,13 +24,11 @@ export default async function CursoPage({ params }: { params: Params }) {
   const m = M[s.locale];
   const { curso } = await params;
   const back = <Link href="/academia" className="link">‹ {m.academia}</Link>;
-  if (s.config.menu.academia !== "on" || !s.has("acad")) {
+  if (s.config.menu.academia !== "on") {
     return (
       <main className="page">
         <PageHeader title={m.title} eyebrow={back} />
-        {s.config.menu.academia !== "on"
-          ? <Empty icon="cap" title={m.soonTitle} text={m.soonText}><Link href="/inicio" className="btn btn-secondary btn-sm">{m.goHome}</Link></Empty>
-          : <ProWall s={s} title={m.proTitle} bullets={m.proBullets} />}
+        <Empty icon="cap" title={m.soonTitle} text={m.soonText}><Link href="/inicio" className="btn btn-secondary btn-sm">{m.goHome}</Link></Empty>
       </main>
     );
   }
@@ -39,7 +36,6 @@ export default async function CursoPage({ params }: { params: Params }) {
   if (!cv) notFound();
   const { course, progress } = cv;
   const stage = m.stages[course.stage]?.label ?? course.stage.toUpperCase();
-  const proLocked = isLockedForTier(course.tier, "free", s.tier);
   const next = cv.lessons.find((l) => l.id === cv.nextId);
 
   if (course.upcoming && course.publishAt) {
@@ -64,10 +60,8 @@ export default async function CursoPage({ params }: { params: Params }) {
   return (
     <main className="page">
       <PageHeader title={course.title} eyebrow={<>{back} · {stage}</>}>
-        {next && !proLocked ?<Link href={`/academia/${course.slug}/${next.id}`} className="btn">{progress.done > 0 ? m.continue : m.start}</Link> : null}
+        {next ? <Link href={`/academia/${course.slug}/${next.id}`} className="btn">{progress.done > 0 ? m.continue : m.start}</Link> : null}
       </PageHeader>
-
-      {proLocked ? <ProWall s={s} title={m.courseProTitle} bullets={m.courseProBullets} /> : null}
 
       <div className={css.lessonLayout}>
         <div className={css.lessonMain}>

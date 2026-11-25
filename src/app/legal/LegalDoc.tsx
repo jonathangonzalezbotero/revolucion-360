@@ -7,9 +7,9 @@ import css from "./legal.module.css";
 
 /** Términos o privacidad. Páginas públicas, sin el menú de la app. Las pestañas del mockup son enlaces entre las dos rutas. */
 export async function LegalDoc({ doc }: { doc: "terms" | "privacy" }) {
-  const { legal, locale, signedIn } = await loadLegal();
+  const { legal, prices, locale, signedIn } = await loadLegal();
   const m = M[locale];
-  const vars = { company: legal.company, abn: legal.abn, contact: legal.contact, address: legal.address };
+  const vars = { company: legal.company, abn: legal.abn, contact: legal.contact, address: legal.address, ...prices };
   const sections = doc === "terms" ? m.termsSections : m.privacySections;
   return (
     <div className={css.page}>

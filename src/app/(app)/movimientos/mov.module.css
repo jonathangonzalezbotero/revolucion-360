@@ -124,3 +124,6 @@ select.in { padding: 0 8px; }
   .del { min-height: 46px; font-size: 14px; }
   .recCard { padding: 16px; }
 }
+
+/* "Pagado con…" una meta: un logro, no un gasto de más */
+.goalWin { font-size: 12px; color: var(--verde-fuerte); background: var(--verde-fondo); border-radius: var(--r-sm); padding: 8px 10px; line-height: 1.5; }

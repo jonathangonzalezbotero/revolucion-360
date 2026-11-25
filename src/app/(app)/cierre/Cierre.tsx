@@ -10,6 +10,7 @@ import { closeMonth, reopenMonth, resolvePending, saveNext, undoPending, type Cl
 import css from "./cierre.module.css";
 import { adjustedNet, balanceGap, cardSigned, changedCells, moneyInput, type Deviation, type PendingOpt, type Period, type Snapshot, type Totals } from "./lib";
 import type { CierreText } from "./messages";
+import { Leftover } from "./Leftover";
 
 type Pending = { lineId: string; name: string; status: string; plannedCents: Cents; realCents: Cents; missingCents: Cents; opts: PendingOpt[] };
 export type CierreProps = {
@@ -23,6 +24,8 @@ export type CierreProps = {
   balances: { id: string; name: string; kind: string; card: boolean; balanceCents: Cents; shownCents: Cents; expectedCents: Cents; reconcile: boolean; dateLabel: string }[];
   list: { month: number; label: string; reopened: boolean; href: string; current: boolean }[];
   links: { review: string | null; monthPlan: string; nextPlan: string; cuentas: string };
+  /** Metas activas para mandar lo que sobró, y si ya se decidió qué hacer con lo de este mes. */
+  leftover: { goals: { id: string; name: string }[]; decided: boolean; closedCents: Cents };
 };
 
 export function Cierre(p: CierreProps) {
@@ -60,6 +63,8 @@ export function Cierre(p: CierreProps) {
             <strong>{result.streak > 1 ? fill(m.streak, { n: result.streak }) : m.streakOne}</strong>{" "}
             {result.reminder ? fill(m.remind, { next: rNext, date: formatDate(result.reminder, p.locale) }) : null}
           </p>
+          {p.canEdit && !p.leftover.decided && result.leftoverCents > 0
+            ? <Leftover lf={{ year: result.year, month: result.month, monthLabel: rLower, cents: result.leftoverCents, goals: p.leftover.goals }} fmt={fmt} m={m} /> : null}
           <div className={css.ctas}>
             <Link href="/diagnostico" className={css.ctaMain}>{m.seeDiag}</Link>
             <Link href="/inicio" className={css.ctaAlt}>{m.backHome}</Link>
@@ -109,6 +114,8 @@ export function Cierre(p: CierreProps) {
               {sn.investments.map((i) => <div key={i.id} className={css.row}><span>{fill(m.invLabel, { name: i.name })}</span><strong className="num">{money(i.cents)}</strong></div>)}
             </div>
           ) : null}
+          {p.canEdit && !p.leftover.decided && p.leftover.closedCents > 0
+            ? <Leftover lf={{ year: p.period.year, month: p.period.month, monthLabel: p.lower, cents: p.leftover.closedCents, goals: p.leftover.goals }} fmt={fmt} m={m} /> : null}
           <Link href={p.links.monthPlan} className="link small" style={{ fontWeight: 600 }}>{fill(m.planLink, { month: p.lower })}</Link>
           {p.canEdit ? (
             <div className="banner" style={{ alignItems: "center" }}>

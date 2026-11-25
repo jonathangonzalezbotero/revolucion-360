@@ -76,7 +76,7 @@ export const M = {
     },
     gate: {
       offTitle: "La importación de CSV no está disponible", offText: "Por ahora registra tus movimientos a mano desde Movimientos.", offCta: "Ir a Movimientos",
-      roText: "Para importar movimientos, reactiva Pro. Tus datos siguen aquí.", roCta: "Ver mi suscripción",
+      roText: "Para importar movimientos, reactiva tu suscripción. Tus datos siguen aquí.", roCta: "Ver mi suscripción",
       noAccTitle: "Primero crea una cuenta", noAccText: "Los movimientos del archivo van a una de tus cuentas. Crea la cuenta de tu banco y vuelve.", noAccCta: "Crear una cuenta",
       proTitle: "Trae el archivo de tu banco y listo", proText: "Sube el CSV de tu banco y la app registra todos los movimientos del mes por ti.",
       proBullets: ["Detecta duplicados y transferencias entre tus cuentas", "Aprende tus categorías con reglas", "Compara el saldo del archivo con el de la app"],
@@ -157,7 +157,7 @@ export const M = {
     },
     gate: {
       offTitle: "CSV import isn't available", offText: "For now, log your transactions by hand from Transactions.", offCta: "Go to Transactions",
-      roText: "To import transactions, reactivate Pro. Your data is still here.", roCta: "See my subscription",
+      roText: "To import transactions, reactivate your subscription. Your data is still here.", roCta: "See my subscription",
       noAccTitle: "Create an account first", noAccText: "The file's transactions go into one of your accounts. Create your bank account and come back.", noAccCta: "Create an account",
       proTitle: "Bring in your bank's file and you're done", proText: "Upload your bank's CSV and the app logs the whole month's transactions for you.",
       proBullets: ["Spots duplicates and transfers between your accounts", "Learns your categories with rules", "Compares the file's balance with the app's"],

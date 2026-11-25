@@ -15,6 +15,7 @@ const Grant = z.object({
 });
 const NO_MAIL = null as { sent: number; of: number } | null;
 const REVALIDATE = ["/admin", "/admin/usuarios", "/admin/grupos", "/admin/actividad"];
+// Dar acceso y crear grupos es de Usuarios y accesos (Soporte o Dueño); la base lo impone igual (is_admin_of).
 
 /** Da acceso gratis (alumno o fundador) a usuarios elegidos y/o a correos pegados. */
 export async function grantUsers(input: unknown) {
@@ -37,7 +38,7 @@ export async function grantUsers(input: unknown) {
     }
     const mail = p.data.notify ? await mailGrant(s, [...ids], p.data.kind, e.until) : null;
     return ok({ granted: ids.size, notFound, mail: mail ? { sent: mail.sent, of: ids.size } : NO_MAIL });
-  });
+  }, "usuarios");
 }
 
 /** Da acceso a todos los miembros de un grupo (cada acceso queda ligado al grupo). */
@@ -54,7 +55,7 @@ export async function grantGroup(input: unknown) {
     }
     const mail = p.data.notify ? await mailGrant(s, members.map((m) => m.user_id), p.data.kind, e.until) : null;
     return ok({ granted: members.length, notFound: [] as string[], mail: mail ? { sent: mail.sent, of: members.length } : NO_MAIL });
-  });
+  }, "usuarios");
 }
 
 /** Crea un grupo (también desde el formulario de dar acceso). */
@@ -66,5 +67,5 @@ export async function createGroup(input: unknown) {
     const row = must(await s.supabase.from("groups").insert({ name: p.data.name, note: p.data.note }).select("id, name").single());
     await audit(s, "grupo_crear", null, { group: row.id, name: row.name });
     return ok(row);
-  });
+  }, "usuarios");
 }

@@ -18,12 +18,14 @@ import css from "./academia.module.css";
 
 export type CourseItem = { id: string; label: string; title: string; cover: string; state: CourseState; stateLabel: string; count: string; selected: boolean };
 export type CourseFull = {
-  id: string; slug: string; label: string; title: string; stage: string; number: number; description: string; cover: string; tier: "free" | "pro"; priority: string | null;
+  id: string; slug: string; label: string; title: string; stage: string; number: number; description: string; cover: string; groupId: string | null; priority: string | null;
   state: CourseState; scheduledText: string | null; scheduleDate: string; scheduleTime: string;
 };
 export type LessonRowView = { id: string; n: number; title: string; duration: string };
 export type ModuleGroup = { id: string | null; title: string; n: number; lessons: LessonRowView[] };
-export type LessonFull = { id: string; n: number; moduleId: string | null; title: string; duration: string; video: string; cta: string; points: number; tier: "free" | "pro"; description: string; required: boolean };
+export type LessonFull = { id: string; n: number; moduleId: string | null; title: string; duration: string; video: string; cta: string; points: number; description: string; required: boolean };
+/** Grupo de alumnos que puede ver un curso ("Visible para"). */
+export type Audience = { id: string; name: string };
 export type CommentRow = { id: string; author: string; body: string; hidden: boolean; date: string };
 type Points = { lesson: number; course: number; closure: number; week_active: number };
 type R = { ok: true; data?: unknown } | { ok: false; error: string };
@@ -32,9 +34,9 @@ const TONE: Record<CourseState, PillTone> = { published: "ok", scheduled: "warn"
 const BASE = "/admin/academia";
 const href = (curso: string, clase?: string) => `${BASE}?curso=${curso}${clase ? `&clase=${clase}` : ""}`;
 
-export function AcademiaAdminView({ t, m, tz, items, course, groups, lesson, comments, stages, covers, nextNumber, points, levels }: {
+export function AcademiaAdminView({ t, m, tz, items, course, groups, lesson, comments, stages, covers, nextNumber, points, levels, audiences }: {
   t: AdminText; m: AcadAdminText; tz: string; items: CourseItem[]; course: CourseFull | null; groups: ModuleGroup[]; lesson: LessonFull | null; comments: CommentRow[];
-  stages: string[]; covers: string[]; nextNumber: number; points: Points; levels: string;
+  stages: string[]; covers: string[]; nextNumber: number; points: Points; levels: string; audiences: Audience[];
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -90,6 +92,7 @@ export function AcademiaAdminView({ t, m, tz, items, course, groups, lesson, com
                   <span className={css.eyebrow} style={{ fontSize: 12 }}>{course.label}</span>
                   <h2 id="ed">{course.title}</h2>
                   {course.scheduledText ? <span className="small" style={{ color: "var(--ambar-texto)", fontWeight: 600 }}>{course.scheduledText}</span> : null}
+                  {course.groupId ? <span><Pill tone="neutral">{fill(m.onlyGroup, { name: audiences.find((a) => a.id === course.groupId)?.name ?? t.none })}</Pill></span> : null}
                 </div>
                 <div className="row wrap" style={{ gap: 8 }}>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setErr(null); setCourseForm("edit"); }}>{m.editCourse}</button>
@@ -157,7 +160,7 @@ export function AcademiaAdminView({ t, m, tz, items, course, groups, lesson, com
               )}
 
               {lesson ? (
-                <LessonEditor key={lesson.id} m={m} t={t} lesson={lesson} courseTier={course.tier} modules={realModules} busy={busy} error={errorOf("lesson")}
+                <LessonEditor key={lesson.id} m={m} t={t} lesson={lesson} modules={realModules} busy={busy} error={errorOf("lesson")}
                   onSave={(v) => act("lesson", () => saveLesson(v), m.lessonSaved)} />
               ) : null}
 
@@ -188,7 +191,7 @@ export function AcademiaAdminView({ t, m, tz, items, course, groups, lesson, com
       {/* Curso: crear o editar */}
       <Modal open={courseForm !== null} onClose={() => setCourseForm(null)} title={courseForm === "edit" ? m.editCourse : m.newCourseTitle} labelClose={t.close}>
         {courseForm ? (
-          <CourseForm key={courseForm === "edit" ? course?.id : "new"} m={m} t={t} course={courseForm === "edit" ? course : null} stages={stages} covers={covers} nextNumber={nextNumber}
+          <CourseForm key={courseForm === "edit" ? course?.id : "new"} m={m} t={t} course={courseForm === "edit" ? course : null} stages={stages} covers={covers} nextNumber={nextNumber} audiences={audiences}
             busy={busy} error={errorOf("course")} onCancel={() => setCourseForm(null)}
             onSave={(v) => act("course", () => saveCourse(v), v.id ? m.courseSaved : m.courseCreated, (r) => { setCourseForm(null); const id = newId(r); if (!v.id && id) router.push(href(id), { scroll: false }); })} />
         ) : null}
@@ -270,9 +273,9 @@ function PointsBox({ m, points, levels, busy, onSave }: { m: AcadAdminText; poin
 }
 
 // ───────── Editar clase ─────────
-type LessonValue = { id: string; moduleId: string | null; title: string; duration: string; video: string; cta: string; points: string; tier: "free" | "pro"; description: string; required: boolean };
-function LessonEditor({ m, t, lesson, courseTier, modules, busy, error, onSave }: {
-  m: AcadAdminText; t: AdminText; lesson: LessonFull; courseTier: "free" | "pro"; modules: ModuleGroup[]; busy: boolean; error: string | null; onSave: (v: LessonValue) => void;
+type LessonValue = { id: string; moduleId: string | null; title: string; duration: string; video: string; cta: string; points: string; description: string; required: boolean };
+function LessonEditor({ m, t, lesson, modules, busy, error, onSave }: {
+  m: AcadAdminText; t: AdminText; lesson: LessonFull; modules: ModuleGroup[]; busy: boolean; error: string | null; onSave: (v: LessonValue) => void;
 }) {
   const [v, setV] = useState<LessonValue>({ ...lesson, points: String(lesson.points) });
   const set = (p: Partial<LessonValue>) => setV({ ...v, ...p });
@@ -291,10 +294,6 @@ function LessonEditor({ m, t, lesson, courseTier, modules, busy, error, onSave }
             <option value="">{m.ctaNone}</option>
           </select></div>
         <div className="field"><label htmlFor="l-pts">{m.points}</label><input id="l-pts" className="input num" inputMode="numeric" value={v.points} onChange={(e) => set({ points: e.target.value.replace(/\D/g, "").slice(0, 4) })} /></div>
-        <div className="field"><label htmlFor="l-plan">{m.available}</label>
-          <select id="l-plan" className="select" value={v.tier} onChange={(e) => set({ tier: e.target.value === "pro" ? "pro" : "free" })}>
-            <option value="free">{m.tiers.free}</option><option value="pro">{m.tiers.pro}</option>
-          </select></div>
         {modules.length ? (
           <div className="field"><label htmlFor="l-mod">{m.inModule}</label>
             <select id="l-mod" className="select" value={v.moduleId ?? ""} onChange={(e) => set({ moduleId: e.target.value || null })}>
@@ -303,7 +302,7 @@ function LessonEditor({ m, t, lesson, courseTier, modules, busy, error, onSave }
             </select></div>
         ) : null}
       </div>
-      <span className="xs muted">{m.videoHelp}{courseTier === "pro" ? ` ${m.proCourseNote}` : ""}</span>
+      <span className="xs muted">{m.videoHelp}</span>
       <div className="field"><label htmlFor="l-desc">{m.about}</label><textarea id="l-desc" rows={3} className="textarea" value={v.description} maxLength={2000} onChange={(e) => set({ description: e.target.value })} /></div>
       <div className="row" style={{ gap: 12, alignItems: "center" }}>
         <Switch checked={v.required} onChange={(x) => set({ required: x })} label={m.requiredLabel} />
@@ -316,14 +315,18 @@ function LessonEditor({ m, t, lesson, courseTier, modules, busy, error, onSave }
 }
 
 // ───────── Curso: crear o editar ─────────
-type CourseValue = { id: string | null; title: string; stage: string; number: string; description: string; cover: string; tier: "free" | "pro"; priority: string | null };
-function CourseForm({ m, t, course, stages, covers, nextNumber, busy, error, onCancel, onSave }: {
-  m: AcadAdminText; t: AdminText; course: CourseFull | null; stages: string[]; covers: string[]; nextNumber: number; busy: boolean; error: string | null; onCancel: () => void; onSave: (v: CourseValue) => void;
+type CourseValue = { id: string | null; title: string; stage: string; number: string; description: string; cover: string; groupId: string | null; priority: string | null };
+function CourseForm({ m, t, course, stages, covers, nextNumber, audiences, busy, error, onCancel, onSave }: {
+  m: AcadAdminText; t: AdminText; course: CourseFull | null; stages: string[]; covers: string[]; nextNumber: number; audiences: Audience[]; busy: boolean; error: string | null; onCancel: () => void; onSave: (v: CourseValue) => void;
 }) {
   const [v, setV] = useState<CourseValue>(course
-    ? { id: course.id, title: course.title, stage: course.stage, number: String(course.number), description: course.description, cover: course.cover, tier: course.tier, priority: course.priority }
-    : { id: null, title: "", stage: stages[0] ?? "", number: String(nextNumber), description: "", cover: "", tier: "free", priority: null });
+    ? { id: course.id, title: course.title, stage: course.stage, number: String(course.number), description: course.description, cover: course.cover, groupId: course.groupId, priority: course.priority }
+    : { id: null, title: "", stage: stages[0] ?? "", number: String(nextNumber), description: "", cover: "", groupId: null, priority: null });
+  // "Solo un grupo" se elige aunque el grupo aún no esté puesto: el servidor pide elegirlo.
+  const [forGroup, setForGroup] = useState(!!v.groupId);
   const set = (p: Partial<CourseValue>) => setV({ ...v, ...p });
+  // Un grupo guardado que ya no aparece se sigue mostrando como opción (no se cambia sin querer).
+  const options = v.groupId && !audiences.some((a) => a.id === v.groupId) ? [...audiences, { id: v.groupId, name: t.none }] : audiences;
   return (
     <>
       <div className="field"><label htmlFor="c-t">{m.courseTitle}</label><input id="c-t" className="input" value={v.title} maxLength={120} placeholder={m.courseTitlePh} onChange={(e) => set({ title: e.target.value })} /></div>
@@ -331,9 +334,10 @@ function CourseForm({ m, t, course, stages, covers, nextNumber, busy, error, onC
         <div className="field"><label htmlFor="c-s">{m.stage}</label>
           <select id="c-s" className="select" value={v.stage} onChange={(e) => set({ stage: e.target.value })}>{stages.map((x) => <option key={x} value={x}>{x}</option>)}</select></div>
         <div className="field"><label htmlFor="c-n">{m.number}</label><input id="c-n" className="input num" inputMode="numeric" value={v.number} onChange={(e) => set({ number: e.target.value.replace(/\D/g, "").slice(0, 3) })} /></div>
-        <div className="field"><label htmlFor="c-tier">{m.tier}</label>
-          <select id="c-tier" className="select" value={v.tier} onChange={(e) => set({ tier: e.target.value === "pro" ? "pro" : "free" })}>
-            <option value="free">{m.tiers.free}</option><option value="pro">{m.tiers.pro}</option>
+        <div className="field"><label htmlFor="c-vis">{m.visibleFor}</label>
+          <select id="c-vis" className="select" value={forGroup ? "group" : "all"} aria-describedby="c-vis-h"
+            onChange={(e) => { const g = e.target.value === "group"; setForGroup(g); set({ groupId: g ? v.groupId ?? options[0]?.id ?? null : null }); }}>
+            <option value="all">{m.visibleAll}</option><option value="group">{m.visibleGroup}</option>
           </select></div>
         <div className="field"><label htmlFor="c-p">{m.priority}</label>
           <select id="c-p" className="select" value={v.priority ?? ""} onChange={(e) => set({ priority: e.target.value || null })}>
@@ -341,6 +345,15 @@ function CourseForm({ m, t, course, stages, covers, nextNumber, busy, error, onC
             {PRIORITIES.map((k) => <option key={k} value={k}>{m.indicators[k]}</option>)}
           </select></div>
       </div>
+      {forGroup ? (
+        options.length ? (
+          <div className="field"><label htmlFor="c-grp">{m.pickGroup}</label>
+            <select id="c-grp" className="select" value={v.groupId ?? ""} onChange={(e) => set({ groupId: e.target.value || null })}>
+              {options.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select></div>
+        ) : <span className="small muted">{m.noGroups} <Link href="/admin/grupos">{m.createGroup}</Link></span>
+      ) : null}
+      <span id="c-vis-h" className="xs muted">{m.visibleHelp}</span>
       <span className="xs muted">{m.priorityHelp}</span>
       <div className="field"><label htmlFor="c-cov">{m.cover}</label>
         <input id="c-cov" className="input" list="c-cov-list" value={v.cover} maxLength={500} placeholder={m.coverPh} onChange={(e) => set({ cover: e.target.value })} />
@@ -353,7 +366,7 @@ function CourseForm({ m, t, course, stages, covers, nextNumber, busy, error, onC
       {error ? <p role="alert" className={shared.err}>{error}</p> : null}
       <div className="row" style={{ justifyContent: "flex-end", gap: 10 }}>
         <button type="button" className="btn btn-secondary" onClick={onCancel}>{t.cancel}</button>
-        <button type="button" className="btn" disabled={busy || !v.title.trim() || !v.number} onClick={() => onSave(v)}>{course ? m.saveCourse : m.createCourse}</button>
+        <button type="button" className="btn" disabled={busy || !v.title.trim() || !v.number || (forGroup && !v.groupId)} onClick={() => onSave(v)}>{course ? m.saveCourse : m.createCourse}</button>
       </div>
     </>
   );

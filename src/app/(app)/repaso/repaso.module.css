@@ -1,0 +1,48 @@
+/* Repaso semanal (mockup Repaso.dc.html y Repaso-movil.dc.html). Corte en 900 px. */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.stat { background: var(--blanco); border: 1px solid var(--linea); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.statNum { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+.cols { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.col { display: flex; flex-direction: column; gap: 18px; }
+.card { background: var(--blanco); border-radius: 14px; border: 1px solid var(--linea); padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; }
+.h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.list { list-style: none; margin: 0; padding: 0; }
+.bars { display: flex; flex-direction: column; gap: 14px; }
+.barRow { display: flex; flex-direction: column; gap: 6px; }
+.barHead { display: flex; justify-content: space-between; font-size: 14px; gap: 8px; }
+.track { height: 8px; border-radius: 4px; background: var(--seleccion); overflow: hidden; }
+.fill { height: 100%; border-radius: 4px; }
+.due { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--seleccion); font-size: 14px; }
+.dueDay { color: var(--gris); display: inline-block; width: 64px; }
+.one { background: var(--tinta); color: var(--blanco); border-radius: 14px; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; }
+.oneLabel { font-size: 12px; font-weight: 600; color: var(--amarillo); text-transform: uppercase; letter-spacing: .06em; }
+.oneTitle { margin: 0; font-size: 20px; font-weight: 600; }
+.oneText { font-size: 14px; color: var(--oscuro-texto-2); line-height: 1.5; }
+.oneCta { align-self: flex-start; text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 16px; border-radius: 12px; background: var(--amarillo); color: var(--tinta); min-height: 44px; display: inline-flex; align-items: center; box-sizing: border-box; }
+.lesson { text-decoration: none; color: var(--tinta); background: var(--blanco); border: 1px solid var(--linea); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.notice { display: flex; gap: 12px; align-items: flex-start; background: var(--papel); border-radius: 16px; padding: 12px 14px; }
+.logo { width: 34px; height: 34px; border-radius: 9px; background: var(--tinta); color: var(--amarillo); font-size: 11px; font-weight: 600; font-style: italic; display: flex; align-items: center; justify-content: center; flex: none; }
+.when { font-size: 11px; color: var(--gris); white-space: nowrap; text-align: right; display: flex; flex-direction: column; gap: 2px; }
+.done { text-decoration: none; font-size: 14px; font-weight: 600; padding: 13px 18px; border-radius: 12px; background: var(--tinta); color: var(--blanco); }
+.doneMobile { text-decoration: none; text-align: center; font-size: 15px; font-weight: 600; padding: 16px; border-radius: 14px; background: var(--tinta); color: var(--blanco); }
+.intro { margin: 0; font-size: 17px; color: var(--tinta-2); max-width: 720px; line-height: 1.5; }
+.mobileOnly { display: none; }
+
+@media (max-width: 899px) {
+  .stats { grid-template-columns: minmax(0, 1fr); }
+  .cols { display: flex; flex-direction: column; gap: 12px; }
+  .col { display: contents; }
+  .card { padding: 16px; gap: 14px; }
+  .h2 { font-size: 15px; }
+  .one { padding: 18px; }
+  .oneTitle { font-size: 17px; }
+  .intro { font-size: 15px; }
+  .done { display: none; }
+  .mobileOnly { display: block; }
+  /* Orden del móvil: una cosa → día a día → pagos → clase → avisos */
+  .orderOne { order: 1; }
+  .orderDay { order: 2; }
+  .orderDue { order: 3; }
+  .orderLesson { order: 4; }
+  .orderHabit { order: 5; }
+}

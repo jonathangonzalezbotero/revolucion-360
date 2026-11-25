@@ -1,103 +1,45 @@
 "use server";
 import type Stripe from "stripe";
 import { z } from "zod";
-import { fill } from "@/i18n";
 import { getStripe } from "@/lib/stripe";
 import type { Json } from "@/lib/supabase/database.types";
 import { fail, ok } from "@/server/action";
 import { must } from "@/server/data";
 import type { Session } from "@/server/session";
-import { couponExpired, studentCouponId } from "@/app/(app)/suscripcion/lib";
+import { couponExpired } from "@/app/(app)/suscripcion/lib";
 import { adminAction, adminText, audit } from "../_shared/server";
-import { PLAN_FEATURES, changedFeatures, checkCoupon, checkTrial, regionPatch, stripeExpiry, tierOf, type CouponData } from "./lib";
+import { checkBilling, checkCoupon, mergeBilling, stripeExpiry, type CouponData } from "./lib";
 import { M } from "./messages";
 
 const PATHS = ["/admin/planes", "/admin/actividad", "/admin", "/suscripcion"];
 // Igual que scripts/stripe-setup.ts: así el script reconoce lo que crea esta pantalla.
 const PRODUCT_TAG = "revolucion360_pro";
 
-const SaveBody = z.object({
-  regions: z.array(z.object({ region: z.string().min(1).max(20), monthly: z.string().max(30), yearly: z.string().max(30), student: z.string().max(5) })).max(50),
-  trial: z.object({ enabled: z.boolean(), days: z.string().max(4) }),
-  features: z.partialRecord(z.enum(PLAN_FEATURES), z.enum(["free", "pro"])),
-});
+const SaveBody = z.object({ first: z.string().max(30), monthly: z.string().max(30), yearly: z.string().max(30), notifyDays: z.string().max(4) });
 
 type StripeStatus = "ok" | "pending" | "off";
-const regionName = (s: Session, code: string) => M[s.locale].prices.names[code.toUpperCase()] ?? code;
-
-/** Cupón de alumno `alumno-<pct>` en Stripe (el checkout lo usa por id). Mismos datos que el script. */
-async function ensureStudentCoupon(stripe: Stripe, pct: number) {
-  const id = studentCouponId(pct);
-  try {
-    await stripe.coupons.retrieve(id);
-  } catch {
-    await stripe.coupons.create({ id, percent_off: pct, duration: "forever", name: `Alumno ${pct}%`, metadata: { app: PRODUCT_TAG } });
-  }
-}
+/** Acción del registro por cada clave de `billing` (empiezan por "plan": caen en el filtro "Precios"). */
+const AUDIT_BILLING = { first_month_cents: "plan_precio_primer_mes", monthly_cents: "plan_precio_mensual", yearly_cents: "plan_precio_anual", notify_before_days: "plan_aviso_cobro" } as const;
 
 /**
- * Guarda precios por región, prueba gratis y qué es Gratis o Pro. Escribe solo lo que cambió.
- * Los precios de Stripe NO se tocan aquí: los sincroniza scripts/stripe-setup.ts (docs/STRIPE.md).
+ * Guarda los precios en USD y los días de aviso en `app_config.billing`, mezclando con lo guardado
+ * (conserva `notify_first_charge` y lo que el cobro agregue). El cobro lee esta clave al crear el pago en Stripe:
+ * un cambio solo aplica a suscripciones nuevas.
  */
-export async function savePlans(input: unknown) {
+export async function saveBilling(input: unknown) {
   return adminAction(PATHS, async (s) => {
     const m = M[s.locale], t = adminText(s);
     const p = SaveBody.safeParse(input);
     if (!p.success) return fail(t.errors.generic);
-
-    // 1. Validar todo antes de escribir nada.
-    const rows = must(await s.supabase.from("price_regions").select("region, monthly_cents, yearly_cents, student_discount_pct"));
-    const byRegion = new Map(rows.map((r) => [r.region, r]));
-    const patches: { region: string; patch: ReturnType<typeof regionPatch> & { ok: true } }[] = [];
-    for (const r of p.data.regions) {
-      const row = byRegion.get(r.region);
-      if (!row) return fail(m.errors.region);
-      const c = regionPatch(row, r);
-      if (!c.ok) return fail(fill(m.errors[c.error], { region: regionName(s, r.region) }));
-      if (Object.keys(c.patch).length) patches.push({ region: r.region, patch: c });
-    }
-    const trial = checkTrial(p.data.trial.enabled, p.data.trial.days);
-    if (!trial.ok) return fail(m.errors.trial);
-
-    const cfg = must(await s.supabase.from("app_config").select("key, value").in("key", ["trial", "features"]));
-    const cfgOf = (k: string) => cfg.find((x) => x.key === k)?.value;
-    const curTrial = (cfgOf("trial") ?? {}) as { enabled?: boolean; days?: number };
-    const curFeatures = (cfgOf("features") ?? {}) as Record<string, "free" | "pro">;
-    const featDiff = changedFeatures(curFeatures, { ...curFeatures, ...p.data.features });
-    const trialChanged = curTrial.enabled !== trial.trial.enabled || curTrial.days !== trial.trial.days;
-    if (!patches.length && !trialChanged && !Object.keys(featDiff).length) return ok({ changed: 0, warning: null as string | null });
-
-    // 2. Escribir.
-    let warning: string | null = null;
-    const newStudentPcts = new Set<number>();
-    for (const { region, patch } of patches) {
-      // Sin monto, sin precio de Stripe: el checkout vende por ese id y el script no toca regiones sin monto.
-      const upd = {
-        ...patch.patch,
-        ...(patch.patch.monthly_cents === null ? { stripe_price_monthly: null } : {}),
-        ...(patch.patch.yearly_cents === null ? { stripe_price_yearly: null } : {}),
-      };
-      must(await s.supabase.from("price_regions").update(upd).eq("region", region).select("region").single());
-      await audit(s, "precio_region", null, { name: regionName(s, region), fields: Object.keys(patch.patch).join(",") });
-      if (patch.patch.student_discount_pct) newStudentPcts.add(patch.patch.student_discount_pct);
-    }
-    if (newStudentPcts.size) {
-      const stripe = getStripe();
-      if (stripe) {
-        try { for (const pct of newStudentPcts) await ensureStudentCoupon(stripe, pct); } catch { warning = m.errors.studentStripe; }
-      }
-    }
-    if (trialChanged) {
-      must(await s.supabase.from("app_config").upsert({ key: "trial", value: trial.trial, updated_at: new Date().toISOString() }).select("key").single());
-      await audit(s, "plan_prueba", null, { enabled: trial.trial.enabled, days: trial.trial.days });
-    }
-    if (Object.keys(featDiff).length) {
-      // Se vuelve a partir de lo guardado: Menú y funciones edita las mismas claves y otras que aquí no se ven.
-      const merged: Record<string, Json> = { ...curFeatures, ...featDiff };
-      must(await s.supabase.from("app_config").upsert({ key: "features", value: merged, updated_at: new Date().toISOString() }).select("key").single());
-      await audit(s, "plan_funciones", null, { fields: Object.entries(featDiff).map(([k, v]) => `${k}:${tierOf({ [k]: v }, k)}`).join(",") });
-    }
-    return ok({ changed: patches.length + (trialChanged ? 1 : 0) + Object.keys(featDiff).length, warning });
+    const c = checkBilling(p.data);
+    if (!c.ok) return fail(m.errors[c.error]);
+    const row = must(await s.supabase.from("app_config").select("value").eq("key", "billing").maybeSingle());
+    const { value, changed } = mergeBilling(row?.value, c.values);
+    if (!changed.length) return ok({ changed: 0 });
+    must(await s.supabase.from("app_config").upsert({ key: "billing", value: value as NonNullable<Json>, updated_at: new Date().toISOString() }, { onConflict: "key" }).select("key").single());
+    // Una línea por precio que cambió (así se lee en el registro); nunca montos.
+    for (const k of changed) await audit(s, AUDIT_BILLING[k as keyof typeof AUDIT_BILLING] ?? "plan_precios", null, {});
+    return ok({ changed: changed.length });
   });
 }
 

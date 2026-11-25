@@ -9,7 +9,11 @@ import css from "../../_shared/admin.module.css";
 import { expiryDay, isUuid } from "../../_shared/lib";
 import { A, actionLabel } from "../../_shared/messages";
 import { describeDetail, fmtDay, fmtExpiry, loadUser, lookupUsers } from "../../_shared/server";
-import { AdminHeader, StatePill } from "../../_shared/ui";
+import { AdminHeader } from "../../_shared/ui";
+import { billingFrom, usd } from "../../planes/lib";
+import { planKey } from "../lib";
+import { PlanPill } from "../PlanPill";
+import { listPlanUsers } from "../server";
 import { M } from "./messages";
 import { AccessPanel, AccountPanel, GroupsPanel, NotesPanel, PrivacyPanel } from "./UserPanels";
 
@@ -22,12 +26,20 @@ export default async function AdminUsuario({ params }: { params: Promise<{ id: s
   const t = A[s.locale], m = M[s.locale];
   const u = await loadUser(s, id);
   if (!u) notFound();
-  const [coursesRes, groupsRes, countryRes, auditRes] = await Promise.all([
+  const [coursesRes, groupsRes, countryRes, auditRes, billingRes, listed] = await Promise.all([
     s.supabase.from("courses").select("id, status, publish_at"),
     s.supabase.from("groups").select("id, name").order("name"),
     s.supabase.from("countries").select("name, currency").eq("code", u.country).maybeSingle(),
     s.supabase.from("admin_audit").select("id, admin_id, action, detail, at").eq("target_user", id).order("at", { ascending: false }).limit(30),
+    s.supabase.from("app_config").select("value").eq("key", "billing").maybeSingle(),
+    // El estado de Stripe (primer mes o no) viene de la lista: `admin_user` no lo trae.
+    listPlanUsers(s, { p_search: "", p_email: u.email, p_filter: "all", p_role: "", p_country: "" }, 5, 0),
   ]);
+  const billing = billingFrom(must(billingRes)?.value);
+  const stripeStatus = listed.find((r) => r.id === u.id)?.stripe_status ?? null;
+  const plan = planKey(u.state, u.billing_interval, stripeStatus);
+  const price = { first_month: billing.first_month_cents, monthly: billing.monthly_cents, yearly: billing.yearly_cents } as const;
+  const planLabel = plan in price ? fill(m.planPrice, { plan: t.states[plan], amount: usd(price[plan as keyof typeof price]) }) : undefined;
   // Solo cuentan las clases de cursos liberados: el admin también ve los borradores.
   const nowIso = new Date().toISOString();
   const live = must(coursesRes).filter((c) => c.status === "published" || (c.status === "scheduled" && !!c.publish_at && c.publish_at <= nowIso)).map((c) => c.id);
@@ -40,6 +52,7 @@ export default async function AdminUsuario({ params }: { params: Promise<{ id: s
 
   const free = u.state === "alumno" || u.state === "fundador";
   const untilText = free ? (u.access_until ? fmtExpiry(s, u.access_until) : m.lifetime)
+    : plan === "first_month" && (u.trial_ends_at ?? u.pro_until) ? fill(m.firstEnds, { amount: usd(billing.monthly_cents), date: fmtDay(s, (u.trial_ends_at ?? u.pro_until)!) })
     : u.state === "pro" && u.pro_until ? fill(m.renews, { date: fmtDay(s, u.pro_until) })
     : u.state === "trial" && u.trial_ends_at ? fill(m.trialEnds, { date: fmtDay(s, u.trial_ends_at) })
     : u.state === "read_only" && u.pro_until ? fill(m.ends, { date: fmtDay(s, u.pro_until) }) : t.none;
@@ -62,7 +75,7 @@ export default async function AdminUsuario({ params }: { params: Promise<{ id: s
             <div className="row wrap" style={{ gap: 24, alignItems: "flex-start" }}>
               <div className="stack" style={{ gap: 4 }}>
                 <span className="label">{m.planK}</span>
-                <StatePill t={t} state={u.state} failed={!!u.payment_failed_at} />
+                <PlanPill t={t} plan={plan} label={planLabel} failed={!!u.payment_failed_at} />
                 <span className="small muted">{u.groups.length ? fill(m.groupK, { list: u.groups.map((g) => g.name).join(", ") }) : m.noGroup}</span>
               </div>
               <div className="stack" style={{ gap: 4 }}><span className="label">{m.untilK}</span><strong style={{ fontSize: 20 }}>{untilText}</strong></div>
@@ -70,7 +83,8 @@ export default async function AdminUsuario({ params }: { params: Promise<{ id: s
             {u.payment_failed_at ? <p className="banner" style={{ margin: 0 }}>{fill(m.failed, { date: fmtDay(s, u.payment_failed_at) })}</p> : null}
             {u.cancel_at_period_end ? <span className="small muted">{m.cancels}</span> : null}
             <AccessPanel t={t} m={m} locale={s.locale} today={s.today} userId={u.id} state={u.state}
-              from={free && u.access_until ? expiryDay(u.access_until) : undefined} kind={u.state === "fundador" ? "fundador" : "alumno"} />
+              from={free && u.access_until ? expiryDay(u.access_until) : undefined} kind={u.state === "fundador" ? "fundador" : "alumno"}
+              paidText={fill(m.toPaidDone, { amount: usd(billing.monthly_cents) })} />
           </section>
 
           <section aria-labelledby="us" className={css.section}>

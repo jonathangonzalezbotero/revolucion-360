@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   addMonths, annualTotals, mappingWorks, applyRules, badgeProgress, bnplSchedule, closingBalance, consecutiveClosures, debtPayoff, diagnose,
-  expectedBalance, findDuplicate, findTransferPair, forecast, formatMoney, goalPlan, guessMapping, hasFeature, levelFor,
+  activationRedirect, canEdit, effectiveState, expectedBalance, findDuplicate, isActive, needsActivation, findTransferPair, forecast, formatMoney, goalPlan, guessMapping, hasFeature, levelFor,
   lineMonthStatus, mapRows, monthAmounts, monthsUntil, netWorth, nextStateOnExpiry, parseCsv, parseDate, parseMoney,
   payDatesInMonth, priority, recomputeCells, splitEven, splitIsValid, streak, suggestLine, taxToSetAside, tierOf, todayIn,
   unregistered, weekStart, yearTotals, type PlanLine,
@@ -289,25 +289,64 @@ describe("importar CSV", () => {
   });
 });
 
-describe("planes y accesos", () => {
+describe("planes y accesos (un solo plan, desde el 25 nov 2026)", () => {
   const base = { trialEndsAt: null, proUntil: null, accessUntil: null };
   const now = new Date("2026-11-24T00:00:00Z");
-  it("qué ve cada estado", () => {
+  it("estado efectivo: acceso gratis vencido = solo lectura aunque la tarea diaria no haya corrido", () => {
+    expect(effectiveState({ ...base, state: "free" }, now)).toBe("free");
+    expect(effectiveState({ ...base, state: "alumno" }, now)).toBe("alumno"); // de por vida
+    expect(effectiveState({ ...base, state: "alumno", accessUntil: "2026-11-01T00:00:00Z" }, now)).toBe("read_only");
+    expect(effectiveState({ ...base, state: "fundador", accessUntil: "2026-11-01T00:00:00Z" }, now)).toBe("read_only");
+    expect(effectiveState({ ...base, state: "trial", trialEndsAt: "2026-11-01T00:00:00Z" }, now)).toBe("read_only");
+    expect(effectiveState({ ...base, state: "trial", trialEndsAt: "2026-12-01T00:00:00Z" }, now)).toBe("trial");
+    // Pro con la fecha pasada sigue Pro: lo decide el aviso de Stripe (puede estar reintentando)
+    expect(effectiveState({ ...base, state: "pro", proUntil: "2026-11-01T00:00:00Z" }, now)).toBe("pro");
+  });
+  it("activa, sin activar y solo lectura", () => {
+    for (const st of ["pro", "alumno", "fundador"] as const) expect(isActive({ ...base, state: st }, now)).toBe(true);
+    expect(isActive({ ...base, state: "free" }, now)).toBe(false);
+    expect(isActive({ ...base, state: "read_only" }, now)).toBe(false);
+    expect(needsActivation({ ...base, state: "free" }, now)).toBe(true);
+    expect(needsActivation({ ...base, state: "read_only" }, now)).toBe(false);
+    expect(needsActivation({ ...base, state: "alumno", accessUntil: "2026-11-01T00:00:00Z" }, now)).toBe(false); // vencido = solo lectura
+  });
+  it("nivel heredado: 'pro' = ve todo (activa o solo lectura); 'free' = sin activar", () => {
     expect(tierOf({ ...base, state: "free" }, now)).toBe("free");
-    expect(tierOf({ ...base, state: "trial", trialEndsAt: "2026-12-01T00:00:00Z" }, now)).toBe("pro");
-    expect(tierOf({ ...base, state: "trial", trialEndsAt: "2026-11-01T00:00:00Z" }, now)).toBe("free");
-    expect(tierOf({ ...base, state: "alumno" }, now)).toBe("pro"); // de por vida
-    expect(tierOf({ ...base, state: "alumno", accessUntil: "2026-11-01T00:00:00Z" }, now)).toBe("free");
+    expect(tierOf({ ...base, state: "pro" }, now)).toBe("pro");
+    expect(tierOf({ ...base, state: "read_only" }, now)).toBe("pro");
+    expect(tierOf({ ...base, state: "alumno", accessUntil: "2026-11-01T00:00:00Z" }, now)).toBe("pro");
     expect(tierOf({ ...base, state: "fundador" }, now)).toBe("pro");
   });
-  it("a qué pasa al vencer", () => {
-    expect(nextStateOnExpiry({ ...base, state: "alumno", accessUntil: "2026-11-01T00:00:00Z" }, now)).toBe("free");
-    expect(nextStateOnExpiry({ ...base, state: "pro", proUntil: "2026-11-01T00:00:00Z" }, now)).toBe("read_only");
-    expect(nextStateOnExpiry({ ...base, state: "trial", trialEndsAt: "2026-11-01T00:00:00Z" }, now)).toBe("free");
+  it("editar: todos menos solo lectura (sin activar escribe su plan en el asistente)", () => {
+    expect(canEdit({ ...base, state: "free" }, now)).toBe(true);
+    expect(canEdit({ ...base, state: "pro" }, now)).toBe(true);
+    expect(canEdit({ ...base, state: "read_only" }, now)).toBe(false);
+    expect(canEdit({ ...base, state: "alumno", accessUntil: "2026-11-01T00:00:00Z" }, now)).toBe(false);
   });
-  it("las funciones Pro salen de la configuración", () => {
-    expect(hasFeature("ana", "free", { ana: "pro" })).toBe(false);
-    expect(hasFeature("ana", "free", { ana: "free" })).toBe(true);
+  it("a qué pasa al vencer: siempre a solo lectura (nunca a Gratis)", () => {
+    expect(nextStateOnExpiry({ ...base, state: "alumno", accessUntil: "2026-11-01T00:00:00Z" }, now)).toBe("read_only");
+    expect(nextStateOnExpiry({ ...base, state: "fundador", accessUntil: "2026-11-01T00:00:00Z" }, now)).toBe("read_only");
+    expect(nextStateOnExpiry({ ...base, state: "pro", proUntil: "2026-11-01T00:00:00Z" }, now)).toBe("read_only");
+    expect(nextStateOnExpiry({ ...base, state: "trial", trialEndsAt: "2026-11-01T00:00:00Z" }, now)).toBe("read_only");
+    expect(nextStateOnExpiry({ ...base, state: "alumno", accessUntil: "2027-01-01T00:00:00Z" }, now)).toBe("alumno");
+    expect(nextStateOnExpiry({ ...base, state: "fundador" }, now)).toBe("fundador");
+    expect(nextStateOnExpiry({ ...base, state: "free" }, now)).toBe("free");
+  });
+  it("todo incluido: la configuración ya no decide; sin activar solo ve su diagnóstico", () => {
     expect(hasFeature("ana", "pro", { ana: "pro" })).toBe(true);
+    expect(hasFeature("ana", "pro", { ana: "free" })).toBe(true);
+    expect(hasFeature("ana", "free", { ana: "free" })).toBe(false);
+    expect(hasFeature("csv", "free")).toBe(false);
+    expect(hasFeature("diag", "free")).toBe(true);
+  });
+  it("puerta 'Activa tu cuenta': sin activar solo abre bienvenida, asistente y diagnóstico", () => {
+    const free = { ...base, state: "free" as const };
+    for (const p of ["/inicio", "/plan", "/movimientos/importar", "/suscripcion", "/perfil", "/diagnosticos"]) expect(activationRedirect(free, p, now)).toBe(true);
+    for (const p of ["/diagnostico", "/activar", "/asistente", "/bienvenida"]) expect(activationRedirect(free, p, now)).toBe(false);
+    expect(activationRedirect(free, null, now)).toBe(true); // sin la ruta, se cierra
+    expect(activationRedirect({ ...base, state: "pro" }, "/plan", now)).toBe(false);
+    expect(activationRedirect({ ...base, state: "read_only" }, "/plan", now)).toBe(false); // solo lectura ve todo
+    expect(activationRedirect({ ...base, state: "alumno", accessUntil: "2026-11-01T00:00:00Z" }, "/plan", now)).toBe(false);
   });
 });
+

@@ -1,27 +1,16 @@
 // Planes y precios: cálculos puros (sin red ni base de datos). Probados en tests/admin-planes.test.ts.
-import { parseMoney, type Cents, type FeatureKey, type ISODate, type MoneyFormat, type Tier } from "@/lib/engine";
+// Un solo plan, cobrado en USD (decisión del 25 nov 2026). Los valores viven en `app_config.billing`.
+import { formatMoney, parseMoney, type Cents, type ISODate } from "@/lib/engine";
 import { couponExpired, type CouponAppliesTo } from "@/app/(app)/suscripcion/lib";
 import { endOfDay, expiryDay, expiryFrom } from "../_shared/lib";
 
-// ───────── Regiones ─────────
-/** Orden del mockup; las regiones nuevas van al final, por código. */
-export const REGION_ORDER = ["AU", "DEFAULT", "CO", "MX", "EU"];
-export const sortRegions = <T extends { region: string }>(rows: T[]): T[] => {
-  const idx = (r: string) => { const i = REGION_ORDER.indexOf(r.toUpperCase()); return i < 0 ? REGION_ORDER.length : i; };
-  return [...rows].sort((a, b) => idx(a.region) - idx(b.region) || a.region.localeCompare(b.region));
-};
-
-/** Cómo se escriben los números de cada moneda (igual que la sesión). */
-const CURRENCY_LOCALE: Record<string, string> = { AUD: "en-AU", USD: "en-US", NZD: "en-NZ", GBP: "en-GB", EUR: "es-ES", COP: "es-CO", MXN: "es-MX", CLP: "es-CL", PEN: "es-PE", ARS: "es-AR", CAD: "en-CA" };
-export const currencyFmt = (currency: string): MoneyFormat => ({ currency, numberLocale: CURRENCY_LOCALE[currency.toUpperCase()] ?? "en-US" });
-
-/** Centavos → texto del campo, sin separador de miles (así `parseMoney` lo lee igual al volver). */
+/** Texto del campo ↔ centavos, sin separador de miles (así `parseMoney` lo lee igual al volver). */
 export function centsToInput(cents: Cents | null | undefined): string {
   if (cents == null) return "";
   return cents % 100 === 0 ? String(cents / 100) : (cents / 100).toFixed(2);
 }
 
-const MAX_PRICE: Cents = 100_000_000_00; // 100 millones (cubre COP)
+const MAX_PRICE: Cents = 1_000_000; // USD 10,000: más que eso es un error de tipeo
 export type PriceCheck = { ok: true; cents: Cents | null } | { ok: false };
 /** Precio escrito por el admin: vacío = sin precio (null); cero, negativo o absurdo = error. */
 export function parsePrice(text: string): PriceCheck {
@@ -39,63 +28,71 @@ export function parseIntIn(text: string | number, min: number, max: number): num
   return n >= min && n <= max ? n : null;
 }
 
-export type RegionRow = { region: string; monthly_cents: number | null; yearly_cents: number | null; student_discount_pct: number };
-export type RegionInput = { region: string; monthly: string; yearly: string; student: string };
-export type RegionPatch = Partial<Pick<RegionRow, "monthly_cents" | "yearly_cents" | "student_discount_pct">>;
-export type RegionCheck = { ok: true; patch: RegionPatch } | { ok: false; error: "monthly" | "yearly" | "student" };
+// ───────── Precios (app_config.billing) ─────────
+export type Billing = { first_month_cents: Cents; monthly_cents: Cents; yearly_cents: Cents; notify_before_days: number; notify_first_charge: boolean };
+/** Lo aprobado el 25 nov 2026: $1 el primer mes, $8 al mes, $80 al año, aviso 3 días antes. */
+export const BILLING_DEFAULTS: Billing = { first_month_cents: 100, monthly_cents: 800, yearly_cents: 8000, notify_before_days: 3, notify_first_charge: true };
+export const NOTIFY_MAX_DAYS = 30;
+export const USD = { currency: "USD", numberLocale: "en-US" } as const;
+/** Monto en USD para los textos del panel: "$8", "$6.67". */
+export const usd = (cents: Cents) => formatMoney(cents, USD);
 
-/** Compara lo escrito con lo guardado y devuelve solo lo que cambió. */
-export function regionPatch(row: RegionRow, input: RegionInput): RegionCheck {
-  const m = parsePrice(input.monthly);
-  if (!m.ok) return { ok: false, error: "monthly" };
-  const y = parsePrice(input.yearly);
-  if (!y.ok) return { ok: false, error: "yearly" };
-  const st = input.student.trim() === "" ? 0 : parseIntIn(input.student, 0, 100);
-  if (st === null) return { ok: false, error: "student" };
-  const patch: RegionPatch = {};
-  if (m.cents !== row.monthly_cents) patch.monthly_cents = m.cents;
-  if (y.cents !== row.yearly_cents) patch.yearly_cents = y.cents;
-  if (st !== row.student_discount_pct) patch.student_discount_pct = st;
-  return { ok: true, patch };
+const posInt = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v) && v > 0;
+/** Lo guardado (o nada, si la clave aún no existe) → valores completos. Un valor raro cae al valor por defecto. */
+export function billingFrom(raw: unknown): Billing {
+  const o = raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  const d = BILLING_DEFAULTS;
+  return {
+    first_month_cents: posInt(o.first_month_cents) ? o.first_month_cents : d.first_month_cents,
+    monthly_cents: posInt(o.monthly_cents) ? o.monthly_cents : d.monthly_cents,
+    yearly_cents: posInt(o.yearly_cents) ? o.yearly_cents : d.yearly_cents,
+    notify_before_days: typeof o.notify_before_days === "number" && Number.isInteger(o.notify_before_days) && o.notify_before_days >= 0 && o.notify_before_days <= NOTIFY_MAX_DAYS ? o.notify_before_days : d.notify_before_days,
+    notify_first_charge: typeof o.notify_first_charge === "boolean" ? o.notify_first_charge : d.notify_first_charge,
+  };
 }
 
-/** ¿El precio guardado en Stripe corresponde al monto de la región? */
-export type SyncState = "ok" | "pending" | "none" | "unknown";
-export function priceSync(cents: number | null, priceId: string | null, stripe: { amount: number | null; currency: string } | null | undefined, expectedAmount: number | null, currency: string): SyncState {
-  if (!cents) return "none";
-  if (!priceId) return "pending";
-  if (stripe === undefined) return "unknown";
-  if (stripe === null) return "pending";
-  return stripe.amount === expectedAmount && stripe.currency.toUpperCase() === currency.toUpperCase() ? "ok" : "pending";
-}
-/** Estado de la región: pendiente si cualquiera de sus precios lo está. */
-export function regionSync(states: SyncState[]): SyncState {
-  const with$ = states.filter((x) => x !== "none");
-  if (!with$.length) return "none";
-  if (with$.includes("pending")) return "pending";
-  if (with$.includes("unknown")) return "unknown";
-  return "ok";
-}
-
-// ───────── Prueba gratis ─────────
-export const TRIAL_MAX_DAYS = 90;
-export type TrialCheck = { ok: true; trial: { enabled: boolean; days: number } } | { ok: false };
-export function checkTrial(enabled: boolean, days: string | number): TrialCheck {
-  const d = parseIntIn(days, 1, TRIAL_MAX_DAYS);
-  return d === null ? { ok: false } : { ok: true, trial: { enabled, days: d } };
+/** Lo que escribe el admin en la pantalla (texto). `notify_first_charge` no tiene control: se conserva como está. */
+export type BillingInput = { first: string; monthly: string; yearly: string; notifyDays: string };
+export const billingToInput = (b: Billing): BillingInput => ({
+  first: centsToInput(b.first_month_cents), monthly: centsToInput(b.monthly_cents), yearly: centsToInput(b.yearly_cents), notifyDays: String(b.notify_before_days),
+});
+export type BillingEdit = Pick<Billing, "first_month_cents" | "monthly_cents" | "yearly_cents" | "notify_before_days">;
+export type BillingCheck = { ok: true; values: BillingEdit } | { ok: false; error: "first" | "monthly" | "yearly" | "notify" };
+/** Los tres precios son obligatorios y mayores a cero; el aviso va de 1 a 30 días. */
+export function checkBilling(input: BillingInput): BillingCheck {
+  const req = (t: string) => { const p = parsePrice(t); return p.ok && p.cents !== null ? p.cents : null; };
+  const first = req(input.first);
+  if (first === null) return { ok: false, error: "first" };
+  const monthly = req(input.monthly);
+  if (monthly === null) return { ok: false, error: "monthly" };
+  const yearly = req(input.yearly);
+  if (yearly === null) return { ok: false, error: "yearly" };
+  const days = parseIntIn(input.notifyDays, 1, NOTIFY_MAX_DAYS);
+  if (days === null) return { ok: false, error: "notify" };
+  return { ok: true, values: { first_month_cents: first, monthly_cents: monthly, yearly_cents: yearly, notify_before_days: days } };
 }
 
-// ───────── Qué incluye cada plan ─────────
-/** Las funciones que muestra el mockup (las demás se editan en Menú y funciones). */
-export const PLAN_FEATURES = ["plan", "diag", "metas", "proy", "mov", "ana", "inv", "cierre", "acad"] as const satisfies readonly FeatureKey[];
-export type PlanFeature = (typeof PLAN_FEATURES)[number];
-export const tierOf = (cfg: Partial<Record<string, Tier>>, key: string): Tier => (cfg[key] === "pro" ? "pro" : "free");
+/**
+ * Mezcla lo editado sobre lo guardado: conserva `notify_first_charge` y cualquier clave que esta pantalla no conoce
+ * (la usa el cobro). `changed` lista las claves que cambiaron (para el registro; nunca valores).
+ */
+export function mergeBilling(raw: unknown, edit: BillingEdit): { value: Record<string, unknown>; changed: string[] } {
+  const cur = raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  const before = billingFrom(raw);
+  const changed = (Object.keys(edit) as (keyof BillingEdit)[]).filter((k) => before[k] !== edit[k] || cur[k] === undefined);
+  return { value: { ...BILLING_DEFAULTS, ...cur, ...edit }, changed };
+}
 
-/** Solo las funciones que el admin movió (así no pisa lo que otra pantalla cambió mientras tanto). */
-export function changedFeatures(initial: Partial<Record<string, Tier>>, current: Partial<Record<string, Tier>>): Partial<Record<PlanFeature, Tier>> {
-  const out: Partial<Record<PlanFeature, Tier>> = {};
-  for (const k of PLAN_FEATURES) if (tierOf(current, k) !== tierOf(initial, k)) out[k] = tierOf(current, k);
-  return out;
+/** "Anual equivale a $6.67 al mes · ahorro de 17%". Centavos al mes (redondeados) y % de ahorro frente a 12 meses. */
+export function yearlyEquivalent(monthly: Cents, yearly: Cents): { perMonth: Cents; savingsPct: number } {
+  const perMonth = Math.round(yearly / 12);
+  const savingsPct = monthly > 0 ? Math.max(0, Math.round((1 - yearly / (monthly * 12)) * 100)) : 0;
+  return { perMonth, savingsPct };
+}
+
+/** Ingreso estimado de un mes en USD: primer mes × su precio + mensual × precio + anual × precio ÷ 12. */
+export function monthlyIncome(b: Pick<Billing, "first_month_cents" | "monthly_cents" | "yearly_cents">, n: { firstMonth: number; monthly: number; yearly: number }): Cents {
+  return n.firstMonth * b.first_month_cents + n.monthly * b.monthly_cents + Math.round((n.yearly * b.yearly_cents) / 12);
 }
 
 // ───────── Cupones ─────────

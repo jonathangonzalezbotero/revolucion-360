@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { fill } from "@/i18n";
-import { ProWall } from "@/components/shell/ProWall";
-import { Disclaimer, Empty, PageHeader } from "@/components/ui/basics";
+import { Disclaimer, Empty } from "@/components/ui/basics";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { cellMap, cellOf, diagnose, formatMoney, monthName, priority, type IndicatorKey, type Level } from "@/lib/engine";
 import { loadDiagnosticInput, loadPlan, must } from "@/server/data";
@@ -28,16 +27,6 @@ const FOCUS_ICON: Record<IndicatorKey | "none", { icon: IconName; color: string 
 export default async function DiagnosticoPage() {
   const s = await requireUser();
   const m = M[s.locale];
-  if (!s.has("diag")) {
-    return (
-      <main className="page">
-        <PageHeader title={m.title} />
-        <ProWall s={s} title={m.pro.title} text={m.pro.text} bullets={m.pro.bullets} />
-        <Disclaimer text={s.t.disclaimer} />
-      </main>
-    );
-  }
-
   // Mes del diagnóstico: el último cierre (no reabierto) si existe; si no, el mes en curso.
   const last = must(await s.supabase.from("month_closures").select("year, month").is("reopened_at", null).order("year", { ascending: false }).order("month", { ascending: false }).limit(1))[0];
   const year = last?.year ?? s.year, month = last?.month ?? s.month;

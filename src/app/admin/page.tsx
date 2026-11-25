@@ -2,45 +2,57 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { fill } from "@/i18n";
 import { Empty } from "@/components/ui/basics";
-import { formatMoney } from "@/lib/engine";
 import { must } from "@/server/data";
-import { requireAdmin } from "@/server/session";
+import { requireAdmin, type Session } from "@/server/session";
 import css from "./_shared/admin.module.css";
 import { pct } from "./_shared/lib";
 import { A } from "./_shared/messages";
 import { loadDropoff } from "./_shared/server";
 import { AdminHeader } from "./_shared/ui";
+import { billingFrom, monthlyIncome, usd } from "./planes/lib";
 
 export const metadata: Metadata = { title: "Resumen" };
 
 type Summary = {
   users: number; new_users: number; active: number; pro: number; trial: number; free_access: number; read_only: number;
   failed_payments: number; expiring: number; privacy_pending: number; tickets_open: number;
-  funnel: { signup: number; wizard: number; returned: number; closure: number; pro: number };
   academy: { lessons_seen: number; top_lesson: string | null; avg_rating: number | null };
 };
-const NUMBER_LOCALE: Record<string, string> = { AUD: "en-AU", USD: "en-US", NZD: "en-NZ", GBP: "en-GB", EUR: "es-ES", COP: "es-CO", MXN: "es-MX", CLP: "es-CL", PEN: "es-PE", ARS: "es-AR", CAD: "en-CA" };
+/** `admin_plan_summary` (migración 20261125000029_un_plan.sql): solo conteos. */
+type PlanSummary = {
+  first_month: number; monthly: number; yearly: number;
+  funnel: { paid_first: number; wizard: number; returned: number; closure: number; kept: number };
+};
+type RpcResult<T> = { data: T | null; error: { message: string; code?: string } | null };
+
+/** Quién paga y el camino del primer mes. null si la migración aún no está aplicada (PostgREST responde PGRST202). */
+async function loadPlanSummary(s: Session, days: number): Promise<PlanSummary | null> {
+  const r = (await s.supabase.rpc("admin_plan_summary" as never, { p_days: days } as never)) as unknown as RpcResult<PlanSummary>;
+  if (r.error?.code === "PGRST202") return null;
+  return must(r);
+}
 
 export default async function AdminResumen({ searchParams }: { searchParams: Promise<{ dias?: string | string[] }> }) {
   const s = await requireAdmin();
   const t = A[s.locale], m = t.resumen;
   const days = (await searchParams).dias === "90" ? 90 : 30;
-  const [sumRes, priceRes, drop] = await Promise.all([
+  const [sumRes, plan, billingRes, drop] = await Promise.all([
     s.supabase.rpc("admin_summary", { p_days: days }),
-    s.supabase.from("price_regions").select("currency, monthly_cents").eq("region", "DEFAULT").maybeSingle(),
+    loadPlanSummary(s, days),
+    s.supabase.from("app_config").select("value").eq("key", "billing").maybeSingle(),
     loadDropoff(s, days),
   ]);
   const sum = must(sumRes) as unknown as Summary;
-  const price = priceRes.error ? null : priceRes.data;
-  const income = price?.monthly_cents
-    ? formatMoney(sum.pro * price.monthly_cents, { currency: price.currency, numberLocale: NUMBER_LOCALE[price.currency] ?? "en-US" })
-    : "[MONTO]";
+  const billing = billingFrom(must(billingRes)?.value);
   const nf = new Intl.NumberFormat(s.locale === "en" ? "en-AU" : "es-CO");
-  const f = sum.funnel;
-  const steps = [
-    { label: m.fSignup, n: f.signup }, { label: m.fWizard, n: f.wizard }, { label: m.fReturned, n: f.returned },
-    { label: m.fClosure, n: f.closure }, { label: m.fPro, n: f.pro },
-  ];
+  // Mensual cuenta también a quien está en su primer mes (ya eligió el plan mensual). Ingreso = conteo × precio (ver monthlyIncome).
+  const paying = plan ? plan.first_month + plan.monthly + plan.yearly : sum.pro;
+  const income = plan ? usd(monthlyIncome(billing, { firstMonth: plan.first_month, monthly: plan.monthly, yearly: plan.yearly })) : t.none;
+  const f = plan?.funnel ?? null;
+  const steps = f ? [
+    { label: fill(m.fSignup, { first: usd(billing.first_month_cents) }), n: f.paid_first }, { label: m.fWizard, n: f.wizard }, { label: m.fReturned, n: f.returned },
+    { label: m.fClosure, n: f.closure }, { label: fill(m.fPro, { monthly: usd(billing.monthly_cents) }), n: f.kept },
+  ] : [];
   const alerts = [
     { n: sum.failed_payments, text: m.failed, href: "/admin/usuarios?filtro=failed", bad: true },
     { n: sum.expiring, text: m.expiring, href: "/admin/usuarios?filtro=expiring7" },
@@ -50,7 +62,7 @@ export default async function AdminResumen({ searchParams }: { searchParams: Pro
   const stats = [
     { k: m.users, v: nf.format(sum.users), sub: fill(m.newUsers, { n: nf.format(sum.new_users), d: days }) },
     { k: fill(m.active, { d: days }), v: nf.format(sum.active), sub: fill(m.ofTotal, { pct: pct(sum.active, sum.users) }) },
-    { k: m.pro, v: nf.format(sum.pro), sub: fill(m.income, { amount: income }) },
+    { k: m.pro, v: nf.format(paying), sub: plan ? fill(m.income, { monthly: nf.format(plan.first_month + plan.monthly), yearly: nf.format(plan.yearly), amount: income }) : t.none },
     { k: m.free, v: nf.format(sum.free_access), sub: m.freeSub },
   ];
   const ac = sum.academy;
@@ -77,10 +89,10 @@ export default async function AdminResumen({ searchParams }: { searchParams: Pro
       <div className={css.two}>
         <section aria-labelledby="fun" className={css.section} style={{ gap: 14 }}>
           <h2 id="fun">{m.funnel}</h2>
-          {f.signup === 0 ? <Empty icon="users" title={m.funnelEmpty} text={m.funnelEmptySub} /> : (
+          {!f || f.paid_first === 0 ? <Empty icon="users" title={m.funnelEmpty} text={m.funnelEmptySub} /> : (
             <>
               {steps.map((st, i) => {
-                const p = pct(st.n, f.signup);
+                const p = pct(st.n, f.paid_first);
                 return (
                   <div key={st.label} className="stack" style={{ gap: 6 }}>
                     <div className="row-between" style={{ fontSize: 14 }}><span>{st.label}</span><strong className="num">{p}% <span className="xs muted" style={{ fontWeight: 500 }}>({nf.format(st.n)})</span></strong></div>

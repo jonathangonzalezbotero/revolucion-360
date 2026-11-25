@@ -1,18 +1,10 @@
 // Cálculos puros de "Menú y funciones" (sin base de datos). Probados en tests/admin-menu.test.ts.
 import { z } from "zod";
-import type { FeatureKey, LevelDef, MenuState, Tier } from "@/lib/engine";
+import type { LevelDef, MenuState } from "@/lib/engine";
 import type { MenuKey } from "@/server/config";
 
 /** Secciones del menú, en el orden en que las ve el usuario. Inicio siempre está visible y no se edita. */
 export const MENU_KEYS = ["plan", "movimientos", "cuentas", "metas", "proyeccion", "analisis", "deudas", "inversiones", "academia", "cierre"] as const satisfies readonly MenuKey[];
-/** Función (Gratis o Pro) que manda en cada sección. Cuentas no tiene: siempre es de todos. */
-export const SECTION_FEATURE: Record<MenuKey, FeatureKey | null> = {
-  plan: "plan", movimientos: "mov", cuentas: null, metas: "metas", proyeccion: "proy",
-  analisis: "ana", deudas: "deudas", inversiones: "inv", academia: "acad", cierre: "cierre",
-};
-/** Funciones que viven dentro de una sección y tienen su propio plan mínimo. */
-export const INNER_FEATURES = ["diag", "csv", "escenarios", "recurrentes"] as const satisfies readonly FeatureKey[];
-export const FEATURE_KEYS = ["plan", "diag", "metas", "proy", "mov", "ana", "inv", "cierre", "acad", "deudas", "csv", "escenarios", "recurrentes"] as const satisfies readonly FeatureKey[];
 export const FLAG_KEYS = ["csv", "comercios", "remesas", "multimoneda"] as const;
 export const POINT_KEYS = ["lesson", "course", "closure", "debt_paid", "goal_done", "goal_contrib", "week_active", "first_step"] as const;
 export const MENU_STATES = ["on", "soon", "off"] as const satisfies readonly MenuState[];
@@ -22,14 +14,15 @@ export type PointKey = (typeof POINT_KEYS)[number];
 export const MAX_POINTS = 1000;
 export const MAX_LEVEL_MIN = 1_000_000;
 export const MAX_LEVELS = 10;
-export const MAX_FREE_GOALS = 50;
 
-/** Todo lo que edita la pantalla. Los puntos y los mínimos de nivel llegan como texto del formulario. */
+/**
+ * Todo lo que edita la pantalla. Los puntos y los mínimos de nivel llegan como texto del formulario.
+ * Un solo plan (25 nov 2026): ya no se editan `features` (Gratis/Pro) ni `limits` (metas del plan gratis);
+ * esas claves se quedan como están en app_config.
+ */
 export type MenuForm = {
   menu: Record<MenuKey, MenuState>;
-  features: Record<FeatureKey, Tier>;
   flags: Record<FlagKey, boolean>;
-  freeGoals: string;
   gamification: boolean;
   adminMfa: boolean;
   points: Record<PointKey, string>;
@@ -39,16 +32,14 @@ export type MenuForm = {
 /** Valores limpios que se guardan en app_config. */
 export type MenuValues = {
   menu: Record<MenuKey, MenuState>;
-  features: Record<FeatureKey, Tier>;
   flags: Record<FlagKey, boolean>;
-  limits: { free_goals: number };
   gamification_enabled: boolean;
   admin_mfa_required: boolean;
   points: Record<PointKey, number>;
   levels: LevelDef[];
 };
 export type ConfigKey = keyof MenuValues;
-export const CONFIG_KEYS = ["menu", "features", "flags", "limits", "gamification_enabled", "admin_mfa_required", "points", "levels"] as const satisfies readonly ConfigKey[];
+export const CONFIG_KEYS = ["menu", "flags", "gamification_enabled", "admin_mfa_required", "points", "levels"] as const satisfies readonly ConfigKey[];
 
 const obj = <K extends string, S extends z.ZodTypeAny>(keys: readonly K[], s: S) =>
   z.object(Object.fromEntries(keys.map((k) => [k, s])) as Record<K, S>).strict();
@@ -56,9 +47,7 @@ const obj = <K extends string, S extends z.ZodTypeAny>(keys: readonly K[], s: S)
 /** Forma exacta de cada clave de app_config (zod). Booleanos reales: la base compara `value::text = 'false'`. */
 export const Schemas = {
   menu: obj(MENU_KEYS, z.enum(MENU_STATES)),
-  features: obj(FEATURE_KEYS, z.enum(["free", "pro"])),
   flags: obj(FLAG_KEYS, z.boolean()),
-  limits: z.object({ free_goals: z.number().int().min(0).max(MAX_FREE_GOALS) }).strict(),
   gamification_enabled: z.boolean(),
   admin_mfa_required: z.boolean(),
   points: obj(POINT_KEYS, z.number().int().min(0).max(MAX_POINTS)),
@@ -68,9 +57,7 @@ export const Schemas = {
 /** Forma del formulario que llega del cliente. */
 export const FormSchema = z.object({
   menu: Schemas.menu,
-  features: Schemas.features,
   flags: Schemas.flags,
-  freeGoals: z.string().max(10),
   gamification: z.boolean(),
   adminMfa: z.boolean(),
   points: obj(POINT_KEYS, z.string().max(10)),
@@ -103,7 +90,7 @@ export function checkLevels(rows: { name: string; min: string }[]): { ok: true; 
   return { ok: true, levels: [...out].sort((a, b) => a.min - b.min) };
 }
 
-export type FormError = LevelError | "points" | "freeGoals";
+export type FormError = LevelError | "points";
 /** Del formulario a los valores que se guardan. Nunca deja pasar algo fuera de forma. */
 export function formToValues(f: MenuForm): { ok: true; values: MenuValues } | { ok: false; error: FormError; field?: string } {
   const points = {} as Record<PointKey, number>;
@@ -112,14 +99,12 @@ export function formToValues(f: MenuForm): { ok: true; values: MenuValues } | { 
     if (n === null) return { ok: false, error: "points", field: k };
     points[k] = n;
   }
-  const freeGoals = parseWhole(f.freeGoals, MAX_FREE_GOALS);
-  if (freeGoals === null) return { ok: false, error: "freeGoals" };
   const lv = checkLevels(f.levels);
   if (!lv.ok) return { ok: false, error: lv.error, field: lv.index === undefined ? undefined : String(lv.index) };
   return {
     ok: true,
     values: {
-      menu: { ...f.menu }, features: { ...f.features }, flags: { ...f.flags }, limits: { free_goals: freeGoals },
+      menu: { ...f.menu }, flags: { ...f.flags },
       gamification_enabled: f.gamification, admin_mfa_required: f.adminMfa, points, levels: lv.levels,
     },
   };
@@ -128,7 +113,7 @@ export function formToValues(f: MenuForm): { ok: true; values: MenuValues } | { 
 /** De lo guardado en la base (ya completado con los valores por defecto) al formulario. */
 export function valuesToForm(v: MenuValues): MenuForm {
   return {
-    menu: { ...v.menu }, features: { ...v.features }, flags: { ...v.flags }, freeGoals: String(v.limits.free_goals),
+    menu: { ...v.menu }, flags: { ...v.flags },
     gamification: v.gamification_enabled, adminMfa: v.admin_mfa_required,
     points: Object.fromEntries(POINT_KEYS.map((k) => [k, String(v.points[k])])) as Record<PointKey, string>,
     levels: [...v.levels].sort((a, b) => a.min - b.min).map((l) => ({ name: l.name, min: String(l.min) })),
@@ -149,7 +134,7 @@ export function sameJson(a: unknown, b: unknown): boolean {
 export type Change = { key: ConfigKey; value: unknown; changed: string[] };
 /**
  * Qué claves cambian y qué hay que escribir. Se escribe la clave entera, conservando lo que ya
- * existía en la base y esta pantalla no conoce (p. ej. un punto o un límite nuevo).
+ * existía en la base y esta pantalla no conoce (p. ej. un punto nuevo).
  * `changed` lista las subclaves que cambiaron (para el registro; nunca valores).
  */
 export function diffConfig(stored: Partial<Record<ConfigKey, unknown>>, next: MenuValues, prev?: MenuValues): Change[] {
@@ -175,7 +160,7 @@ export function diffConfig(stored: Partial<Record<ConfigKey, unknown>>, next: Me
 }
 
 const FORM_KEY: Record<keyof MenuForm, ConfigKey> = {
-  menu: "menu", features: "features", flags: "flags", freeGoals: "limits", gamification: "gamification_enabled",
+  menu: "menu", flags: "flags", gamification: "gamification_enabled",
   adminMfa: "admin_mfa_required", points: "points", levels: "levels",
 };
 /**
@@ -189,19 +174,15 @@ export function touchedKeys(initial: MenuForm, current: MenuForm): ConfigKey[] {
 
 /** Nombre de la acción en el registro (empieza por "menu" o "config" para caer en el filtro "Contenido"). */
 export const AUDIT_ACTION: Record<ConfigKey, string> = {
-  menu: "menu_secciones", features: "menu_planes", flags: "menu_funciones", limits: "config_limites",
+  menu: "menu_secciones", flags: "menu_funciones",
   gamification_enabled: "config_logros", admin_mfa_required: "config_2pasos_admin", points: "config_puntos", levels: "config_niveles",
 };
 
-export type PreviewItem = { key: MenuKey | "inicio"; soon: boolean; pro: boolean };
-/** "Así lo ve un usuario": Inicio y las secciones que no están ocultas, con su marca de Pronto o Pro. */
-export function menuPreview(menu: Record<MenuKey, MenuState>, features: Partial<Record<FeatureKey, Tier>>): PreviewItem[] {
-  const items: PreviewItem[] = [{ key: "inicio", soon: false, pro: false }];
-  for (const k of MENU_KEYS) {
-    if (menu[k] === "off") continue;
-    const f = SECTION_FEATURE[k];
-    items.push({ key: k, soon: menu[k] === "soon", pro: f ? (features[f] ?? "free") === "pro" : false });
-  }
+export type PreviewItem = { key: MenuKey | "inicio"; soon: boolean };
+/** "Así lo ve un usuario": Inicio y las secciones que no están ocultas, con su marca de Pronto. */
+export function menuPreview(menu: Record<MenuKey, MenuState>): PreviewItem[] {
+  const items: PreviewItem[] = [{ key: "inicio", soon: false }];
+  for (const k of MENU_KEYS) if (menu[k] !== "off") items.push({ key: k, soon: menu[k] === "soon" });
   return items;
 }
 

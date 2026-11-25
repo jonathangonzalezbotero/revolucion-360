@@ -4,7 +4,7 @@ import { z } from "zod";
 import { fill } from "@/i18n";
 import { fail, ok, run } from "@/server/action";
 import { award, firstStep, touchWeek, tryBadge } from "@/server/rewards";
-import { cleanComment, courseProgress, isLockedForTier, lessonStates } from "./lib";
+import { cleanComment, courseProgress, lessonStates } from "./lib";
 import { M } from "./messages";
 import { loadCatalog, totalPoints } from "./server";
 
@@ -27,7 +27,6 @@ export async function completeLesson(input: unknown) {
     const cv = cat.courses.find((c) => c.lessons.some((l) => l.id === p.data));
     const lesson = cv?.lessons.find((l) => l.id === p.data);
     if (!cv || !lesson) return fail(s.t.errors.notFound);
-    if (isLockedForTier(cv.course.tier, lesson.tier, s.tier)) return fail(s.t.errors.pro);
     const state = cv.states.get(lesson.id);
     if (state === "locked") return fail(m.errLocked);
     const next = cv.lessons[cv.lessons.findIndex((l) => l.id === lesson.id) + 1] ?? null;

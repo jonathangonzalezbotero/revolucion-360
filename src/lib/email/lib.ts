@@ -4,7 +4,7 @@ import { addDays, daysInMonth, daysLeft, nextStateOnExpiry, parts, todayIn, week
 import { readNotifyPrefs, type NotifyPrefs } from "@/app/(app)/perfil/lib";
 import { activeGrant, isPaying, type Grant } from "@/app/(app)/suscripcion/lib";
 
-export type EmailKind = "welcome" | "close_reminder" | "access_expiring" | "payment_failed" | "access_granted";
+export type EmailKind = "welcome" | "close_reminder" | "access_expiring" | "payment_failed" | "access_granted" | "first_month_ending";
 export type Period = { year: number; month: number };
 
 // ───────── Preferencias (las guarda Perfil en profiles.prefs) ─────────
@@ -48,11 +48,14 @@ export function closureStreakBefore(rows: { year: number; month: number; reopene
   return n;
 }
 
-/** El recordatorio de cierre es Pro salvo que Admin lo haya puesto Gratis. Sin configuración leída, también Pro. */
-export function canGetCloseReminder(tier: Tier, features: FeatureConfig, menuCierre: string | undefined, state: PlanState): boolean {
+/**
+ * Recordatorio de cierre: toda cuenta activa (un solo plan, todo incluido) con la sección Cierre encendida.
+ * Sin activar o en solo lectura, no (no puede cerrar el mes). `features` ya no decide nada: se conserva la firma.
+ */
+export function canGetCloseReminder(tier: Tier, _features: FeatureConfig, menuCierre: string | undefined, state: PlanState): boolean {
   if (menuCierre !== undefined && menuCierre !== "on") return false;
-  if (state === "read_only") return false; // no puede cerrar el mes
-  return (features.cierre ?? "pro") === "free" || tier === "pro";
+  if (state === "read_only" || state === "free") return false;
+  return tier === "pro";
 }
 
 // ───────── Vencimientos ─────────
@@ -62,14 +65,18 @@ export function expiryBucket(until: string | null, now: Date = new Date()): 30 |
   if (d === null || d <= 0 || d > 30) return null;
   return d <= 7 ? 7 : 30;
 }
+/** `ref` del aviso de fin del primer mes: la suscripción + el fin de su prueba. Un aviso repetido de Stripe no manda otro correo. */
+export const firstMonthRef = (subId: string, trialEndSec: number) => `${subId}-${trialEndSec}`;
+
 /** `ref` del aviso: fecha de vencimiento + ventana. Si le cambian la fecha, vuelve a avisar; nunca dos veces la misma. */
 export const expiryRef = (until: string, bucket: 30 | 7) => `${until.slice(0, 10)}-${bucket}`;
 
 export type ExpiryRow = Entitlement & { stripeStatus: string | null };
 /**
- * Estado al vencer, con la misma regla que `nextStateOnExpiry` del motor, más dos cuidados:
+ * Estado al vencer, con la misma regla que `nextStateOnExpiry` del motor (todo vencimiento → solo lectura), más dos cuidados:
  * - Pro con `pro_until` vencido pero con Stripe todavía cobrando (active/trialing/past_due) NO pasa a solo lectura: el aviso de Stripe manda.
- * - Si tiene otro acceso gratis vigente (alumno o fundador), pasa a ese en vez de Gratis o solo lectura.
+ * - Alumno o fundador vencido que ya paga en Stripe pasa a Pro (pagó antes de que venciera).
+ * - Si tiene otro acceso gratis vigente (alumno o fundador), pasa a ese en vez de solo lectura.
  * Devuelve null si no cambia nada.
  */
 export function expiryTransition(e: ExpiryRow, grants: Grant[], now: Date = new Date()): { state: PlanState; accessUntil?: string | null } | null {
@@ -77,6 +84,7 @@ export function expiryTransition(e: ExpiryRow, grants: Grant[], now: Date = new 
   if (next === e.state) return null;
   if (e.state === "pro" && isPaying(e.stripeStatus)) return null;
   const g = activeGrant(grants, now);
+  if (!g && (e.state === "alumno" || e.state === "fundador") && isPaying(e.stripeStatus)) return { state: "pro" };
   if (g) return { state: g.state, accessUntil: g.accessUntil };
   return { state: next };
 }

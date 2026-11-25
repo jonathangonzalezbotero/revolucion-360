@@ -1,83 +1,53 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type Stripe from "stripe";
 import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
-import { daysLeft, formatDate, formatMoney, todayIn, type FeatureKey, type MoneyFormat } from "@/lib/engine";
-import { getStripe, stripeReady, toSubLike } from "@/lib/stripe";
-import type { MenuKey } from "@/server/config";
+import { formatDate, formatMoney, todayIn } from "@/lib/engine";
+import { getStripe, loadBilling, loadStripePrices, stripeReady, toSubLike } from "@/lib/stripe";
 import { must } from "@/server/data";
-import { requireUser, type Session } from "@/server/session";
-import { BillingForm, CancelFlow, Plans, PortalButton, ResumeButton, AwaitConfirmation, type FeatureRow } from "./Client";
-import { canStartTrial, discounted, fromStripeAmount, invoiceInterval, isPaying, isStudent, monthlyEquivalent, pickRegion, priceFor, stripePriceFor, yearlySavingsPct, type Grant, type PriceRegion } from "./lib";
+import { requireUser } from "@/server/session";
+import { BillingForm, CancelFlow, PlanCard, PortalButton, ResumeButton } from "./Client";
+import { freeMonths, fromStripeAmount, invoiceConcept, isPaying, monthlyEquivalent, subView, usdFull, usdShort, type Grant } from "./lib";
 import { M } from "./messages";
 import css from "./suscripcion.module.css";
 
 export const metadata: Metadata = { title: "Suscripción" };
 
-/** Orden de las filas de la tabla. Qué es Gratis o Pro sale de app_config.features, nunca de aquí. */
-const ORDER: FeatureKey[] = ["plan", "diag", "metas", "proy", "escenarios", "mov", "csv", "recurrentes", "ana", "inv", "cierre", "acad", "deudas"];
-const MENU_OF: Partial<Record<FeatureKey, MenuKey>> = {
-  plan: "plan", metas: "metas", proy: "proyeccion", escenarios: "proyeccion", mov: "movimientos", csv: "movimientos", recurrentes: "movimientos",
-  ana: "analisis", inv: "inversiones", cierre: "cierre", acad: "academia", deudas: "deudas",
-};
-
 type HistRow = { key: string; date: string; concept: string; amount: string; status: string; tone: "ok" | "warn" | "bad" | "neutral"; href: string | null; sort: number };
 
-export default async function SuscripcionPage({ searchParams }: { searchParams: Promise<{ estado?: string }> }) {
+/**
+ * Suscripción (docs/mockup/Suscripcion*.dc.html): un solo plan en USD, estado actual, método de pago, facturación, historial y cancelar.
+ * Una cuenta sin activar no llega aquí (requireUser la lleva a /activar). Solo lectura ve el botón para reactivar.
+ */
+export default async function SuscripcionPage() {
   const s = await requireUser();
+  if (s.plan === "free") redirect("/activar");
   const m = M[s.locale];
-  const { estado } = await searchParams;
-  const [entRes, regionsRes, grantsRes] = await Promise.all([
+  const [entRes, grantsRes, billing, prices] = await Promise.all([
     s.supabase.from("entitlements").select("stripe_customer_id, stripe_subscription_id, stripe_status").eq("user_id", s.userId).maybeSingle(),
-    s.supabase.from("price_regions").select("*"),
     s.supabase.from("access_grants").select("kind, expires_at, revoked_at, created_at").eq("user_id", s.userId).order("created_at", { ascending: false }),
+    loadBilling(s.supabase),
+    loadStripePrices(s.supabase),
   ]);
   const ent = must(entRes);
-  const regions = must(regionsRes) as PriceRegion[];
   const grants = must(grantsRes) as (Grant & { created_at: string })[];
   const e = s.entitlement;
   const tz = s.profile.timezone || "Australia/Sydney";
   const date = (ts: string | number | null | undefined) => (ts == null ? null : formatDate(todayIn(tz, new Date(typeof ts === "number" ? ts * 1000 : ts)), s.locale));
   const now = new Date();
-
-  // ── Precio de la región ──
-  const region = pickRegion(s.profile.country, regions);
-  const rfmt: MoneyFormat = { currency: region?.currency ?? s.fmt.currency, numberLocale: s.fmt.numberLocale };
-  const monthly = priceFor(region, "month"), yearly = priceFor(region, "year");
-  const money = (c: number | null) => (c == null ? null : formatMoney(c, rfmt));
-  const studentPct = region && region.student_discount_pct > 0 && isStudent(grants) ? region.student_discount_pct : 0;
-  const prices = {
-    month: money(monthly), year: money(yearly), monthlyEquiv: yearly ? money(monthlyEquivalent(yearly)) : null,
-    savings: yearlySavingsPct(monthly, yearly),
-    currency: region && region.currency !== s.profile.currency ? region.currency : null,
-    student: studentPct ? { pct: studentPct, month: monthly ? money(discounted(monthly, studentPct)) : null, year: yearly ? money(discounted(yearly, studentPct)) : null } : null,
-  };
   const ready = stripeReady();
-  const paymentsActive = ready && !!stripePriceFor(region, "month") && !!stripePriceFor(region, "year");
-
-  // ── Filas Gratis vs Pro (de app_config.features) ──
-  const rows: FeatureRow[] = ORDER.filter((k) => k in s.config.features && (!MENU_OF[k] || s.config.menu[MENU_OF[k]!] !== "off")).map((k) => {
-    const free = (s.config.features[k] ?? "free") === "free";
-    if (k === "metas" && free) return { key: k, name: m.plans.features[k], free: String(s.config.limits.free_goals), pro: m.plans.unlimited };
-    return { key: k, name: m.plans.features[k], free, pro: true };
-  });
-  rows.push({ key: "export", name: m.plans.export, free: true, pro: true });
-
-  // ── Estado de la suscripción ──
-  const paying = !!ent?.stripe_subscription_id && isPaying(ent.stripe_status);
-  const giftLive = (e.state === "alumno" || e.state === "fundador") && s.tier === "pro";
-  const mode: "buy" | "have" | "gift" = paying || e.state === "pro" ? "have" : giftLive && (e.state === "fundador" || !e.accessUntil) ? "gift" : "buy";
-  const canTrial = canStartTrial(s.config.trial, e);
-  const hasCustomer = !!ent?.stripe_customer_id;
+  const paymentsActive = ready && !!prices.monthly && !!prices.yearly && !!prices.first;
 
   // ── Datos de Stripe (solo si hay clave y cliente). La tarjeta nunca pasa por la app: solo marca, últimos 4 y vencimiento. ──
   let card: { brand: string; last4: string; exp: string } | null = null;
   let billingName = s.profile.name, taxId = "";
   let invoices: Stripe.Invoice[] = [];
   let stripeError = false;
-  let live: { cancel: boolean; end: number | null } | null = null; // lo que dice Stripe ahora (el aviso puede tardar unos segundos)
+  // Lo que dice Stripe ahora (el aviso puede tardar unos segundos) y lo que de verdad paga (su precio, aunque Administración lo haya cambiado).
+  let live: { cancel: boolean; end: number | null; status: string; interval: string | null; cents: number | null } | null = null;
   const stripe = getStripe();
   if (stripe && ent?.stripe_customer_id) {
     try {
@@ -86,7 +56,12 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
         stripe.invoices.list({ customer: ent.stripe_customer_id, limit: 24 }),
         ent.stripe_subscription_id ? stripe.subscriptions.retrieve(ent.stripe_subscription_id, { expand: ["default_payment_method"] }) : Promise.resolve(null),
       ]);
-      if (sub) { const l = toSubLike(sub); live = { cancel: l.cancel_at_period_end || l.cancel_at != null, end: l.current_period_end }; }
+      if (sub) {
+        const l = toSubLike(sub);
+        const item = sub.items?.data?.[0];
+        const unit = item?.price?.unit_amount;
+        live = { cancel: l.cancel_at_period_end || l.cancel_at != null, end: l.current_period_end, status: sub.status, interval: l.interval, cents: unit != null && item?.price?.currency === "usd" ? unit * (item.quantity ?? 1) : null };
+      }
       invoices = inv.data.filter((i) => i.status && i.status !== "draft");
       if (!cust.deleted) {
         billingName = cust.name || billingName;
@@ -101,32 +76,88 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
   }
 
   // ── Historial: accesos gratis ($0) + facturas de Stripe ──
-  const zero = formatMoney(0, s.fmt);
   const hist: HistRow[] = [
     ...grants.map((g, i): HistRow => {
       const st = g.revoked_at ? "revoked" : g.expires_at && new Date(g.expires_at) <= now ? "expired" : "active";
-      return { key: `g${i}`, date: date(g.created_at) ?? "", concept: m.history[g.kind], amount: zero, status: m.history.st[st], tone: st === "active" ? "ok" : "neutral", href: null, sort: new Date(g.created_at).getTime() };
+      return { key: `g${i}`, date: date(g.created_at) ?? "", concept: m.history[g.kind], amount: usdFull(0), status: m.history.st[st], tone: st === "active" ? "ok" : "neutral", href: null, sort: new Date(g.created_at).getTime() };
     }),
     ...invoices.map((inv): HistRow => {
-      const line = inv.lines?.data?.[0];
-      const interval = invoiceInterval(line?.period?.start ?? null, line?.period?.end ?? null);
+      const lines = inv.lines?.data ?? [];
+      const sub = lines.find((l) => l.parent?.type === "subscription_item_details") ?? lines[0];
+      const concept = invoiceConcept({ billingReason: inv.billing_reason, hasOneTime: lines.some((l) => l.parent?.type === "invoice_item_details"), periodStart: sub?.period?.start ?? null, periodEnd: sub?.period?.end ?? null });
       const st = (inv.status ?? "open") as "paid" | "open" | "uncollectible" | "void";
       const cents = st === "paid" ? inv.amount_paid : inv.amount_due;
+      const amount = inv.currency === "usd" ? usdFull(cents) : formatMoney(fromStripeAmount(cents, inv.currency), { currency: inv.currency.toUpperCase(), numberLocale: s.fmt.numberLocale });
       return {
-        key: inv.id ?? String(inv.created), date: date(inv.created) ?? "", concept: fill(m.history.pro, { interval: m.intervals[interval] }),
-        amount: formatMoney(fromStripeAmount(cents, inv.currency), { currency: inv.currency.toUpperCase(), numberLocale: s.fmt.numberLocale }),
+        key: inv.id ?? String(inv.created), date: date(inv.created) ?? "", concept: m.history[concept], amount,
         status: m.history.st[st] ?? st, tone: st === "paid" ? "ok" : st === "open" ? "warn" : st === "uncollectible" ? "bad" : "neutral",
         href: inv.invoice_pdf ?? inv.hosted_invoice_url ?? null, sort: inv.created * 1000,
       };
     }),
   ].sort((a, b) => b.sort - a.sort);
 
+  const paying = !!ent?.stripe_subscription_id && isPaying(live?.status ?? ent.stripe_status);
   const cancelPending = live ? live.cancel : e.cancelAtPeriodEnd;
   const periodEnd = live?.end ? new Date(live.end * 1000).toISOString() : e.proUntil;
+  const interval = live?.interval ?? e.billingInterval;
+  const view = subView({ state: s.plan, stripeStatus: live?.status ?? ent?.stripe_status ?? null, interval, paymentFailed: !!e.paymentFailedAt, cancelPending });
   const generic = s.t.errors.generic;
   const taxTerm = s.profile.terms.freelance;
   const taxLabel = taxTerm && /^[A-Z]{2,6}$/.test(taxTerm) ? taxTerm : "";
   const pillTone = (t: HistRow["tone"]) => (t === "neutral" ? "pill" : `pill pill-${t}`);
+
+  // ── Bloque "Tu suscripción" ──
+  const v = m.view;
+  const yearlyPaid = interval === "year";
+  const paidCents = live?.cents ?? (yearlyPaid ? billing.yearlyCents : billing.monthlyCents);
+  const price = usdShort(paidCents);
+  const endDate = date(periodEnd);
+  const portalCta = (label: string, flow: "home" | "payment_method_update") => <PortalButton label={label} flow={flow} className={css.cta} disabled={!ready || stripeError} genericError={generic} />;
+  let cur: { tag: string; title: string; text: string; cta: React.ReactNode; warn?: boolean };
+  switch (view) {
+    case "first":
+      cur = { tag: v.first.tag, title: fill(v.first.title, { first: usdShort(billing.firstMonthCents) }), text: endDate ? fill(v.first.text, { date: endDate, price, days: billing.notifyBeforeDays }) : fill(v.first.textNoDate, { price, days: billing.notifyBeforeDays }), cta: portalCta(v.first.cta, "home") };
+      break;
+    case "monthly":
+      cur = { tag: v.monthly.tag, title: fill(v.monthly.title, { price }), text: endDate ? fill(v.monthly.text, { date: endDate }) : v.monthly.textNoDate, cta: portalCta(v.monthly.cta, "home") };
+      break;
+    case "yearly": {
+      const perMonth = usdShort(monthlyEquivalent(paidCents));
+      cur = { tag: v.yearly.tag, title: fill(v.yearly.title, { price }), text: endDate ? fill(v.yearly.text, { date: endDate, perMonth }) : fill(v.yearly.textNoDate, { perMonth }), cta: portalCta(v.yearly.cta, "home") };
+      break;
+    }
+    case "ending": {
+      const k = yearlyPaid ? v.yearly : v.monthly;
+      cur = { tag: k.tag, title: fill(k.title, { price }), text: endDate ? fill(v.ending.text, { date: endDate }) : v.ending.textNoDate, cta: null };
+      break;
+    }
+    case "failed":
+      cur = { tag: v.failed.tag, title: fill(v.failed.title, { price }), text: v.failed.text, cta: portalCta(v.failed.cta, "payment_method_update"), warn: true };
+      break;
+    case "gift": {
+      const until = s.plan === "trial" ? e.trialEndsAt : e.accessUntil; // 'trial': filas viejas (ya no se usa)
+      cur = { tag: s.plan === "fundador" ? v.gift.fundador : v.gift.alumno, title: v.gift.title, text: until ? fill(v.gift.until, { date: date(until) ?? "" }) : v.gift.life, cta: null };
+      break;
+    }
+    default: {
+      // Solo lectura: reactivar lleva a /activar (mismo pago embebido). Nunca se borra nada.
+      const hadGift = !ent?.stripe_subscription_id && grants.length > 0;
+      cur = {
+        tag: v.readOnly.tag, title: hadGift ? v.readOnly.titleGift : v.readOnly.title, text: v.readOnly.text, warn: true,
+        cta: <span className={css.ctaRow}><Link href="/activar" className={css.cta}>{fill(v.readOnly.cta, { price: usdShort(billing.monthlyCents) })}</Link><Link href="/perfil#privacidad" className="link" style={{ fontSize: 14, fontWeight: 600 }}>{v.readOnly.export}</Link></span>,
+      };
+    }
+  }
+
+  const free = freeMonths(billing.monthlyCents, billing.yearlyCents);
+  const perMonthYear = usdShort(monthlyEquivalent(billing.yearlyCents));
+  const p = m.plan;
+  const planTexts = {
+    monthlyLabel: p.monthly,
+    yearlyLabel: free === 1 ? p.yearlyFreeOne : free > 1 ? fill(p.yearlyFree, { n: free }) : p.yearly,
+    month: { big: usdShort(billing.monthlyCents), per: p.perMonth, line: fill(p.lineFirst, { first: usdShort(billing.firstMonthCents) }) },
+    year: { big: usdShort(billing.yearlyCents), per: p.perYear, line: free === 1 ? fill(p.lineYearlyOne, { perMonth: perMonthYear }) : free > 1 ? fill(p.lineYearly, { perMonth: perMonthYear, n: free }) : fill(p.lineYearlyPlain, { perMonth: perMonthYear }) },
+  };
 
   return (
     <main className="page">
@@ -134,16 +165,19 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
         <Link href="/mas" className={`only-mobile ${css.back}`}>{m.back}</Link>
       </PageHeader>
 
-      {estado === "ok" ? (e.state === "pro" ? <div className="banner banner-info" role="status"><span>{m.banners.okDone}</span></div> : <AwaitConfirmation text={m.banners.ok} refresh={m.banners.refresh} />) : null}
-      {estado === "cancelado" ? <div className="banner banner-info" role="status"><span>{m.banners.cancelled}</span></div> : null}
-      {e.paymentFailedAt && paying ? (
-        <div className="banner" role="alert"><span>{m.banners.failed}</span><span style={{ display: "flex", flexDirection: "column", gap: 6 }}><PortalButton label={m.banners.failedCta} flow="payment_method_update" className="btn btn-sm" disabled={!ready} genericError={generic} /></span></div>
-      ) : null}
-      {!paymentsActive && mode === "buy" ? <div className="banner banner-info"><span>{m.banners.notActive}</span></div> : null}
+      {!paymentsActive && view === "read_only" ? <div className="banner banner-info"><span>{m.banners.notActive}</span></div> : null}
 
-      <CurrentPlan s={s} m={m} date={date} canTrial={canTrial} cancelPending={cancelPending} periodEnd={periodEnd} />
+      <section aria-label={m.current} className={css.current}>
+        <div className={css.currentText}>
+          <span className={`${css.badge} ${cur.warn ? css.badgeRo : ""}`}>{cur.tag}</span>
+          <h2>{cur.title}</h2>
+          <span className={css.sub}>{cur.text}</span>
+          {cur.cta}
+        </div>
+        <Image src="/brand/sello.png" alt={m.sello} width={88} height={88} className={css.sello} />
+      </section>
 
-      <Plans m={m} rows={rows} prices={prices} mode={mode} paymentsActive={paymentsActive} canTrial={canTrial} trialDays={s.config.trial.days} hasCustomer={hasCustomer} genericError={generic} />
+      <PlanCard m={m} texts={planTexts} />
 
       <div className={css.grid}>
         <section aria-labelledby="metodo" className={`${css.card} ${css.m1}`}>
@@ -158,7 +192,7 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
               <span style={{ display: "flex", flexDirection: "column", gap: 6 }}><PortalButton label={m.method.change} flow="payment_method_update" className="btn btn-secondary btn-sm" disabled={!ready} genericError={generic} /></span>
             </div>
           ) : <p className={css.sub} style={{ margin: 0 }}>{ready ? m.method.none : m.banners.notActive}</p>}
-          {hasCustomer && ready && !stripeError ? (
+          {ent?.stripe_customer_id && ready && !stripeError ? (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
               <PortalButton label={m.method.add} flow="payment_method_update" className="btn btn-dashed btn-sm" genericError={generic} />
               <PortalButton label={m.method.manage} flow="home" className="btn btn-ghost btn-sm" genericError={generic} />
@@ -175,20 +209,23 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
         <section aria-labelledby="hist" className={`${css.card} ${css.m2} ${css.wide}`} style={{ gap: 12 }}>
           <h2 id="hist">{m.history.title}</h2>
           {hist.length === 0 ? <Empty icon="receipt" title={m.history.empty} text={stripeError ? m.method.unavailable : m.history.emptyText} /> : (
-            <div className="table-scroll">
-              <table className={css.hist}>
-                <thead><tr><th scope="col">{m.history.date}</th><th scope="col">{m.history.concept}</th><th scope="col" className={css.right}>{m.history.amount}</th><th scope="col">{m.history.status}</th><th scope="col">{m.history.invoice}</th></tr></thead>
-                <tbody>
-                  {hist.map((h) => (
-                    <tr key={h.key}>
-                      <td>{h.date}</td><td>{h.concept}</td><td className={`num ${css.right}`}>{h.amount}</td>
-                      <td><span className={pillTone(h.tone)} style={{ fontSize: 12, padding: "3px 9px" }}>{h.status}</span></td>
-                      <td>{h.href ? <a href={h.href} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 600 }}>{m.history.download}</a> : "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <>
+              <div className="table-scroll">
+                <table className={css.hist}>
+                  <thead><tr><th scope="col">{m.history.date}</th><th scope="col">{m.history.concept}</th><th scope="col" className={css.right}>{m.history.amount}</th><th scope="col">{m.history.status}</th><th scope="col">{m.history.invoice}</th></tr></thead>
+                  <tbody>
+                    {hist.map((h) => (
+                      <tr key={h.key}>
+                        <td>{h.date}</td><td>{h.concept}</td><td className={`num ${css.right}`}>{h.amount}</td>
+                        <td><span className={pillTone(h.tone)} style={{ fontSize: 12, padding: "3px 9px" }}>{h.status}</span></td>
+                        <td>{h.href ? <a href={h.href} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 600 }}>{m.history.download}</a> : "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <span className={css.small}>{m.history.note}</span>
+            </>
           )}
         </section>
       </div>
@@ -198,7 +235,7 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
           <h2 id="canc">{m.cancel.title}</h2>
           {cancelPending ? (
             <>
-              <p className={css.cancelText}>{periodEnd ? fill(m.cancel.pending, { date: date(periodEnd)! }) : m.cancel.pendingNoDate}</p>
+              <p className={css.cancelText}>{endDate ? fill(m.cancel.pending, { date: endDate }) : m.cancel.pendingNoDate}</p>
               {ready ? <ResumeButton m={m} /> : null}
             </>
           ) : (
@@ -210,56 +247,5 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
         </section>
       ) : null}
     </main>
-  );
-}
-
-/** Bloque "Tu plan actual": estado, próximo cobro o fin de prueba, vencimiento del acceso, solo lectura con su explicación. */
-function CurrentPlan({ s, m, date, canTrial, cancelPending, periodEnd }: { s: Session; m: (typeof M)["es"]; date: (ts: string | null) => string | null; canTrial: boolean; cancelPending: boolean; periodEnd: string | null }) {
-  const e = s.entitlement;
-  const p = m.plan;
-  let badge = m.states[e.state], badgeCls = css.badge, title = "", sub = "", note: React.ReactNode = null;
-  switch (e.state) {
-    case "trial": {
-      const left = daysLeft(e.trialEndsAt);
-      if (s.tier === "pro" && left != null) {
-        title = p.trialTitle;
-        sub = fill(left === 1 ? p.trialTextOne : p.trialText, { date: date(e.trialEndsAt) ?? "", n: left });
-        note = p.trialNote;
-      } else {
-        badge = m.states.free; badgeCls = `${css.badge} ${css.badgeFree}`; title = p.freeTitle; sub = fill(p.trialOver, { date: date(e.trialEndsAt) ?? "" });
-      }
-      break;
-    }
-    case "pro":
-      badge = e.billingInterval === "year" || e.billingInterval === "month" ? `${m.states.pro} · ${m.intervals[e.billingInterval]}` : m.states.pro;
-      title = p.proTitle;
-      sub = periodEnd ? fill(cancelPending ? p.proEnds : p.proNext, { date: date(periodEnd) ?? "" }) : p.proNextNone;
-      note = p.proNote;
-      break;
-    case "alumno":
-    case "fundador":
-      if (s.tier === "pro") {
-        title = p.giftTitle; sub = e.accessUntil ? fill(p.giftUntil, { date: date(e.accessUntil) ?? "" }) : p.giftLife; note = p.giftNote;
-      } else {
-        badge = m.states.free; badgeCls = `${css.badge} ${css.badgeFree}`; title = p.freeTitle; sub = fill(p.giftOver, { date: date(e.accessUntil) ?? "" });
-      }
-      break;
-    case "read_only":
-      badgeCls = `${css.badge} ${css.badgeRo}`; title = p.roTitle; sub = p.roText;
-      note = <>{p.roNote} <Link href="/perfil#privacidad" className="link">{p.export}</Link></>;
-      break;
-    default:
-      badgeCls = `${css.badge} ${css.badgeFree}`; title = p.freeTitle; sub = p.freeText; note = canTrial ? fill(p.freeTrial, { days: s.config.trial.days }) : null;
-  }
-  return (
-    <section aria-label={m.current} className={css.current}>
-      <div className={css.currentText}>
-        <span className={badgeCls}>{badge}</span>
-        <h2>{title}</h2>
-        <span className={css.sub}>{sub}</span>
-        {note ? <span className={css.note}>{note}</span> : null}
-      </div>
-      <Image src="/brand/sello.png" alt={m.sello} width={88} height={88} className={css.sello} />
-    </section>
   );
 }

@@ -1,26 +1,34 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { fill, type Locale } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
 import { ConfirmButton, Switch, useToast } from "@/components/ui/client";
 import { Icon } from "@/components/ui/Icon";
 import { formatDate, formatMoney, goalPlan, parseMoney, type Cents, type GoalPlan, type ISODate, type MoneyFormat } from "@/lib/engine";
+import { MILESTONES, type Challenge, type GoalOutlook, type Milestone } from "@/lib/engine/metas";
 import type { Result } from "@/server/action";
-import { addEntry, addToPlan, archiveGoal, completeGoal, createGoal, updateGoal } from "./actions";
+import { addEntry, addToPlan, archiveGoal, completeGoal, createGoal, sendLeftover, setChallenge, updateGoal } from "./actions";
 import { GOAL_TYPES, monthOptions, resolveTargetDate, TYPE_COLOR, whenLabel, ymOf, type GoalStatus, type GoalType } from "./lib";
 import type { MetasMessages } from "./messages";
 import css from "./metas.module.css";
 
 export type GoalView = {
-  id: string; name: string; kind: string; type: GoalType; targetCents: Cents; targetDate: ISODate | null; isEmergencyFund: boolean; accountId: string | null; accountName: string;
-  completed: boolean; inPlan: boolean; plan: GoalPlan; status: GoalStatus;
-  entries: { id: string; date: ISODate; amountCents: Cents; note: string }[];
+  id: string; name: string; kind: string; why: string; type: GoalType; targetCents: Cents; targetDate: ISODate | null; isEmergencyFund: boolean;
+  accountId: string | null; accountName: string; accountMode: "auto" | "shared" | "none";
+  completed: boolean; inPlan: boolean; plan: GoalPlan; status: GoalStatus; outlook: GoalOutlook;
+  reached: Milestone[]; next: { pct: Milestone; missingCents: Cents } | null;
+  entries: { id: string; date: ISODate; amountCents: Cents; label: string }[];
 };
 type Props = {
   goals: GoalView[]; accounts: { id: string; name: string }[]; fmt: MoneyFormat; locale: Locale; today: ISODate; canEdit: boolean; m: MetasMessages; openNew: boolean;
-  points: { contrib: number; done: number } | null; planHref: string | null; wall: React.ReactNode;
+  points: { contrib: number; done: number; milestone: number } | null; planHref: string | null; wall: React.ReactNode;
+  monthIn: Cents;
+  leftover: { year: number; month: number; monthLabel: string; cents: Cents } | null;
+  challenges: { key: Challenge; title: string; text: string; active: boolean }[];
+  /** Hitos que se cruzaron al poner al día las transferencias automáticas: se celebran una vez al abrir. */
+  crossed: { text: string; points: number }[];
 };
 type Run = <T>(fn: () => Promise<Result<T>>, after: (r: Extract<Result<T>, { ok: true }>) => void, onError: (e: string) => void) => void;
 const HISTORY = 6;
@@ -32,7 +40,7 @@ function GoalForm({ p, goal, run, pending, onClose, onSaved }: { p: Props; goal?
   const [f, setF] = useState({
     type: goal?.type ?? ("trip" as GoalType),
     custom: goal && goal.type === "other" && goal.kind !== m.types.other ? goal.kind : "",
-    name: goal?.name ?? "", target: goal?.targetCents ? formatMoney(goal.targetCents, fmt) : "",
+    name: goal?.name ?? "", why: goal?.why ?? "", target: goal?.targetCents ? formatMoney(goal.targetCents, fmt) : "",
     month: goal ? (goal.targetDate ? ymOf(goal.targetDate) : "") : base[12],
     fund: goal?.isEmergencyFund ?? false, toPlan: true, account: goal?.accountId ?? "",
   });
@@ -42,7 +50,7 @@ function GoalForm({ p, goal, run, pending, onClose, onSaved }: { p: Props; goal?
   const date = resolveTargetDate(f.month, goal?.targetDate ?? null);
   const calc = targetCents > 0 && date ? goalPlan(targetCents, [goal?.plan.savedCents ?? 0], date, today) : null;
   const kind = f.type === "other" ? f.custom.trim() || m.types.other : m.types[f.type];
-  const fields = { name: f.name, kind, target: f.target, month: f.month, isEmergencyFund: f.fund, accountId: f.account };
+  const fields = { name: f.name, kind, target: f.target, month: f.month, isEmergencyFund: f.fund, accountId: f.account, why: f.why };
   const accounts = goal?.accountId && !p.accounts.some((a) => a.id === goal.accountId) ? [{ id: goal.accountId, name: goal.accountName }, ...p.accounts] : p.accounts;
 
   return (
@@ -64,6 +72,7 @@ function GoalForm({ p, goal, run, pending, onClose, onSaved }: { p: Props; goal?
       <div className={css.grid2}>
         {f.type === "other" ? <div className="field"><label htmlFor={`gk-${uid}`}>{m.customType}</label><input id={`gk-${uid}`} className="input" value={f.custom} onChange={(e) => setF({ ...f, custom: e.target.value })} placeholder={m.customTypePh} maxLength={40} /></div> : null}
         <div className="field"><label htmlFor={`gn-${uid}`}>{m.name}</label><input id={`gn-${uid}`} className="input" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder={m.namePh} maxLength={80} required /></div>
+        <div className="field"><label htmlFor={`gy-${uid}`}>{m.why}</label><input id={`gy-${uid}`} className="input" value={f.why} onChange={(e) => setF({ ...f, why: e.target.value })} placeholder={m.whyPh} maxLength={160} /></div>
         <div className="field"><label htmlFor={`gm-${uid}`}>{m.target}</label><input id={`gm-${uid}`} className="input num" inputMode="decimal" value={f.target} onChange={(e) => setF({ ...f, target: e.target.value })} placeholder={formatMoney(0, fmt)} /></div>
         <div className="field"><label htmlFor={`gw-${uid}`}>{m.when}</label>
           <select id={`gw-${uid}`} className="select" value={f.month} onChange={(e) => setF({ ...f, month: e.target.value })}>
@@ -116,6 +125,16 @@ export function Metas(p: Props) {
   const [error, setError] = useState("");
   const [full, setFull] = useState("");
   const [ask, setAsk] = useState<{ id: string; what: "archive" | "complete" } | null>(null);
+  const [leftError, setLeftError] = useState("");
+
+  // Hitos cruzados por transferencias automáticas: se celebran una vez al abrir la pantalla.
+  const celebrated = useRef(false);
+  useEffect(() => {
+    if (celebrated.current || p.crossed.length === 0) return;
+    celebrated.current = true;
+    const last = p.crossed[p.crossed.length - 1];
+    toast(last.text, p.crossed.reduce((a, c) => a + c.points, 0) || undefined);
+  }, [p.crossed, toast]);
 
   const run: Run = (fn, after, onError) => start(async () => {
     const r = await fn();
@@ -143,17 +162,29 @@ export function Metas(p: Props) {
   ) : null);
   const money = (c: Cents) => formatMoney(c, fmt);
 
+  /** Siempre en positivo: ritmo y fecha, nunca "vas atrasado". */
   const statusText = (g: GoalView) => {
-    const left = money(g.plan.remainingCents), when = g.targetDate ? whenLabel(g.targetDate, locale) : "";
-    switch (g.status) {
+    const o = g.outlook;
+    switch (o.kind) {
       case "setup": return m.stSetup;
       case "reached": return m.stReached;
-      case "noDate": return fill(m.stNoDate, { amount: left });
-      case "late": return fill(m.stLate, { amount: left });
-      default: return fill(m.stSaving, { amount: money(g.plan.monthlyCents ?? 0), when });
+      case "pace": return fill(m.stPace, { when: whenLabel(o.when, locale) });
+      case "date": return fill(m.stDate, { amount: money(o.monthlyCents), when: whenLabel(o.when, locale) });
+      default: return fill(m.stOpen, { amount: money(o.remainingCents) });
     }
   };
-  const statusColor: Record<GoalStatus, string> = { setup: "var(--gris)", reached: "var(--verde-fuerte)", noDate: "var(--gris-2)", late: "var(--rojo)", saving: "var(--gris-2)" };
+  const statusColor = (o: GoalOutlook) => (o.kind === "reached" || o.kind === "pace" ? "var(--verde-fuerte)" : o.kind === "date" ? "var(--tinta-2)" : "var(--gris)");
+  const acctText = (g: GoalView) => (g.accountMode === "auto" ? fill(m.acctNote, { account: g.accountName }) : g.accountMode === "shared" ? fill(m.acctShared, { account: g.accountName }) : m.acctNone);
+
+  const pickLeftover = (goalId: string | null) => {
+    if (!p.leftover) return;
+    setLeftError("");
+    const lf = p.leftover;
+    run(() => sendLeftover({ year: lf.year, month: lf.month, goalId }), (r) => {
+      const c = r.data.crossed.at(-1);
+      toast(goalId ? (c ? fill(m.tMilestone, { pct: c.pct, name: c.name }) : fill(m.tLeftover, { amount: money(r.data.amountCents), name: r.data.name })) : m.tNotNow, r.points);
+    }, setLeftError);
+  };
 
   return (
     <main className="page">
@@ -167,9 +198,27 @@ export function Metas(p: Props) {
       </PageHeader>
 
       <section aria-label={m.summary} className={css.summary}>
-        <div><span className={css.k}>{m.total}</span><span className={`num big ${css.v}`}>{money(total)}</span></div>
-        {points && (points.contrib > 0 || points.done > 0) ? <p>{m.pointsA} <strong className="num">{fill(m.pointsN, { n: points.contrib })}</strong>. {fill(m.pointsB, { n: points.done })}</p> : null}
+        <div>
+          <span className={css.k}>{m.total}</span>
+          <span className={`num big ${css.v}`}>{money(total)}</span>
+          <span className={`num ${css.monthIn}`}><span className="only-desktop">{fill(m.monthIn, { amount: money(p.monthIn) })}</span><span className="only-mobile">{fill(m.monthInShort, { amount: money(p.monthIn) })}</span></span>
+        </div>
+        {points && (points.contrib > 0 || points.done > 0) ? <p>{m.pointsA} <strong className="num">{fill(m.pointsN, { n: points.contrib })}</strong>{fill(m.pointsB, { ms: points.milestone, done: points.done })}</p> : null}
       </section>
+
+      {p.leftover && canEdit && active.length > 0 ? (
+        <section aria-labelledby="lf-h" className={css.leftover}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <h2 id="lf-h" className={css.lfTitle}>{fill(m.lfTitle, { month: p.leftover.monthLabel })} <span className="num">{money(p.leftover.cents)}</span></h2>
+            <span className={css.lfText}>{m.lfText}</span>
+          </div>
+          <div className={css.lfPicks}>
+            {active.map((g) => <button key={g.id} type="button" className={css.lfGoal} disabled={pending} onClick={() => pickLeftover(g.id)}>{g.name}</button>)}
+            <button type="button" className={css.lfNo} disabled={pending} onClick={() => pickLeftover(null)}>{m.notNow}</button>
+          </div>
+          {leftError ? <p role="alert" className="error">{leftError}</p> : null}
+        </section>
+      ) : null}
 
       {showNew && canEdit ? (
         p.wall ?? <GoalForm p={p} run={run} pending={pending} onClose={closeNew} onSaved={(inPlan) => { closeNew(); toast(inPlan ? m.tCreatedPlan : m.tCreated); }} />
@@ -186,6 +235,7 @@ export function Metas(p: Props) {
           {active.map((g) => {
             const open = openId === g.id, color = TYPE_COLOR[g.type];
             const shown = full === g.id ? g.entries : g.entries.slice(0, HISTORY);
+            const tip = g.outlook.kind === "pace" ? g.outlook.tip : null;
             return (
               <article key={g.id} className={css.goal} aria-labelledby={`g-${g.id}`}>
                 <div className="row">
@@ -203,10 +253,17 @@ export function Metas(p: Props) {
                 <div className={css.track} role="progressbar" aria-label={fill(m.progress, { name: g.name })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(g.plan.progress * 100)}>
                   <span style={{ width: `${Math.round(g.plan.progress * 100)}%`, background: color }} />
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: statusColor[g.status] }}>{statusText(g)}</span>
-                  {g.status === "saving" && g.plan.weeklyCents ? <span className="xs muted num">{fill(m.left, { amount: money(g.plan.remainingCents) })} · {fill(m.weekly, { amount: money(g.plan.weeklyCents) })}</span> : null}
-                </div>
+                {g.targetCents > 0 ? (
+                  <ul aria-label={m.msAria} className={css.milestones}>
+                    {MILESTONES.map((pct) => {
+                      const on = g.reached.includes(pct);
+                      return <li key={pct} className="num" data-on={on} aria-label={fill(on ? m.msOn : m.msOff, { p: pct })}>{pct}%</li>;
+                    })}
+                  </ul>
+                ) : null}
+                {g.why ? <p className={css.why}>&ldquo;{g.why}&rdquo;</p> : null}
+                <span style={{ fontSize: 13, fontWeight: 600, color: statusColor(g.outlook) }}>{statusText(g)}</span>
+                {tip ? <span className={css.tip}>{fill(m.tip, { amount: money(tip.boostCents), when: whenLabel(tip.when, locale) })}</span> : null}
                 <button type="button" className={css.more} aria-expanded={open} onClick={() => toggle(g.id)}>{m.more}</button>
                 {open ? (
                   editId === g.id ? (
@@ -232,7 +289,11 @@ export function Metas(p: Props) {
                         <form className="row wrap" style={{ gap: 10, alignItems: "flex-end" }} onSubmit={(e) => {
                           e.preventDefault(); setError("");
                           const mode = act.mode;
-                          run(() => addEntry({ goalId: g.id, amount: act.amount, mode }), (r) => { setAct(null); toast(fill(mode === "in" ? m.tContrib : m.tUsed, { amount: money(r.data.amountCents) }), r.points); }, setError);
+                          run(() => addEntry({ goalId: g.id, amount: act.amount, mode }), (r) => {
+                            setAct(null);
+                            const c = r.data.crossed.at(-1);
+                            toast(c ? fill(m.tMilestone, { pct: c.pct, name: c.name }) : mode === "in" ? fill(m.tContrib, { amount: money(r.data.amountCents) }) : m.tUsed, r.points);
+                          }, setError);
                         }}>
                           <div className="field" style={{ flex: "1 1 160px" }}>
                             <label htmlFor={`ga-${g.id}`}>{act.mode === "in" ? m.howMuchIn : m.howMuchOut}</label>
@@ -243,11 +304,13 @@ export function Metas(p: Props) {
                       ) : null}
                       {askBox(g)}
                       {error ? <p role="alert" className="error">{error}</p> : null}
+                      {g.next ? <span className="num" style={{ fontSize: 13, fontWeight: 600, color: "var(--tinta-2)" }}>{fill(m.nextMs, { p: g.next.pct, amount: money(g.next.missingCents) })}</span> : null}
+                      <span className="xs muted" style={{ lineHeight: 1.5 }}>{acctText(g)}</span>
                       <h4 className="small muted" style={{ margin: "4px 0 0", fontWeight: 600 }}>{m.history}</h4>
                       {g.entries.length === 0 ? <span className="small muted">{m.noHistory}</span> : (
                         <ul className={css.history}>
                           {shown.map((x) => (
-                            <li key={x.id}><span>{x.note || (x.amountCents >= 0 ? m.entryIn : m.entryOut)} <span className="xs muted">· {formatDate(x.date, locale, "short")}</span></span><strong className="num">{formatMoney(x.amountCents, fmt, { sign: true })}</strong></li>
+                            <li key={x.id}><span>{x.label} <span className="xs muted">· {formatDate(x.date, locale, "short")}</span></span><strong className="num">{formatMoney(x.amountCents, fmt, { sign: true })}</strong></li>
                           ))}
                         </ul>
                       )}
@@ -268,6 +331,27 @@ export function Metas(p: Props) {
           })}
         </div>
       )}
+
+      <section aria-labelledby="rt-h" className="stack" style={{ gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <h2 id="rt-h" className={css.rtTitle}>{m.rtTitle}</h2>
+          <span className="small muted">{m.rtSub}</span>
+        </div>
+        <div className={css.retos}>
+          {p.challenges.map((c) => (
+            <article key={c.key} className={css.reto}>
+              <strong style={{ fontSize: 15 }}>{c.title}</strong>
+              <span className="small muted" style={{ lineHeight: 1.5 }}>{c.text}</span>
+              {canEdit ? (
+                <button type="button" className={css.retoBtn} aria-pressed={c.active} disabled={pending}
+                  onClick={() => run(() => setChallenge({ challenge: c.key, active: !c.active }), (r) => toast(r.data.active ? fill(m.tJoin, { name: c.title }) : m.tLeave), (e) => toast(e))}>
+                  {c.active ? m.rtIn : m.rtJoin}
+                </button>
+              ) : c.active ? <span className={css.retoBtn} data-on="true">{m.rtIn}</span> : null}
+            </article>
+          ))}
+        </div>
+      </section>
 
       {done.length > 0 ? (
         <section aria-labelledby="done-h" className="stack" style={{ gap: 10 }}>

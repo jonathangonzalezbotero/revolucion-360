@@ -11,6 +11,7 @@ import type { Session } from "@/server/session";
 import type { Json } from "@/lib/supabase/database.types";
 import { buildSnapshot, cardSigned, closureStreak, nextPeriod, parsePeriod, pendingWrites, periodOfDate, reminderDate, ymRef, type Period } from "./lib";
 import { closeData } from "./server";
+import { leftoverFor } from "../metas/server";
 import { M } from "./messages";
 
 const PATHS = ["/cierre", "/inicio", "/plan", "/movimientos", "/diagnostico"];
@@ -117,7 +118,8 @@ export async function saveNext(input: unknown): Promise<Result> {
   });
 }
 
-export type CloseResult = { year: number; month: number; points: number; streak: number; reminder: string | null; already: boolean };
+/** leftoverCents: lo que sobró de verdad en el mes (para "¿a qué meta va?"); 0 si faltó o si el mes ya estaba cerrado. */
+export type CloseResult = { year: number; month: number; points: number; streak: number; reminder: string | null; already: boolean; leftoverCents: number };
 
 /** Paso 4 y cierre: escribe los saldos de hoy, guarda el resumen del mes y suma los puntos (una sola vez por mes). */
 export async function closeMonth(input: unknown): Promise<Result<CloseResult>> {
@@ -131,7 +133,7 @@ export async function closeMonth(input: unknown): Promise<Result<CloseResult>> {
     const existing = must(await s.supabase.from("month_closures").select("year, month, reopened_at"));
     const row = existing.find((r) => r.year === period.year && r.month === period.month);
     const streakOf = (rows: typeof existing) => closureStreak(rows.map((r) => ({ year: r.year, month: r.month, reopened: !!r.reopened_at })), period);
-    if (row && !row.reopened_at) return ok({ ...period, points: 0, streak: streakOf(existing), reminder: reminderDate(period, s.today), already: true });
+    if (row && !row.reopened_at) return ok({ ...period, points: 0, streak: streakOf(existing), reminder: reminderDate(period, s.today), already: true, leftoverCents: 0 });
 
     // 1. Saldos de hoy (un campo vacío deja la cuenta como está)
     const accounts = must(await s.supabase.from("accounts").select("id, name, kind, balance_cents").is("archived_at", null).order("sort").order("created_at"));
@@ -189,7 +191,7 @@ export async function closeMonth(input: unknown): Promise<Result<CloseResult>> {
     if (existing.length === 0) await track(s, "first_closure");
 
     const after = [...existing.filter((r) => !(r.year === period.year && r.month === period.month)), { year: period.year, month: period.month, reopened_at: null }];
-    return ok({ ...period, points, streak: streakOf(after), reminder: reminderDate(period, s.today), already: false }, { points });
+    return ok({ ...period, points, streak: streakOf(after), reminder: reminderDate(period, s.today), already: false, leftoverCents: await leftoverFor(s, period, snapshot) }, { points });
   });
 }
 

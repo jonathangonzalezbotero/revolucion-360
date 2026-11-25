@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ProWall } from "@/components/shell/ProWall";
 import { Empty, PageHeader } from "@/components/ui/basics";
 import { loadAccounts, loadCategories, must } from "@/server/data";
 import { requireUser } from "@/server/session";
@@ -26,7 +25,6 @@ export default async function ImportarPage() {
   if (!s.config.flags.csv || s.config.menu.movimientos === "soon") {
     return gate(<Empty icon="upload" title={m.gate.offTitle} text={m.gate.offText}><Link href="/movimientos" className="btn btn-secondary btn-sm">{m.gate.offCta}</Link></Empty>);
   }
-  if (!s.has("csv")) return gate(<ProWall s={s} title={m.gate.proTitle} text={m.gate.proText} bullets={m.gate.proBullets} />);
   if (!s.canEdit) {
     return gate(<Empty icon="lock" title={s.t.readOnly.title} text={m.gate.roText}><Link href="/suscripcion" className="btn btn-secondary btn-sm">{m.gate.roCta}</Link></Empty>);
   }

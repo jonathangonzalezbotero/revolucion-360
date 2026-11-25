@@ -5,7 +5,6 @@ export const M = {
     title: "Academia", eyebrow: "Aprende a manejar tu dinero, a tu ritmo",
     headerPts: "Tienes {n} puntos · Nivel {level}", headerPtsShort: "{n} puntos · Nivel {level}",
     soonTitle: "La Academia llega pronto", soonText: "Estamos terminando los cursos. Te avisamos cuando estén listos.", goHome: "Ir a Inicio",
-    proTitle: "La Academia es parte de Pro", proBullets: ["Cursos para dominar la app paso a paso", "Clases cortas de finanzas personales", "Puntos e insignias por cada clase"],
     noCourses: "Todavía no hay cursos publicados", noCoursesText: "Cuando se publique el primer curso lo vas a ver aquí.",
 
     // Continúa
@@ -40,7 +39,6 @@ export const M = {
     } as Record<string, { label: string; title: string }>,
     lessonsN: "{n} clases", lessonsOne: "1 clase", progress: "Progreso", cover: "Portada del curso {title}",
     continue: "▸ Continuar", start: "→ Empezar", review: "Repasar", soon: "Pronto", cardSoon: "Las clases llegan pronto", completed: "Completado",
-    pro: "Pro", proLocked: "Desbloquéalo con Pro",
 
     // Recomendación y puntos
     recoLabel: "Según tu diagnóstico · {indicator}: prioridad", recoCourse: "Curso: {title}", plusPoints: "+{n} puntos",
@@ -54,7 +52,6 @@ export const M = {
     st: { done: "Vista", next: "Siguiente", open: "Disponible", locked: "Bloqueada" },
     lockedBy: "Primero termina «{title}»", required: "Obligatoria para avanzar",
     courseSoonTitle: "Este curso llega pronto", courseSoonText: "Todavía no tiene clases publicadas. Te avisamos cuando esté listo.",
-    courseProTitle: "Este curso es parte de Pro", courseProBullets: ["Todas las clases de los cursos de Tu dinero", "Puntos e insignias por cada curso", "Ves la portada y el temario, pero el video es para Pro"],
 
     // Clase
     play: "Reproducir", videoTitle: "Video: {title}", noVideo: "El video de esta clase llega pronto", noVideoText: "Mientras tanto, lee de qué se trata más abajo.",
@@ -65,7 +62,6 @@ export const M = {
     screenOther: "esa pantalla",
     about: "Sobre esta clase", more: "Ver más", less: "Ver menos", noDescription: "Esta clase todavía no tiene descripción.",
     rateQ: "¿Qué tan útil te pareció esta clase?", rateGroup: "Calificación", rateStar: "{n} de 5", rateAfter: "Califícala cuando la termines.", rated: "Gracias por calificar la clase.",
-    lessonPro: "Esta clase es parte de Pro", lessonProBullets: ["Todas las clases de la Academia", "Videos de cada curso de Tu dinero", "Puntos e insignias por cada clase"],
     toastSeen: "Clase vista.", toastCourse: "Curso completado: {title}.", errLocked: "Primero termina la clase anterior.", errNotSeen: "Califícala cuando la termines.",
     nextUp: "LO PRÓXIMO PARA TI", newCourse: "Curso nuevo · {stage}", releasesAt: "Se libera el {date} a las {time}", releasesOn: "Se libera el {date}",
     cd: { d: "DÍAS", h: "HORAS", m: "MIN", s: "SEG" }, cdAria: "Faltan {d} días, {h} horas y {m} minutos", comingSoon: "Próximamente", released: "Ya está disponible. Recarga la página para verlo.",
@@ -79,7 +75,6 @@ export const M = {
     title: "Academy", eyebrow: "Learn to manage your money, at your own pace",
     headerPts: "You have {n} points · Level {level}", headerPtsShort: "{n} points · Level {level}",
     soonTitle: "The Academy is coming soon", soonText: "We're finishing the courses. We'll let you know when they're ready.", goHome: "Go to Home",
-    proTitle: "The Academy is part of Pro", proBullets: ["Courses to master the app step by step", "Short personal finance lessons", "Points and badges for every lesson"],
     noCourses: "No courses published yet", noCoursesText: "When the first course goes live you'll see it here.",
 
     contLabel: "PICK UP WHERE YOU LEFT OFF", startLabel: "START HERE", yourCourse: "Your course · {pct}%",
@@ -111,7 +106,6 @@ export const M = {
     } as Record<string, { label: string; title: string }>,
     lessonsN: "{n} lessons", lessonsOne: "1 lesson", progress: "Progress", cover: "Cover of the course {title}",
     continue: "▸ Continue", start: "→ Start", review: "Review", soon: "Soon", cardSoon: "Lessons coming soon", completed: "Completed",
-    pro: "Pro", proLocked: "Unlock it with Pro",
 
     recoLabel: "From your check-up · {indicator}: priority", recoCourse: "Course: {title}", plusPoints: "+{n} points",
     indicators: { surplus: "What you have left", saving: "Saving", debt: "Debts", emergency: "Emergency fund", dependency: "Reliance on one income" },
@@ -123,7 +117,6 @@ export const M = {
     st: { done: "Watched", next: "Next", open: "Available", locked: "Locked" },
     lockedBy: "First finish “{title}”", required: "Required to move on",
     courseSoonTitle: "This course is coming soon", courseSoonText: "It has no lessons published yet. We'll let you know when it's ready.",
-    courseProTitle: "This course is part of Pro", courseProBullets: ["Every lesson in the Your money courses", "Points and badges for every course", "You can see the cover and outline; the video is for Pro"],
 
     play: "Play", videoTitle: "Video: {title}", noVideo: "This lesson's video is coming soon", noVideoText: "Meanwhile, read what it's about below.",
     complete: "Complete and continue", completing: "Saving…", nextClass: "Next lesson ›", prevClass: "‹ Previous lesson", seen: "Watched", backToCourse: "Go to the course ›",
@@ -133,7 +126,6 @@ export const M = {
     screenOther: "that screen",
     about: "About this lesson", more: "See more", less: "See less", noDescription: "This lesson has no description yet.",
     rateQ: "How useful was this lesson?", rateGroup: "Rating", rateStar: "{n} of 5", rateAfter: "Rate it once you finish it.", rated: "Thanks for rating the lesson.",
-    lessonPro: "This lesson is part of Pro", lessonProBullets: ["Every Academy lesson", "Videos for every Your money course", "Points and badges for every lesson"],
     toastSeen: "Lesson watched.", toastCourse: "Course completed: {title}.", errLocked: "First finish the previous lesson.", errNotSeen: "Rate it once you finish it.",
     nextUp: "COMING UP FOR YOU", newCourse: "New course · {stage}", releasesAt: "Opens on {date} at {time}", releasesOn: "Opens on {date}",
     cd: { d: "DAYS", h: "HOURS", m: "MIN", s: "SEC" }, cdAria: "{d} days, {h} hours and {m} minutes to go", comingSoon: "Coming soon", released: "It's available now. Reload the page to see it.",

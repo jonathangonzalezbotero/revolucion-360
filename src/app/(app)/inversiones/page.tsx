@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
-import { ProWall } from "@/components/shell/ProWall";
-import { cellMap, cellOf } from "@/lib/engine";
+import { cellMap, cellOf, formatDate } from "@/lib/engine";
+import { computeHolding, decFromDb, formatDec, groupAssets, portfolioTotals, sortOps, tickerOf, type AssetKind } from "@/lib/engine/inversiones";
 import { fetchAll, loadPlan, must } from "@/server/data";
 import { requireUser } from "@/server/session";
 import { term } from "@/server/terms";
-import { Inversiones, type InvView } from "./Inversiones";
-import { INV_TYPES, typeOf, valueSeries, type EntryKind, type InvType } from "./lib";
+import { Inversiones, type AssetView, type GroupView } from "./Inversiones";
+import { ASSET_COLS, centsInputText, formatAvgPrice, formatUnitPrice, KIND_COLOR, KIND_INK, OP_COLS, priceInputText, toState, untyped, type AssetRow, type OpRow } from "./lib";
 import { M } from "./messages";
+import { syncRecurring } from "./recurring";
 
 export const metadata: Metadata = { title: "Inversiones" };
 
@@ -24,51 +25,82 @@ export default async function InversionesPage() {
       </main>
     );
   }
-  if (!s.has("inv")) {
-    return <main className="page"><PageHeader title={m.title} eyebrow={m.eyebrow} /><ProWall s={s} title={m.proTitle} bullets={m.proBullets} /></main>;
-  }
 
-  const [invRes, entries, plan, countryRes] = await Promise.all([
-    s.supabase.from("investments").select("id, platform, name, contributed_cents, value_cents, value_date, archived_at").order("created_at"),
-    fetchAll<{ id: string; investment_id: string; date: string; kind: string; amount_cents: number }>((a, b) =>
-      s.supabase.from("investment_entries").select("id, investment_id, date, kind, amount_cents").order("date", { ascending: false }).order("created_at", { ascending: false }).order("id").range(a, b)),
+  const db = untyped(s.supabase);
+  const [assetRes, opRows, plan, countryRes] = await Promise.all([
+    db.from("assets").select(ASSET_COLS).order("created_at"),
+    fetchAll<OpRow>((a, b) => db.from("asset_operations").select(OP_COLS).is("deleted_at", null).order("date").order("created_at").order("id").range(a, b)),
     loadPlan(s, s.year),
     s.supabase.from("countries").select("terms").eq("code", s.profile.country).maybeSingle(),
   ]);
-  const investments = must(invRes);
+  const assets = must(assetRes) as AssetRow[];
   const countryTerms = (must(countryRes)?.terms ?? {}) as Record<string, string>;
   const retirement = term(s, "retirement", countryTerms);
-  // El tipo es el texto guardado en `name`: se reconoce en cualquier idioma y con cualquier nombre local de la jubilación.
-  const labelSets = [M.es.types, M.en.types].flatMap((t) => [retirement, term(s, "retirement"), "Super"].map((r) => Object.fromEntries(INV_TYPES.map((k) => [k, fill(t[k], { retirement: r })])) as Record<InvType, string>));
-  const types = Object.fromEntries(INV_TYPES.map((k) => [k, fill(m.types[k], { retirement })])) as Record<InvType, string>;
+  const kindLabel = (k: AssetKind) => fill(m.kinds[k], { retirement });
+
+  // Compras recurrentes del plan que ya tocaban (si falla, la pantalla igual se muestra con lo que hay).
+  let ops = opRows;
+  try {
+    const { added, relinked } = await syncRecurring(s, assets, opRows, plan.lines);
+    if (added.length) ops = sortOps([...opRows, ...added].map((o) => ({ ...o, createdAt: o.created_at }))); // por fecha, como el resto
+    for (const a of assets) if (relinked.has(a.id)) a.plan_line_id = relinked.get(a.id) as string;
+  } catch (e) {
+    console.error("[inversiones] recurrentes", e instanceof Error ? e.message : "error"); // sin montos
+  }
 
   const cells = cellMap(plan.cells);
-  const catKind = new Map(plan.categories.map((c) => [c.id, c.kind]));
-  const yearOf = (lineId: string, upTo = 12) => Array.from({ length: upTo }, (_, i) => cellOf(cells, lineId, i + 1)).reduce((a, b) => a + b, 0);
-  const linked = plan.lines.filter((l) => l.investmentId);
-  const options = plan.lines.filter((l) => catKind.get(l.categoryId) === "saving" || l.investmentId).map((l) => ({ id: l.id, name: l.name, takenBy: l.investmentId ?? null }));
-  const planCents = linked.reduce((a, l) => a + yearOf(l.id, s.month), 0);
-  const incomeCents = plan.lines.filter((l) => l.kind === "income").reduce((a, l) => a + yearOf(l.id, s.month), 0);
+  const lineById = new Map(plan.lines.map((l) => [l.id, l]));
+  const savingCats = new Set(plan.categories.filter((c) => c.kind === "saving").map((c) => c.id));
+  const nf = s.fmt.numberLocale;
+  const dateLabel = (d: string) => `${formatDate(d, s.locale, "short")}${+d.slice(0, 4) !== s.year ? ` ${d.slice(0, 4)}` : ""}`;
 
-  const views: InvView[] = investments.map((i) => {
-    const line = linked.find((l) => l.investmentId === i.id);
+  const views: AssetView[] = assets.map((a) => {
+    const mine = ops.filter((o) => o.asset_id === a.id);
+    const h = computeHolding(toState(a, mine));
+    const price = decFromDb(a.unit_price_cents);
+    const line = a.plan_line_id ? lineById.get(a.plan_line_id) : undefined;
+    const unitWord = a.kind === "crypto" && a.name.trim().length <= 5 && !/\s/.test(a.name.trim()) ? a.name.trim() : a.kind === "stocks" ? m.unitShares : m.unitUnits;
     return {
-      id: i.id, platform: i.platform, type: typeOf(i.name, labelSets), contributedCents: i.contributed_cents, valueCents: i.value_cents, valueDate: i.value_date,
-      archived: !!i.archived_at, line: line ? { id: line.id, name: line.name, yearCents: yearOf(line.id) } : null,
-      entries: entries.filter((e) => e.investment_id === i.id).map((e) => ({ id: e.id, date: e.date, kind: e.kind as EntryKind, amountCents: e.amount_cents })),
+      id: a.id, name: a.name, ticker: tickerOf(a.name), kind: a.kind, kindLabel: kindLabel(a.kind), color: KIND_COLOR[a.kind], ink: KIND_INK[a.kind],
+      platform: a.platform, byUnits: a.by_units, archived: !!a.archived_at,
+      qtyText: a.by_units ? `${formatDec(h.qty, nf)} ${unitWord}` : null,
+      avgText: h.avgCostCents !== null ? formatAvgPrice(h.avgCostCents, s.fmt) : null,
+      valueCents: h.valueCents, costCents: h.costCents, gainCents: h.gainCents, dividendsCents: h.dividendsCents, hasPrice: h.hasPrice,
+      priceInput: a.by_units ? (price !== null ? priceInputText(price, nf) : "") : a.balance_cents !== null ? centsInputText(a.balance_cents) : "",
+      priceDateLabel: a.price_date ? dateLabel(a.price_date) : null,
+      lineId: a.plan_line_id,
+      recurring: line ? { line: line.name, amountCents: cellOf(cells, line.id, s.month) || line.amountCents } : null,
+      recNeedsPrice: !!line && a.by_units && price === null,
+      ops: mine.slice().reverse().map((o) => {
+        const q = decFromDb(o.quantity), up = decFromDb(o.unit_price_cents);
+        const rec = o.source === "recurring" ? ` · ${m.detRecurring}` : "";
+        const detail = o.kind === "dividend" ? m.detCash
+          : o.source === "migrated" ? m.detMigrated
+          : a.by_units && q !== null ? `${formatDec(q, nf)} × ${up !== null ? formatUnitPrice(up, s.fmt) : "—"}${rec}`
+          : `${m.detAmount}${rec}`;
+        return { id: o.id, kind: o.kind, dateLabel: dateLabel(o.date), detail, amountCents: o.amount_cents };
+      }),
     };
-  });
-  const activeIds = new Set(views.filter((v) => !v.archived).map((v) => v.id));
-  const series = valueSeries(entries.slice().reverse().filter((e) => activeIds.has(e.investment_id)).map((e) => ({ investmentId: e.investment_id, date: e.date, kind: e.kind as EntryKind, amountCents: e.amount_cents })));
+  }).sort((x, y) => y.valueCents - x.valueCents);
+
+  const active = views.filter((v) => !v.archived);
+  const totals = portfolioTotals(active);
+  const byPlatform: GroupView[] = groupAssets(active.map((v) => ({ key: v.platform?.trim() || "", valueCents: v.valueCents, costCents: v.costCents })))
+    .map((g) => ({ ...g, name: g.key || m.noPlatform, color: "var(--tinta)" }));
+  const byKind: GroupView[] = groupAssets(active.map((v) => ({ key: v.kind, valueCents: v.valueCents, costCents: v.costCents })))
+    .map((g) => ({ ...g, name: kindLabel(g.key as AssetKind), color: KIND_COLOR[g.key as AssetKind] }));
+  // Una línea alimenta un solo activo (si no, la misma plata se sumaría dos veces).
+  const lines = plan.lines.filter((l) => l.kind === "expense" && (savingCats.has(l.categoryId) || assets.some((a) => a.plan_line_id === l.id)))
+    .map((l) => ({ id: l.id, name: l.name, takenBy: assets.find((a) => a.plan_line_id === l.id && !a.archived_at)?.id ?? null }));
 
   return (
     <main className="page">
       <Inversiones
-        items={views} series={series} lines={options} planCents={planCents} incomeCents={incomeCents} types={types} retirement={retirement}
-        showSuper={s.profile.country === "AU" && !views.some((v) => !v.archived && v.type === "super")}
-        fmt={s.fmt} locale={s.locale} today={s.today} year={s.year} canEdit={s.canEdit} planOn={s.config.menu.plan === "on"}
+        assets={views} totals={totals} byPlatform={byPlatform} byKind={byKind} lines={lines}
+        kinds={Object.fromEntries((Object.keys(KIND_COLOR) as AssetKind[]).map((k) => [k, kindLabel(k)])) as Record<AssetKind, string>}
+        retirement={retirement} category={plan.categories.find((c) => c.kind === "saving")?.name ?? m.category}
+        fmt={s.fmt} today={s.today} canEdit={s.canEdit} planOn={s.config.menu.plan === "on"}
         m={m} t={{ cancel: s.t.actions.cancel, save: s.t.actions.save, add: s.t.actions.add, disclaimer: s.t.disclaimer }}
-        category={plan.categories.find((c) => c.kind === "saving")?.name ?? m.category}
       />
     </main>
   );

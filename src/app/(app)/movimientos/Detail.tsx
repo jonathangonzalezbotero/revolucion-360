@@ -11,7 +11,7 @@ import { AddPanel } from "./AddPanel";
 import { EditPanel } from "./EditPanel";
 import { filterTotals, matchRow, movHref, STATES, type Filter, type MovRow, type Query, type StateFilter } from "./lib";
 import css from "./mov.module.css";
-import type { Acc, AddPayload, Cat, Ctx, LineOpt } from "./types";
+import type { Acc, AddPayload, Cat, Ctx, GoalOpt, LineOpt } from "./types";
 
 export type Period = { kind: "month" | "year" | "any"; year: number; month: number | null; label: string };
 type Props = {
@@ -26,11 +26,13 @@ type Props = {
   /** Sin Pro: la lista se ve, no se edita ni se registra. */
   locked: boolean;
   ctx: Ctx;
+  /** Metas para "¿Tiene que ver con una meta?" y lo que hoy cuenta cada movimiento ("in:<meta>", "out:<meta>" o ""). */
+  goals: GoalOpt[]; goalChoice: Record<string, string>;
 };
 
 const PAGE = 200;
 
-export function Detail({ header, months, children, rows, categories, accounts, linesByYear, period, years, initial, lineName, query, flags, locked, ctx }: Props) {
+export function Detail({ header, months, children, rows, categories, accounts, linesByYear, period, years, initial, lineName, query, flags, locked, ctx, goals, goalChoice }: Props) {
   const { t, c, fmt, locale } = ctx;
   const router = useRouter();
   const toast = useToast();
@@ -271,7 +273,8 @@ export function Detail({ header, months, children, rows, categories, accounts, l
         </section>
 
         {editing && canWrite ? (
-          <EditPanel key={editing.id} row={editing} categories={categories} accounts={accounts} linesByYear={linesByYear} recurring={flags.recurring} ctx={ctx} onClose={() => setEditId(null)} />
+          <EditPanel key={editing.id} row={editing} categories={categories} accounts={accounts} linesByYear={linesByYear} recurring={flags.recurring} ctx={ctx} onClose={() => setEditId(null)}
+            goals={goals} goal={goalChoice[editing.id] ?? ""} />
         ) : canWrite && (panel || full) ? (
           <AddPanel open={panel} full={full} categories={categories} accounts={accounts} linesByYear={linesByYear} flags={flags} defaultAccount={filter.account} busy={busy} ctx={ctx}
             onClose={() => { if (full) setFull(false); else setPanel(false); }} onSubmit={submit} />

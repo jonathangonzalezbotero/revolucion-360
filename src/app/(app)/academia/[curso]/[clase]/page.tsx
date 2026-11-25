@@ -4,12 +4,11 @@ import { notFound } from "next/navigation";
 import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
 import { Icon } from "@/components/ui/Icon";
-import { ProWall } from "@/components/shell/ProWall";
 import { formatDate, monthName } from "@/lib/engine";
 import { closureTarget } from "@/server/closure";
 import type { MenuKey } from "@/server/config";
 import { requireUser } from "@/server/session";
-import { durationLabel, isLockedForTier, lessonStates, localParts, neighbors, safeCta, videoEmbed } from "../../lib";
+import { durationLabel, lessonStates, localParts, neighbors, safeCta, videoEmbed } from "../../lib";
 import { M } from "../../messages";
 import { loadCatalog, loadComments, loadCourse, loadVideoUrl } from "../../server";
 import { Cover, LessonList } from "../../ui";
@@ -26,13 +25,11 @@ export default async function ClasePage({ params }: { params: Params }) {
   const s = await requireUser();
   const m = M[s.locale];
   const { curso, clase } = await params;
-  if (s.config.menu.academia !== "on" || !s.has("acad")) {
+  if (s.config.menu.academia !== "on") {
     return (
       <main className="page">
         <PageHeader title={m.title} eyebrow={<Link href="/academia" className="link">‹ {m.academia}</Link>} />
-        {s.config.menu.academia !== "on"
-          ? <Empty icon="cap" title={m.soonTitle} text={m.soonText}><Link href="/inicio" className="btn btn-secondary btn-sm">{m.goHome}</Link></Empty>
-          : <ProWall s={s} title={m.proTitle} bullets={m.proBullets} />}
+        <Empty icon="cap" title={m.soonTitle} text={m.soonText}><Link href="/inicio" className="btn btn-secondary btn-sm">{m.goHome}</Link></Empty>
       </main>
     );
   }
@@ -45,7 +42,6 @@ export default async function ClasePage({ params }: { params: Params }) {
   const cat = await loadCatalog(s);
   const state = cv.states.get(lesson.id) ?? "open";
   const done = state === "done";
-  const proLocked = isLockedForTier(course.tier, lesson.tier, s.tier);
   const locker = state === "locked" ? cv.lessons.slice(0, cv.lessons.findIndex((l) => l.id === lesson.id)).find((l) => l.required && cv.states.get(l.id) !== "done") ?? null : null;
   const { prev, next } = neighbors(cv.lessons, lesson.id);
   const nextOpen = next && cv.states.get(next.id) !== "locked" ? next : null;
@@ -57,7 +53,7 @@ export default async function ClasePage({ params }: { params: Params }) {
   const game = s.config.gamification;
 
   const tz = s.profile.timezone || "Australia/Sydney";
-  const comments = proLocked ? [] : (await loadComments(s, lesson.id)).map((c) => {
+  const comments = (await loadComments(s, lesson.id)).map((c) => {
     const p = localParts(c.createdAt, tz);
     return { id: c.id, mine: c.userId === s.userId, author: c.author, body: c.body, when: `${formatDate(p.date, s.locale, "short")} · ${p.time}` };
   });
@@ -66,7 +62,7 @@ export default async function ClasePage({ params }: { params: Params }) {
     deleteConfirm: m.deleteConfirm, commentReadOnly: m.commentReadOnly, commentAdded: m.commentAdded, commentDeleted: m.commentDeleted, you: m.you, charCount: m.charCount, commentEmpty: m.commentEmpty,
   };
 
-  const video = !proLocked && state !== "locked" ? videoEmbed(await loadVideoUrl(s, lesson.id)) : null;
+  const video = state !== "locked" ? videoEmbed(await loadVideoUrl(s, lesson.id)) : null;
 
   const cta = safeCta(lesson.ctaScreen);
   const ctaKey = cta?.split(/[/?#]/)[1] as MenuKey | undefined;
@@ -86,34 +82,32 @@ export default async function ClasePage({ params }: { params: Params }) {
     <main className="page" style={{ maxWidth: 1300 }}>
       <div className={css.lessonLayout}>
         <div className={css.lessonMain}>
-          {proLocked ? <ProWall s={s} title={m.lessonPro} bullets={m.lessonProBullets} /> : (
-            <div className={css.player}>
-              {state === "locked" ? (
-                <>
-                  <Cover src={course.coverUrl} dim />
-                  <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: 20, textAlign: "center", color: "var(--blanco)", maxWidth: 440 }}>
-                    <span aria-hidden="true" style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--blanco)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="lock" size={24} color="var(--tinta)" /></span>
-                    <strong style={{ fontSize: 17 }}>{m.lockedTitle}</strong>
-                    {locker ? <span style={{ fontSize: 14, color: "var(--oscuro-texto-2)" }}>{fill(m.lockedText, { title: locker.title })}</span> : null}
-                    {locker ? <Link href={`/academia/${course.slug}/${locker.id}`} className="btn btn-yellow btn-sm">{m.goToLesson}</Link> : null}
-                  </div>
-                </>
-              ) : video?.kind === "iframe" ? (
-                <iframe src={video.src} title={fill(m.videoTitle, { title: lesson.title })} allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" loading="lazy" />
-              ) : video?.kind === "video" ? (
-                <video src={video.src} controls preload="metadata" playsInline title={fill(m.videoTitle, { title: lesson.title })} />
-              ) : (
-                <>
-                  <Cover src={course.coverUrl} dim />
-                  <div role="status" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: 20, textAlign: "center", color: "var(--blanco)", maxWidth: 440 }}>
-                    <span aria-hidden="true" style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--blanco)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="play" size={24} color="var(--tinta)" /></span>
-                    <strong style={{ fontSize: 17 }}>{m.noVideo}</strong>
-                    <span style={{ fontSize: 14, color: "var(--oscuro-texto-2)" }}>{m.noVideoText}</span>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
+          <div className={css.player}>
+            {state === "locked" ? (
+              <>
+                <Cover src={course.coverUrl} dim />
+                <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: 20, textAlign: "center", color: "var(--blanco)", maxWidth: 440 }}>
+                  <span aria-hidden="true" style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--blanco)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="lock" size={24} color="var(--tinta)" /></span>
+                  <strong style={{ fontSize: 17 }}>{m.lockedTitle}</strong>
+                  {locker ? <span style={{ fontSize: 14, color: "var(--oscuro-texto-2)" }}>{fill(m.lockedText, { title: locker.title })}</span> : null}
+                  {locker ? <Link href={`/academia/${course.slug}/${locker.id}`} className="btn btn-yellow btn-sm">{m.goToLesson}</Link> : null}
+                </div>
+              </>
+            ) : video?.kind === "iframe" ? (
+              <iframe src={video.src} title={fill(m.videoTitle, { title: lesson.title })} allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" loading="lazy" />
+            ) : video?.kind === "video" ? (
+              <video src={video.src} controls preload="metadata" playsInline title={fill(m.videoTitle, { title: lesson.title })} />
+            ) : (
+              <>
+                <Cover src={course.coverUrl} dim />
+                <div role="status" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: 20, textAlign: "center", color: "var(--blanco)", maxWidth: 440 }}>
+                  <span aria-hidden="true" style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--blanco)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="play" size={24} color="var(--tinta)" /></span>
+                  <strong style={{ fontSize: 17 }}>{m.noVideo}</strong>
+                  <span style={{ fontSize: 14, color: "var(--oscuro-texto-2)" }}>{m.noVideoText}</span>
+                </div>
+              </>
+            )}
+          </div>
 
           <div className={css.lessonHead}>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
@@ -128,7 +122,7 @@ export default async function ClasePage({ params }: { params: Params }) {
             </div>
             <div className={css.lessonActions}>
               <Link href={`/academia/${course.slug}`} aria-label={m.backCourse} className={css.iconBtn}>‹</Link>
-              {!proLocked && state !== "locked" ? <CompleteButton lessonId={lesson.id} slug={course.slug} done={done} canEdit={s.canEdit} nextId={done || !s.canEdit ? nextOpen?.id ?? null : nextAfter?.id ?? null} t={t} /> : null}
+              {state !== "locked" ? <CompleteButton lessonId={lesson.id} slug={course.slug} done={done} canEdit={s.canEdit} nextId={done || !s.canEdit ? nextOpen?.id ?? null : nextAfter?.id ?? null} t={t} /> : null}
             </div>
           </div>
 
@@ -141,8 +135,8 @@ export default async function ClasePage({ params }: { params: Params }) {
           ) : null}
 
           <About text={lesson.description} t={t} />
-          {!proLocked ? <Rating lessonId={lesson.id} rating={cat.ratings.get(lesson.id) ?? null} enabled={done && s.canEdit} t={t} /> : null}
-          {!proLocked ? <Comments lessonId={lesson.id} items={comments} canWrite={s.canEdit} initial={(s.profile.name || "?").charAt(0).toUpperCase()} t={ct} /> : null}
+          <Rating lessonId={lesson.id} rating={cat.ratings.get(lesson.id) ?? null} enabled={done && s.canEdit} t={t} />
+          <Comments lessonId={lesson.id} items={comments} canWrite={s.canEdit} initial={(s.profile.name || "?").charAt(0).toUpperCase()} t={ct} />
 
           {prev || nextOpen ? (
             <nav aria-label={m.title} className={css.navRow}>

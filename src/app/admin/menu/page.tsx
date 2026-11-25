@@ -3,7 +3,7 @@ import { fill } from "@/i18n";
 import { must } from "@/server/data";
 import { requireAdmin } from "@/server/session";
 import css from "../_shared/admin.module.css";
-import { FEATURE_KEYS, FLAG_KEYS, MENU_KEYS, POINT_KEYS, valuesToForm, type StudentForm } from "./lib";
+import { FLAG_KEYS, MENU_KEYS, POINT_KEYS, valuesToForm, type StudentForm } from "./lib";
 import { M } from "./messages";
 import { MenuView } from "./MenuView";
 
@@ -26,9 +26,7 @@ export default async function AdminMenu() {
   const student: StudentForm = { mode: c.diagCta.student.mode, course: c.diagCta.student.course };
   const form = valuesToForm({
     menu: Object.fromEntries(MENU_KEYS.map((k) => [k, c.menu[k] ?? "on"])) as typeof c.menu,
-    features: Object.fromEntries(FEATURE_KEYS.map((k) => [k, c.features[k] ?? "free"])) as Record<(typeof FEATURE_KEYS)[number], "free" | "pro">,
     flags: Object.fromEntries(FLAG_KEYS.map((k) => [k, c.flags[k] === true])) as typeof c.flags,
-    limits: { free_goals: Number.isInteger(c.limits.free_goals) ? c.limits.free_goals : 2 },
     gamification_enabled: c.gamification,
     admin_mfa_required: mfaRow?.value !== false,
     points: Object.fromEntries(POINT_KEYS.map((k) => [k, Number.isInteger(c.points[k]) ? c.points[k] : 0])) as Record<(typeof POINT_KEYS)[number], number>,

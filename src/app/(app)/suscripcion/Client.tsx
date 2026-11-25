@@ -1,11 +1,9 @@
 "use client";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
-import { fill } from "@/i18n";
+import { useState, useTransition } from "react";
 import { useToast } from "@/components/ui/client";
 import type { Result } from "@/server/action";
-import { cancelSubscription, resumeSubscription, saveBilling, startTrial } from "./actions";
+import { cancelSubscription, resumeSubscription, saveBilling } from "./actions";
 import type { CancelReason, Interval } from "./lib";
 import type { SubMessages } from "./messages";
 import css from "./suscripcion.module.css";
@@ -48,82 +46,37 @@ function useRedirect() {
   return { pending, error, go };
 }
 
-// ───────── Planes: tabla, mensual/anual, cupón, pagar y prueba gratis ─────────
-export type FeatureRow = { key: string; name: string; free: string | true | false; pro: string | true };
-export type PlanPrices = {
-  month: string | null; year: string | null; monthlyEquiv: string | null; savings: number | null; currency: string | null;
-  student: { pct: number; month: string | null; year: string | null } | null;
+// ───────── Un solo plan: mensual/anual, precio y lo que incluye ─────────
+export type PlanTexts = {
+  monthlyLabel: string; yearlyLabel: string;
+  month: { big: string; per: string; line: string };
+  year: { big: string; per: string; line: string };
 };
 
-export function Plans({ m, rows, prices, mode, paymentsActive, canTrial, trialDays, hasCustomer, genericError }: {
-  m: SubMessages; rows: FeatureRow[]; prices: PlanPrices; mode: "buy" | "have" | "gift";
-  paymentsActive: boolean; canTrial: boolean; trialDays: number; hasCustomer: boolean; genericError: string;
-}) {
+export function PlanCard({ m, texts }: { m: SubMessages; texts: PlanTexts }) {
   const [interval, setIv] = useState<Interval>("month");
-  const [coupon, setCoupon] = useState("");
-  const checkout = useRedirect();
-  const portal = useRedirect();
-  const trial = useAct();
-  const p = m.plans;
-  const price = interval === "month" ? prices.month : prices.year;
-  const priceLabel = fill(interval === "month" ? p.perMonth : p.perYear, { price: price ?? p.placeholder });
-  const note = interval === "month" ? p.noteMonthly
-    : prices.savings ? fill(p.noteYearly, { price: prices.monthlyEquiv ?? p.placeholder, pct: prices.savings })
-    : prices.monthlyEquiv ? fill(p.noteYearlyNoSave, { price: prices.monthlyEquiv }) : fill(p.noteYearly, { price: p.placeholder, pct: "[X]" });
-  const studentPrice = prices.student ? (interval === "month" ? prices.student.month : prices.student.year) : null;
-  const cell = (v: string | boolean) => v === true ? <><span aria-hidden="true">✓</span><span className="sr-only">{p.yes}</span></>
-    : v === false ? <><span aria-hidden="true">—</span><span className="sr-only">{p.no}</span></> : v;
-
+  const p = m.plan;
+  const t = interval === "month" ? texts.month : texts.year;
   return (
     <section aria-labelledby="planes" className={css.card} style={{ gap: 16 }}>
       <div className={css.head}>
         <h2 id="planes">{p.title}</h2>
         <div role="group" aria-label={p.frequency} className={css.seg}>
-          <button type="button" aria-pressed={interval === "month"} onClick={() => setIv("month")}>{p.monthly}</button>
-          <button type="button" aria-pressed={interval === "year"} onClick={() => setIv("year")}>{p.yearly}</button>
+          <button type="button" aria-pressed={interval === "month"} onClick={() => setIv("month")}>{texts.monthlyLabel}</button>
+          <button type="button" aria-pressed={interval === "year"} onClick={() => setIv("year")}>{texts.yearlyLabel}</button>
         </div>
       </div>
-      <div className="table-scroll">
-        <table className={css.table}>
-          <thead><tr>
-            <th scope="col">{p.includes}</th>
-            <th scope="col"><span className={css.colHead}><span className={css.colName}>{p.free}</span><span className={css.colPrice}>{p.zero}</span></span></th>
-            <th scope="col" className={css.proCol}><span className={css.colHead}><span className={css.colName}>{p.pro}</span><span className={`num ${css.colPrice}`}>{priceLabel}</span></span></th>
-          </tr></thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.key}>
-                <th scope="row" className={css.rowHead}>{r.name}</th>
-                <td className={r.free === false ? css.muted : undefined}>{cell(r.free)}</td>
-                <td className={css.proCol}>{cell(r.pro)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <span className={css.small}>{note}.{prices.currency ? ` ${fill(p.currency, { currency: prices.currency })}` : ""}</span>
-      {prices.student && studentPrice ? <span className={css.small} style={{ color: "var(--tinta)", fontWeight: 600 }}>{fill(p.student, { pct: prices.student.pct, price: fill(interval === "month" ? p.perMonth : p.perYear, { price: studentPrice }) })}</span> : null}
-
-      {mode === "buy" ? (
-        <form className={css.buy} onSubmit={(e) => { e.preventDefault(); checkout.go("/api/stripe/checkout", { interval, coupon }, genericError); }}>
-          <div className={`field ${css.coupon}`}>
-            <label htmlFor="s-coupon">{p.coupon}</label>
-            <input id="s-coupon" className="input" value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder={p.couponPh} maxLength={40} autoComplete="off" disabled={!paymentsActive} />
-          </div>
-          <div className={css.actions}>
-            <button type="submit" className="btn" disabled={!paymentsActive || checkout.pending} aria-describedby="s-buy-note">{checkout.pending ? p.buying : p.buy}</button>
-            {canTrial ? <button type="button" className="btn btn-secondary" disabled={trial.pending} onClick={() => trial.act(() => startTrial(), (d) => fill(p.trialDone, { days: d }))}>{fill(p.trial, { days: trialDays })}</button> : null}
-          </div>
-          <span id="s-buy-note" className={css.small} style={{ flexBasis: "100%" }}>{paymentsActive ? p.buyNote : m.banners.notActive}{canTrial ? ` ${p.trialNote}` : ""} {p.termsPre} <Link href="/legal/terminos" className="link">{p.termsLink}</Link>.</span>
-          <div style={{ flexBasis: "100%" }}><Alert text={checkout.error || trial.error} /></div>
-        </form>
-      ) : (
-        <div className={css.buy}>
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{p.havePro}</span>
-          {mode === "have" && hasCustomer ? <button type="button" className={`btn btn-secondary btn-sm ${css.tap}`} disabled={!paymentsActive || portal.pending} onClick={() => portal.go("/api/stripe/portal", { flow: "home" }, genericError)}>{p.manage}</button> : null}
-          <div style={{ flexBasis: "100%" }}><Alert text={portal.error} /></div>
+      <div className={css.planGrid}>
+        <div className={css.priceCol}>
+          <div className={css.priceRow}><span className={`num big ${css.bigPrice}`}>{t.big}</span><span className={css.per}>{t.per}</span></div>
+          <span className={css.priceLine}>{t.line}</span>
+          <span className={css.small} style={{ lineHeight: 1.5 }}>{p.usd}</span>
         </div>
-      )}
+        <ul className={css.incl}>
+          {p.includes.map((i) => <li key={i}><span aria-hidden="true" className={css.tick}>✓</span>{i}</li>)}
+        </ul>
+      </div>
+      <span className={css.small}>{p.note}</span>
     </section>
   );
 }
@@ -190,22 +143,5 @@ export function ResumeButton({ m }: { m: SubMessages }) {
       <button type="button" className={`btn btn-secondary btn-sm ${css.tap}`} style={{ alignSelf: "flex-start" }} disabled={pending} onClick={() => act(() => resumeSubscription(), (msg) => msg)}>{m.cancel.resume}</button>
       <Alert text={error} />
     </>
-  );
-}
-
-/** Al volver de Stripe el aviso puede tardar unos segundos: refresca la pantalla hasta que llegue (máx. ~30 s). */
-export function AwaitConfirmation({ text, refresh }: { text: string; refresh: string }) {
-  const router = useRouter();
-  const [tries, setTries] = useState(0);
-  useEffect(() => {
-    if (tries >= 10) return;
-    const id = window.setTimeout(() => { setTries((n) => n + 1); router.refresh(); }, 3000);
-    return () => window.clearTimeout(id);
-  }, [tries, router]);
-  return (
-    <div className="banner banner-info" role="status">
-      <span>{text}</span>
-      <button type="button" className={`btn btn-secondary btn-sm ${css.tap}`} onClick={() => router.refresh()}>{refresh}</button>
-    </div>
   );
 }

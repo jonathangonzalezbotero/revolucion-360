@@ -1,11 +1,12 @@
 import "server-only";
 import { cache } from "react";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getConfig, type AppConfig } from "./config";
 import { asLocale, type Locale } from "@/i18n";
 import { COMMON, type Common } from "@/i18n/common";
-import { canEdit, hasFeature, parts, tierOf, todayIn, type Entitlement, type FeatureKey, type ISODate, type MoneyFormat, type PlanState, type Tier } from "@/lib/engine";
+import { activationRedirect, canEdit, effectiveState, hasFeature, isActive, parts, tierOf, todayIn, type Entitlement, type FeatureKey, type ISODate, type MoneyFormat, type PlanState, type Tier } from "@/lib/engine";
 
 export type Profile = {
   id: string; email: string; name: string; country: string; currency: string; timezone: string; locale: Locale;
@@ -18,6 +19,11 @@ export type Session = {
   aal: "aal1" | "aal2";
   profile: Profile;
   entitlement: Entitlement & { state: PlanState; trialUsed: boolean; billingInterval: string | null; cancelAtPeriodEnd: boolean; paymentFailedAt: string | null; hasStripe: boolean };
+  /** Estado efectivo hoy (alumno o fundador vencido = solo lectura aunque la tarea diaria aún no corra). */
+  plan: PlanState;
+  /** Cuenta activa: pagando (o primer mes), alumno o fundador vigentes. */
+  active: boolean;
+  /** @deprecated Ya no hay Gratis/Pro: "pro" = ve todo (activa o solo lectura), "free" = sin activar. */
   tier: Tier;
   canEdit: boolean;          // false en solo lectura o suspendido
   isAdmin: boolean;
@@ -53,6 +59,7 @@ export const getSession = cache(async (): Promise<Session | null> => {
     paymentFailedAt: e?.payment_failed_at ?? null, hasStripe: !!e?.stripe_customer_id,
   };
   const tier = tierOf(entitlement);
+  const plan = effectiveState(entitlement);
   const today = todayIn(p.timezone || "Australia/Sydney");
   const { y, m } = parts(today);
   const profile: Profile = {
@@ -62,31 +69,58 @@ export const getSession = cache(async (): Promise<Session | null> => {
     onboardingStep: p.onboarding_step, wizard: (p.wizard ?? {}) as Record<string, unknown>, firstSteps: (p.first_steps ?? {}) as Record<string, boolean>, suspended: !!p.suspended_at, createdAt: p.created_at,
   };
   return {
-    userId, aal: (claims?.claims?.aal as "aal1" | "aal2") ?? "aal1", profile, entitlement, tier,
+    userId, aal: (claims?.claims?.aal as "aal1" | "aal2") ?? "aal1", profile, entitlement, plan, active: isActive(entitlement), tier,
     canEdit: canEdit(entitlement) && !profile.suspended,
     isAdmin: p.role === "admin" && !p.suspended_at,
     config, locale, t: COMMON[locale],
     fmt: { currency: p.currency, numberLocale: NUMBER_LOCALE[p.currency] ?? "en-US" },
     today, year: y, month: m,
-    has: (feature) => hasFeature(feature, tier, config.features),
+    // Un solo plan: toda cuenta activa (y solo lectura, para ver) tiene todo. Sin activar, solo su diagnóstico.
+    has: (feature) => hasFeature(feature, tier),
     supabase,
   };
 });
 
-/** Para páginas de la app: exige sesión y onboarding terminado. */
-export async function requireUser(opts: { allowOnboarding?: boolean } = {}): Promise<Session> {
+/** Cabecera que pone src/proxy.ts con la ruta pedida (siempre la sobrescribe: el navegador no la puede fijar). */
+export const PATH_HEADER = "x-r360-path";
+
+/**
+ * Para páginas de la app: exige sesión y onboarding terminado.
+ * Una cuenta sin activar (free) solo abre bienvenida, asistente, diagnóstico y perfil: el resto la lleva a /activar.
+ * `allowInactive`: la página atiende también a quien no ha activado (p. ej. /activar).
+ */
+export async function requireUser(opts: { allowOnboarding?: boolean; allowInactive?: boolean } = {}): Promise<Session> {
   const s = await getSession();
   if (!s) redirect("/entrar");
   if (!opts.allowOnboarding && s.profile.onboardingStep !== "done") redirect(s.profile.onboardingStep === "wizard" ? "/asistente" : "/bienvenida");
+  if (!opts.allowOnboarding && !opts.allowInactive) {
+    const path = (await headers()).get(PATH_HEADER);
+    if (activationRedirect(s.entitlement, path)) redirect("/activar");
+  }
   return s;
 }
 
-/** Para /admin: exige rol admin y verificación en 2 pasos (obligatoria salvo en local). */
-export async function requireAdmin(): Promise<Session> {
+/**
+ * Para /admin: exige rol admin y verificación en 2 pasos (obligatoria salvo en local), y que el subrol
+ * (Dueño, Contenido, Soporte) pueda usar la sección: la pedida, o si no se pide, la de la ruta actual
+ * (cabecera del proxy). Si no puede, vuelve a Resumen. La base de datos impone lo mismo (`is_admin_of`).
+ * Sin la migración 20261125000033 aplicada (`my_admin_role` no existe), todo admin es Dueño, como antes.
+ */
+export async function requireAdmin(section?: import("@/app/admin/actividad/roles").AdminSection): Promise<Session & { adminRole: import("@/app/admin/actividad/roles").AdminRole }> {
+  const { canUse, isAdminRole, sectionOf } = await import("@/app/admin/actividad/roles");
   const s = await getSession();
   if (!s) redirect("/entrar?ir=/admin");
   if (!s.isAdmin) redirect("/inicio");
-  const { data: ok } = await s.supabase.rpc("is_admin");
-  if (!ok) redirect("/dos-pasos?ir=/admin");
-  return s;
+  const r = (await s.supabase.rpc("my_admin_role" as never)) as unknown as { data: unknown; error: { code?: string } | null };
+  let adminRole: import("@/app/admin/actividad/roles").AdminRole = "owner";
+  if (r.error?.code === "PGRST202") {
+    const { data: ok } = await s.supabase.rpc("is_admin");
+    if (!ok) redirect("/dos-pasos?ir=/admin");
+  } else {
+    if (!isAdminRole(r.data)) redirect("/dos-pasos?ir=/admin");
+    adminRole = r.data;
+  }
+  const want = section ?? sectionOf((await headers()).get(PATH_HEADER) ?? "");
+  if (want && !canUse(adminRole, want)) redirect("/admin");
+  return { ...s, adminRole };
 }

@@ -1,11 +1,10 @@
-// Cálculos propios de Deudas e impuestos e Inversiones (los del motor se prueban en engine.test.ts).
+// Cálculos propios de Deudas e impuestos (Inversiones: tests/inversiones.test.ts) (los del motor se prueban en engine.test.ts).
 import { describe, expect, it } from "vitest";
 import { bnplSchedule, debtPayoff } from "@/lib/engine";
 import {
   balanceAfter, companySummary, debtState, debtSummary, monthlyPayment, nextUnpaid, parsePercent, parseSchedule, payoffOf, paymentAmount,
   planMonths, progressOf, scheduleAfter, scheduleJson, scheduleMonths, simulate, startBalanceFor, taxReserveOf, taxStatus, type DebtLite,
 } from "@/app/(app)/deudas/lib";
-import { applyEntry, chartPoints, distribution, invTotals, niceMax, typeOf, valueSeries } from "@/app/(app)/inversiones/lib";
 
 const TODAY = "2026-11-24";
 const debt = (o: Partial<DebtLite>): DebtLite => ({
@@ -192,63 +191,7 @@ describe("cuenta con la empresa", () => {
   });
 });
 
-describe("inversiones", () => {
-  const labels = [{ etf: "Acciones y ETF", fondos: "Fondos", cripto: "Cripto", super: "Super", ahorro: "Ahorro con interés", propiedad: "Propiedad", otro: "Otro" }];
-
-  it("el tipo se reconoce por su nombre; lo demás es otro", () => {
-    expect(typeOf("acciones y etf", labels)).toBe("etf");
-    expect(typeOf("", labels)).toBe("otro");
-  });
-
-  it("aporte suma a lo puesto y a lo que vale; retiro resta; valor solo cambia lo que vale", () => {
-    let h = { contributedCents: 100_000, valueCents: 110_000 };
-    h = applyEntry(h, "aporte", 20_000);
-    expect(h).toEqual({ contributedCents: 120_000, valueCents: 130_000 });
-    h = applyEntry(h, "valor", 125_000);
-    expect(h).toEqual({ contributedCents: 120_000, valueCents: 125_000 });
-    h = applyEntry(h, "retiro", 200_000);
-    expect(h).toEqual({ contributedCents: 0, valueCents: 0 });
-  });
-
-  it("totales y resultado", () => {
-    const t = invTotals([{ contributedCents: 100_000, valueCents: 120_000 }, { contributedCents: 50_000, valueCents: 40_000 }]);
-    expect(t).toMatchObject({ valueCents: 160_000, contributedCents: 150_000, gainCents: 10_000 });
-    expect(t.gainPct).toBeCloseTo(1 / 15);
-  });
-
-  it("cómo está repartido", () => {
-    const d = distribution([{ type: "etf", valueCents: 300 }, { type: "cripto", valueCents: 100 }, { type: "etf", valueCents: 100 }, { type: "otro", valueCents: 0 }]);
-    expect(d).toEqual([{ type: "etf", valueCents: 400, share: 0.8 }, { type: "cripto", valueCents: 100, share: 0.2 }]);
-    expect(distribution([{ type: "etf", valueCents: 0 }])).toEqual([]);
-  });
-
-  it("la serie arrastra el último valor de cada inversión", () => {
-    const s = valueSeries([
-      { investmentId: "a", date: "2026-01-10", kind: "valor", amountCents: 1_000 },
-      { investmentId: "b", date: "2026-02-01", kind: "valor", amountCents: 500 },
-      { investmentId: "a", date: "2026-02-01", kind: "aporte", amountCents: 999 }, // no es valor
-      { investmentId: "a", date: "2026-03-01", kind: "valor", amountCents: 1_200 },
-      { investmentId: "b", date: "2026-03-01", kind: "valor", amountCents: 400 },
-    ]);
-    expect(s).toEqual([{ date: "2026-01-10", cents: 1_000 }, { date: "2026-02-01", cents: 1_500 }, { date: "2026-03-01", cents: 1_600 }]);
-  });
-
-  it("dos valores el mismo día: gana el último registrado", () => {
-    const s = valueSeries([
-      { investmentId: "a", date: "2026-11-24", kind: "valor", amountCents: 1_000 },
-      { investmentId: "a", date: "2026-11-24", kind: "valor", amountCents: 1_300 },
-    ]);
-    expect(s).toEqual([{ date: "2026-11-24", cents: 1_300 }]);
-  });
-
-  it("geometría del gráfico", () => {
-    const g = chartPoints([{ date: "2026-01-01", cents: 100_000 }, { date: "2026-01-11", cents: 200_000 }, { date: "2026-01-21", cents: 150_000 }]);
-    expect(g.max).toBe(200_000);
-    expect(g.points).toEqual([{ x: 0, y: 50 }, { x: 500, y: 0 }, { x: 1000, y: 25 }]);
-    expect(chartPoints([]).points).toEqual([]);
-    expect(niceMax(130_000)).toBe(200_000);
-  });
-});
+// Inversiones por activo: tests/inversiones.test.ts (motor en src/lib/engine/inversiones.ts).
 
 describe("impuestos: apartado según el país", () => {
   it("sin fila del país: se muestra sin aviso propio", () => {

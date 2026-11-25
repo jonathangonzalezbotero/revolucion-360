@@ -1,87 +1,66 @@
-// Cálculos propios de Inversiones (puros, con pruebas en tests/deudas-inversiones.test.ts).
-import { investmentResult, type Cents, type ISODate } from "@/lib/engine";
+// Inversiones: lectura de las tablas nuevas y formato. Los cálculos viven en src/lib/engine/inversiones.ts (con pruebas).
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { formatMoney, type Cents, type ISODate, type MoneyFormat } from "@/lib/engine";
+import { DEC_ONE, decFromDb, decToDb, formatDec, hasSubCent, unitPriceToCents, type AssetKind, type AssetOp, type AssetState, type Dec, type OpKind } from "@/lib/engine/inversiones";
 
-export const INV_TYPES = ["etf", "fondos", "cripto", "super", "ahorro", "propiedad", "otro"] as const;
-export type InvType = (typeof INV_TYPES)[number];
+/**
+ * `assets` y `asset_operations` vienen en la migración 20261125000032 (aún sin aplicar): los tipos generados no las tienen.
+ * Mientras se regeneran (`npm run db:types`), se consultan con un cliente sin tipos; las filas se tipan abajo a mano.
+ */
+export const untyped = (db: unknown) => db as SupabaseClient;
 
-/** Color de cada tipo (solo tokens). */
-export const TYPE_COLOR: Record<InvType, string> = {
-  etf: "var(--tinta)", fondos: "var(--azul)", cripto: "var(--amarillo-oscuro)", super: "var(--azul-oscuro)",
-  ahorro: "var(--teal)", propiedad: "var(--naranja)", otro: "var(--gris-5)",
+export const ASSET_COLS = "id, name, kind, platform, by_units, unit_price_cents::text, balance_cents, price_date, price_at, plan_line_id, recurring_from, archived_at, created_at";
+export type AssetRow = {
+  id: string; name: string; kind: AssetKind; platform: string | null; by_units: boolean; unit_price_cents: string | null; balance_cents: number | null;
+  price_date: ISODate | null; price_at: string | null; plan_line_id: string | null; recurring_from: ISODate | null; archived_at: string | null; created_at: string;
+};
+export const OP_COLS = "id, asset_id, date, kind, quantity::text, unit_price_cents::text, amount_cents, source, recurring_month, created_at";
+export type OpRow = {
+  id: string; asset_id: string; date: ISODate; kind: OpKind; quantity: string | null; unit_price_cents: string | null; amount_cents: number;
+  source: "manual" | "recurring" | "migrated"; recurring_month: string | null; created_at: string;
 };
 
-/** El tipo se guarda como texto en `investments.name` y se reconoce en cualquier idioma; lo demás es "otro". */
-export function typeOf(name: string, labels: Record<InvType, string>[]): InvType {
-  const k = name.trim().toLowerCase();
-  for (const set of labels) for (const t of INV_TYPES) if (set[t].toLowerCase() === k) return t;
-  return "otro";
+export const toOp = (o: OpRow): AssetOp => ({ id: o.id, date: o.date, kind: o.kind, qty: decFromDb(o.quantity), amountCents: o.amount_cents, createdAt: o.created_at });
+export const toState = (a: AssetRow, ops: OpRow[]): AssetState => ({
+  byUnits: a.by_units, unitPriceCents: decFromDb(a.unit_price_cents), balanceCents: a.balance_cents, priceDate: a.price_date, priceAt: a.price_at, ops: ops.map(toOp),
+});
+
+/** Color de cada tipo (solo tokens; Fondo usa el azul más cercano al del mockup). */
+export const KIND_COLOR: Record<AssetKind, string> = {
+  etf: "var(--teal)", stocks: "var(--tinta)", crypto: "var(--amarillo-oscuro)", fund: "var(--azul)",
+  retirement: "var(--azul-oscuro)", property: "var(--naranja)", other: "var(--gris-5)",
+};
+/** Texto sobre el color del tipo: en el amarillo, tinta (el blanco no se lee). */
+export const KIND_INK: Record<AssetKind, string> = { ...Object.fromEntries(Object.keys(KIND_COLOR).map((k) => [k, "var(--blanco)"])) as Record<AssetKind, string>, crypto: "var(--tinta)" };
+
+/** Precio por unidad (centavos, Dec) → "$552.10", o con más decimales si tiene fracción de centavo ("$0.0004"). */
+export function formatUnitPrice(p: Dec, fmt: MoneyFormat): string {
+  if (!hasSubCent(p)) return formatMoney(unitPriceToCents(p), fmt);
+  return `$${formatDec(p / BigInt(100), fmt.numberLocale, 6)}`;
 }
 
-export type EntryKind = "aporte" | "retiro" | "valor";
-export type Holding = { contributedCents: Cents; valueCents: Cents };
-
-/**
- * Efecto de un registro: un aporte suma a lo puesto y a lo que vale (hasta el próximo "valor de hoy");
- * un retiro resta de los dos; "valor de hoy" solo cambia lo que vale. Nada queda negativo.
- */
-export function applyEntry(h: Holding, kind: EntryKind, amountCents: Cents): Holding {
-  const a = Math.abs(amountCents);
-  if (kind === "valor") return { contributedCents: h.contributedCents, valueCents: a };
-  if (kind === "aporte") return { contributedCents: h.contributedCents + a, valueCents: h.valueCents + a };
-  return { contributedCents: Math.max(0, h.contributedCents - a), valueCents: Math.max(0, h.valueCents - a) };
+/** Costo promedio por unidad: a centavos ("$481.05"); con más decimales solo si es menos de 1 centavo. */
+export function formatAvgPrice(p: Dec, fmt: MoneyFormat): string {
+  return p >= DEC_ONE ? formatMoney(unitPriceToCents(p), fmt, { cents: true }) : formatUnitPrice(p, fmt);
 }
 
-/** Totales: vale hoy, has puesto, resultado y % (investmentResult). */
-export function invTotals(items: Holding[]) {
-  const valueCents = items.reduce((a, i) => a + i.valueCents, 0);
-  const contributedCents = items.reduce((a, i) => a + i.contributedCents, 0);
-  return { valueCents, contributedCents, ...investmentResult(contributedCents, valueCents) };
+/** Precio por unidad → texto para el campo ("552.10"; "552,10" donde la coma es decimal), al menos 2 decimales. */
+export function priceInputText(p: Dec, numberLocale = "en-AU"): string {
+  const t = decToDb(p / BigInt(100));
+  const [w, f = ""] = t.split(".");
+  const sep = (1.5).toLocaleString(numberLocale).includes(",") ? "," : ".";
+  return `${w}${sep}${f.padEnd(2, "0")}`;
 }
 
-/** Cómo está repartido: por tipo, solo lo que vale algo, de mayor a menor. `share` de 0 a 1. */
-export function distribution(items: { type: InvType; valueCents: Cents }[]) {
-  const total = items.reduce((a, i) => a + Math.max(0, i.valueCents), 0);
-  if (total <= 0) return [];
-  const by = new Map<InvType, Cents>();
-  for (const i of items) if (i.valueCents > 0) by.set(i.type, (by.get(i.type) ?? 0) + i.valueCents);
-  return [...by.entries()].map(([type, valueCents]) => ({ type, valueCents, share: valueCents / total })).sort((a, b) => b.valueCents - a.valueCents);
-}
+/** Centavos → texto para el campo ("48200.50" o "48200"). */
+export const centsInputText = (c: Cents) => (c % 100 === 0 ? String(c / 100) : `${Math.trunc(c / 100)}.${String(Math.abs(c % 100)).padStart(2, "0")}`);
 
-/**
- * Evolución de lo que vale todo: un punto por cada fecha con un "valor de hoy".
- * En cada fecha suma el último valor conocido de cada inversión (se arrastra hasta el siguiente).
- * Recibe los registros del más viejo al más nuevo: si hay dos valores el mismo día, gana el último registrado.
- */
-export function valueSeries(entries: { investmentId: string; date: ISODate; kind: EntryKind; amountCents: Cents }[]): { date: ISODate; cents: Cents }[] {
-  const vals = entries.filter((e) => e.kind === "valor").slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
-  const last = new Map<string, Cents>();
-  const out: { date: ISODate; cents: Cents }[] = [];
-  for (let i = 0; i < vals.length; i++) {
-    last.set(vals[i].investmentId, vals[i].amountCents);
-    if (i + 1 < vals.length && vals[i + 1].date === vals[i].date) continue; // varias el mismo día: un solo punto
-    out.push({ date: vals[i].date, cents: [...last.values()].reduce((a, b) => a + b, 0) });
-  }
-  return out;
+/** Resultado como en el mockup: "+$183 (+14.8%)". Sin costo, solo el monto. */
+export function resultText(gainCents: Cents, costCents: Cents, fmt: MoneyFormat): string {
+  const money = gainCents === 0 ? formatMoney(0, fmt) : formatMoney(gainCents, fmt, { sign: true });
+  if (costCents <= 0) return money;
+  const pct = (gainCents / costCents) * 100;
+  return `${money} (${pct > 0 ? "+" : pct < 0 ? "−" : ""}${Math.abs(pct).toFixed(1)}%)`;
 }
-
-/** Geometría del gráfico (viewBox 0..1000 × 0..100): x por fecha real, y desde 0 hasta un tope redondo. */
-export function chartPoints(series: { date: ISODate; cents: Cents }[]): { points: { x: number; y: number }[]; max: Cents } {
-  if (series.length === 0) return { points: [], max: 0 };
-  const day = (d: ISODate) => Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
-  const t0 = day(series[0].date), span = day(series[series.length - 1].date) - t0;
-  const max = niceMax(Math.max(...series.map((s) => s.cents), 100));
-  return {
-    max,
-    points: series.map((s, i) => ({
-      x: span > 0 ? +(((day(s.date) - t0) / span) * 1000).toFixed(1) : series.length > 1 ? +((i / (series.length - 1)) * 1000).toFixed(1) : 500,
-      y: +(100 - (s.cents / max) * 100).toFixed(2),
-    })),
-  };
-}
-
-/** Tope "redondo" del eje: 1, 2, 2.5 o 5 × 10ⁿ por encima del máximo (en centavos). */
-export function niceMax(raw: Cents): Cents {
-  const pow = Math.pow(10, Math.floor(Math.log10(Math.max(raw, 1))));
-  const n = raw / pow;
-  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * pow;
-}
+/** Verde si ganó, ámbar si perdió (estados siempre con signo además del color). */
+export const resultTone = (gain: Cents) => (gain < 0 ? "var(--ambar-texto)" : "var(--verde-fuerte)");

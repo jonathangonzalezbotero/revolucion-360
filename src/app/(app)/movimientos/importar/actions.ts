@@ -20,7 +20,7 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((d) => !Number.isNaN
 const bank = z.string().trim().min(1).max(60);
 const cents = z.number().int().refine((n) => Math.abs(n) < 1e13);
 
-/** El CSV es una función que el admin puede apagar; además es Pro (`run` revisa `feature`). */
+/** El CSV es una función que el admin puede apagar. */
 const csvOff = (s: Session) => (!s.config.flags.csv ? fail(M[s.locale].errors.off) : null);
 
 async function ownAccount(s: Session, accountId: string) {

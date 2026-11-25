@@ -5,7 +5,8 @@ import { allowsApp, allowsEmail, expiryBucket, expiryRef, expiryTransition, read
 import { M } from "@/lib/email/messages";
 import { deliverOnce, notifyOnce } from "@/lib/email/send";
 import { accessEmail } from "@/lib/email/templates";
-import type { Grant } from "@/app/(app)/suscripcion/lib";
+import { loadBilling } from "@/lib/stripe";
+import { usdShort, type Grant } from "@/app/(app)/suscripcion/lib";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -15,9 +16,11 @@ const ENT_COLS = "user_id, state, trial_ends_at, pro_until, access_until, stripe
 
 /**
  * GET /api/cron/vencimientos (diario).
- * (a) Accesos de alumno que vencen en 30 y 7 días → correo y notificación (según el canal elegido).
- * (b) Estados vencidos: prueba → Gratis; alumno → Gratis (o al otro acceso gratis vigente); Pro con pro_until vencido y sin
- *     suscripción activa en Stripe → solo lectura. Nunca se borra ni se toca ningún dato del usuario.
+ * (a) Accesos de alumno que vencen en 30 y 7 días → correo y notificación (según el canal elegido), con el precio del plan
+ *     de app_config.billing ("son $8 USD al mes o $80 USD al año").
+ * (b) Estados vencidos → solo lectura (desde el 25 nov 2026; antes pasaban a Gratis, que ahora significa "sin activar"):
+ *     prueba vieja, alumno o fundador con fecha (o al otro acceso gratis vigente), y Pro con pro_until vencido y sin
+ *     suscripción activa en Stripe. Nunca se borra ni se toca ningún dato del usuario.
  * Cada cambio es condicional al estado anterior: dos corridas a la vez no pisan nada.
  */
 export async function GET(request: Request) {
@@ -32,7 +35,8 @@ export async function GET(request: Request) {
 async function expiringNotices(db: Admin, now: Date) {
   let expiring = 0, emailed = 0, notified = 0, failed = 0;
   const horizon = new Date(now.getTime() + 31 * 86_400_000).toISOString();
-  const discounts = await loadDiscounts(db);
+  const billing = await loadBilling(db);
+  const monthly = usdShort(billing.monthlyCents), yearly = usdShort(billing.yearlyCents);
   let after = FIRST_UUID;
   for (;;) {
     const { data, error } = await db.from("entitlements").select(ENT_COLS).eq("state", "alumno")
@@ -55,7 +59,7 @@ async function expiringNotices(db: Admin, now: Date) {
       if (allowsEmail(prefs)) {
         const res = await deliverOnce(db, {
           userId: p.id, kind: "access_expiring", ref, to: p.email,
-          render: () => accessEmail({ locale, appUrl: appUrl(), until, daysLeft: left, discountPct: discounts.get(p.country) ?? discounts.get("DEFAULT") ?? null }),
+          render: () => accessEmail({ locale, appUrl: appUrl(), until, daysLeft: left, monthly, yearly }),
         });
         if (res === "sent") emailed++; else if (res === "failed") failed++;
       }
@@ -72,10 +76,10 @@ async function expiringNotices(db: Admin, now: Date) {
 }
 
 async function expireStates(db: Admin, now: Date) {
-  const counts = { toFree: 0, toReadOnly: 0, toGrant: 0, stillPaying: 0 };
+  const counts = { toReadOnly: 0, toGrant: 0, toPro: 0, stillPaying: 0 };
   const nowIso = now.toISOString();
-  // Solo filas que ya vencieron: prueba, alumno o Pro con su fecha pasada (una pasada por estado).
-  const passes = [["trial", "trial_ends_at"], ["alumno", "access_until"], ["pro", "pro_until"]] as const;
+  // Solo filas que ya vencieron: prueba vieja, alumno, fundador con fecha o Pro con su fecha pasada (una pasada por estado).
+  const passes = [["trial", "trial_ends_at"], ["alumno", "access_until"], ["fundador", "access_until"], ["pro", "pro_until"]] as const;
   for (const [fromState, column] of passes) {
     let after = FIRST_UUID;
     for (;;) {
@@ -97,7 +101,7 @@ async function expireStates(db: Admin, now: Date) {
         if (uerr) throw new Error(`db: ${uerr.message}`);
         if (!upd.length) continue;
         if (next.state === "read_only") counts.toReadOnly++;
-        else if (next.state === "free") counts.toFree++;
+        else if (next.state === "pro") counts.toPro++;
         else counts.toGrant++;
       }
       if (ents.length < BATCH) break;
@@ -105,11 +109,4 @@ async function expireStates(db: Admin, now: Date) {
     }
   }
   return counts;
-}
-
-/** Descuento de alumno por región de precios (porcentaje, nunca un monto). */
-async function loadDiscounts(db: Admin): Promise<Map<string, number>> {
-  const { data, error } = await db.from("price_regions").select("region, student_discount_pct");
-  if (error) throw new Error(`db: ${error.message}`);
-  return new Map(data.filter((r) => r.student_discount_pct > 0).map((r) => [r.region, r.student_discount_pct]));
 }

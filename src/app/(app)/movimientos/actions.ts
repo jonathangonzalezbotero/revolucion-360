@@ -6,14 +6,16 @@ import { addDays, applyRules, findDuplicate, parseMoney, type ISODate } from "@/
 import { fail, ok, run } from "@/server/action";
 import { must } from "@/server/data";
 import { setMark } from "@/server/plan-write";
-import { firstStep, touchWeek } from "@/server/rewards";
+import { award, firstStep, touchWeek } from "@/server/rewards";
 import type { Session } from "@/server/session";
+import { legFor, parseGoalChoice } from "@/lib/engine/metas";
+import { awardGoal, raw, syncGoalLinks, type Crossed } from "../metas/server";
 import { anchorDayOf, nextRecurringDate, rulePattern, signed, splitInTwo, type RecFrequency } from "./lib";
 import { M } from "./messages";
 import { clearMark, lineForDate, lineOfYear, suggestionFor, txBetween } from "./server";
 
 // Rutas que leen movimientos, marcas o totales: Inicio, Plan, Detalle del mes, Cuentas, Cierre y Análisis.
-const PATHS = ["/movimientos", "/inicio", "/plan", "/cuentas", "/cierre", "/analisis"];
+const PATHS = ["/movimientos", "/inicio", "/plan", "/cuentas", "/cierre", "/analisis", "/metas"];
 const touchPaths = () => revalidatePath("/(app)/plan/mes/[mes]", "page");
 
 const id = z.guid();
@@ -103,7 +105,6 @@ export async function addRecurring(input: unknown) {
       description: text(120), amount: z.string().max(40), direction: z.enum(["in", "out"]), accountId: optId, categoryId: optId, lineId: optId, frequency: freq, first: date,
     }).safeParse(input);
     if (!p.success) return fail(p.error.issues.some((i) => i.path[0] === "first") ? s.t.errors.date : s.t.errors.generic);
-    if (!s.has("mov")) return fail(s.t.errors.pro);
     const abs = parseMoney(p.data.amount);
     if (!abs) return fail(s.t.errors.amount);
     if (!p.data.description) return fail(m.errors.desc);
@@ -207,13 +208,14 @@ export async function addTx(input: unknown) {
     }
 
     let repeated = false;
-    if (d.repeat && !transfer && s.has("recurrentes")) {
+    if (d.repeat && !transfer) {
       repeated = await repeatFrom(s, row.id, { description, amountCents, accountId: d.accountId, categoryId, lineId, frequency: d.repeat, date: d.date });
     }
 
     await touchWeek(s);
     const points = await firstStep(s, "gasto");
     const suggestion = !transfer && !lineId ? await suggestionFor(s, { id: row.id, accountId: d.accountId, date: d.date, amountCents, description }) : null;
+    if (transfer) await syncGoalLinks(s); // una transferencia a la cuenta de una meta cuenta sola como aporte
     touchPaths();
     return ok({ id: row.id, duplicate: null, suggestion, repeated }, { points: points || undefined });
   });
@@ -304,9 +306,10 @@ export async function updateTx(input: unknown) {
     }
 
     let repeated = false;
-    if (d.repeat && !d.transfer && !cur.recurring_id && s.has("recurrentes")) {
+    if (d.repeat && !d.transfer && !cur.recurring_id) {
       repeated = await repeatFrom(s, d.id, { description: d.description, amountCents, accountId: d.accountId, categoryId, lineId, frequency: d.repeat, date: d.date });
     }
+    await syncGoalLinks(s); // el monto o la fecha del aporte (o uso) de la meta siguen al movimiento
     touchPaths();
     return ok({ ruled, repeated });
   });
@@ -359,7 +362,49 @@ export async function deleteTx(input: unknown) {
     const rows = must(await s.supabase.from("transactions").update({ deleted_at: now }).or(`id.eq.${cur.id},parent_id.eq.${cur.id}`).is("deleted_at", null).select("id"));
     if (rows.length === 0) return fail(s.t.errors.notFound);
     if (cur.transfer_pair_id) must(await s.supabase.from("transactions").update({ deleted_at: now }).eq("id", cur.transfer_pair_id).is("deleted_at", null).select("id"));
+    await syncGoalLinks(s); // si contaba para una meta, deja de contar
     touchPaths();
     return ok(true);
+  });
+}
+
+// ───────── "¿Tiene que ver con una meta?" ─────────
+/**
+ * "Aporte a…" o "Pagado con…" una meta, o "Ninguna". Usar la meta para lo que era es un logro: la meta baja ese monto
+ * y queda en su historial como logro, no como gasto de más. En una transferencia, el aporte va en la punta que entra
+ * y el uso en la que sale (nunca se cuenta dos veces). "Ninguna" también apaga el aporte automático de una transferencia.
+ */
+export async function setTxGoal(input: unknown) {
+  return run<{ role: "in" | "out" | null; name: string; crossed: Crossed[] }>({ feature: "mov", revalidate: [...PATHS, "/metas", "/diagnostico", "/perfil"] }, async (s) => {
+    const p = z.object({ id, goal: z.string().max(80) }).safeParse(input);
+    const choice = p.success ? parseGoalChoice(p.data.goal) : undefined;
+    if (!p.success || choice === undefined) return fail(s.t.errors.generic);
+    const db = raw(s);
+    type Leg = { id: string; amount_cents: number; kind: string; transfer_pair_id: string | null; parent_id: string | null };
+    const tx = (must(await db.from("transactions").select("id, amount_cents, kind, transfer_pair_id, parent_id").eq("id", p.data.id).is("deleted_at", null)) as Leg[])[0];
+    if (!tx || tx.parent_id) return fail(s.t.errors.notFound);
+    const goal = choice ? must(await s.supabase.from("goals").select("id, name, completed_at").eq("id", choice.goalId).is("archived_at", null).maybeSingle()) : null;
+    if (choice && (!goal || (choice.role === "in" && goal.completed_at))) return fail(s.t.errors.notFound);
+    const pair = tx.kind === "transfer" && tx.transfer_pair_id
+      ? (must(await db.from("transactions").select("id, amount_cents, kind, transfer_pair_id, parent_id").eq("id", tx.transfer_pair_id).is("deleted_at", null)) as Leg[])[0] ?? null : null;
+    const legs = [tx.id, ...(pair ? [pair.id] : [])];
+    let target: string | null = null;
+    if (choice && goal) {
+      target = legFor(choice.role, { id: tx.id, amountCents: tx.amount_cents }, pair && { id: pair.id, amountCents: pair.amount_cents });
+      for (const leg of legs) must(await db.from("transactions").update(leg === target ? { goal_id: goal.id, goal_role: choice.role } : { goal_id: null, goal_role: null }).eq("id", leg).select("id"));
+    } else {
+      must(await db.from("transactions").update({ goal_id: null, goal_role: "none" }).in("id", legs).select("id"));
+    }
+
+    const crossed = await syncGoalLinks(s);
+    let points = crossed.reduce((a, c) => a + c.points, 0);
+    if (choice?.role === "in" && target) {
+      const entry = (must(await db.from("goal_entries").select("id").eq("transaction_id", target)) as { id: string }[])[0];
+      if (entry) points += await award(s, "goal_contrib", entry.id);
+      await touchWeek(s);
+    } else if (choice?.role === "out" && goal) {
+      points += await awardGoal(s, "goal_used", goal.id);
+    }
+    return ok({ role: choice?.role ?? null, name: goal?.name ?? "", crossed }, { points: points || undefined });
   });
 }

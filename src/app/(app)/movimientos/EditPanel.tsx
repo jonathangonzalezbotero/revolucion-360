@@ -6,15 +6,20 @@ import { fill } from "@/i18n";
 import { Icon } from "@/components/ui/Icon";
 import { ConfirmButton, Segmented, Switch, useToast } from "@/components/ui/client";
 import { formatMoney, monthName, parseMoney } from "@/lib/engine";
-import { deleteTx, linkLine, suggestFor, updateTx } from "./actions";
+import { deleteTx, linkLine, setTxGoal, suggestFor, updateTx } from "./actions";
 import { moneyInput, rulePattern, type MovRow, type RecFrequency } from "./lib";
 import css from "./mov.module.css";
-import type { Acc, Cat, Ctx, LineOpt } from "./types";
+import type { Acc, Cat, Ctx, GoalOpt, LineOpt } from "./types";
 
-type Props = { row: MovRow; categories: Cat[]; accounts: Acc[]; linesByYear: Record<string, LineOpt[]>; recurring: boolean; ctx: Ctx; onClose: () => void };
+type Props = {
+  row: MovRow; categories: Cat[]; accounts: Acc[]; linesByYear: Record<string, LineOpt[]>; recurring: boolean; ctx: Ctx; onClose: () => void;
+  goals: GoalOpt[];
+  /** Lo que hoy cuenta este movimiento para una meta: "in:<meta>", "out:<meta>" o "". */
+  goal: string;
+};
 
 /** Editar un movimiento: panel lateral en escritorio, hoja inferior en móvil (el mismo formulario; lo cambia el CSS). */
-export function EditPanel({ row, categories, accounts, linesByYear, recurring, ctx, onClose }: Props) {
+export function EditPanel({ row, categories, accounts, linesByYear, recurring, ctx, onClose, goals, goal }: Props) {
   const { t, c, fmt, locale } = ctx;
   const router = useRouter();
   const toast = useToast();
@@ -23,6 +28,7 @@ export function EditPanel({ row, categories, accounts, linesByYear, recurring, c
     desc: row.description, amount: moneyInput(row.amountCents), dir: row.amountCents > 0 ? ("in" as const) : ("out" as const), date: row.date,
     cat: row.categoryId ?? "", acc: row.accountId ?? "", line: row.lineId ?? "", note: row.note, transfer: row.kind === "transfer",
     split: row.parts.length > 0, cat2: second?.categoryId ?? "", amount2: second ? moneyInput(second.amountCents) : "", rule: true, repeat: "" as "" | RecFrequency,
+    goal,
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -57,8 +63,20 @@ export function EditPanel({ row, categories, accounts, linesByYear, recurring, c
       id: row.id, amount: d.amount, direction: d.dir, date: d.date, description: d.desc, categoryId: d.cat || null, accountId: d.acc || null, lineId: d.line || null,
       note: d.note, transfer: d.transfer, rule: offerRule && d.rule, repeat: d.repeat, split: d.split && !d.transfer ? { categoryId: d.cat2 || null, amount: d.amount2 } : null,
     });
+    if (!r.ok) { setBusy(false); return setError(r.error); }
+    // La meta va aparte y solo si cambió: así editar un movimiento nunca toca su meta sin querer.
+    if (d.goal !== goal) {
+      const g = await setTxGoal({ id: row.id, goal: d.goal });
+      setBusy(false);
+      if (!g.ok) return setError(g.error);
+      const c = g.data.crossed.at(-1);
+      toast(c ? fill(t.edit.goalMilestone, { pct: c.pct, name: c.name })
+        : g.data.role === "in" ? fill(t.edit.goalSavedIn, { name: g.data.name }) : g.data.role === "out" ? t.edit.goalSavedOut : t.edit.goalSavedNone, g.points);
+      onClose();
+      router.refresh();
+      return;
+    }
     setBusy(false);
-    if (!r.ok) return setError(r.error);
     const cat = categories.find((x) => x.id === d.cat)?.name ?? lines.find((l) => l.id === d.line)?.name ?? "";
     toast(r.data.ruled ? fill(t.edit.savedRule, { raw: bankText, cat }) : t.edit.saved);
     onClose();
@@ -141,6 +159,21 @@ export function EditPanel({ row, categories, accounts, linesByYear, recurring, c
           </select>
           <span className="xs muted">{t.edit.lineHint}</span>
         </div>
+
+        {/* el original de un dividido no cuenta: la meta se elige en un movimiento sin dividir */}
+        {goals.length > 0 && !d.split ? (
+          <div className={css.fld}>
+            <label htmlFor="e-goal">{t.edit.goal}</label>
+            <select id="e-goal" className={css.in} value={d.goal} onChange={(e) => up({ goal: e.target.value })}>
+              <option value="">{t.edit.none}</option>
+              {goals.flatMap((g) => [
+                ...(g.active || d.goal === `in:${g.id}` ? [<option key={`in:${g.id}`} value={`in:${g.id}`}>{fill(t.edit.goalIn, { name: g.name })}</option>] : []),
+                <option key={`out:${g.id}`} value={`out:${g.id}`}>{fill(t.edit.goalOut, { name: g.name })}</option>,
+              ])}
+            </select>
+            {d.goal.startsWith("out:") ? <span className={css.goalWin}>{t.edit.goalOutHint}</span> : null}
+          </div>
+        ) : null}
 
         {offerRule ? (
           <div className={css.soft} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>

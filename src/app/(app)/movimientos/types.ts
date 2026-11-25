@@ -4,6 +4,8 @@ import type { Msg } from "./messages";
 
 export type Cat = { id: string; name: string; color: string; kind: string };
 export type Acc = { id: string; name: string };
+/** Meta para elegir en un movimiento: "Aporte a…" solo si sigue activa; "Pagado con…" también si ya la cumpliste. */
+export type GoalOpt = { id: string; name: string; active: boolean };
 export type LineOpt = { id: string; name: string; categoryId: string; kind: "income" | "expense" };
 /** Lo que toda pieza de cliente necesita para pintar: textos, moneda, idioma y hoy (en la zona del usuario). */
 export type Ctx = { t: Msg; c: Common; fmt: MoneyFormat; locale: "es" | "en"; today: ISODate; canEdit: boolean };

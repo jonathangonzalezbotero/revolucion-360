@@ -6,16 +6,20 @@ import { must } from "@/server/data";
 import { requireAdmin, type Session } from "@/server/session";
 import type { Database, Json } from "@/lib/supabase/database.types";
 import { sendGrantEmails, type GrantMailResult } from "@/lib/email/grant";
+import type { AdminRole, AdminSection } from "../actividad/roles";
 import { expiryDay } from "./lib";
 import { A } from "./messages";
 
+export type AdminSession = Session & { adminRole: AdminRole };
+
 /**
- * Envoltura de TODA acción del panel: exige rol admin + 2 pasos (fuera del try de `run`, para que la
- * redirección funcione) y luego `run` sin la regla de solo lectura (el plan del admin no importa aquí).
+ * Envoltura de TODA acción del panel: exige rol admin + 2 pasos y que el subrol pueda usar la sección
+ * (`section`, o la de la página desde donde se llamó), fuera del try de `run` para que la redirección funcione;
+ * luego `run` sin la regla de solo lectura (el plan del admin no importa aquí). La base lo vuelve a imponer.
  */
-export async function adminAction<T>(revalidate: string[], fn: (s: Session) => Promise<Result<T>>): Promise<Result<T>> {
-  await requireAdmin();
-  return run({ write: false, revalidate }, fn);
+export async function adminAction<T>(revalidate: string[], fn: (s: AdminSession) => Promise<Result<T>>, section?: AdminSection): Promise<Result<T>> {
+  const { adminRole } = await requireAdmin(section);
+  return run({ write: false, revalidate }, (s) => fn({ ...s, adminRole }));
 }
 
 /** Texto del panel para la sesión. */
@@ -48,7 +52,7 @@ export async function loadUser(s: Session, id: string): Promise<AdminUser | null
 // Aplicadas en producción el 25 nov 2026. Se conserva el camino anterior por si PostgREST responde PGRST202
 // ("función no encontrada"), p. ej. en un Supabase local sin esa migración.
 type RpcResult<T> = { data: T | null; error: { message: string; code?: string } | null };
-async function rpcNew<T>(s: Session, fn: "admin_emails" | "admin_users_v2" | "admin_academy_dropoff", args: Record<string, unknown>): Promise<RpcResult<T> | null> {
+async function rpcNew<T>(s: Session, fn: "admin_emails" | "admin_users_v2" | "admin_academy_dropoff" | "admin_admins", args: Record<string, unknown>): Promise<RpcResult<T> | null> {
   const r = (await s.supabase.rpc(fn as never, args as never)) as unknown as RpcResult<T>;
   if (r.error?.code === "PGRST202") return null; // migración sin aplicar
   return r;
@@ -126,6 +130,19 @@ export async function loadAdmins(s: Session): Promise<UserRef[]> {
   return out;
 }
 
+/** Fila de la tabla "Administradores": subrol y si tiene los 2 pasos activos (null = no se sabe). */
+export type AdminMember = UserRef & { adminRole: AdminRole; mfa: boolean | null };
+
+/**
+ * Equipo del panel (`admin_admins`, cualquier subrol). Sin la migración 20261125000033 cae a `loadAdmins`
+ * (solo Soporte o Dueño; antes de la migración todo admin es Dueño) y el estado de los 2 pasos no se conoce.
+ */
+export async function loadAdminTeam(s: Session): Promise<AdminMember[]> {
+  const r = await rpcNew<{ id: string; email: string; name: string; admin_role: string; mfa: boolean }[]>(s, "admin_admins", {});
+  if (r) return must(r).map((a) => ({ id: a.id, email: a.email, name: a.name, adminRole: (["owner", "content", "support"].includes(a.admin_role) ? a.admin_role : "owner") as AdminRole, mfa: !!a.mfa }));
+  return (await loadAdmins(s)).map((a) => ({ ...a, adminRole: "owner" as const, mfa: null }));
+}
+
 /**
  * Clase donde más alumnos se quedan entre los que empezaron un curso en los últimos `days` días (el mismo periodo
  * que `admin_summary`). null si no hay datos o la migración no está aplicada.
@@ -179,6 +196,7 @@ export function describeDetail(s: Session, action: string, detail: unknown, grou
   if (str(d.group)) parts.push(groupNames.get(str(d.group)) ?? "");
   if (str(d.name)) parts.push(`"${str(d.name)}"`);
   if (str(d.role)) parts.push(t.roles[str(d.role)] ?? str(d.role));
+  if (str(d.admin_role)) parts.push(t.adminRoles[str(d.admin_role)] ?? str(d.admin_role));
   if (str(d.code)) parts.push(str(d.code));
   if (str(d.months)) parts.push(fill(t.monthsN, { n: str(d.months) }));
   if (str(d.until)) parts.push(formatDate(str(d.until).slice(0, 10), s.locale));

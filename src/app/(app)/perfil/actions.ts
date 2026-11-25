@@ -6,6 +6,7 @@ import { addDays, weekStart } from "@/lib/engine";
 import { fail, ok, run } from "@/server/action";
 import type { Json } from "@/lib/supabase/database.types";
 import { must } from "@/server/data";
+import { HABIT_PREF_KEYS, mergeHabitPrefs, type HabitPrefKey } from "@/lib/engine/habito";
 import { isPhone, CHANNELS, CLOSE_DAYS, confirmsWord, CURRENCIES, isValidTimezone, mergeNotifyPrefs, mergeTerms, NOTIFY_KEYS, PAY_FREQUENCIES, TERM_KEYS } from "./lib";
 import { M } from "./messages";
 
@@ -115,6 +116,19 @@ export async function savePrefs(input: unknown) {
     if (!p.success) return fail(s.t.errors.generic);
     const notify = p.data.notify ? Object.fromEntries(Object.entries(p.data.notify).filter(([, v]) => typeof v === "boolean")) as Record<(typeof NOTIFY_KEYS)[number], boolean> : undefined;
     const prefs = mergeNotifyPrefs(s.profile.prefs, { notify, closeDay: p.data.closeDay, channel: p.data.channel });
+    must(await s.supabase.from("profiles").update({ prefs: prefs as NonNullable<Json> }).eq("id", s.userId).select("id"));
+    return ok(undefined);
+  });
+}
+
+// ───────── Avisos del hábito (profiles.prefs.habit) ─────────
+const HabitPrefsInput = z.object(Object.fromEntries(HABIT_PREF_KEYS.map((k) => [k, z.boolean().optional()])) as Record<HabitPrefKey, z.ZodOptional<z.ZodBoolean>>);
+
+export async function saveHabitPrefs(input: unknown) {
+  return run({ write: false, revalidate: ["/perfil", "/repaso"] }, async (s) => {
+    const p = HabitPrefsInput.safeParse(input);
+    if (!p.success) return fail(s.t.errors.generic);
+    const prefs = mergeHabitPrefs(s.profile.prefs, p.data);
     must(await s.supabase.from("profiles").update({ prefs: prefs as NonNullable<Json> }).eq("id", s.userId).select("id"));
     return ok(undefined);
   });

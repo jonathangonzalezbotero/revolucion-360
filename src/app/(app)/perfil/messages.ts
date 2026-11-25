@@ -35,10 +35,10 @@ export const M = {
     nameMissing: "Falta tu nombre.",
     plan: {
       title: "Tu plan", see: "Ver suscripción ›",
-      states: { free: "Gratis", trial: "Prueba de Pro", pro: "Pro", alumno: "Acceso de alumno", fundador: "Acceso fundador", read_only: "Solo lectura" },
-      trialUntil: "Tu prueba termina el {date}.", proUntil: "Se renueva el {date}.", proEnds: "Pro termina el {date}. No se renueva.",
+      states: { free: "Sin activar", trial: "Primer mes", pro: "Suscripción activa", alumno: "Acceso de alumno", fundador: "Acceso fundador", read_only: "Solo lectura" },
+      trialUntil: "Tu primer mes termina el {date}.", proUntil: "Se renueva el {date}.", proEnds: "Tu suscripción termina el {date}. No se renueva.",
       alumnoUntil: "Tu acceso de alumno vence el {date}. Tus datos no se pierden.", alumnoLife: "Tu acceso de alumno es de por vida.",
-      fundador: "Acceso fundador.", free: "Usas el plan Gratis.", readOnly: "Tus datos siguen aquí y puedes exportarlos. Para volver a editar, reactiva Pro.",
+      fundador: "Acceso fundador.", free: "Tu cuenta aún no está activa.", readOnly: "Tus datos siguen aquí y puedes exportarlos. Para volver a editar, reactiva tu suscripción.",
     },
     // Región
     country: "País donde vives", currency: "Moneda principal", timezone: "Zona horaria", language: "Idioma", payFrequency: "Cada cuánto te pagan",
@@ -66,6 +66,15 @@ export const M = {
     },
     closeDay: "Día del recordatorio de cierre", closeDays: { last: "En los últimos 10 días del mes", first: "En los primeros 5 días del mes siguiente" },
     channel: "Recibir por", channels: { both: "Correo y notificación", email: "Solo correo", app: "Solo notificación" },
+    habit: {
+      title: "Avisos del hábito", text: "En la app y al celular. Máximo uno al día y nunca de noche (de 21:00 a 8:00, en tu hora).",
+      items: {
+        daily: { t: "Hoy puedes gastar", d: "Cada mañana, lo que te queda para el día a día repartido en los días del mes" },
+        weekly: { t: "Tu repaso de la semana", d: "El domingo: cómo te fue y lo que viene, en 2 minutos" },
+        goal: { t: "Hitos de tus metas", d: "Al llegar al 25, 50, 75 y 100% de una meta" },
+      },
+      note: "\"Mañana se paga…\" sale con Pagos por vencer y \"5 minutos para cerrar el mes\" con el recordatorio de cierre (si elegiste los últimos días del mes). Con \"Solo correo\" no te llega ninguno.",
+    },
     // Seguridad
     password: "Contraseña", passwordSub: "Usa una frase larga que no uses en otro lado.", passwordChanged: "Cambiada por última vez el {date}", passwordNever: "Cambiada por última vez: Nunca", changePassword: "Cambiar contraseña", newPassword: "Contraseña nueva",
     show: "Mostrar", hide: "Ocultar", pwHint: "Mínimo 8 caracteres. Mejor si es una frase larga, ej. \"mi-viaje-a-cali-2027\".",
@@ -124,10 +133,10 @@ export const M = {
     nameMissing: "Your name is missing.",
     plan: {
       title: "Your plan", see: "See subscription ›",
-      states: { free: "Free", trial: "Pro trial", pro: "Pro", alumno: "Student access", fundador: "Founder access", read_only: "Read-only" },
-      trialUntil: "Your trial ends on {date}.", proUntil: "Renews on {date}.", proEnds: "Pro ends on {date}. It won't renew.",
+      states: { free: "Not activated", trial: "First month", pro: "Active subscription", alumno: "Student access", fundador: "Founder access", read_only: "Read-only" },
+      trialUntil: "Your first month ends on {date}.", proUntil: "Renews on {date}.", proEnds: "Your subscription ends on {date}. It won't renew.",
       alumnoUntil: "Your student access ends on {date}. You won't lose your data.", alumnoLife: "Your student access is for life.",
-      fundador: "Founder access.", free: "You're on the Free plan.", readOnly: "Your data is still here and you can export it. Reactivate Pro to edit again.",
+      fundador: "Founder access.", free: "Your account isn't active yet.", readOnly: "Your data is still here and you can export it. Reactivate your subscription to edit again.",
     },
     country: "Country you live in", currency: "Main currency", timezone: "Time zone", language: "Language", payFrequency: "How often you get paid",
     languages: { es: "Español", en: "English" },
@@ -152,6 +161,15 @@ export const M = {
     },
     closeDay: "Month close reminder day", closeDays: { last: "In the last 10 days of the month", first: "In the first 5 days of the next month" },
     channel: "Receive by", channels: { both: "Email and notification", email: "Email only", app: "Notification only" },
+    habit: {
+      title: "Habit reminders", text: "In the app and on your phone. At most one a day and never at night (9 pm to 8 am, your time).",
+      items: {
+        daily: { t: "You can spend today", d: "Each morning, what you have left for day-to-day spending spread over the days of the month" },
+        weekly: { t: "Your weekly review", d: "On Sunday: how it went and what's coming, in 2 minutes" },
+        goal: { t: "Goal milestones", d: "When a goal reaches 25, 50, 75 and 100%" },
+      },
+      note: "\"Due tomorrow…\" comes with Payments due, and \"5 minutes to close the month\" with the month close reminder (if you chose the last days of the month). With \"Email only\" you won't get any.",
+    },
     password: "Password", passwordSub: "Use a long phrase you don't use anywhere else.", passwordChanged: "Last changed on {date}", passwordNever: "Last changed: Never", changePassword: "Change password", newPassword: "New password",
     show: "Show", hide: "Hide", pwHint: "At least 8 characters. A long phrase is better, e.g. \"my-trip-to-cali-2027\".",
     pwLevels: ["Type a password", "Too short", "Weak", "Good", "Very strong"], pwWeak: "That password is too weak.", pwSaved: "Password changed.",

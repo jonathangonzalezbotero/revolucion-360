@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { fill } from "@/i18n";
-import { ProWall } from "@/components/shell/ProWall";
 import { Empty, PageHeader } from "@/components/ui/basics";
 import { categoryTotals, monthName, monthShort, parts } from "@/lib/engine";
 import { loadAccounts, loadCategories, loadMonthView, loadPlan, loadTx, monthRange, must } from "@/server/data";
@@ -14,6 +13,9 @@ import { M } from "./messages";
 import css from "./mov.module.css";
 import { Recurring, type RecItem } from "./Recurring";
 import { generateDueRecurring, txAnyDate } from "./server";
+import { choiceOfEntry } from "@/lib/engine/metas";
+import { fetchAll } from "@/server/data";
+import { raw, syncGoalLinks } from "../metas/server";
 import type { Ctx, LineOpt } from "./types";
 
 export const metadata: Metadata = { title: "Movimientos" };
@@ -40,11 +42,10 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
   const lineId = UUID.test(get("linea")) ? get("linea") : "";
   // "Por revisar" y "los pagos de esta línea" son listas de movimientos: abren en "Cada movimiento" sin cambiar el nivel guardado
   const level = asLevel(get("nivel")) ?? (review || lineId ? "detail" : s.profile.movLevel);
-  const hasMov = s.has("mov"), hasRec = s.has("recurrentes");
-  const csv = s.config.flags.csv && s.has("csv");
+  const csv = s.config.flags.csv;
 
   // Recurrentes vencidos: se registran ANTES de leer los movimientos, para que la lista ya los traiga.
-  const generated = s.canEdit && hasMov && hasRec ? await generateDueRecurring(s) : 0;
+  const generated = s.canEdit ? await generateDueRecurring(s) : 0;
 
   // ───── Periodo y filtros de la dirección ─────
   const anio = Number(get("anio"));
@@ -81,17 +82,12 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
       {generated > 0 ? <p role="status" className="banner banner-info">{generated === 1 ? m.rec.generatedOne : fill(m.rec.generated, { n: generated })}</p> : null}
     </>
   );
-  const picker = <LevelPicker key={level} level={level} proLocked={!hasMov} query={query} ctx={ctx} />;
+  const picker = <LevelPicker key={level} level={level} proLocked={false} query={query} ctx={ctx} />;
 
   // ───── Recurrentes (debajo de cualquier nivel, si el plan lo incluye) ─────
-  let recurring: React.ReactNode = null;
-  if (hasMov && hasRec) {
-    const rec = must(await s.supabase.from("recurring").select("id, description, amount_cents, frequency, next_date, anchor_day, active").order("active", { ascending: false }).order("next_date"));
-    const items: RecItem[] = rec.map((r) => ({ id: r.id, description: r.description, amountCents: r.amount_cents, frequency: r.frequency as RecFrequency, nextDate: r.next_date, anchorDay: r.anchor_day, active: r.active }));
-    recurring = <Recurring items={items} categories={cats} accounts={accs} linesByYear={{ [s.year]: await linesOf(s.year) }} ctx={ctx} />;
-  } else if (hasMov) {
-    recurring = <ProWall s={s} title={m.pro.recTitle} text={m.pro.recText} />;
-  }
+  const rec = must(await s.supabase.from("recurring").select("id, description, amount_cents, frequency, next_date, anchor_day, active").order("active", { ascending: false }).order("next_date"));
+  const items: RecItem[] = rec.map((r) => ({ id: r.id, description: r.description, amountCents: r.amount_cents, frequency: r.frequency as RecFrequency, nextDate: r.next_date, anchorDay: r.anchor_day, active: r.active }));
+  const recurring = <Recurring items={items} categories={cats} accounts={accs} linesByYear={{ [s.year]: await linesOf(s.year) }} ctx={ctx} />;
 
   // ───── Nivel 1: solo mi plan ─────
   if (level === "plan") {
@@ -136,6 +132,16 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
   }
 
   // ───── Nivel 3: cada movimiento ─────
+  // "¿Tiene que ver con una meta?": las metas para elegir y lo que hoy cuenta cada movimiento (elegido o automático).
+  if (s.canEdit && s.config.menu.metas === "on") await syncGoalLinks(s);
+  const [goalsRes, linked] = s.config.menu.metas === "on" ? await Promise.all([
+    s.supabase.from("goals").select("id, name, completed_at").is("archived_at", null).order("created_at"),
+    fetchAll<{ transaction_id: string; goal_id: string; amount_cents: number }>((a, b) =>
+      raw(s).from("goal_entries").select("transaction_id, goal_id, amount_cents").not("transaction_id", "is", null).order("id").range(a, b)),
+  ]) : [{ data: [], error: null }, []];
+  const goals = must(goalsRes).map((g) => ({ id: g.id, name: g.name, active: !g.completed_at }));
+  const goalChoice: Record<string, string> = Object.fromEntries(linked.map((e) => [e.transaction_id, choiceOfEntry({ goalId: e.goal_id, amountCents: e.amount_cents })]));
+
   const txs = kind === "any"
     ? await txAnyDate(s, review ? { review: true } : { lineId })
     : await loadTx(s, ...(kind === "month" ? monthRange(year, month!) : ([`${year}-01-01`, `${year}-12-31`] as [string, string])));
@@ -161,23 +167,11 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
     label: kind === "month" ? `${monthName(month!, s.locale)} ${year}` : kind === "year" ? fill(m.months.allYear, { year }) : m.months.any,
   };
 
-  if (!hasMov && rows.length === 0) {
-    return (
-      <main className="page">
-        <PageHeader title={m.title} eyebrow={<span className="only-desktop">{eyebrow}</span>} />
-        {banners}{picker}
-        <ProWall s={s} title={m.pro.title} text={m.pro.text} bullets={m.pro.bullets} />
-      </main>
-    );
-  }
-
   return (
     <main className="page">
       <Detail header={{ title: m.title, eyebrow }} months={months} rows={rows} categories={cats} accounts={accs} linesByYear={linesByYear} period={period} years={years}
-        initial={initial} lineName={lineName} query={query} flags={{ csv, recurring: hasRec }} locked={!hasMov} ctx={ctx}>
+        initial={initial} lineName={lineName} query={query} flags={{ csv, recurring: true }} locked={false} ctx={ctx} goals={goals} goalChoice={goalChoice}>
         {banners}{picker}
-        {!hasMov ? <ProWall s={s} title={m.pro.title} text={m.pro.text} bullets={m.pro.bullets} /> : null}
-        {!hasMov && rows.length > 0 ? <h2>{m.pro.yours}</h2> : null}
       </Detail>
       {recurring}
     </main>

@@ -8,19 +8,21 @@ import { Switch, useToast } from "@/components/ui/client";
 import { createGroup, grantGroup, grantUsers } from "../_shared/actions";
 import css from "../_shared/admin.module.css";
 import { GRANT_DEFAULT, GrantFields, type GrantValue } from "../_shared/GrantFields";
-import { USER_FILTERS, USER_ROLES } from "../_shared/lib";
+import { USER_ROLES } from "../_shared/lib";
 import type { AdminText } from "../_shared/messages";
-import { AdminHeader, StatePill } from "../_shared/ui";
+import { AdminHeader } from "../_shared/ui";
 import { createInvite, exportUsers, setInviteActive } from "./actions";
+import { PLAN_FILTERS, type PlanKey } from "./lib";
 import type { UsersText } from "./messages";
+import { PlanPill } from "./PlanPill";
 
-export type UserRow = { id: string; name: string; email: string; country: string; state: string; groups: string[]; until: string; last: string; failed: boolean; suspended: boolean };
+export type UserRow = { id: string; name: string; email: string; country: string; plan: PlanKey; planLabel: string; groups: string[]; until: string; last: string; failed: boolean; suspended: boolean };
 export type CodeRow = { code: string; kind: string; active: boolean; uses: number; max: number | null; duration: string; group: string };
 type Group = { id: string; name: string; members: number };
 type Who = "uno" | "grupo" | "codigo";
 
-export function UsersView({ t, m, locale, today, q, filter, role, country, countries, rows, codes, groups, countText, pager }: {
-  t: AdminText; m: UsersText; locale: string; today: string; q: string; filter: string; role: string; country: string; countries: { code: string; name: string }[];
+export function UsersView({ t, m, locale, today, q, filter, grantNote, role, country, countries, rows, codes, groups, countText, pager }: {
+  t: AdminText; m: UsersText; locale: string; today: string; q: string; filter: string; grantNote: string; role: string; country: string; countries: { code: string; name: string }[];
   rows: UserRow[]; codes: CodeRow[]; groups: Group[]; countText: string; pager: React.ReactNode;
 }) {
   const router = useRouter();
@@ -155,7 +157,7 @@ export function UsersView({ t, m, locale, today, q, filter, role, country, count
           </div>
 
           <GrantFields t={t} locale={locale} today={today} value={grant} onChange={setGrant} idPrefix="g" showNotify={who !== "codigo"} />
-          <span className="small muted">{t.grant.note} {who !== "codigo" ? t.grant.notify : ""}</span>
+          <span className="small muted">{grantNote} {who !== "codigo" ? t.grant.notify : ""}</span>
           {msg ? <p role="status" className={msg.ok ? css.ok : css.err}>{msg.text}</p> : null}
           <div className="row" style={{ justifyContent: "flex-end", gap: 10 }}>
             <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)}>{t.cancel}</button>
@@ -169,7 +171,7 @@ export function UsersView({ t, m, locale, today, q, filter, role, country, count
         <input id="u-q" name="q" type="search" className="input" defaultValue={q} placeholder={m.searchPh} />
         <label htmlFor="u-p" className="sr-only">{m.plan}</label>
         <select id="u-p" name="filtro" className="input" defaultValue={filter} onChange={(e) => e.currentTarget.form?.requestSubmit()}>
-          {USER_FILTERS.map((f) => <option key={f} value={f}>{m.filters[f]}</option>)}
+          {PLAN_FILTERS.map((f) => <option key={f} value={f}>{m.filters[f]}</option>)}
         </select>
         <label htmlFor="u-c" className="sr-only">{m.country}</label>
         <select id="u-c" name="pais" className="input" defaultValue={country} onChange={(e) => e.currentTarget.form?.requestSubmit()}>
@@ -201,7 +203,7 @@ export function UsersView({ t, m, locale, today, q, filter, role, country, count
                     <td><input type="checkbox" aria-label={fill(m.pickRow, { name: r.name })} checked={picked.has(r.id)} onChange={() => toggle(r.id)} style={{ width: 20, height: 20, accentColor: "var(--tinta)" }} /></td>
                     <td><span className={css.who}><strong>{r.name}</strong><span>{r.email}</span></span></td>
                     <td>{r.country}</td>
-                    <td><span className="stack" style={{ gap: 4 }}><StatePill t={t} state={r.state} failed={r.failed} suspended={r.suspended} />{r.groups.length ? <span className="xs muted">{r.groups.join(", ")}</span> : null}</span></td>
+                    <td><span className="stack" style={{ gap: 4 }}><PlanPill t={t} plan={r.plan} label={r.planLabel} failed={r.failed} suspended={r.suspended} />{r.groups.length ? <span className="xs muted">{r.groups.join(", ")}</span> : null}</span></td>
                     <td style={{ color: "var(--tinta-2)" }}>{r.until}</td>
                     <td style={{ color: "var(--gris)" }}>{r.last}</td>
                     <td className="r"><Link href={`/admin/usuarios/${r.id}`} className="btn btn-secondary btn-sm">{m.manage}</Link></td>

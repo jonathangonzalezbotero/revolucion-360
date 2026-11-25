@@ -32,6 +32,9 @@ export const M = {
     // Éxito
     doneTitle: "Cierre de {month} listo", streak: "Llevas {n} cierres seguidos.", streakOne: "Es tu primer cierre seguido.", remind: "Te recordamos el de {next} el día {date}.",
     toastDone: "{month}, cerrado.", points: "+{n} puntos.", seeDiag: "Ver mi diagnóstico actualizado", backHome: "Volver al inicio",
+    // Lo que sobró: ¿a qué meta va? (Tú decides; "Ahora no" lo deja donde está)
+    lfTitle: "Cerraste {month} y te sobraron", lfText: "¿Quieres mandarlos a una meta? Tú decides, también puedes dejarlos donde están.", notNow: "Ahora no",
+    tLeftover: "{amount} van a \"{name}\".", tNotNow: "Listo, se quedan donde están.", tMilestone: "¡Llegaste al {pct}% de \"{name}\"!",
     // Mes cerrado
     closedTitle: "{month} {year} ya está cerrado", closedOn: "Lo cerraste el {date}.", closedPlan: "Planeado", closedReal: "Real",
     left: "Te sobró", short: "Te faltó", balancesAt: "Saldos al cerrar",
@@ -66,6 +69,8 @@ export const M = {
     back: "‹ Back", next: "Next", finish: "Finish close", saving: "Saving…",
     doneTitle: "{month} close done", streak: "You've closed {n} months in a row.", streakOne: "This is your first close in a row.", remind: "We'll remind you about {next} on {date}.",
     toastDone: "{month}, closed.", points: "+{n} points.", seeDiag: "See my updated check-up", backHome: "Back to home",
+    lfTitle: "You closed {month} with this left over:", lfText: "Want to send it to a goal? You decide, you can also leave it where it is.", notNow: "Not now",
+    tLeftover: "{amount} goes to \"{name}\".", tNotNow: "Done, it stays where it is.", tMilestone: "You reached {pct}% of \"{name}\"!",
     closedTitle: "{month} {year} is already closed", closedOn: "You closed it on {date}.", closedPlan: "Planned", closedReal: "Actual",
     left: "Left over", short: "Short", balancesAt: "Balances at close",
     reopen: "Reopen the month", reopenConfirm: "Yes, reopen", reopenWarn: "You can reopen it to fix it. Close points aren't given again.", reopened: "{month} is open. Fix it and close it again.",

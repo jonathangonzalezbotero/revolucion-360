@@ -1,7 +1,7 @@
 // Cálculos puros del centro de notificaciones.
 import { diffDays, todayIn, type ISODate } from "@/lib/engine";
 
-export const KINDS = ["cierre", "pago", "logro", "academia", "acceso", "sistema"] as const;
+export const KINDS = ["cierre", "pago", "habito", "logro", "academia", "acceso", "sistema"] as const;
 export type Kind = (typeof KINDS)[number];
 export type Filter = "all" | "unread" | Kind;
 export type Group = "today" | "week" | "older";

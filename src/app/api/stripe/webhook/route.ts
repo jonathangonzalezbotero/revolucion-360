@@ -2,7 +2,7 @@ import type Stripe from "stripe";
 import { asLocale } from "@/i18n";
 import type { PlanState } from "@/lib/engine";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendPaymentFailedNow } from "@/lib/email/events";
+import { sendFirstMonthEndingNow, sendPaymentFailedNow } from "@/lib/email/events";
 import { customerId, getStripe, toSubLike } from "@/lib/stripe";
 import { isStaleEvent, mapSubscription, type Grant } from "@/app/(app)/suscripcion/lib";
 import { M } from "./messages";
@@ -13,6 +13,7 @@ type Admin = ReturnType<typeof createAdminClient>;
 
 /**
  * POST /api/stripe/webhook — avisos de Stripe. ÚNICA fuente del estado del plan (nunca lo que diga el navegador).
+ * Eventos: checkout.session.completed, customer.subscription.created/updated/deleted/trial_will_end, invoice.paid, invoice.payment_failed.
  * Verifica la firma con el cuerpo crudo. Idempotente: siempre vuelve a leer la suscripción en Stripe y escribe el estado completo;
  * las notificaciones llevan `dedupe` y el evento `upgraded` solo se anota al pasar de no-Pro a Pro.
  * Usa la clave de servicio (createAdminClient) porque el usuario no puede escribir entitlements.
@@ -58,6 +59,21 @@ async function handle(stripe: Stripe, db: Admin, event: Stripe.Event) {
       await syncSubscription(stripe, db, sub.id, sub.metadata?.user_id || null, customerId(sub.customer));
       return;
     }
+    case "customer.subscription.trial_will_end": {
+      // Stripe avisa 3 días antes de que termine el primer mes ($1): correo 5 "Tu primer mes termina en 3 días".
+      // Se vuelve a leer la suscripción: si ya no está en su primer mes o se va a cancelar, no se avisa de un cobro que no habrá.
+      const sub = await stripe.subscriptions.retrieve((event.data.object as Stripe.Subscription).id, { expand: ["default_payment_method"] });
+      if (sub.status !== "trialing" || !sub.trial_end || sub.cancel_at_period_end || sub.cancel_at) return;
+      const userId = await userFor(db, sub.metadata?.user_id || null, customerId(sub.customer));
+      if (!userId) return;
+      const item = sub.items?.data?.[0];
+      const priceCents = (item?.price?.unit_amount ?? 0) * (item?.quantity ?? 1);
+      if (!priceCents) return;
+      const pm = sub.default_payment_method;
+      const last4 = pm && typeof pm !== "string" ? pm.card?.last4 ?? null : await customerLast4(stripe, customerId(sub.customer));
+      await sendFirstMonthEndingNow(userId, { subId: sub.id, trialEnd: sub.trial_end, priceCents, last4 });
+      return;
+    }
     case "invoice.paid": {
       const inv = event.data.object as Stripe.Invoice;
       const userId = await userFor(db, invoiceUserHint(inv), customerId(inv.customer));
@@ -76,7 +92,7 @@ async function handle(stripe: Stripe, db: Admin, event: Stripe.Event) {
       if (fresh.status === "paid") return;
       const subId = invoiceSubId(fresh);
       if (subId) await syncSubscription(stripe, db, subId, userId, customerId(inv.customer));
-      // Solo se marca a quien tiene Pro (un primer pago que nunca se completó no es un "pago fallido" de Pro).
+      // Solo se marca a quien paga (un primer pago que nunca se completó no es un "pago fallido").
       const ent = must(await db.from("entitlements").select("state").eq("user_id", userId).maybeSingle());
       if (ent?.state !== "pro") return;
       const failedAt = new Date().toISOString();
@@ -139,6 +155,19 @@ async function userFor(db: Admin, hint: string | null, cust: string | null): Pro
     if (r) return r.user_id;
   }
   return null;
+}
+
+/** Últimos 4 de la tarjeta principal del cliente (para el correo 5). Nunca el número completo: la app no lo ve. */
+async function customerLast4(stripe: Stripe, cust: string | null): Promise<string | null> {
+  if (!cust) return null;
+  try {
+    const c = await stripe.customers.retrieve(cust, { expand: ["invoice_settings.default_payment_method"] });
+    if (c.deleted) return null;
+    const pm = c.invoice_settings?.default_payment_method;
+    return pm && typeof pm !== "string" ? pm.card?.last4 ?? null : null;
+  } catch {
+    return null;
+  }
 }
 
 async function saveCustomer(db: Admin, userId: string, cust: string) {

@@ -2,36 +2,12 @@
 import { z } from "zod";
 import { fill } from "@/i18n";
 import { formatDate, todayIn } from "@/lib/engine";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { customerId, ensureCustomer, getStripe, toSubLike } from "@/lib/stripe";
 import { fail, ok, run } from "@/server/action";
-import { notify, track } from "@/server/rewards";
+import { track } from "@/server/rewards";
 import type { Session } from "@/server/session";
-import { CANCEL_REASONS, canStartTrial, isPaying, trialEnd } from "./lib";
+import { CANCEL_REASONS, isPaying } from "./lib";
 import { M } from "./messages";
-
-const PAGES = ["/suscripcion", "/inicio", "/mas", "/perfil"];
-
-/**
- * Probar Pro gratis: sin tarjeta, una sola vez por usuario.
- * El usuario no puede escribir entitlements: esta única escritura usa la clave de servicio,
- * con condición (sigue en Gratis y nunca usó la prueba) para que dos clics no den dos pruebas.
- */
-export async function startTrial() {
-  return run({ revalidate: PAGES }, async (s) => {
-    const m = M[s.locale];
-    if (!canStartTrial(s.config.trial, s.entitlement)) return fail(m.errors.trial);
-    const days = s.config.trial.days;
-    const { data, error } = await createAdminClient().from("entitlements")
-      .update({ state: "trial", trial_ends_at: trialEnd(days), trial_used: true, updated_at: new Date().toISOString() })
-      .eq("user_id", s.userId).eq("state", "free").eq("trial_used", false).select("user_id");
-    if (error) return fail(s.t.errors.generic);
-    if (!data?.length) return fail(m.errors.trial);
-    await notify(s, "acceso", fill(m.plans.trialDone, { days }), "", "/suscripcion", "trial-start");
-    await track(s, "trial_started");
-    return ok(days);
-  });
-}
 
 /** Lee la suscripción guardada y comprueba en Stripe que sea de este usuario. */
 async function mySubscription(s: Session) {

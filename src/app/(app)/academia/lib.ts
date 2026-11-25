@@ -124,9 +124,6 @@ export function durationLabel(sec: number | null | undefined, unit: { h: string;
 const CTA = /^\/[a-z0-9-]+(\/[a-z0-9-]+)*([?#][\w=&#-]*)?$/;
 export const safeCta = (screen: string | null | undefined): string | null => (screen && CTA.test(screen.trim()) ? screen.trim() : null);
 
-/** Clase o curso Pro que un usuario Gratis no puede ver (igual que la regla de `lesson_media` en la base). */
-export const isLockedForTier = (courseTier: string, lessonTier: string, tier: "free" | "pro") => tier !== "pro" && (courseTier === "pro" || lessonTier === "pro");
-
 /** Parte un texto en lo que va antes y después de `{key}`, para resaltar ese valor: "Tienes {n} puntos" → ["Tienes ", " puntos"]. */
 export function splitOn(text: string, key: string, vars: Record<string, string | number> = {}): [string, string] {
   const i = text.indexOf(`{${key}}`);

@@ -8,13 +8,27 @@ import css from "../_shared/admin.module.css";
 import { isUuid } from "../_shared/lib";
 import { A } from "../_shared/messages";
 import { fmtDay } from "../_shared/server";
-import { AcademiaAdminView, type CourseItem, type CourseFull, type ModuleGroup, type LessonFull, type CommentRow } from "./AcademiaAdminView";
+import { AcademiaAdminView, type Audience, type CourseItem, type CourseFull, type ModuleGroup, type LessonFull, type CommentRow } from "./AcademiaAdminView";
 import { courseState, fmtDuration, stageLabel, STAGES } from "./lib";
 import { M } from "./messages";
 
 export const metadata: Metadata = { title: "Academia" };
 
-type LessonRow = { id: string; course_id: string; module_id: string | null; title: string; description: string; duration_sec: number; points: number; cta_screen: string | null; tier: string; required: boolean; sort: number };
+type LessonRow = { id: string; course_id: string; module_id: string | null; title: string; description: string; duration_sec: number; points: number; cta_screen: string | null; required: boolean; sort: number };
+type CourseRow = { id: string; slug: string; stage: string; number: number; title: string; description: string; cover_url: string; status: string; publish_at: string | null; priority: string | null; sort: number; visible_group_id: string | null };
+const COURSE_COLS = "id, slug, stage, number, title, description, cover_url, status, publish_at, priority, sort";
+
+/**
+ * Cursos con su grupo ("Visible para"). `visible_group_id` llega con la migración 20261125000029_un_plan.sql:
+ * mientras no esté aplicada, la columna no existe (42703) y todos los cursos se ven para todos.
+ */
+async function loadCourses(s: Session): Promise<CourseRow[]> {
+  const r = await s.supabase.from("courses").select(`${COURSE_COLS}, visible_group_id` as never).order("sort").order("number");
+  if (r.error?.code === "42703" || r.error?.code === "PGRST204") {
+    return must(await s.supabase.from("courses").select(COURSE_COLS).order("sort").order("number")).map((c) => ({ ...c, visible_group_id: null }));
+  }
+  return must(r) as unknown as CourseRow[];
+}
 const one = (v: string | string[] | undefined) => (typeof v === "string" && isUuid(v) ? v : null);
 
 type Search = { curso?: string | string[]; clase?: string | string[] };
@@ -34,12 +48,13 @@ async function loadView(s: Session, sp: Search) {
   const m = M[s.locale];
   const tz = s.profile.timezone || "Australia/Sydney";
 
-  const [coursesRes, modules, lessons] = await Promise.all([
-    s.supabase.from("courses").select("id, slug, stage, number, title, description, cover_url, status, publish_at, tier, priority, sort").order("sort").order("number"),
+  const [courses, modules, lessons, groupsRes] = await Promise.all([
+    loadCourses(s),
     fetchAll<{ id: string; course_id: string; title: string; sort: number }>((a, b) => s.supabase.from("course_modules").select("id, course_id, title, sort").order("sort").order("id").range(a, b)),
-    fetchAll<LessonRow>((a, b) => s.supabase.from("lessons").select("id, course_id, module_id, title, description, duration_sec, points, cta_screen, tier, required, sort").order("sort").order("id").range(a, b)),
+    fetchAll<LessonRow>((a, b) => s.supabase.from("lessons").select("id, course_id, module_id, title, description, duration_sec, points, cta_screen, required, sort").order("sort").order("id").range(a, b)),
+    s.supabase.from("groups").select("id, name").order("name"),
   ]);
-  const courses = must(coursesRes);
+  const audiences: Audience[] = must(groupsRes);
   const nowMs = Date.now();
 
   const count = new Map<string, number>();
@@ -78,7 +93,7 @@ async function loadView(s: Session, sp: Search) {
     const when = sel.publish_at ? localParts(sel.publish_at, tz) : null;
     course = {
       id: sel.id, slug: sel.slug, label: stageLabel(sel.stage, sel.number), title: sel.title, stage: sel.stage, number: sel.number, description: sel.description,
-      cover: sel.cover_url, tier: sel.tier === "pro" ? "pro" : "free", priority: sel.priority, state: st,
+      cover: sel.cover_url, groupId: sel.visible_group_id, priority: sel.priority, state: st,
       scheduledText: st === "scheduled" && when ? fill(m.scheduledFor, { date: formatDate(when.date, s.locale, "long"), time: when.time }) : null,
       scheduleDate: st === "scheduled" && when ? when.date : "", scheduleTime: st === "scheduled" && when ? when.time : "09:00",
     };
@@ -94,7 +109,7 @@ async function loadView(s: Session, sp: Search) {
       if (media.error) throw new Error(`db: ${media.error.message}`);
       lesson = {
         id: l.id, n: pos.get(l.id) ?? 1, moduleId: l.module_id && modIds.has(l.module_id) ? l.module_id : null, title: l.title, duration: fmtDuration(l.duration_sec),
-        video: media.data?.video_url ?? "", cta: l.cta_screen ?? "", points: l.points, tier: l.tier === "pro" ? "pro" : "free", description: l.description, required: l.required,
+        video: media.data?.video_url ?? "", cta: l.cta_screen ?? "", points: l.points, description: l.description, required: l.required,
       };
       comments = rows.map((r) => ({ id: r.id, author: r.author_name || m.anon, body: r.body, hidden: !!r.hidden_at, date: fmtDay(s, r.created_at, "short") }));
     }
@@ -106,7 +121,7 @@ async function loadView(s: Session, sp: Search) {
   const nextNumber = courses.reduce((a, c) => Math.max(a, c.number), 0) + 1;
 
   return {
-    tz, items, course, groups, lesson, comments, stages, covers, nextNumber,
+    tz, items, course, groups, lesson, comments, stages, covers, nextNumber, audiences,
     points: { lesson: pts.lesson ?? 0, course: pts.course ?? 0, closure: pts.closure ?? 0, week_active: pts.week_active ?? 0 },
     levels: s.config.levels.map((x) => x.name).join(" · "),
   };

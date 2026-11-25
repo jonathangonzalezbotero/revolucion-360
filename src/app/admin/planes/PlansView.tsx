@@ -4,32 +4,26 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { fill } from "@/i18n";
 import { Empty, Pill } from "@/components/ui/basics";
-import { Switch, useToast } from "@/components/ui/client";
-import type { Tier } from "@/lib/engine";
+import { useToast } from "@/components/ui/client";
 import css from "../_shared/admin.module.css";
 import { AdminHeader } from "../_shared/ui";
-import { createCoupon, pushCoupon, savePlans, setCouponActive } from "./actions";
+import { createCoupon, pushCoupon, saveBilling, setCouponActive } from "./actions";
 import { COUPON_APPLIES } from "@/app/(app)/suscripcion/lib";
-import { PLAN_FEATURES, changedFeatures, cleanCouponCode } from "./lib";
+import { checkBilling, cleanCouponCode, usd, yearlyEquivalent, type BillingInput } from "./lib";
 import type { PlanesText } from "./messages";
 import p from "./planes.module.css";
 
-export type RegionView = { region: string; name: string; currency: string; monthly: string; yearly: string; student: string; info: string; pending: boolean };
 export type CouponView = { id: string; code: string; discount: string; applies: string; uses: string; until: string; expired: boolean; active: boolean; inStripe: boolean };
 type R<T = unknown> = { ok: true; data: T } | { ok: false; error: string };
-type RegionEdit = { region: string; monthly: string; yearly: string; student: string };
 const EMPTY_CUP = { code: "", pct: "", months: "", max: "", appliesTo: "both", until: "" };
 
-export function PlansView({ m, stripeOn, regions, coupons, trial: trial0, features: feats0, freeGoals, minUntil }: {
-  m: PlanesText; stripeOn: boolean; regions: RegionView[]; coupons: CouponView[]; minUntil: string;
-  trial: { enabled: boolean; days: string }; features: Record<string, Tier>; freeGoals: number;
+export function PlansView({ m, stripeOn, prices: saved, sync, coupons, minUntil }: {
+  m: PlanesText; stripeOn: boolean; prices: BillingInput; sync: "ok" | "pending" | "unknown" | null; coupons: CouponView[]; minUntil: string;
 }) {
   const router = useRouter();
   const toast = useToast();
   const [busy, start] = useTransition();
-  const [edits, setEdits] = useState<RegionEdit[]>(() => regions.map(({ region, monthly, yearly, student }) => ({ region, monthly, yearly, student })));
-  const [trial, setTrial] = useState(trial0);
-  const [feats, setFeats] = useState(feats0);
+  const [pr, setPr] = useState<BillingInput>(saved);
   const [cup, setCup] = useState<typeof EMPTY_CUP | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cupError, setCupError] = useState<string | null>(null);
@@ -41,16 +35,24 @@ export function PlansView({ m, stripeOn, regions, coupons, trial: trial0, featur
     toast(onOk(r.data)); after?.(); router.refresh();
   });
 
-  const setEdit = (i: number, k: keyof Omit<RegionEdit, "region">, v: string) => setEdits(edits.map((e, j) => (j === i ? { ...e, [k]: v } : e)));
-  const save = () => act(
-    () => savePlans({ regions: edits, trial, features: changedFeatures(feats0, feats) }),
-    (d: { changed: number; warning: string | null }) => (d.changed === 0 ? m.nothing : d.warning ?? m.saved),
-  );
+  const setP = (k: keyof BillingInput, v: string) => { setError(null); setPr({ ...pr, [k]: v }); };
+  const save = () => act(() => saveBilling(pr), (d: { changed: number }) => (d.changed === 0 ? m.nothing : m.saved));
+  // "Anual equivale a…" sigue lo que se escribe; "Cómo funciona" muestra lo guardado (lo que hoy se cobra).
+  const live = checkBilling(pr);
+  const eq = live.ok ? yearlyEquivalent(live.values.monthly_cents, live.values.yearly_cents) : null;
+  const now = checkBilling(saved);
+  const cur = now.ok ? now.values : null;
   const preview = (c: typeof EMPTY_CUP) => {
     const pct = c.pct.trim() || "0", n = c.months.trim();
     return !n || n === "0" ? fill(m.cup.previewForever, { pct }) : n === "1" ? fill(m.cup.previewOne, { pct }) : fill(m.cup.previewMonths, { pct, n });
   };
   const created = (d: { stripe: "ok" | "pending" | "off" }) => (d.stripe === "ok" ? m.cup.created : d.stripe === "pending" ? m.cup.createdPending : m.cup.createdOff);
+  const field = (id: string, k: keyof BillingInput, label: string) => (
+    <div className="field">
+      <label htmlFor={id} className={p.lbl}>{label}</label>
+      <input id={id} className="input num" inputMode="decimal" autoComplete="off" maxLength={12} value={pr[k]} onChange={(e) => setP(k, e.target.value)} />
+    </div>
+  );
 
   return (
     <>
@@ -59,57 +61,38 @@ export function PlansView({ m, stripeOn, regions, coupons, trial: trial0, featur
       </AdminHeader>
       {error ? <p role="alert" className={css.err}>{error}</p> : null}
       {!stripeOn ? <div className="banner" role="status">{m.stripe.offNote}</div> : null}
+      {sync === "pending" ? <div className="banner" role="alert">{m.prices.syncPending}</div> : null}
 
       <div className={css.two}>
         <section aria-labelledby="pr" className={`${css.section} ${p.prices}`}>
           <h2 id="pr">{m.prices.title}</h2>
-          {regions.length === 0 ? <Empty icon="globe" title={m.prices.empty} text={m.prices.emptySub} /> : (
-            <>
-              <div className={p.regionHead} aria-hidden="true"><span>{m.prices.region}</span><span>{m.prices.currency}</span><span>{m.prices.monthly}</span><span>{m.prices.yearly}</span><span>{m.prices.student}</span></div>
-              {regions.map((r, i) => (
-                <div key={r.region} className={p.regionRow}>
-                  <span className={p.name}>{r.name}</span>
-                  <span className={p.cur}>{r.currency}</span>
-                  <label className={p.cell}><span className={p.mLabel} aria-hidden="true">{m.prices.monthly}</span><span className="sr-only">{fill(m.prices.monthlyOf, { region: r.name })}</span>
-                    <input className="input num" inputMode="decimal" autoComplete="off" maxLength={20} placeholder="—" value={edits[i]?.monthly ?? ""} onChange={(e) => setEdit(i, "monthly", e.target.value)} /></label>
-                  <label className={p.cell}><span className={p.mLabel} aria-hidden="true">{m.prices.yearly}</span><span className="sr-only">{fill(m.prices.yearlyOf, { region: r.name })}</span>
-                    <input className="input num" inputMode="decimal" autoComplete="off" maxLength={20} placeholder="—" value={edits[i]?.yearly ?? ""} onChange={(e) => setEdit(i, "yearly", e.target.value)} /></label>
-                  <label className={p.cell}><span className={p.mLabel} aria-hidden="true">{m.prices.student}</span><span className="sr-only">{fill(m.prices.studentOf, { region: r.name })}</span>
-                    <input className="input num" inputMode="numeric" autoComplete="off" maxLength={3} value={edits[i]?.student ?? ""} onChange={(e) => setEdit(i, "student", e.target.value)} /></label>
-                  {r.info ? <span className={`${p.info} ${r.pending ? p.infoPending : ""}`}>{r.info}</span> : null}
-                </div>
-              ))}
-            </>
-          )}
-          <div className={p.trial}>
-            <Switch checked={trial.enabled} onChange={(v) => setTrial({ ...trial, enabled: v })} label={m.trial.switch} />
-            <strong>{m.trial.label}</strong>
-            <label htmlFor="tr-d" className="sr-only">{m.trial.days}</label>
-            <input id="tr-d" className={`input num ${p.days}`} inputMode="numeric" maxLength={2} value={trial.days} onChange={(e) => setTrial({ ...trial, days: e.target.value })} />
-            <span className="small muted">{m.trial.unit}</span>
+          <div className={p.priceGrid}>
+            {field("pp-1", "first", m.prices.first)}
+            {field("pp-m", "monthly", m.prices.monthly)}
+            {field("pp-y", "yearly", m.prices.yearly)}
           </div>
-          {!trial.enabled ? <p className={p.note}>{m.trial.off}</p> : null}
+          {eq ? <span className={p.equiv} role="status">{fill(m.prices.equiv, { amount: usd(eq.perMonth), pct: eq.savingsPct })}</span> : null}
+          <div className={p.notify}>
+            <label htmlFor="pp-r">{m.prices.notify}</label>
+            <input id="pp-r" className={`input num ${p.days}`} inputMode="numeric" autoComplete="off" maxLength={2} value={pr.notifyDays} onChange={(e) => setP("notifyDays", e.target.value)} />
+            <span className="small muted">{m.prices.days}</span>
+          </div>
           <p className={p.note}>{m.prices.note}</p>
-          <p className={p.note}><strong>{m.prices.syncNote}</strong></p>
-          <p className={p.note}>{m.prices.studentNote}</p>
+          <p className={p.note}><strong>{m.prices.syncNote}</strong>{sync ? ` ${m.prices.sync[sync]}` : ""}</p>
         </section>
 
-        <section aria-labelledby="ft" className={`${css.section} ${p.feats}`}>
-          <h2 id="ft">{m.feats.title}</h2>
-          {PLAN_FEATURES.map((k) => {
-            const pro = feats[k] === "pro";
-            const name = fill(m.feats.names[k], { n: freeGoals });
-            const lbl = pro ? m.feats.pro : m.feats.free;
-            return (
-              <div key={k} className={p.feat}>
-                <span>{name}</span>
-                <button type="button" className={`${p.tier} ${pro ? p.tierPro : p.tierFree}`} aria-label={`${fill(m.feats.toggle, { name })}: ${lbl}`}
-                  onClick={() => setFeats({ ...feats, [k]: pro ? "free" : "pro" })}>{lbl}</button>
-              </div>
-            );
-          })}
-          <span className="xs muted" style={{ marginTop: 6 }}>{m.feats.help}</span>
-          <span className="xs muted">{m.feats.founder} <Link href="/admin/usuarios?filtro=fundador">{m.feats.founderLink}</Link></span>
+        <section aria-labelledby="ft" className={`${css.section} ${p.how}`}>
+          <h2 id="ft">{m.how.title}</h2>
+          {cur ? (
+            <ol className={p.steps}>
+              <li>{fill(m.how.s1, { amount: usd(cur.first_month_cents) })}</li>
+              <li>{m.how.s2}</li>
+              <li>{fill(m.how.s3, { monthly: usd(cur.monthly_cents), yearly: usd(cur.yearly_cents) })}</li>
+              <li>{m.how.s4a} <strong>{m.how.s4b}</strong>{m.how.s4c}</li>
+              <li>{m.how.s5} <Link href="/admin/usuarios">{m.how.s5link}</Link>{m.how.s5end}</li>
+            </ol>
+          ) : null}
+          <span className="xs muted">{m.how.foot}</span>
         </section>
       </div>
 

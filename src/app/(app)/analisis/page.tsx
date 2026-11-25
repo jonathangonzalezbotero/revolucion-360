@@ -2,15 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
-import { Icon } from "@/components/ui/Icon";
-import { formatMoney, monthName, monthShort, type Cents } from "@/lib/engine";
-import { counts, loadCategories, loadPlan, loadTx, must, type Category } from "@/server/data";
-import { requireUser, type Session } from "@/server/session";
+import { formatMoney, monthName, monthShort } from "@/lib/engine";
+import { counts, loadPlan, loadTx, must } from "@/server/data";
+import { requireUser } from "@/server/session";
 import { Filters } from "./Filters";
 import {
   analisisHref, bestMonth, biggestVariation, incomeSources, inMonth, MAX_WATCHED, merchantRanking, monthTotals, planByCategory, share, spendByCategory, totals, watchedStats, type TxA,
 } from "./lib";
-import { M, type AnalisisMessages } from "./messages";
+import { M } from "./messages";
 import { Watched } from "./Watched";
 import css from "./analisis.module.css";
 
@@ -53,8 +52,6 @@ export default async function AnalisisPage({ searchParams }: { searchParams: Sea
       <Filters years={years} year={year} month={month} current={s.year} locale={s.locale} m={m} />
     </PageHeader>
   );
-
-  if (!s.has("ana")) return <Locked s={s} m={m} header={header} txs={period} periodName={periodName} year={year} />;
 
   if (txs.length === 0) {
     return (
@@ -264,75 +261,5 @@ export default async function AnalisisPage({ searchParams }: { searchParams: Sea
 
       <p className="xs muted">{s.t.disclaimer}</p>
     </main>
-  );
-}
-
-/** Bloqueo suave del plan Gratis: se ve la forma de la pantalla con sus números de siempre y lo que gana con Pro. */
-async function Locked({ s, m, header, txs, periodName, year }: { s: Session; m: AnalisisMessages; header: React.ReactNode; txs: TxA[]; periodName: string; year: number }) {
-  const tot = totals(txs);
-  const spend = spendByCategory(txs);
-  const canTrial = s.config.trial.enabled && !s.entitlement.trialUsed && s.entitlement.state === "free";
-  // Precio mensual de su región (país del perfil, si no DEFAULT). Sin precio cargado: el marcador del mockup.
-  const regions = must(await s.supabase.from("price_regions").select("region, currency, monthly_cents").in("region", [s.profile.country, "DEFAULT"].filter(Boolean)));
-  const region = regions.find((r) => r.region === s.profile.country) ?? regions.find((r) => r.region === "DEFAULT");
-  const price = region?.monthly_cents
-    ? `${formatMoney(region.monthly_cents, { currency: region.currency, numberLocale: s.fmt.numberLocale })}${region.currency !== s.fmt.currency ? ` ${region.currency}` : ""}`
-    : m.noPrice;
-  const plans = fill(m.upPlansPrice, { price });
-  return (
-    <main className="page">
-      {header}
-      {txs.length ? <LockedNumbers s={s} m={m} tot={tot} spend={spend} periodName={periodName} /> : (
-        <Empty icon="mov" title={fill(m.emptyTitle, { year })} text={m.emptyText}><Link href="/movimientos" className="btn btn-secondary btn-sm">{m.emptyCta}</Link></Empty>
-      )}
-      {s.config.flags.comercios ? (
-        <section aria-labelledby="lk" className={`${css.card} ${css.blurBox}`}>
-          <h2 id="lk" className={css.h2}>{m.merchants}</h2>
-          <div aria-hidden="true" className={css.blur}><div style={{ width: "90%" }} /><div style={{ width: "70%" }} /><div style={{ width: "55%" }} /><div style={{ width: "40%" }} /></div>
-          <div className={css.overlay}>
-            <span className={css.proTag}>{s.t.nav.pro.toUpperCase()}</span>
-            <strong style={{ fontSize: 15 }}>{m.lockTitle}</strong>
-            <span className="xs muted">{m.lockText}</span>
-          </div>
-        </section>
-      ) : null}
-      <section role="region" aria-labelledby="up" className={css.upsell}>
-        <h2 id="up" style={{ fontSize: 19, fontFamily: "var(--sans)", fontWeight: 600, letterSpacing: 0 }}>{m.upTitle}</h2>
-        <ul>{m.upBullets.map((b) => <li key={b}>{b}</li>)}</ul>
-        <Link href="/suscripcion" className="btn btn-block" style={{ minHeight: 52, fontSize: 15 }}>{canTrial ? fill(s.t.pro.trial, { days: s.config.trial.days }) : plans}</Link>
-        {canTrial ? <Link href="/suscripcion" style={{ textAlign: "center", fontSize: 14, fontWeight: 600, padding: 8, minHeight: 44, color: "var(--tinta)" }}>{plans}</Link> : null}
-        <span className="xs muted" style={{ textAlign: "center" }}><Icon name="lock" size={12} /> {m.upNote}</span>
-      </section>
-      <p className="xs muted">{s.t.disclaimer}</p>
-    </main>
-  );
-}
-
-async function LockedNumbers({ s, m, tot, spend, periodName }: { s: Session; m: AnalisisMessages; tot: ReturnType<typeof totals>; spend: { categoryId: string | null; cents: Cents }[]; periodName: string }) {
-  const cat = new Map<string, Category>((await loadCategories(s)).map((c) => [c.id, c]));
-  const denom = Math.max(tot.income, tot.expense, 1);
-  const parts = [
-    ...spend.map((x) => ({ key: x.categoryId ?? "none", name: (x.categoryId && cat.get(x.categoryId)?.name) || m.noCategory, color: (x.categoryId && cat.get(x.categoryId)?.color) || "var(--gris-5)", cents: x.cents })),
-    ...(tot.net > 0 ? [{ key: "left", name: m.leftOver, color: "var(--linea)", cents: tot.net }] : []),
-  ];
-  return (
-    <>
-      <section className="dark-block" aria-label={m.numbers} style={{ padding: "18px 20px" }}>
-        <div className={css.lockHero}>
-          <div>
-            <span style={{ fontSize: 12, color: "var(--oscuro-texto)" }}>{fill(tot.net < 0 ? m.missingIn : m.leftIn, { period: periodName })}</span>
-            <span className="num big" style={{ fontSize: 30 }}>{formatMoney(Math.abs(tot.net), s.fmt)}</span>
-          </div>
-          <span className={css.lockPill}>{m.lockPlan}</span>
-        </div>
-      </section>
-      <section aria-labelledby="where" className={css.card} style={{ gap: 10 }}>
-        <h2 id="where" className={css.h2}>{m.where}</h2>
-        <div role="img" aria-label={parts.map((x) => `${x.name}: ${formatMoney(x.cents, s.fmt)}`).join("; ")} className={css.split}>
-          {parts.map((x) => <div key={x.key} style={{ background: x.color, width: `${((x.cents / denom) * 100).toFixed(2)}%` }} />)}
-        </div>
-        <span className="xs muted">{m.lockFree}</span>
-      </section>
-    </>
   );
 }

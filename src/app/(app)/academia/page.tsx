@@ -3,14 +3,13 @@ import Link from "next/link";
 import { fill } from "@/i18n";
 import { Empty, PageHeader, Ring } from "@/components/ui/basics";
 import { Icon, type IconName } from "@/components/ui/Icon";
-import { ProWall } from "@/components/shell/ProWall";
 import {
   addDays, badgeProgress, BADGES, consecutiveClosures, diagnose, formatDate, formatMoney, levelFor, parts, priority, streak, todayIn, weekStart, type BadgeKey,
 } from "@/lib/engine";
 import { fetchAll, loadDiagnosticInput, must } from "@/server/data";
 import { badgeName } from "@/server/rewards";
 import { requireUser, type Session } from "@/server/session";
-import { durationLabel, isLockedForTier, localParts, splitOn } from "./lib";
+import { durationLabel, localParts, splitOn } from "./lib";
 import { Countdown } from "./Countdown";
 import { M, type AcadMessages } from "./messages";
 import { loadCatalog, totalPoints, type Catalog, type CourseView } from "./server";
@@ -32,13 +31,12 @@ export default async function AcademiaPage() {
       </main>
     );
   }
-  if (!s.has("acad")) return <main className="page"><PageHeader title={m.title} eyebrow={m.eyebrow} /><ProWall s={s} title={m.proTitle} bullets={m.proBullets} /></main>;
 
   const game = s.config.gamification;
   const [cat, diagInput] = await Promise.all([loadCatalog(s), loadDiagnosticInput(s, s.year, s.month)]);
   const gam = game ? await loadGamification(s, cat, diagInput) : null;
 
-  const usable = cat.courses.filter((c) => c.lessons.length > 0 && !isLockedForTier(c.course.tier, "free", s.tier));
+  const usable = cat.courses.filter((c) => c.lessons.length > 0);
   const hero = usable.find((c) => c.progress.done > 0 && !c.progress.complete) ?? usable.find((c) => c.progress.done === 0) ?? null;
   const allDone = usable.length > 0 && usable.every((c) => c.progress.complete);
 
@@ -101,7 +99,7 @@ export default async function AcademiaPage() {
               </span>
             </div>
             <div className={css.cards}>
-              {st.courses.map((c) => <CourseCard key={c.course.id} cv={c} m={m} tier={s.tier} featured={hero?.course.id === c.course.id} release={c.course.upcoming ? fill(m.releasesOn, { date: release(c).date }) : undefined} />)}
+              {st.courses.map((c) => <CourseCard key={c.course.id} cv={c} m={m} featured={hero?.course.id === c.course.id} release={c.course.upcoming ? fill(m.releasesOn, { date: release(c).date }) : undefined} />)}
             </div>
           </section>
         );

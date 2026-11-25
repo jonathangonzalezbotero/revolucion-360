@@ -9,6 +9,8 @@ import { requireUser, type Session } from "@/server/session";
 import { term } from "@/server/terms";
 import { Achievements, type BadgeView } from "./Achievements";
 import { NamesForm, PersonalForm, PrefsForm, RegionForm } from "./Forms";
+import { readHabitPrefs } from "@/lib/engine/habito";
+import { HabitPrefsForm } from "./HabitPrefs";
 import { PAY_FREQUENCIES, readNotifyPrefs, TERM_KEYS, timezoneOptions, visibleTabs, type PayFrequency, type Tab, type TermKey } from "./lib";
 import { M, type PerfilMessages } from "./messages";
 import { Privacy } from "./Privacy";
@@ -57,7 +59,7 @@ export default async function PerfilPage() {
         initial={{ country: s.profile.country, currency: s.profile.currency, timezone: tz, locale: s.locale, payFrequency: (PAY_FREQUENCIES as readonly string[]).includes(s.profile.payFrequency) ? s.profile.payFrequency as PayFrequency : "monthly" }} />
     ),
     nombres: <NamesForm m={m} countryTerms={countryTerms} terms={s.profile.terms} categories={categories.map((c) => ({ id: c.id, name: c.name, original: c.original_name, isBasic: c.is_basic }))} canEdit={s.canEdit} />,
-    notificaciones: <PrefsForm m={m} initial={readNotifyPrefs(s.profile.prefs)} />,
+    notificaciones: <div className="stack" style={{ gap: 16 }}><PrefsForm m={m} initial={readNotifyPrefs(s.profile.prefs)} /><HabitPrefsForm m={m} initial={readHabitPrefs(s.profile.prefs)} /></div>,
     seguridad: <Security m={m} mfa={mfa} isAdmin={s.profile.role === "admin"} passwordChanged={extra.password_changed_at ? day(extra.password_changed_at) : null} />,
     privacidad: <Privacy m={m} pending={pendingDelete ? { id: pendingDelete.id, due: day(pendingDelete.due_at) } : null} />,
   };
@@ -91,7 +93,7 @@ function PlanSummary({ s, m }: { s: Session; m: PerfilMessages }) {
     <section aria-labelledby="tu-plan" id="plan" className={css.section} style={{ gap: 10 }}>
       <div className="row-between wrap">
         <h2 id="tu-plan" style={{ fontSize: 17 }}>{m.plan.title}</h2>
-        <span className={`pill ${e.state === "read_only" ? "pill-warn" : s.tier === "pro" ? "pill-dark" : ""}`}>{m.plan.states[e.state]}</span>
+        <span className={`pill ${e.state === "read_only" ? "pill-warn" : e.state !== "free" ? "pill-dark" : ""}`}>{m.plan.states[e.state]}</span>
       </div>
       {text ? <p className="small" style={{ color: "var(--tinta-2)", lineHeight: 1.5 }}>{text}</p> : null}
       <Link href="/suscripcion" className="link" style={{ alignSelf: "flex-start", fontSize: 14, minHeight: 44, display: "inline-flex", alignItems: "center" }}>{m.plan.see}</Link>

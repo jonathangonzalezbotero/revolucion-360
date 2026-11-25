@@ -55,6 +55,10 @@ export const M = {
       remove: "Eliminar movimiento", removeConfirm: "¿Seguro? Toca otra vez para eliminar",
       saved: "Cambios guardados.", savedRule: "Guardado. Los próximos \"{raw}\" irán a {cat}.", removed: "Movimiento eliminado. Tu plan se recalculó.", linked: "Unido a \"{name}\".",
       addAccount: "Agregar una cuenta",
+      goal: "¿Tiene que ver con una meta?", goalIn: "Aporte a {name}", goalOut: "Pagado con {name}",
+      goalOutHint: "Para eso la ahorraste. La meta baja este monto y lo verás en su historial como un logro, no como un gasto de más.",
+      goalSavedIn: "Cambios guardados. Cuenta como aporte a \"{name}\".", goalSavedOut: "Cambios guardados. Para eso la ahorraste.", goalSavedNone: "Cambios guardados. Ya no cuenta para ninguna meta.",
+      goalMilestone: "¡Llegaste al {pct}% de \"{name}\"!",
     },
     panel: {
       title: "Agregar", manual: "A mano", csv: "Importar CSV", type: "Tipo", expense: "Gasto", income: "Ingreso", transfer: "Transferencia",
@@ -134,6 +138,10 @@ export const M = {
       remove: "Delete transaction", removeConfirm: "Sure? Tap again to delete",
       saved: "Changes saved.", savedRule: "Saved. Future \"{raw}\" will go to {cat}.", removed: "Transaction deleted. Your plan was recalculated.", linked: "Linked to \"{name}\".",
       addAccount: "Add an account",
+      goal: "Is it related to a goal?", goalIn: "Contribution to {name}", goalOut: "Paid with {name}",
+      goalOutHint: "That's what you saved it for. The goal goes down by this amount and you'll see it in its history as an achievement, not as overspending.",
+      goalSavedIn: "Changes saved. It counts as a contribution to \"{name}\".", goalSavedOut: "Changes saved. That's what you saved it for.", goalSavedNone: "Changes saved. It no longer counts toward any goal.",
+      goalMilestone: "You reached {pct}% of \"{name}\"!",
     },
     panel: {
       title: "Add", manual: "By hand", csv: "Import CSV", type: "Type", expense: "Expense", income: "Income", transfer: "Transfer",
