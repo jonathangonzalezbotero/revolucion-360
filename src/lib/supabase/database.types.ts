@@ -117,6 +117,52 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"asset_operations": {
+                  Row: {
+                    "amount_cents": number,"asset_id": string,"created_at": string,"date": string,"deleted_at": string | null,"id": string,"kind": string,"quantity": number | null,"recurring_month": string | null,"source": string,"unit_price_cents": number | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_cents": number,"asset_id": string,"created_at"?: string,"date": string,"deleted_at"?: string | null,"id"?: string,"kind": string,"quantity"?: number | null,"recurring_month"?: string | null,"source"?: string,"unit_price_cents"?: number | null,"user_id": string
+                  }
+                  Update: {
+                    "amount_cents"?: number,"asset_id"?: string,"created_at"?: string,"date"?: string,"deleted_at"?: string | null,"id"?: string,"kind"?: string,"quantity"?: number | null,"recurring_month"?: string | null,"source"?: string,"unit_price_cents"?: number | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "asset_operations_asset_id_fkey"
+      columns: ["asset_id"]
+isOneToOne: false
+      referencedRelation: "assets"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"assets": {
+                  Row: {
+                    "archived_at": string | null,"balance_cents": number | null,"by_units": boolean,"created_at": string,"id": string,"kind": string,"legacy_investment_id": string | null,"name": string,"plan_line_id": string | null,"platform": string | null,"price_at": string | null,"price_date": string | null,"recurring_from": string | null,"unit_price_cents": number | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "archived_at"?: string | null,"balance_cents"?: number | null,"by_units"?: boolean,"created_at"?: string,"id"?: string,"kind"?: string,"legacy_investment_id"?: string | null,"name": string,"plan_line_id"?: string | null,"platform"?: string | null,"price_at"?: string | null,"price_date"?: string | null,"recurring_from"?: string | null,"unit_price_cents"?: number | null,"user_id": string
+                  }
+                  Update: {
+                    "archived_at"?: string | null,"balance_cents"?: number | null,"by_units"?: boolean,"created_at"?: string,"id"?: string,"kind"?: string,"legacy_investment_id"?: string | null,"name"?: string,"plan_line_id"?: string | null,"platform"?: string | null,"price_at"?: string | null,"price_date"?: string | null,"recurring_from"?: string | null,"unit_price_cents"?: number | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "assets_legacy_investment_id_fkey"
+      columns: ["legacy_investment_id"]
+isOneToOne: true
+      referencedRelation: "investments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "assets_plan_line_id_fkey"
+      columns: ["plan_line_id"]
+isOneToOne: false
+      referencedRelation: "plan_lines"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"categories": {
                   Row: {
                     "color": string,"created_at": string,"id": string,"is_basic": boolean,"kind": string,"name": string,"original_name": string | null,"sort": number,"user_id": string
@@ -221,17 +267,23 @@ isOneToOne: false
                   ]
                 },"courses": {
                   Row: {
-                    "cover_url": string,"description": string,"id": string,"number": number,"priority": string | null,"publish_at": string | null,"slug": string,"sort": number,"stage": string,"status": string,"tier": string,"title": string
+                    "cover_url": string,"description": string,"id": string,"number": number,"priority": string | null,"publish_at": string | null,"slug": string,"sort": number,"stage": string,"status": string,"tier": string,"title": string,"visible_group_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "cover_url"?: string,"description"?: string,"id"?: string,"number": number,"priority"?: string | null,"publish_at"?: string | null,"slug": string,"sort"?: number,"stage": string,"status"?: string,"tier"?: string,"title": string
+                    "cover_url"?: string,"description"?: string,"id"?: string,"number": number,"priority"?: string | null,"publish_at"?: string | null,"slug": string,"sort"?: number,"stage": string,"status"?: string,"tier"?: string,"title": string,"visible_group_id"?: string | null
                   }
                   Update: {
-                    "cover_url"?: string,"description"?: string,"id"?: string,"number"?: number,"priority"?: string | null,"publish_at"?: string | null,"slug"?: string,"sort"?: number,"stage"?: string,"status"?: string,"tier"?: string,"title"?: string
+                    "cover_url"?: string,"description"?: string,"id"?: string,"number"?: number,"priority"?: string | null,"publish_at"?: string | null,"slug"?: string,"sort"?: number,"stage"?: string,"status"?: string,"tier"?: string,"title"?: string,"visible_group_id"?: string | null
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "courses_visible_group_id_fkey"
+      columns: ["visible_group_id"]
+isOneToOne: false
+      referencedRelation: "groups"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"csv_formats": {
                   Row: {
@@ -359,14 +411,14 @@ isOneToOne: false
                   ]
                 },"goal_entries": {
                   Row: {
-                    "amount_cents": number,"created_at": string,"date": string,"goal_id": string,"id": string,"note": string,"user_id": string
+                    "amount_cents": number,"created_at": string,"date": string,"goal_id": string,"id": string,"kind": string,"note": string,"transaction_id": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount_cents": number,"created_at"?: string,"date": string,"goal_id": string,"id"?: string,"note"?: string,"user_id": string
+                    "amount_cents": number,"created_at"?: string,"date": string,"goal_id": string,"id"?: string,"kind"?: string,"note"?: string,"transaction_id"?: string | null,"user_id": string
                   }
                   Update: {
-                    "amount_cents"?: number,"created_at"?: string,"date"?: string,"goal_id"?: string,"id"?: string,"note"?: string,"user_id"?: string
+                    "amount_cents"?: number,"created_at"?: string,"date"?: string,"goal_id"?: string,"id"?: string,"kind"?: string,"note"?: string,"transaction_id"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -375,18 +427,50 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "goals"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "goal_entries_transaction_id_fkey"
+      columns: ["transaction_id"]
+isOneToOne: false
+      referencedRelation: "transactions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"goal_leftovers": {
+                  Row: {
+                    "amount_cents": number,"decided_at": string,"entry_id": string | null,"goal_id": string | null,"month": number,"user_id": string,"year": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_cents"?: number,"decided_at"?: string,"entry_id"?: string | null,"goal_id"?: string | null,"month": number,"user_id": string,"year": number
+                  }
+                  Update: {
+                    "amount_cents"?: number,"decided_at"?: string,"entry_id"?: string | null,"goal_id"?: string | null,"month"?: number,"user_id"?: string,"year"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "goal_leftovers_entry_id_fkey"
+      columns: ["entry_id"]
+isOneToOne: false
+      referencedRelation: "goal_entries"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "goal_leftovers_goal_id_fkey"
+      columns: ["goal_id"]
+isOneToOne: false
+      referencedRelation: "goals"
+      referencedColumns: ["id"]
     }
                   ]
                 },"goals": {
                   Row: {
-                    "account_id": string | null,"archived_at": string | null,"completed_at": string | null,"created_at": string,"id": string,"is_emergency_fund": boolean,"kind": string,"name": string,"target_cents": number,"target_date": string | null,"user_id": string
+                    "account_id": string | null,"account_linked_on": string | null,"archived_at": string | null,"completed_at": string | null,"created_at": string,"id": string,"is_emergency_fund": boolean,"kind": string,"name": string,"target_cents": number,"target_date": string | null,"user_id": string,"why": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "account_id"?: string | null,"archived_at"?: string | null,"completed_at"?: string | null,"created_at"?: string,"id"?: string,"is_emergency_fund"?: boolean,"kind"?: string,"name": string,"target_cents"?: number,"target_date"?: string | null,"user_id": string
+                    "account_id"?: string | null,"account_linked_on"?: string | null,"archived_at"?: string | null,"completed_at"?: string | null,"created_at"?: string,"id"?: string,"is_emergency_fund"?: boolean,"kind"?: string,"name": string,"target_cents"?: number,"target_date"?: string | null,"user_id": string,"why"?: string
                   }
                   Update: {
-                    "account_id"?: string | null,"archived_at"?: string | null,"completed_at"?: string | null,"created_at"?: string,"id"?: string,"is_emergency_fund"?: boolean,"kind"?: string,"name"?: string,"target_cents"?: number,"target_date"?: string | null,"user_id"?: string
+                    "account_id"?: string | null,"account_linked_on"?: string | null,"archived_at"?: string | null,"completed_at"?: string | null,"created_at"?: string,"id"?: string,"is_emergency_fund"?: boolean,"kind"?: string,"name"?: string,"target_cents"?: number,"target_date"?: string | null,"user_id"?: string,"why"?: string
                   }
                   Relationships: [
                     {
@@ -427,6 +511,20 @@ isOneToOne: false
                   }
                   Update: {
                     "created_at"?: string,"id"?: string,"name"?: string,"note"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"habit_sends": {
+                  Row: {
+                    "created_at": string,"day": string,"id": string,"kind": string,"pushed": number,"ref": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"day": string,"id"?: string,"kind": string,"pushed"?: number,"ref": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"day"?: string,"id"?: string,"kind"?: string,"pushed"?: number,"ref"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -669,14 +767,14 @@ isOneToOne: false
                   ]
                 },"plan_lines": {
                   Row: {
-                    "amount_cents": number,"archived_at": string | null,"category_id": string,"created_at": string,"debt_id": string | null,"first_pay_date": string | null,"frequency": string,"goal_id": string | null,"id": string,"investment_id": string | null,"kind": string,"name": string,"sort": number,"user_id": string,"year": number
+                    "amount_cents": number,"archived_at": string | null,"category_id": string,"created_at": string,"debt_id": string | null,"first_pay_date": string | null,"fixed": boolean | null,"frequency": string,"goal_id": string | null,"id": string,"investment_id": string | null,"kind": string,"name": string,"sort": number,"user_id": string,"year": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount_cents"?: number,"archived_at"?: string | null,"category_id": string,"created_at"?: string,"debt_id"?: string | null,"first_pay_date"?: string | null,"frequency"?: string,"goal_id"?: string | null,"id"?: string,"investment_id"?: string | null,"kind": string,"name": string,"sort"?: number,"user_id": string,"year": number
+                    "amount_cents"?: number,"archived_at"?: string | null,"category_id": string,"created_at"?: string,"debt_id"?: string | null,"first_pay_date"?: string | null,"fixed"?: boolean | null,"frequency"?: string,"goal_id"?: string | null,"id"?: string,"investment_id"?: string | null,"kind": string,"name": string,"sort"?: number,"user_id": string,"year": number
                   }
                   Update: {
-                    "amount_cents"?: number,"archived_at"?: string | null,"category_id"?: string,"created_at"?: string,"debt_id"?: string | null,"first_pay_date"?: string | null,"frequency"?: string,"goal_id"?: string | null,"id"?: string,"investment_id"?: string | null,"kind"?: string,"name"?: string,"sort"?: number,"user_id"?: string,"year"?: number
+                    "amount_cents"?: number,"archived_at"?: string | null,"category_id"?: string,"created_at"?: string,"debt_id"?: string | null,"first_pay_date"?: string | null,"fixed"?: boolean | null,"frequency"?: string,"goal_id"?: string | null,"id"?: string,"investment_id"?: string | null,"kind"?: string,"name"?: string,"sort"?: number,"user_id"?: string,"year"?: number
                   }
                   Relationships: [
                     {
@@ -755,14 +853,14 @@ isOneToOne: false
                   ]
                 },"price_regions": {
                   Row: {
-                    "currency": string,"monthly_cents": number | null,"region": string,"stripe_price_monthly": string | null,"stripe_price_yearly": string | null,"student_discount_pct": number,"yearly_cents": number | null
+                    "currency": string,"monthly_cents": number | null,"region": string,"stripe_price_first": string | null,"stripe_price_monthly": string | null,"stripe_price_yearly": string | null,"student_discount_pct": number,"yearly_cents": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "currency": string,"monthly_cents"?: number | null,"region": string,"stripe_price_monthly"?: string | null,"stripe_price_yearly"?: string | null,"student_discount_pct"?: number,"yearly_cents"?: number | null
+                    "currency": string,"monthly_cents"?: number | null,"region": string,"stripe_price_first"?: string | null,"stripe_price_monthly"?: string | null,"stripe_price_yearly"?: string | null,"student_discount_pct"?: number,"yearly_cents"?: number | null
                   }
                   Update: {
-                    "currency"?: string,"monthly_cents"?: number | null,"region"?: string,"stripe_price_monthly"?: string | null,"stripe_price_yearly"?: string | null,"student_discount_pct"?: number,"yearly_cents"?: number | null
+                    "currency"?: string,"monthly_cents"?: number | null,"region"?: string,"stripe_price_first"?: string | null,"stripe_price_monthly"?: string | null,"stripe_price_yearly"?: string | null,"student_discount_pct"?: number,"yearly_cents"?: number | null
                   }
                   Relationships: [
                     
@@ -797,14 +895,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "country": string,"created_at": string,"currency": string,"email": string,"first_steps": NonNullable<Json>,"id": string,"last_active_at": string | null,"last_name": string,"locale": string,"mov_level": string,"name": string,"onboarding_step": string,"password_changed_at": string | null,"pay_frequency": string,"phone": string,"prefs": NonNullable<Json>,"role": string,"suspended_at": string | null,"terms": NonNullable<Json>,"timezone": string,"wizard": NonNullable<Json>
+                    "admin_role": string | null,"country": string,"created_at": string,"currency": string,"email": string,"first_steps": NonNullable<Json>,"id": string,"last_active_at": string | null,"last_name": string,"locale": string,"mov_level": string,"name": string,"onboarding_step": string,"password_changed_at": string | null,"pay_frequency": string,"phone": string,"prefs": NonNullable<Json>,"role": string,"suspended_at": string | null,"terms": NonNullable<Json>,"timezone": string,"wizard": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "country"?: string,"created_at"?: string,"currency"?: string,"email": string,"first_steps"?: NonNullable<Json>,"id": string,"last_active_at"?: string | null,"last_name"?: string,"locale"?: string,"mov_level"?: string,"name"?: string,"onboarding_step"?: string,"password_changed_at"?: string | null,"pay_frequency"?: string,"phone"?: string,"prefs"?: NonNullable<Json>,"role"?: string,"suspended_at"?: string | null,"terms"?: NonNullable<Json>,"timezone"?: string,"wizard"?: NonNullable<Json>
+                    "admin_role"?: string | null,"country"?: string,"created_at"?: string,"currency"?: string,"email": string,"first_steps"?: NonNullable<Json>,"id": string,"last_active_at"?: string | null,"last_name"?: string,"locale"?: string,"mov_level"?: string,"name"?: string,"onboarding_step"?: string,"password_changed_at"?: string | null,"pay_frequency"?: string,"phone"?: string,"prefs"?: NonNullable<Json>,"role"?: string,"suspended_at"?: string | null,"terms"?: NonNullable<Json>,"timezone"?: string,"wizard"?: NonNullable<Json>
                   }
                   Update: {
-                    "country"?: string,"created_at"?: string,"currency"?: string,"email"?: string,"first_steps"?: NonNullable<Json>,"id"?: string,"last_active_at"?: string | null,"last_name"?: string,"locale"?: string,"mov_level"?: string,"name"?: string,"onboarding_step"?: string,"password_changed_at"?: string | null,"pay_frequency"?: string,"phone"?: string,"prefs"?: NonNullable<Json>,"role"?: string,"suspended_at"?: string | null,"terms"?: NonNullable<Json>,"timezone"?: string,"wizard"?: NonNullable<Json>
+                    "admin_role"?: string | null,"country"?: string,"created_at"?: string,"currency"?: string,"email"?: string,"first_steps"?: NonNullable<Json>,"id"?: string,"last_active_at"?: string | null,"last_name"?: string,"locale"?: string,"mov_level"?: string,"name"?: string,"onboarding_step"?: string,"password_changed_at"?: string | null,"pay_frequency"?: string,"phone"?: string,"prefs"?: NonNullable<Json>,"role"?: string,"suspended_at"?: string | null,"terms"?: NonNullable<Json>,"timezone"?: string,"wizard"?: NonNullable<Json>
                   }
                   Relationships: [
                     
@@ -939,14 +1037,14 @@ isOneToOne: false
                   ]
                 },"transactions": {
                   Row: {
-                    "account_id": string | null,"amount_cents": number,"category_id": string | null,"created_at": string,"date": string,"deleted_at": string | null,"description": string,"edited_at": string | null,"id": string,"import_id": string | null,"is_split": boolean,"kind": string,"note": string,"parent_id": string | null,"plan_line_id": string | null,"raw_description": string,"recurring_id": string | null,"source": string,"status": string,"transfer_pair_id": string | null,"user_id": string
+                    "account_id": string | null,"amount_cents": number,"category_id": string | null,"created_at": string,"date": string,"deleted_at": string | null,"description": string,"edited_at": string | null,"goal_id": string | null,"goal_role": string | null,"id": string,"import_id": string | null,"is_split": boolean,"kind": string,"note": string,"parent_id": string | null,"plan_line_id": string | null,"raw_description": string,"recurring_id": string | null,"source": string,"status": string,"transfer_pair_id": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "account_id"?: string | null,"amount_cents": number,"category_id"?: string | null,"created_at"?: string,"date": string,"deleted_at"?: string | null,"description"?: string,"edited_at"?: string | null,"id"?: string,"import_id"?: string | null,"is_split"?: boolean,"kind"?: string,"note"?: string,"parent_id"?: string | null,"plan_line_id"?: string | null,"raw_description"?: string,"recurring_id"?: string | null,"source"?: string,"status"?: string,"transfer_pair_id"?: string | null,"user_id": string
+                    "account_id"?: string | null,"amount_cents": number,"category_id"?: string | null,"created_at"?: string,"date": string,"deleted_at"?: string | null,"description"?: string,"edited_at"?: string | null,"goal_id"?: string | null,"goal_role"?: string | null,"id"?: string,"import_id"?: string | null,"is_split"?: boolean,"kind"?: string,"note"?: string,"parent_id"?: string | null,"plan_line_id"?: string | null,"raw_description"?: string,"recurring_id"?: string | null,"source"?: string,"status"?: string,"transfer_pair_id"?: string | null,"user_id": string
                   }
                   Update: {
-                    "account_id"?: string | null,"amount_cents"?: number,"category_id"?: string | null,"created_at"?: string,"date"?: string,"deleted_at"?: string | null,"description"?: string,"edited_at"?: string | null,"id"?: string,"import_id"?: string | null,"is_split"?: boolean,"kind"?: string,"note"?: string,"parent_id"?: string | null,"plan_line_id"?: string | null,"raw_description"?: string,"recurring_id"?: string | null,"source"?: string,"status"?: string,"transfer_pair_id"?: string | null,"user_id"?: string
+                    "account_id"?: string | null,"amount_cents"?: number,"category_id"?: string | null,"created_at"?: string,"date"?: string,"deleted_at"?: string | null,"description"?: string,"edited_at"?: string | null,"goal_id"?: string | null,"goal_role"?: string | null,"id"?: string,"import_id"?: string | null,"is_split"?: boolean,"kind"?: string,"note"?: string,"parent_id"?: string | null,"plan_line_id"?: string | null,"raw_description"?: string,"recurring_id"?: string | null,"source"?: string,"status"?: string,"transfer_pair_id"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -960,6 +1058,12 @@ isOneToOne: false
       columns: ["category_id"]
 isOneToOne: false
       referencedRelation: "categories"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "transactions_goal_id_fkey"
+      columns: ["goal_id"]
+isOneToOne: false
+      referencedRelation: "goals"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "transactions_import_id_fkey"
@@ -1001,6 +1105,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"user_challenges": {
+                  Row: {
+                    "active": boolean,"challenge": string,"joined_at": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"challenge": string,"joined_at"?: string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "active"?: boolean,"challenge"?: string,"joined_at"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"watched_merchants": {
                   Row: {
                     "created_at": string,"id": string,"limit_cents": number | null,"name": string,"pattern": string,"user_id": string
@@ -1026,6 +1144,11 @@ isOneToOne: false
               "course_title": string,"lesson_id": string,"lesson_title": string,"stuck": number
             }[]
                            },
+"admin_admins":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "admin_role": string,"email": string,"id": string,"mfa": boolean,"name": string
+            }[]
+                           },
 "admin_emails":
 { Args: { "p_ids": (string)[] }; Returns: {
               "email": string,"id": string,"locale": string,"name": string
@@ -1034,11 +1157,20 @@ isOneToOne: false
 "admin_grant_access":
 { Args: { "p_expires": string,"p_group"?: string,"p_kind": string,"p_user": string }; Returns: undefined
                            },
+"admin_invite":
+{ Args: { "p_email": string,"p_role": string }; Returns: string
+                           },
 "admin_log":
 { Args: { "p_action": string,"p_detail": Json,"p_target": string }; Returns: undefined
                            },
+"admin_plan_summary":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
 "admin_revoke_access":
 { Args: { "p_user": string }; Returns: undefined
+                           },
+"admin_set_admin_role":
+{ Args: { "p_role": string,"p_user": string }; Returns: undefined
                            },
 "admin_set_role":
 { Args: { "p_role": string,"p_user": string }; Returns: undefined
@@ -1062,6 +1194,11 @@ isOneToOne: false
               "access_until": string,"country": string,"created_at": string,"email": string,"groups": (string)[],"id": string,"last_active_at": string,"name": string,"payment_failed_at": string,"pro_until": string,"role": string,"state": string,"suspended_at": string,"total": number
             }[]
                            },
+"admin_users_v3":
+{ Args: { "p_country"?: string,"p_email"?: string,"p_filter"?: string,"p_limit"?: number,"p_offset"?: number,"p_role"?: string,"p_search"?: string }; Returns: {
+              "access_until": string,"billing_interval": string,"country": string,"created_at": string,"email": string,"groups": (string)[],"id": string,"last_active_at": string,"name": string,"payment_failed_at": string,"pro_until": string,"role": string,"state": string,"stripe_status": string,"suspended_at": string,"total": number,"trial_ends_at": string
+            }[]
+                           },
 "award_badge":
 { Args: { "p_badge": string }; Returns: boolean
                            },
@@ -1079,8 +1216,23 @@ isOneToOne: false
 "course_live":
 { Args: { "p_course": string }; Returns: boolean
                            },
+"course_visible":
+{ Args: { "p_course": string }; Returns: boolean
+                           },
+"is_active_account":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"is_admin_of":
+{ Args: { "p_section": string }; Returns: boolean
+                           },
+"is_admin_owner":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"my_admin_role":
+{ Args: Record<PropertyKey, never>; Returns: string
                            },
 "my_tier":
 { Args: Record<PropertyKey, never>; Returns: string
