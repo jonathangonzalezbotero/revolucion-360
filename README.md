@@ -29,6 +29,10 @@ npm run dev                                            # http://localhost:3000
 
 Entra con `demo@revolucion360.test` o `admin@revolucion360.test` y la contraseña de `DEMO_PASSWORD`.
 
+Para desarrollar, `.env.development.local` pone `NEXT_PUBLIC_APP_URL=http://localhost:3000`: así los enlaces de los correos vuelven a tu máquina y no al dominio de producción.
+
+¿Olvidaste la clave y Supabase dice "rate limit"? `npx tsx scripts/recovery-link.ts tu@correo.com` imprime un enlace para poner una clave nueva sin mandar correo (no lo compartas).
+
 ## Comandos
 
 | Comando | Qué hace |
