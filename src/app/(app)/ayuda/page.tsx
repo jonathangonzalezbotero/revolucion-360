@@ -37,6 +37,8 @@ export default async function AyudaPage() {
       // El servidor fija estos datos técnicos; el cliente agrega navegador, pantalla e idioma. El usuario ve todo antes de enviar.
       server={{ appLanguage: s.locale, plan: s.entitlement.state, country: s.profile.country, version: appVersion(process.env.VERCEL_GIT_COMMIT_SHA) }}
       course={course ? { title: course.title, lessons: course.lessons.length } : null}
+      // Mismo criterio que AppShell: el recorrido solo existe para cuentas activas que pueden escribir.
+      tour={s.active && s.canEdit}
     />
   );
 }

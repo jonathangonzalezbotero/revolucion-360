@@ -2,31 +2,32 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fill } from "@/i18n";
 import { PageHeader } from "@/components/ui/basics";
 import { Modal, useToast } from "@/components/ui/client";
 import { formatDate, formatMoney, monthName } from "@/lib/engine";
 import { addTx, linkLine, type AddResult } from "./actions";
-import { AddPanel } from "./AddPanel";
+import { AddPanel, type AddMode } from "./AddPanel";
 import { EditPanel } from "./EditPanel";
-import { filterTotals, matchRow, movHref, STATES, type Filter, type MovRow, type Query, type StateFilter } from "./lib";
+import { filterTotals, foldedActive, matchRow, movHref, STATES, type Filter, type MovRow, type Query, type StateFilter } from "./lib";
 import css from "./mov.module.css";
 import type { Acc, AddPayload, Cat, Ctx, GoalOpt, LineOpt } from "./types";
 import { ILLU } from "@/lib/images";
 
 export type Period = { kind: "month" | "year" | "any"; year: number; month: number | null; label: string };
+type Tool = "rules" | "recurring";
 type Props = {
   header: { title: string; eyebrow: string };
-  /** Meses (solo móvil): van en el encabezado, encima de los filtros. */
+  /** Meses (solo móvil): van debajo de los botones, encima de los filtros. */
   months: React.ReactNode;
-  /** Lo que va entre los filtros (móvil) o el título (escritorio) y la lista: avisos y la tarjeta de niveles. */
+  /** Avisos (solo lectura, recurrentes registrados): entre el encabezado y los filtros. */
   children: React.ReactNode;
   rows: MovRow[]; categories: Cat[]; accounts: Acc[]; linesByYear: Record<string, LineOpt[]>;
   period: Period; years: number[]; initial: Filter; lineName: string | null; query: Query;
   flags: { csv: boolean; recurring: boolean };
-  /** Sin Pro: la lista se ve, no se edita ni se registra. */
-  locked: boolean;
+  /** "Más opciones": reglas y recurrentes (se muestran debajo de la lista al elegirlos) y el enlace a Análisis por comercio. */
+  tools: { rules: React.ReactNode; ruleCount: number; recurring: React.ReactNode; recCount: number; merchantsHref: string | null };
   ctx: Ctx;
   /** Metas para "¿Tiene que ver con una meta?" y lo que hoy cuenta cada movimiento ("in:<meta>", "out:<meta>" o ""). */
   goals: GoalOpt[]; goalChoice: Record<string, string>;
@@ -34,25 +35,25 @@ type Props = {
 
 const PAGE = 200;
 
-export function Detail({ header, months, children, rows, categories, accounts, linesByYear, period, years, initial, lineName, query, flags, locked, ctx, goals, goalChoice }: Props) {
+export function Detail({ header, months, children, rows, categories, accounts, linesByYear, period, years, initial, lineName, query, flags, tools, ctx, goals, goalChoice }: Props) {
   const { t, c, fmt, locale } = ctx;
   const router = useRouter();
   const toast = useToast();
-  const canWrite = ctx.canEdit && !locked;
+  const canWrite = ctx.canEdit;
   const [filter, setFilter] = useState<Filter>(initial);
-  const [moreFilters, setMoreFilters] = useState(false);
-  const [panel, setPanel] = useState(true);
-  const [full, setFull] = useState(false);
+  const otherYear = period.year !== Number(ctx.today.slice(0, 4));
+  const folded = foldedActive(filter, otherYear && years.length > 1);
+  const [moreFilters, setMoreFilters] = useState(folded > 0);
+  const [add, setAdd] = useState<AddMode | null>(null);
+  const [tool, setTool] = useState<Tool | null>(null);
+  const [menu, setMenu] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [limit, setLimit] = useState(PAGE);
-  const [quick, setQuick] = useState({ amount: "", cat: "", desc: "" });
   const [busy, setBusy] = useState(false);
   const [dup, setDup] = useState<{ payload: AddPayload; info: NonNullable<AddResult["duplicate"]> } | null>(null);
   const [suggest, setSuggest] = useState<{ txId: string; lineId: string; name: string; month: number } | null>(null);
-
-  const sheet = useRef<HTMLFormElement>(null);
-  // en el teléfono el registro rápido va al final de la lista: el "+" lo abre y lo trae a la vista
-  const openSheet = () => { setPanel(true); setTimeout(() => { sheet.current?.scrollIntoView({ block: "center", behavior: "smooth" }); sheet.current?.querySelector("input")?.focus({ preventScroll: true }); }, 60); };
+  const menuRef = useRef<HTMLDivElement>(null);
+  const toolRef = useRef<HTMLDivElement>(null);
 
   const catById = useMemo(() => new Map(categories.map((x) => [x.id, x])), [categories]);
   const accById = useMemo(() => new Map(accounts.map((x) => [x.id, x])), [accounts]);
@@ -60,19 +61,34 @@ export function Detail({ header, months, children, rows, categories, accounts, l
   const totals = useMemo(() => filterTotals(rows, filter), [rows, filter]);
   const editing = editId ? rows.find((r) => r.id === editId) ?? null : null;
   const set = (patch: Partial<Filter>) => { setFilter((f) => ({ ...f, ...patch })); setLimit(PAGE); };
-  // las categorías de gasto primero: son las del registro rápido en el teléfono
-  const quickCats = useMemo(() => [...categories.filter((x) => x.kind !== "income"), ...categories.filter((x) => x.kind === "income")].slice(0, 6), [categories]);
+
+  // "Más opciones": se cierra con Escape o tocando fuera
+  useEffect(() => {
+    if (!menu) return;
+    const onDown = (e: MouseEvent) => { if (!menuRef.current?.contains(e.target as Node) && !(e.target as Element).closest?.("[data-mov-menu]")) setMenu(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenu(false); };
+    document.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDown); window.removeEventListener("keydown", onKey); };
+  }, [menu]);
+
+  const openAdd = (mode: AddMode) => { setEditId(null); setMenu(false); setAdd(mode); };
+  const pickTool = (x: Tool) => {
+    setMenu(false);
+    setTool(x);
+    setTimeout(() => toolRef.current?.scrollIntoView({ block: "start", behavior: "smooth" }), 60);
+  };
 
   const goPeriod = (q: Partial<Query>) => router.push(movHref({ ...query, cat: filter.cat, cuenta: filter.account, ...q }));
 
   /**
    * "Por revisar" sin mes trae solo los por revisar de todas las fechas. Si el estado cambia a otro (o a "Todos"),
-   * esa lista no alcanza: se carga el mes en curso completo con el nuevo estado (sigue en "Cada movimiento").
+   * esa lista no alcanza: se carga el mes en curso completo con el nuevo estado.
    */
   const pickState = (state: StateFilter) => {
     if (period.kind === "any" && query.ver === "revisar" && state !== "revisar") {
       set({ state });
-      return goPeriod({ nivel: query.nivel || "detail", ver: "", anio: "", mes: "", estado: state });
+      return goPeriod({ ver: "", anio: "", mes: "", estado: state });
     }
     set({ state });
   };
@@ -85,21 +101,10 @@ export function Detail({ header, months, children, rows, categories, accounts, l
     if (!r.ok) { toast(r.error); return false; }
     if (r.data.duplicate) { setDup({ payload, info: r.data.duplicate }); return false; }
     setDup(null);
-    setFull(false);
     toast(r.data.repeated ? t.panel.savedRec : t.panel.saved, r.points);
     if (r.data.suggestion && r.data.id) setSuggest({ txId: r.data.id, ...r.data.suggestion });
     router.refresh();
     return true;
-  };
-
-  const submitQuick = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    const cat = quick.cat ? catById.get(quick.cat) : undefined;
-    const done = await submit({
-      amount: quick.amount, date: ctx.today, description: quick.desc, accountId: filter.account || accounts[0]?.id || null, toAccountId: null, categoryId: cat?.id ?? null, lineId: null,
-      type: cat?.kind === "income" ? "in" : "out", note: "", repeat: "",
-    });
-    if (done) setQuick((q) => ({ amount: "", cat: q.cat, desc: "" }));
   };
 
   const confirmSuggestion = async () => {
@@ -149,49 +154,75 @@ export function Detail({ header, months, children, rows, categories, accounts, l
     );
   };
 
+  /** Los botones de arriba: uno principal ("+ Gasto") y, al lado, los secundarios. En el teléfono van en su propia fila. */
+  const actions = (mobile: boolean) => (
+    <div className={mobile ? `${css.actions} ${css.mobileBar} only-mobile-grid` : `${css.actions} only-desktop`}>
+      {canWrite ? (
+        <>
+          <button type="button" className={`btn ${css.addBtn}`} aria-pressed={add === "move"} onClick={() => openAdd("move")}>{t.actions.expense}</button>
+          {flags.csv ? <Link href="/movimientos/importar" className={`btn btn-secondary ${css.secBtn}`}>{t.actions.csv}</Link> : null}
+          <button type="button" className={`btn btn-secondary ${css.secBtn}`} aria-pressed={add === "transfer"} onClick={() => openAdd("transfer")}>{t.actions.transfer}</button>
+        </>
+      ) : null}
+      <div className={css.menuWrap} ref={mobile ? undefined : menuRef} data-mov-menu>
+        <button type="button" className={`btn btn-secondary ${css.secBtn}`} aria-expanded={menu} aria-haspopup="true" onClick={() => setMenu((v) => !v)}>
+          {t.actions.more} <span aria-hidden="true">▾</span>
+        </button>
+        {menu ? (
+          <div className={css.menu} role="group" aria-label={t.actions.more}>
+            <button type="button" aria-pressed={tool === "rules"} onClick={() => pickTool("rules")}>
+              <strong>{t.rules.title}</strong><span className="xs muted">{tools.ruleCount === 1 ? t.actions.ruleOne : fill(t.actions.rules, { n: tools.ruleCount })}</span>
+            </button>
+            {flags.recurring ? (
+              <button type="button" aria-pressed={tool === "recurring"} onClick={() => pickTool("recurring")}>
+                <strong>{t.rec.title}</strong><span className="xs muted">{tools.recCount === 1 ? t.actions.recOne : fill(t.actions.recs, { n: tools.recCount })}</span>
+              </button>
+            ) : null}
+            {tools.merchantsHref ? (
+              <Link href={tools.merchantsHref}><strong>{t.actions.merchants}</strong><span className="xs muted">{t.actions.merchantsSub}</span></Link>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+
   return (
     <>
-      {/* En el teléfono el encabezado lleva título, meses y filtros juntos (el orden lo pone el CSS); en escritorio, los filtros van después de los niveles. */}
       <div className={css.head}>
-        <PageHeader title={header.title} eyebrow={<span className="only-desktop">{header.eyebrow}</span>}>
-          {canWrite ? (
-            <>
-              <button type="button" className="btn only-desktop" aria-expanded={panel} onClick={() => { setEditId(null); setPanel((p) => !p); }}>{t.add}</button>
-              <button type="button" className="btn only-mobile" aria-label={t.addAria} onClick={openSheet} style={{ width: 46, height: 46, padding: 0, borderRadius: 14, fontSize: 24 }}><span aria-hidden="true">+</span></button>
-            </>
-          ) : null}
-        </PageHeader>
+        <PageHeader title={header.title} eyebrow={<span className="only-desktop">{header.eyebrow}</span>}>{actions(false)}</PageHeader>
+        {actions(true)}
         {months}
       </div>
 
       {children}
 
       <div className={`${css.card} ${css.filters}`}>
-        <div className={css.mobileFilters}>
-          <label htmlFor="mm-cat" className="sr-only">{t.filters.category}</label>
-          <select id="mm-cat" className={css.fsel} value={filter.cat} onChange={(e) => set({ cat: e.target.value })}>
-            <option value="">{t.filters.allCats}</option>
-            {categories.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-          </select>
-          <button type="button" aria-expanded={moreFilters} onClick={() => setMoreFilters((v) => !v)}>{t.filters.more}</button>
-        </div>
-        <div className={css.filterRow} data-open={moreFilters}>
+        <div className={css.filterRow}>
           <div className={`${css.fld} ${css.fmonth}`}>
             <label htmlFor="f-mes">{t.months.label}</label>
-            <select id="f-mes" className={css.fsel} style={{ minWidth: 170 }} value={monthValue} onChange={(e) => goPeriod({ mes: e.target.value === "any" ? "" : e.target.value, anio: String(period.year) })}>
+            <select id="f-mes" className={css.fsel} value={monthValue} onChange={(e) => goPeriod({ mes: e.target.value === "any" ? "" : e.target.value, anio: String(period.year) })}>
               {period.kind === "any" ? <option value="any">{t.months.any}</option> : null}
               <option value="all">{fill(t.months.allYear, { year: period.year })}</option>
               {Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{monthName(i + 1, locale)} {period.year}</option>)}
             </select>
           </div>
-          {years.length > 1 ? (
-            <div className={css.fld}>
-              <label htmlFor="f-anio">{t.months.year}</label>
-              <select id="f-anio" className={css.fsel} value={period.year} onChange={(e) => goPeriod({ anio: e.target.value, mes: period.kind === "month" ? String(period.month) : period.kind === "year" ? "all" : "" })}>
-                {years.map((y) => <option key={y} value={y}>{y}</option>)}
-              </select>
-            </div>
-          ) : null}
+          <div className={`${css.fld} ${css.fcat}`}>
+            <label htmlFor="f-cat">{t.filters.category}</label>
+            <select id="f-cat" className={css.fsel} value={filter.cat} onChange={(e) => set({ cat: e.target.value })}>
+              <option value="">{t.filters.allCats}</option>
+              {categories.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+            </select>
+          </div>
+          <div className={`${css.fld} ${css.fsearchWrap}`}>
+            <label htmlFor="f-buscar">{t.filters.search}</label>
+            <input id="f-buscar" type="search" className={css.fsearch} placeholder={t.filters.searchPh} value={filter.q} onChange={(e) => set({ q: e.target.value })} />
+          </div>
+          <button type="button" className={css.moreBtn} aria-expanded={moreFilters} aria-controls="f-more" onClick={() => setMoreFilters((v) => !v)}>
+            {folded ? fill(t.filters.moreN, { n: folded }) : t.filters.more} <span aria-hidden="true">{moreFilters ? "▴" : "▾"}</span>
+          </button>
+        </div>
+        <div id="f-more" className={css.filterRow} hidden={!moreFilters}>
           <div className={css.fld}>
             <label htmlFor="f-cuenta">{t.filters.account}</label>
             <select id="f-cuenta" className={css.fsel} value={filter.account} onChange={(e) => set({ account: e.target.value })}>
@@ -205,40 +236,22 @@ export function Detail({ header, months, children, rows, categories, accounts, l
               {STATES.map((v) => <option key={v} value={v}>{stateLabel[v]}</option>)}
             </select>
           </div>
-          <div className={css.fld} style={{ flex: "1 1 220px" }}>
-            <label htmlFor="f-buscar">{t.filters.search}</label>
-            <input id="f-buscar" type="search" className={css.fsearch} placeholder={t.filters.searchPh} value={filter.q} onChange={(e) => set({ q: e.target.value })} />
-          </div>
-        </div>
-        <div role="group" aria-label={t.filters.category} className={css.chips}>
-          <button type="button" className={css.chip} aria-pressed={filter.cat === ""} onClick={() => set({ cat: "" })}><span aria-hidden="true" style={{ background: filter.cat === "" ? "var(--blanco)" : "var(--tinta)" }} />{t.filters.allCats}</button>
-          {categories.map((x) => (
-            <button key={x.id} type="button" className={css.chip} aria-pressed={filter.cat === x.id} onClick={() => set({ cat: x.id })}><span aria-hidden="true" style={{ background: x.color }} />{x.name}</button>
-          ))}
+          {years.length > 1 ? (
+            <div className={css.fld}>
+              <label htmlFor="f-anio">{t.months.year}</label>
+              <select id="f-anio" className={css.fsel} value={period.year} onChange={(e) => goPeriod({ anio: e.target.value, mes: period.kind === "month" ? String(period.month) : period.kind === "year" ? "all" : "" })}>
+                {years.map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+          ) : null}
         </div>
         {filter.line && lineName ? (
           <div className="banner banner-info" style={{ padding: "10px 14px" }}>
             <span>{fill(t.filters.line, { name: lineName })}</span>
-            <button type="button" className="link" onClick={() => { set({ line: "" }); router.replace(movHref({ ...query, nivel: query.nivel || "detail", linea: "", mes: period.kind === "any" ? "" : query.mes })); }}>{t.filters.clearLine}</button>
+            <button type="button" className="link" style={{ minHeight: 44 }} onClick={() => { set({ line: "" }); router.replace(movHref({ ...query, linea: "", mes: period.kind === "any" ? "" : query.mes })); }}>{t.filters.clearLine}</button>
           </div>
         ) : null}
       </div>
-
-      {canWrite ? (
-        <form aria-label={t.quick.title} className={`${css.card} ${css.quick}`} onSubmit={submitQuick}>
-          <strong style={{ fontSize: 14, marginRight: 4 }}>{t.quick.title}</strong>
-          <label htmlFor="q-monto" className="sr-only">{t.quick.amount}</label>
-          <input id="q-monto" className={`num ${css.qin}`} style={{ fontSize: 16, fontWeight: 600, width: 120 }} type="text" inputMode="decimal" placeholder={formatMoney(0, fmt)} value={quick.amount} onChange={(e) => setQuick({ ...quick, amount: e.target.value })} />
-          <label htmlFor="q-cat" className="sr-only">{t.quick.category}</label>
-          <select id="q-cat" className={css.qin} style={{ fontWeight: 600, padding: "0 10px" }} value={quick.cat} onChange={(e) => setQuick({ ...quick, cat: e.target.value })}>
-            <option value="">{t.quick.noCat}</option>
-            {categories.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-          </select>
-          <label htmlFor="q-desc" className="sr-only">{t.quick.desc}</label>
-          <input id="q-desc" type="text" className={css.qin} style={{ flex: "1 1 180px" }} placeholder={t.quick.desc} maxLength={160} value={quick.desc} onChange={(e) => setQuick({ ...quick, desc: e.target.value })} />
-          <button type="submit" className="btn" disabled={busy}>{t.quick.add}</button>
-        </form>
-      ) : null}
 
       <div className={css.cols}>
         <section className={`${css.card} ${css.listCard}`} aria-labelledby="mov-list">
@@ -256,21 +269,26 @@ export function Detail({ header, months, children, rows, categories, accounts, l
               {rows.length === 0 ? <Image src={ILLU.vacioMovimientos} alt="" aria-hidden="true" width={112} height={112} sizes="112px" className="empty-img" style={{ margin: "-6px 0 -4px" }} /> : null}
               <span style={{ fontSize: 15, fontWeight: 600 }}>{t.list.emptyTitle}</span>
               <span className="small muted">{flags.csv ? t.list.emptyText : t.list.emptyTextNoCsv}</span>
-              {flags.csv && canWrite ? <Link href="/movimientos/importar" className="btn btn-secondary btn-sm">{t.panel.csvCta}</Link> : null}
+              {canWrite ? (
+                <div className="row wrap" style={{ justifyContent: "center" }}>
+                  <button type="button" className="btn btn-sm" style={{ minHeight: 44 }} onClick={() => openAdd("move")}>{t.actions.expense}</button>
+                  {flags.csv ? <Link href="/movimientos/importar" className="btn btn-secondary btn-sm" style={{ minHeight: 44 }}>{t.actions.csv}</Link> : null}
+                </div>
+              ) : null}
             </div>
           ) : (
             <ul className={css.list}>
               {visible.slice(0, limit).map((r) => (
                 <li key={r.id}>
                   {canWrite ? (
-                    <button type="button" className={css.rowBtn} data-review={r.status === "review"} aria-pressed={editId === r.id} aria-label={fill(t.list.editAria, { name: r.description })} onClick={() => setEditId(r.id)}>
+                    <button type="button" className={css.rowBtn} data-review={r.status === "review"} aria-pressed={editId === r.id} aria-label={fill(t.list.editAria, { name: r.description })} onClick={() => { setAdd(null); setEditId(r.id); }}>
                       {rowBody(r)}
                       <span aria-hidden="true" className="only-desktop" style={{ color: "var(--gris-5)", fontSize: 18 }}>›</span>
                     </button>
                   ) : <div className={css.rowBtn} data-review={r.status === "review"}>{rowBody(r)}</div>}
                 </li>
               ))}
-              {visible.length > limit ? <li style={{ padding: "8px 12px" }}><button type="button" className="btn btn-secondary btn-sm btn-block" onClick={() => setLimit((n) => n + PAGE)}>{fill(t.list.more, { n: Math.min(PAGE, visible.length - limit) })}</button></li> : null}
+              {visible.length > limit ? <li style={{ padding: "8px 12px" }}><button type="button" className="btn btn-secondary btn-sm btn-block" style={{ minHeight: 44 }} onClick={() => setLimit((n) => n + PAGE)}>{fill(t.list.more, { n: Math.min(PAGE, visible.length - limit) })}</button></li> : null}
             </ul>
           )}
         </section>
@@ -278,29 +296,20 @@ export function Detail({ header, months, children, rows, categories, accounts, l
         {editing && canWrite ? (
           <EditPanel key={editing.id} row={editing} categories={categories} accounts={accounts} linesByYear={linesByYear} recurring={flags.recurring} ctx={ctx} onClose={() => setEditId(null)}
             goals={goals} goal={goalChoice[editing.id] ?? ""} />
-        ) : canWrite && (panel || full) ? (
-          <AddPanel open={panel} full={full} categories={categories} accounts={accounts} linesByYear={linesByYear} flags={flags} defaultAccount={filter.account} busy={busy} ctx={ctx}
-            onClose={() => { if (full) setFull(false); else setPanel(false); }} onSubmit={submit} />
+        ) : canWrite && add ? (
+          <AddPanel key={add} mode={add} categories={categories} accounts={accounts} linesByYear={linesByYear} flags={flags} defaultAccount={filter.account} busy={busy} ctx={ctx}
+            onClose={() => setAdd(null)} onSubmit={submit} />
         ) : null}
       </div>
 
-      {canWrite && panel && !editing ? (
-        <form ref={sheet} aria-label={t.quick.title} className={css.sheet} onSubmit={submitQuick}>
-          <div aria-hidden="true" className={css.grabber} style={{ height: 4 }} />
-          <h2 style={{ fontSize: 17 }}>{t.quick.title}</h2>
-          <label htmlFor="mq-amt" className="sr-only">{t.quick.amount}</label>
-          <input id="mq-amt" className={`num ${css.sheetAmount}`} type="text" inputMode="decimal" placeholder={formatMoney(0, fmt)} value={quick.amount} onChange={(e) => setQuick({ ...quick, amount: e.target.value })} />
-          {quickCats.length ? (
-            <div role="radiogroup" aria-label={t.quick.category} className={css.qcats}>
-              {quickCats.map((x) => <button key={x.id} type="button" role="radio" aria-checked={quick.cat === x.id} onClick={() => setQuick({ ...quick, cat: quick.cat === x.id ? "" : x.id })}>{x.name}</button>)}
-            </div>
-          ) : null}
-          <button type="button" className="link" style={{ alignSelf: "flex-start", minHeight: 44 }} onClick={() => setFull(true)}>{t.quick.more}</button>
-          <div style={{ display: "flex", gap: 8 }}>
-            {flags.csv ? <Link href="/movimientos/importar" className="btn btn-secondary" style={{ flex: 1, minHeight: 50, fontSize: 13, color: "var(--azul-oscuro)" }}>{t.quick.csv}</Link> : null}
-            <button type="submit" className="btn" style={{ flex: 2, minHeight: 50, fontSize: 15 }} disabled={busy}>{t.quick.save}</button>
+      {tool ? (
+        <div ref={toolRef} className={css.toolWrap}>
+          <div className="row-between">
+            <span className="small muted">{t.actions.more}</span>
+            <button type="button" className="link" style={{ minHeight: 44 }} onClick={() => setTool(null)}>{t.actions.hide}</button>
           </div>
-        </form>
+          {tool === "rules" ? tools.rules : tools.recurring}
+        </div>
       ) : null}
 
       <Modal open={!!dup} onClose={() => setDup(null)} title={t.panel.dupTitle} labelClose={c.actions.close}>

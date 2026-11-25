@@ -2,9 +2,6 @@
 import { addDays, daysInMonth, iso, normalize, parts, splitIsValid, type Cents, type ISODate } from "@/lib/engine";
 
 export type RecFrequency = "weekly" | "fortnightly" | "monthly";
-export type Level = "plan" | "totals" | "detail";
-export const LEVELS: Level[] = ["plan", "totals", "detail"];
-export const asLevel = (v: unknown): Level | null => (LEVELS as unknown[]).includes(v) ? (v as Level) : null;
 
 /** Día ancla de un recurrente mensual: el día del mes en que se creó (1–31). Semanal y quincenal no lo usan. */
 export const anchorDayOf = (date: ISODate, frequency: RecFrequency): number | null => (frequency === "monthly" ? parts(date).d : null);
@@ -141,11 +138,28 @@ export function moneyInput(cents: Cents): string {
   return abs % 100 === 0 ? String(abs / 100) : (abs / 100).toFixed(2);
 }
 
-export type Query = { mes?: string; anio?: string; cat?: string; cuenta?: string; ver?: string; linea?: string; nivel?: string; estado?: string };
-/** Enlace a /movimientos con sus filtros (sin parámetros vacíos). */
+export type Query = { mes?: string; anio?: string; cat?: string; cuenta?: string; ver?: string; linea?: string; estado?: string };
+/** Enlace a /movimientos con sus filtros (sin parámetros vacíos). Un `?nivel=` viejo ya no se usa: se ignora. */
 export function movHref(q: Query): string {
   const sp = new URLSearchParams();
-  for (const k of ["nivel", "anio", "mes", "ver", "linea", "cat", "cuenta", "estado"] as const) if (q[k]) sp.set(k, q[k]!);
+  for (const k of ["anio", "mes", "ver", "linea", "cat", "cuenta", "estado"] as const) if (q[k]) sp.set(k, q[k]!);
   const s = sp.toString();
   return s ? `/movimientos?${s}` : "/movimientos";
+}
+
+/**
+ * Filtros plegados ("Más filtros"): cuenta, estado y año. Cuántos están puestos, para mostrarlo en el botón
+ * y abrir el pliegue solo si llegaste con uno puesto (por ejemplo "Por revisar" desde Inicio).
+ */
+export function foldedActive(f: Pick<Filter, "account" | "state">, otherYear: boolean): number {
+  return (f.account ? 1 : 0) + (f.state ? 1 : 0) + (otherYear ? 1 : 0);
+}
+
+/**
+ * Meta de un movimiento que genera un recurrente: aporte ("in") a la meta del recurrente, solo si sigue activa
+ * (ni archivada ni cumplida; igual que "Aporte a…" en Movimientos). Si no, el movimiento queda sin meta.
+ */
+export function recurringGoal(goalId: string | null | undefined, goals: { id: string; active: boolean }[]): { goal_id: string; goal_role: "in" } | null {
+  if (!goalId) return null;
+  return goals.some((g) => g.id === goalId && g.active) ? { goal_id: goalId, goal_role: "in" } : null;
 }

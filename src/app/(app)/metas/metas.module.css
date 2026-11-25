@@ -52,6 +52,8 @@
 .formTitle { font-size: 20px; }
 .calc { background: var(--amarillo-suave); border-radius: var(--r-xl); padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
 .calc strong { font-size: 22px; color: var(--verde-fuerte); }
+.contrib { border: 1px solid var(--linea); border-radius: var(--r-xl); padding: 12px 14px 14px; margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.contrib > legend { padding: 0 6px; }
 .option { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .option > span { display: flex; flex-direction: column; gap: 2px; }
 

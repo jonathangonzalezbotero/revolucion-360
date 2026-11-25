@@ -42,7 +42,7 @@ export const M = {
     tOp: { buy: "Compra registrada.", sell: "Venta registrada.", dividend: "Dividendo registrado." }, tOpBalance: { buy: "Aporte registrado.", sell: "Retiro registrado.", dividend: "Dividendo registrado." },
     tOpRemoved: "Operación quitada.",
     errName: "Falta el símbolo o nombre.", errQty: "Falta la cantidad.", errPrice: "Falta el precio por unidad.", errAmount: "Falta el monto.", errDate: "La fecha no puede ser después de hoy.",
-    errOversold: "No puedes vender más de lo que tienes en esa fecha.", errOverdraw: "No puedes retirar más de lo que vale.", errMonthly: "Falta cuánto pones al mes.", errLine: "Esa línea ya no está en tu plan.", errLineTaken: "Esa línea ya está ligada a otro activo.",
+    errOversold: "No puedes vender más de lo que tienes en esa fecha.", errOverdraw: "No puedes retirar más de lo que vale.", errMonthly: "Falta cuánto pones al mes.", errLine: "Esa línea ya no está en tu plan.", errLineTaken: "Esa línea ya está ligada a otro activo.", errRetirementPlan: "Tu jubilación la aporta tu empleador: no va en tu plan, solo aquí.",
   },
   en: {
     title: "Investments", eyebrow: "What you own, where, and what it's worth", eyebrowShort: "What you own and what it's worth", add: "+ Add asset", addAria: "Add asset",
@@ -85,7 +85,7 @@ export const M = {
     tOp: { buy: "Buy logged.", sell: "Sell logged.", dividend: "Dividend logged." }, tOpBalance: { buy: "Contribution logged.", sell: "Withdrawal logged.", dividend: "Dividend logged." },
     tOpRemoved: "Transaction removed.",
     errName: "The ticker or name is missing.", errQty: "The quantity is missing.", errPrice: "The price per unit is missing.", errAmount: "The amount is missing.", errDate: "The date can't be after today.",
-    errOversold: "You can't sell more than you hold on that date.", errOverdraw: "You can't withdraw more than it's worth.", errMonthly: "How much you put in a month is missing.", errLine: "That line is no longer in your plan.", errLineTaken: "That line is already linked to another asset.",
+    errOversold: "You can't sell more than you hold on that date.", errOverdraw: "You can't withdraw more than it's worth.", errMonthly: "How much you put in a month is missing.", errLine: "That line is no longer in your plan.", errLineTaken: "That line is already linked to another asset.", errRetirementPlan: "Your employer pays into your retirement fund: it stays here, not in your plan.",
   },
 } satisfies Messages<unknown>;
 export type InversionesMessages = (typeof M)["es"];

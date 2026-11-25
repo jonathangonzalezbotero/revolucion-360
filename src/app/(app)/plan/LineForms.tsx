@@ -6,7 +6,10 @@ import { ConfirmButton, Segmented } from "@/components/ui/client";
 import type { FixedReason } from "@/lib/engine/habito";
 import type { Category, CategoryKind } from "@/server/data";
 import { addCategory, addLine, editLine, removeLine, setLineType } from "./actions";
-import { cellText, firstWeekday, inRange, lineShape, manualCount, type CellRow, type LineLite, type NewFrequency, type NewMode, type SavedLine } from "./lib";
+import {
+  cellText, currentLink, firstWeekday, inRange, lineShape, linkTarget, manualCount, sideOf,
+  type CellRow, type LineLite, type LinkOptions, type LinkTarget, type NewFrequency, type NewMode, type SavedLine,
+} from "./lib";
 import type { PlanText } from "./messages";
 import css from "./plan.module.css";
 
@@ -18,13 +21,18 @@ const KINDS: CategoryKind[] = ["expense", "income", "debt", "saving", "goal"];
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 
 /** Línea nueva: en escritorio va abierta sobre la rejilla; en móvil, dentro de la hoja inferior (`sheet`). */
-export function AddForm({ year, defaultMonth, selMonth, categories, fmt, locale, m, t, sheet, onCancel, onAdded, onCategory }: {
-  year: number; defaultMonth: number; selMonth: number; categories: Category[]; fmt: MoneyFormat; locale: Locale; m: PlanText; t: FormText; sheet?: boolean;
+export function AddForm({ year, defaultMonth, selMonth, categories, links, initialCat, fmt, locale, m, t, sheet, onCancel, onAdded, onCategory }: {
+  year: number; defaultMonth: number; selMonth: number; categories: Category[]; links: LinkOptions;
+  /** "+ Agregar línea" al final de una categoría: el formulario abre con esa categoría ya elegida. */
+  initialCat?: string;
+  fmt: MoneyFormat; locale: Locale; m: PlanText; t: FormText; sheet?: boolean;
   onCancel: () => void; onAdded: (saved: SavedLine, points?: number) => void; onCategory: (c: Category) => void;
 }) {
   const a = m.add, id = useId();
   const [name, setName] = useState("");
-  const [catId, setCatId] = useState(categories[0]?.id ?? "");
+  const [catId, setCatIdRaw] = useState(categories.some((c) => c.id === initialCat) ? initialCat! : categories[0]?.id ?? "");
+  const [link, setLink] = useState("");
+  const setCatId = (v: string) => { setCatIdRaw(v); setLink(""); };
   const [mode, setMode] = useState<NewMode>("all");
   const [from, setFrom] = useState(defaultMonth);
   const [to, setTo] = useState(12);
@@ -43,6 +51,7 @@ export function AddForm({ year, defaultMonth, selMonth, categories, fmt, locale,
   const pays = lineShape({ ...form, amountCents: 1 }, year).months;
   const total = months.reduce((x, y) => x + y, 0);
   const group = categories.find((c) => c.id === catId);
+  const target = linkTarget(group?.kind);
   const pick = (kind: (c: Category) => boolean) => categories.find(kind)?.id ?? catId;
   const presets = [
     { label: a.presets.extra, apply: () => { setName(a.presetNames.extra); setCatId(pick((c) => c.kind === "income")); setMode("once"); setFrom(12); setTo(12); setFreq("monthly"); } },
@@ -56,7 +65,7 @@ export function AddForm({ year, defaultMonth, selMonth, categories, fmt, locale,
     if (amountCents <= 0) return setError(t.errAmount);
     if (freq !== "monthly" && !date) return setError(t.errDate);
     setBusy(true);
-    const r = await addLine({ year, categoryId: catId, name, mode, from, to, frequency: freq, amount, firstPayDate: date || null });
+    const r = await addLine({ year, categoryId: catId, name, mode, from, to, frequency: freq, amount, firstPayDate: date || null, link: target ? link : undefined });
     setBusy(false);
     if (!r.ok) return setError(r.error);
     onAdded(r.data, r.points);
@@ -106,6 +115,7 @@ export function AddForm({ year, defaultMonth, selMonth, categories, fmt, locale,
           <button type="button" className="btn btn-secondary" disabled={busy || !catName.trim()} onClick={createCategory}>{m.cat.create}</button>
         </div>
       ) : null}
+      {target ? <LinkField id={`${id}-link`} target={target} value={link} onChange={setLink} options={links} m={m} /> : null}
     </div>
   );
   const qWhen = (
@@ -199,13 +209,18 @@ export function AddForm({ year, defaultMonth, selMonth, categories, fmt, locale,
 const EDIT_FREQS: Frequency[] = ["monthly", "fortnightly", "weekly", "yearly", "once"];
 
 /** Editar una línea: los meses editados a mano se conservan, salvo que se pida "aplicar a todos los meses". */
-export function EditForm({ line, row, auto, categories, defaultFrom, locale, m, t, onSaved, onRemoved, onType }: {
-  line: LineLite; row: CellRow | undefined; auto: FixedReason | null | undefined; categories: Category[]; defaultFrom: number; locale: Locale; m: PlanText; t: FormText;
+export function EditForm({ line, row, auto, categories, links, linkedCount, defaultFrom, locale, m, t, onSaved, onRemoved, onType }: {
+  line: LineLite; row: CellRow | undefined; auto: FixedReason | null | undefined; categories: Category[]; links: LinkOptions;
+  /** Movimientos unidos a la línea este año: con alguno no pasa de gasto a ingreso ni al revés (el servidor lo vuelve a revisar). */
+  linkedCount: number;
+  defaultFrom: number; locale: Locale; m: PlanText; t: FormText;
   onSaved: (saved: SavedLine, kept: number) => void; onRemoved: () => void; onType: (lineId: string, fixed: boolean | null) => void;
 }) {
   const e = m.edit, id = useId();
   const [name, setName] = useState(line.name);
-  const [catId, setCatId] = useState(line.categoryId);
+  const [catId, setCatIdRaw] = useState(line.categoryId);
+  const [link, setLink] = useState(() => currentLink(line, linkTarget(categories.find((c) => c.id === line.categoryId)?.kind), links));
+  const setCatId = (v: string) => { setCatIdRaw(v); setLink(currentLink(line, linkTarget(categories.find((c) => c.id === v)?.kind), links)); };
   const [freq, setFreq] = useState<Frequency>(line.frequency);
   const [amount, setAmount] = useState(cellText(line.amountCents));
   const [date, setDate] = useState(line.firstPayDate ?? "");
@@ -215,7 +230,11 @@ export function EditForm({ line, row, auto, categories, defaultFrom, locale, m, 
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const sameSide = categories.filter((c) => (c.kind === "income") === (line.kind === "income"));
+  const category = categories.find((c) => c.id === catId);
+  const target = linkTarget(category?.kind);
+  const side = category ? sideOf(category.kind) : line.kind;
+  const locked = linkedCount > 0;
+  const bySide = (k: "income" | "expense") => categories.filter((c) => sideOf(c.kind) === k);
   const freqs = line.frequency === "custom" ? [...EDIT_FREQS, "custom" as const] : EDIT_FREQS;
   const amountCents = parseMoney(amount);
   // La fecha solo se exige al cambiar de frecuencia: una línea semanal sin fecha se puede renombrar tal cual.
@@ -229,7 +248,7 @@ export function EditForm({ line, row, auto, categories, defaultFrom, locale, m, 
     if (freq !== "custom" && (amountCents === null || amountCents < 0)) return setError(t.errAmount);
     if (freq !== "custom" && needsDate && !date) return setError(t.errDate);
     setBusy(true);
-    const r = await editLine({ lineId: line.id, name, categoryId: catId, frequency: freq, amount, firstPayDate: date || null, overwriteManual: applyAll && kept > 0, fromMonth: from });
+    const r = await editLine({ lineId: line.id, name, categoryId: catId, frequency: freq, amount, firstPayDate: date || null, overwriteManual: applyAll && kept > 0, fromMonth: from, link: target ? link : undefined });
     setBusy(false);
     if (!r.ok) return setError(r.error);
     onSaved({ line: r.data.line, row: r.data.row }, r.data.keptManual);
@@ -244,8 +263,17 @@ export function EditForm({ line, row, auto, categories, defaultFrom, locale, m, 
     <form onSubmit={submit} className="stack" style={{ gap: 14 }} noValidate>
       <div className="field"><label htmlFor={`${id}-n`}>{e.name}</label><input id={`${id}-n`} className="input" type="text" maxLength={80} value={name} onChange={(x) => setName(x.target.value)} /></div>
       <div className="field"><label htmlFor={`${id}-c`}>{e.category}</label>
-        <select id={`${id}-c`} className="select" value={catId} onChange={(x) => setCatId(x.target.value)}>{sameSide.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+        <select id={`${id}-c`} className="select" value={catId} onChange={(x) => setCatId(x.target.value)} aria-describedby={locked || side !== line.kind ? `${id}-side` : undefined}>
+          {(["expense", "income"] as const).map((k) => (
+            <optgroup key={k} label={e.sides[k]}>
+              {bySide(k).map((c) => <option key={c.id} value={c.id} disabled={locked && k !== line.kind}>{c.name}</option>)}
+            </optgroup>
+          ))}
+        </select>
+        {locked ? <span id={`${id}-side`} className="hint">{linkedCount === 1 ? e.sideLockedOne : fill(e.sideLocked, { n: linkedCount })}</span>
+          : side !== line.kind ? <span id={`${id}-side`} className="hint" role="status">{side === "income" ? e.sideToIncome : e.sideToExpense}</span> : null}
       </div>
+      {target ? <LinkField id={`${id}-link`} target={target} value={link} onChange={setLink} options={links} m={m} /> : null}
       <div className="field"><label htmlFor={`${id}-f`}>{e.frequency}</label>
         <select id={`${id}-f`} className="select" value={freq} onChange={(x) => setFreq(x.target.value as Frequency)}>{freqs.map((f) => <option key={f} value={f}>{e.freqs[f]}</option>)}</select>
       </div>
@@ -260,7 +288,7 @@ export function EditForm({ line, row, auto, categories, defaultFrom, locale, m, 
           <select id={`${id}-from`} className="select" value={from} onChange={(x) => setFrom(Number(x.target.value))}>{MONTHS.map((x) => <option key={x} value={x}>{monthName(x, locale)}</option>)}</select>
         </div>
       ) : null}
-      {line.kind === "expense" ? <TypeField line={line} auto={auto} m={m} onType={onType} onError={setError} /> : null}
+      {line.kind === "expense" && side === "expense" ? <TypeField line={line} auto={auto} m={m} onType={onType} onError={setError} /> : null}
       {kept > 0 ? (
         <div className={css.notice} role="status">
           <span>{kept === 1 ? e.manualOne : fill(e.manual, { n: kept })}</span>
@@ -311,6 +339,27 @@ function TypeField({ line, auto, m, onType, onError }: {
       <Segmented label={ty.label} value={value} onChange={change}
         options={[{ value: "auto", label: ty.auto }, { value: "fixed", label: ty.fixed }, { value: "flex", label: ty.flex }]} />
       <span className="hint" aria-live="polite">{hint}</span>
+    </div>
+  );
+}
+
+/**
+ * "Unir a": la meta, la deuda o el activo de Inversiones al que va esta línea, o crear uno nuevo con su nombre.
+ * Las cumplidas, saldadas o de jubilación (el super vive solo en Inversiones) solo aparecen si ya es la elegida.
+ */
+function LinkField({ id, target, value, onChange, options, m }: { id: string; target: LinkTarget; value: string; onChange: (v: string) => void; options: LinkOptions; m: PlanText }) {
+  const l = m.link;
+  const list = target === "goal" ? options.goals : target === "debt" ? options.debts : options.assets;
+  const shown = list.filter((o) => !o.off || o.id === value);
+  return (
+    <div className="field">
+      <label htmlFor={id}>{l.label}</label>
+      <select id={id} className="select" value={value} onChange={(x) => onChange(x.target.value)} aria-describedby={`${id}-h`}>
+        <option value="">{l.none}</option>
+        {shown.length ? <optgroup label={l.groups[target]}>{shown.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</optgroup> : null}
+        <option value="new">{l.create}</option>
+      </select>
+      <span id={`${id}-h`} className="hint">{shown.length === 0 && value === "" ? l.empty[target] : l.hints[target]}</span>
     </div>
   );
 }

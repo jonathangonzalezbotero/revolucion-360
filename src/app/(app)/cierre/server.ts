@@ -13,7 +13,10 @@ export async function closeData(s: Session, p: Period): Promise<{ view: MonthVie
     s.supabase.from("month_totals").select("category_id, amount_cents").eq("year", p.year).eq("month", p.month),
   ]);
   // Los totales escritos a mano solo mandan en el nivel "totales" (Movimientos solo los lee ahí)
-  const totals = new Map(s.profile.movLevel === "totals" ? must(totalsRes).map((r) => [r.category_id, r.amount_cents]) : []);
+  // "Totales del mes" ya no existe en Movimientos (25 nov 2026): los totales que alguien guardó antes solo cuentan en
+  // meses que ya terminaron; en el mes en curso y después mandan sus movimientos.
+  const pastMonth = p.year * 12 + p.month < s.year * 12 + s.month;
+  const totals = new Map(s.profile.movLevel === "totals" && pastMonth ? must(totalsRes).map((r) => [r.category_id, r.amount_cents]) : []);
   const groups = new Map(view.groups.map((g) => [g.category.id, g]));
   const unplanned = view.unplanned.map((t) => ({ categoryId: t.categoryId, amountCents: t.amountCents }));
   const cats = categoryReal(

@@ -22,6 +22,7 @@ export const M = {
     you: "Tú", support: "Soporte", reply: "Responder", replyPh: "Escribe tu respuesta", replySent: "Respuesta enviada.", openCase: "Ver el caso {code}",
     closedNote: "Este caso está cerrado. Si respondes, se abre de nuevo.",
     academy: "Academia", course: "Curso \"{title}\": la app en {n} clases cortas", courseOne: "Curso \"{title}\": la app en 1 clase corta", seeLessons: "Ver clases ›",
+    tourAgain: "Ver el recorrido de nuevo",
   },
   en: {
     title: "Help", eyebrow: "Quick answers and human support", eyebrowShort: "Answers and support",
@@ -44,6 +45,7 @@ export const M = {
     you: "You", support: "Support", reply: "Reply", replyPh: "Write your reply", replySent: "Reply sent.", openCase: "See case {code}",
     closedNote: "This case is closed. If you reply, it opens again.",
     academy: "Academy", course: "\"{title}\" course: the app in {n} short lessons", courseOne: "\"{title}\" course: the app in 1 short lesson", seeLessons: "See lessons ›",
+    tourAgain: "Take the tour again",
   },
 } satisfies Messages<unknown>;
 export type AyudaMessages = (typeof M)["es"];

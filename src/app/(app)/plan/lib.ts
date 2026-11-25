@@ -1,8 +1,11 @@
 // Cálculos propios del Plan anual y del Detalle del mes. Funciones puras (sirven en el servidor, en el cliente y en las pruebas).
-import { cellMap, cellOf, iso, isoWeekday, monthAmounts, type Cents, type Frequency, type ISODate, type PlanCell, type PlanLine } from "@/lib/engine";
-import type { Category } from "@/server/data";
+import {
+  cellMap, cellOf, iso, isoWeekday, lineMonthStatus, monthAmounts, payDatesInMonth,
+  type Cents, type Frequency, type ISODate, type LineStatus, type PlanCell, type PlanLine,
+} from "@/lib/engine";
+import type { Category, CategoryKind } from "@/server/data";
 
-export type LineLite = Pick<PlanLine, "id" | "name" | "kind" | "categoryId" | "year" | "frequency" | "amountCents" | "firstPayDate"> & {
+export type LineLite = Pick<PlanLine, "id" | "name" | "kind" | "categoryId" | "year" | "frequency" | "amountCents" | "firstPayDate" | "debtId" | "goalId"> & {
   /** "Tipo de gasto" (`plan_lines.fixed`): null o sin dato = automático, true = fijo, false = del día a día. */
   fixed?: boolean | null;
 };
@@ -129,3 +132,75 @@ export function lineShape(f: NewLineForm, year: number): { frequency: Frequency;
   const base = monthAmounts({ frequency: f.frequency, amountCents: f.amountCents, firstPayDate: date, year });
   return { frequency: "custom", firstPayDate: date, months: base.map((v, i) => (inRange(f, i + 1) ? v : 0)), custom: true };
 }
+
+// ───────── Pagado en la rejilla del año ─────────
+/** Por línea: suma de los movimientos unidos en cada mes (null = ningún movimiento ese mes). */
+export type LinkedState = Record<string, (Cents | null)[]>;
+/** Por línea: meses marcados "Pagado · a mano". */
+export type MarkState = Record<string, boolean[]>;
+
+/** Movimientos unidos del año → suma por línea y mes. Solo los que cuentan (sin transferencias ni padres divididos). */
+export function linkedByMonth(linked: { lineId: string; date: ISODate; amountCents: Cents }[], year: number): LinkedState {
+  const out: LinkedState = {};
+  for (const t of linked) {
+    if (!t.date.startsWith(`${year}-`)) continue;
+    const i = Number(t.date.slice(5, 7)) - 1;
+    const row = (out[t.lineId] ??= Array<Cents | null>(12).fill(null));
+    row[i] = (row[i] ?? 0) + t.amountCents;
+  }
+  return out;
+}
+/** Marcas "lineId:mes" → por línea, los 12 meses. */
+export function marksByLine(lineIds: string[], marks: Iterable<string>): MarkState {
+  const set = new Set(marks);
+  return Object.fromEntries(lineIds.map((id) => [id, Array.from({ length: 12 }, (_, i) => set.has(`${id}:${i + 1}`))]));
+}
+/** Marca o desmarca un mes sin tocar las demás filas (las que no cambian conservan su identidad). */
+export function patchMark(state: MarkState, lineId: string, month: number, on: boolean): MarkState {
+  const row = (state[lineId] ?? Array<boolean>(12).fill(false)).slice();
+  row[month - 1] = on;
+  return { ...state, [lineId]: row };
+}
+/** Estado de una celda del año: la misma regla del Detalle del mes (un movimiento unido reemplaza la marca a mano). */
+export const cellStatus = (plannedCents: Cents, linkedCents: Cents | null, marked: boolean): LineStatus =>
+  lineMonthStatus(plannedCents, linkedCents === null ? [] : [linkedCents], marked).status;
+/** Se puede marcar o desmarcar a mano: hay algo planeado y no lo pagó un movimiento. */
+export const canToggle = (plannedCents: Cents, status: LineStatus): boolean => plannedCents > 0 && (status === "pending" || status === "paid_manual");
+export const isPaid = (status: LineStatus): boolean => status === "paid" || status === "paid_manual" || status === "over";
+
+// ───────── Meses con un pago de más ─────────
+/** Pagos de un mes "normal": 4 semanales o 2 cada dos semanas. */
+export const NORMAL_PAYS = { weekly: 4, fortnightly: 2 } as const;
+
+/**
+ * Meses en que una línea semanal o quincenal tiene un pago más que lo normal (5 semanales, 3 quincenales).
+ * Devuelve, por mes, cuántos pagos caen (o null si es un mes normal). Si la celda se editó a mano y ya no es
+ * pagos × monto, no se marca: ese mes ya no sale de contar pagos.
+ */
+export function extraPays(line: Pick<LineLite, "frequency" | "firstPayDate" | "year" | "amountCents">, row?: CellRow): (number | null)[] {
+  if ((line.frequency !== "weekly" && line.frequency !== "fortnightly") || line.amountCents <= 0) return Array<null>(12).fill(null);
+  const normal = NORMAL_PAYS[line.frequency];
+  return Array.from({ length: 12 }, (_, i) => {
+    const n = payDatesInMonth(line.frequency, line.firstPayDate, line.year, i + 1).length;
+    if (n <= normal) return null;
+    if (row && (row.a[i] ?? 0) !== n * line.amountCents) return null;
+    return n;
+  });
+}
+
+// ───────── "Unir a": metas, deudas e inversiones ─────────
+export type LinkTarget = "goal" | "debt" | "asset";
+/** `off`: cumplida, saldada o de jubilación: no se ofrece para unir de nuevo, solo se muestra si la línea ya está unida. */
+export type LinkOption = { id: string; name: string; off?: boolean };
+export type LinkOptions = { goals: LinkOption[]; debts: LinkOption[]; assets: (LinkOption & { lineId: string | null })[] };
+/** A qué se une una línea según el tipo de su categoría: Metas → meta, Deudas → deuda, Ahorro e inversión → activo. */
+export const linkTarget = (kind: CategoryKind | undefined): LinkTarget | null => (kind === "goal" ? "goal" : kind === "debt" ? "debt" : kind === "saving" ? "asset" : null);
+/** A qué está unida hoy una línea (id o ""), para el tipo de su categoría. */
+export function currentLink(line: Pick<LineLite, "id" | "debtId" | "goalId">, target: LinkTarget | null, options: LinkOptions): string {
+  if (target === "goal") return line.goalId ?? "";
+  if (target === "debt") return line.debtId ?? "";
+  if (target === "asset") return options.assets.find((a) => a.lineId === line.id)?.id ?? "";
+  return "";
+}
+/** Ingreso o gasto según la categoría: solo las categorías de ingreso son ingreso. */
+export const sideOf = (kind: CategoryKind): "income" | "expense" => (kind === "income" ? "income" : "expense");

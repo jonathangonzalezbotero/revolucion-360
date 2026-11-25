@@ -1,6 +1,7 @@
 // Cálculos propios de Metas (puros, con pruebas en tests/cuentas-metas.test.ts).
 import { ILLU } from "@/lib/images";
-import { daysInMonth, iso, monthShort, parts, type Cents, type GoalPlan, type ISODate, type Tier } from "@/lib/engine";
+import { daysInMonth, iso, monthShort, parts, payDatesInMonth, type Cents, type GoalPlan, type ISODate, type Tier } from "@/lib/engine";
+import { etaDate, type GoalOutlook } from "@/lib/engine/metas";
 
 export const GOAL_TYPES = ["trip", "fund", "buy", "debt", "invest", "other"] as const;
 export type GoalType = (typeof GOAL_TYPES)[number];
@@ -78,3 +79,63 @@ export function goalStatus(gp: GoalPlan, targetCents: Cents, targetDate: ISODate
 
 /** No se puede usar más dinero del que hay ahorrado en la meta. */
 export const canUse = (amountCents: Cents, savedCents: Cents): boolean => amountCents > 0 && amountCents <= savedCents;
+
+// ───────── Aporte con frecuencia → línea del plan (25 nov 2026, tarde) ─────────
+/** "¿Cuánto vas a aportar?": semanal, cada 2 semanas, mensual o una vez. Son frecuencias del plan anual. */
+export const CONTRIB_FREQS = ["weekly", "fortnightly", "monthly", "once"] as const;
+export type ContribFreq = (typeof CONTRIB_FREQS)[number];
+export type Contribution = { amountCents: Cents; frequency: ContribFreq };
+export const asContribFreq = (v: string): ContribFreq | null => ((CONTRIB_FREQS as readonly string[]).includes(v) ? (v as ContribFreq) : null);
+
+/** Lo que el aporte pone al mes, en promedio: semanal × 52 / 12, cada 2 semanas × 26 / 12. "Una vez" no es un ritmo: 0. */
+export function monthlyEquivalent(c: Contribution): Cents {
+  switch (c.frequency) {
+    case "weekly": return Math.round((c.amountCents * 52) / 12);
+    case "fortnightly": return Math.round((c.amountCents * 26) / 12);
+    case "monthly": return c.amountCents;
+    default: return 0;
+  }
+}
+
+/** Meses de la línea del aporte en el año en curso: desde este mes hasta el de la meta (o diciembre si no tiene fecha o es de otro año). */
+export function contribRange(today: ISODate, targetDate: ISODate | null): { fromMonth: number; toMonth: number } {
+  return targetDate ? planRange(today, targetDate) : { fromMonth: parts(today).m, toMonth: 12 };
+}
+
+/**
+ * Primer día de pago de la línea del aporte. Sin línea o si cambia la frecuencia: hoy. Misma frecuencia: se conserva el que tenía
+ * (aunque sea vacío), así un cambio de nombre no mueve los pagos. Un "una vez" que quedó en un mes pasado se vuelve a fechar hoy.
+ */
+export function contribPayDate(frequency: ContribFreq, current: { frequency: string; firstPayDate: ISODate | null } | null, today: ISODate): ISODate | null {
+  if (!current || current.frequency !== frequency) return today;
+  if (frequency === "once" && (!current.firstPayDate || current.firstPayDate.slice(0, 7) < today.slice(0, 7))) return today;
+  return current.firstPayDate;
+}
+
+/**
+ * Celdas de la línea del aporte desde `fromMonth` hasta diciembre: días de pago reales del mes × monto dentro de la ventana
+ * (hasta el mes de la meta), 0 después. Los meses anteriores a `fromMonth` (pasados) no se tocan. "Una vez" cae en su mes.
+ */
+export function contribCells(c: Contribution, year: number, firstPayDate: ISODate | null, fromMonth: number, toMonth: number): { month: number; amountCents: Cents }[] {
+  const out: { month: number; amountCents: Cents }[] = [];
+  for (let m = fromMonth; m <= 12; m++) {
+    const inside = c.frequency === "once" || m <= toMonth;
+    out.push({ month: m, amountCents: inside ? payDatesInMonth(c.frequency, firstPayDate, year, m).length * c.amountCents : 0 });
+  }
+  return out;
+}
+
+/** Cómo va la meta: con el ritmo del plan ("Aportando $50 por semana llegas en…") o, sin él, lo de siempre. */
+export type MetaOutlook = GoalOutlook | { kind: "plan"; amountCents: Cents; frequency: Exclude<ContribFreq, "once">; when: ISODate };
+
+/**
+ * El ritmo de la meta sale de su línea del plan (el aporte que elegiste) y manda sobre el ritmo de los aportes pasados.
+ * Sin línea, o con un aporte de "una vez", queda lo que ya calculaba el motor (ritmo real, fecha o lo que falta).
+ * Llegaste o sin monto: siempre lo del motor.
+ */
+export function planOutlook(base: GoalOutlook, contribution: Contribution | null, remainingCents: Cents, today: ISODate): MetaOutlook {
+  if (base.kind === "setup" || base.kind === "reached" || !contribution || contribution.frequency === "once") return base;
+  const monthly = monthlyEquivalent(contribution);
+  const when = etaDate(remainingCents, monthly, today);
+  return when ? { kind: "plan", amountCents: contribution.amountCents, frequency: contribution.frequency, when } : base;
+}

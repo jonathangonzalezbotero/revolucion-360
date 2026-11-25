@@ -5,6 +5,7 @@ import {
   milestonesCrossed, milestonesReached, monthContributions, nextMilestone, paceCents, parseGoalChoice, planSync, savedByGoal, sharedAccounts,
   wantedEntries, type LinkedEntry, type SyncGoal, type SyncTx,
 } from "@/lib/engine/metas";
+import { asContribFreq, contribCells, contribPayDate, contribRange, monthlyEquivalent, planOutlook } from "@/app/(app)/metas/lib";
 
 const today = "2026-11-25";
 const G1 = "11111111-1111-4111-8111-111111111111", G2 = "22222222-2222-4222-8222-222222222222";
@@ -209,5 +210,64 @@ describe("retos", () => {
   it("lista fija", () => {
     expect(isChallenge("delivery")).toBe(true);
     expect(isChallenge("otro")).toBe(false);
+  });
+});
+
+describe("aporte con frecuencia → línea del plan y ritmo", () => {
+  it("equivalente mensual en centavos enteros", () => {
+    expect(monthlyEquivalent({ amountCents: 5_000, frequency: "weekly" })).toBe(21_667); // 50 × 52 / 12
+    expect(monthlyEquivalent({ amountCents: 10_000, frequency: "fortnightly" })).toBe(21_667); // 100 × 26 / 12
+    expect(monthlyEquivalent({ amountCents: 30_000, frequency: "monthly" })).toBe(30_000);
+    expect(monthlyEquivalent({ amountCents: 30_000, frequency: "once" })).toBe(0);
+  });
+  it("la línea va de este mes al de la meta; sin fecha o de otro año, hasta diciembre", () => {
+    expect(contribRange(today, "2027-03-31")).toEqual({ fromMonth: 11, toMonth: 12 });
+    expect(contribRange("2026-02-10", "2026-06-30")).toEqual({ fromMonth: 2, toMonth: 6 });
+    expect(contribRange(today, null)).toEqual({ fromMonth: 11, toMonth: 12 });
+  });
+  it("solo acepta las 4 frecuencias del aporte", () => {
+    expect(asContribFreq("fortnightly")).toBe("fortnightly");
+    expect(asContribFreq("yearly")).toBeNull();
+    expect(asContribFreq("custom")).toBeNull();
+  });
+  it("el ritmo sale del aporte del plan y manda sobre el de los aportes pasados", () => {
+    const base = goalOutlook({ targetCents: 1_000_000, savedCents: 100_000, targetDate: null, entries: [{ date: "2026-11-01", amountCents: 100_000 }], today });
+    expect(base.kind).toBe("pace");
+    // faltan $9,000; $300 al mes → 30 meses
+    expect(planOutlook(base, { amountCents: 30_000, frequency: "monthly" }, 900_000, today)).toEqual({ kind: "plan", amountCents: 30_000, frequency: "monthly", when: "2029-05-25" });
+  });
+  it("sin línea, con aporte de una vez, sin monto o ya cumplida: lo de siempre", () => {
+    const open = goalOutlook({ targetCents: 500_000, savedCents: 0, targetDate: null, entries: [], today });
+    expect(planOutlook(open, null, 500_000, today)).toEqual(open);
+    expect(planOutlook(open, { amountCents: 100_000, frequency: "once" }, 500_000, today)).toEqual(open);
+    const setup = goalOutlook({ targetCents: 0, savedCents: 0, targetDate: null, entries: [], today });
+    expect(planOutlook(setup, { amountCents: 5_000, frequency: "weekly" }, 0, today)).toEqual(setup);
+    const done = goalOutlook({ targetCents: 100, savedCents: 100, targetDate: null, entries: [], today });
+    expect(planOutlook(done, { amountCents: 5_000, frequency: "weekly" }, 0, today).kind).toBe("reached");
+  });
+});
+
+describe("celdas de la línea del aporte (manda desde este mes)", () => {
+  it("semanal: días de pago reales × monto hasta el mes de la meta, 0 después", () => {
+    // primer pago miércoles 25 nov 2026: noviembre 1 pago; meta en noviembre → diciembre 0
+    expect(contribCells({ amountCents: 5_000, frequency: "weekly" }, 2026, "2026-11-25", 11, 11)).toEqual([{ month: 11, amountCents: 5_000 }, { month: 12, amountCents: 0 }]);
+    // meta movida a diciembre (mismo aporte): diciembre vuelve a llenarse (5 miércoles: 2, 9, 16, 23, 30)
+    expect(contribCells({ amountCents: 5_000, frequency: "weekly" }, 2026, "2026-11-25", 11, 12)).toEqual([{ month: 11, amountCents: 5_000 }, { month: 12, amountCents: 25_000 }]);
+  });
+  it("mensual desde junio hasta septiembre; los meses pasados no se tocan", () => {
+    const cells = contribCells({ amountCents: 30_000, frequency: "monthly" }, 2026, null, 6, 9);
+    expect(cells.map((c) => c.month)).toEqual([6, 7, 8, 9, 10, 11, 12]);
+    expect(cells.map((c) => c.amountCents)).toEqual([30_000, 30_000, 30_000, 30_000, 0, 0, 0]);
+  });
+  it("una vez: solo en su mes", () => {
+    expect(contribCells({ amountCents: 100_000, frequency: "once" }, 2026, "2026-11-25", 11, 11)).toEqual([{ month: 11, amountCents: 100_000 }, { month: 12, amountCents: 0 }]);
+  });
+  it("día de pago: se conserva con la misma frecuencia; cambia a hoy si cambia o si un 'una vez' quedó atrás", () => {
+    expect(contribPayDate("weekly", null, today)).toBe(today);
+    expect(contribPayDate("weekly", { frequency: "monthly", firstPayDate: null }, today)).toBe(today);
+    expect(contribPayDate("monthly", { frequency: "monthly", firstPayDate: null }, today)).toBeNull();
+    expect(contribPayDate("weekly", { frequency: "weekly", firstPayDate: "2026-11-06" }, today)).toBe("2026-11-06");
+    expect(contribPayDate("once", { frequency: "once", firstPayDate: "2026-10-02" }, today)).toBe(today);
+    expect(contribPayDate("once", { frequency: "once", firstPayDate: "2026-11-02" }, today)).toBe("2026-11-02");
   });
 });

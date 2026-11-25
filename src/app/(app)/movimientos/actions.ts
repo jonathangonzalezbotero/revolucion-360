@@ -1,11 +1,9 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { fill } from "@/i18n";
 import { addDays, applyRules, findDuplicate, parseMoney, type ISODate } from "@/lib/engine";
 import { fail, ok, run } from "@/server/action";
 import { must } from "@/server/data";
-import { setMark } from "@/server/plan-write";
 import { award, firstStep, touchWeek } from "@/server/rewards";
 import type { Session } from "@/server/session";
 import { legFor, parseGoalChoice } from "@/lib/engine/metas";
@@ -15,7 +13,7 @@ import { M } from "./messages";
 import { clearMark, lineForDate, lineOfYear, suggestionFor, txBetween } from "./server";
 import { countChallenge } from "../retos/server";
 
-// Rutas que leen movimientos, marcas o totales: Inicio, Plan, Detalle del mes, Cuentas, Cierre y Análisis.
+// Rutas que leen movimientos: Inicio, Plan, Detalle del mes, Cuentas, Cierre, Análisis y Metas.
 const PATHS = ["/movimientos", "/inicio", "/plan", "/cuentas", "/cierre", "/analisis", "/metas"];
 const touchPaths = () => revalidatePath("/(app)/plan/mes/[mes]", "page");
 
@@ -26,68 +24,29 @@ const text = (max: number) => z.string().trim().max(max).catch("");
 const freq = z.enum(["weekly", "fortnightly", "monthly"]);
 const repeat = z.union([freq, z.literal("")]).catch("");
 
-// ───────── Nivel ─────────
-export async function setLevel(input: unknown) {
-  return run({ revalidate: ["/movimientos"] }, async (s) => {
-    const p = z.object({ level: z.enum(["plan", "totals", "detail"]) }).safeParse(input);
-    if (!p.success) return fail(s.t.errors.generic);
-    const rows = must(await s.supabase.from("profiles").update({ mov_level: p.data.level }).eq("id", s.userId).select("id"));
-    if (rows.length === 0) return fail(s.t.errors.generic);
-    return ok(p.data.level);
-  });
-}
-
-// ───────── Solo mi plan: "Pendiente" ↔ "Pagado · a mano" (el mismo dato que el Detalle del mes) ─────────
-export async function togglePaid(input: unknown) {
-  return run({ revalidate: PATHS }, async (s) => {
-    const p = z.object({ lineId: id, month: z.number().int().min(1).max(12), paid: z.boolean() }).safeParse(input);
-    if (!p.success) return fail(s.t.errors.generic);
-    const line = must(await s.supabase.from("plan_lines").select("id").eq("id", p.data.lineId).is("archived_at", null));
-    if (line.length === 0) return fail(s.t.errors.notFound);
-    await setMark(s, p.data.lineId, p.data.month, p.data.paid);
-    if (p.data.paid) await touchWeek(s);
-    touchPaths();
-    return ok(p.data.paid);
-  });
-}
-
-// ───────── Totales del mes ─────────
-export async function saveTotals(input: unknown) {
-  return run({ revalidate: PATHS }, async (s) => {
-    const m = M[s.locale];
-    const p = z.object({
-      year: z.number().int().min(2000).max(2100), month: z.number().int().min(1).max(12),
-      items: z.array(z.object({ categoryId: id, amount: z.string().max(40) })).max(200),
-    }).safeParse(input);
-    if (!p.success) return fail(s.t.errors.generic);
-    const cats = new Map(must(await s.supabase.from("categories").select("id, name")).map((c) => [c.id, c.name]));
-    const upserts: { user_id: string; year: number; month: number; category_id: string; amount_cents: number }[] = [];
-    const clear: string[] = [];
-    for (const it of p.data.items) {
-      if (!cats.has(it.categoryId)) return fail(s.t.errors.notFound);
-      if (!it.amount.trim()) { clear.push(it.categoryId); continue; }
-      const cents = parseMoney(it.amount);
-      if (cents === null) return fail(fill(m.totals.bad, { name: cats.get(it.categoryId) ?? "" }));
-      // se guarda en positivo, igual que las celdas del plan, para compararlo directo con el plan de la categoría
-      upserts.push({ user_id: s.userId, year: p.data.year, month: p.data.month, category_id: it.categoryId, amount_cents: Math.abs(cents) });
-    }
-    if (upserts.length) must(await s.supabase.from("month_totals").upsert(upserts, { onConflict: "user_id,year,month,category_id" }).select("category_id"));
-    if (clear.length) must(await s.supabase.from("month_totals").delete().eq("year", p.data.year).eq("month", p.data.month).in("category_id", clear).select("category_id"));
-    if (upserts.length) await touchWeek(s);
-    return ok(upserts.length);
-  });
-}
-
 // ───────── Recurrentes ─────────
+type RecInput = { description: string; amountCents: number; accountId: string | null; categoryId: string | null; lineId: string | null; frequency: RecFrequency; nextDate: ISODate; anchorDay: number | null; goalId?: string | null };
+
+/**
+ * `recurring.goal_id` es de la migración 20261125000040 (sin aplicar): solo se nombra cuando hay meta,
+ * así un recurrente sin meta funciona antes y después de aplicarla. `as never` puntual hasta regenerar los tipos.
+ */
+const goalCol = (goalId: string | null | undefined) => (goalId ? ({ goal_id: goalId } as never) : {});
+
 /** Crea el recurrente (con su día ancla si es mensual) y devuelve su id, o null si ya existe uno igual. */
-async function createRecurring(s: Session, r: { description: string; amountCents: number; accountId: string | null; categoryId: string | null; lineId: string | null; frequency: RecFrequency; nextDate: ISODate; anchorDay: number | null }): Promise<string | null> {
+async function createRecurring(s: Session, r: RecInput): Promise<string | null> {
   const same = must(await s.supabase.from("recurring").select("id").eq("description", r.description).eq("amount_cents", r.amountCents).eq("frequency", r.frequency).limit(1));
   if (same.length) return null;
   const row = must(await s.supabase.from("recurring").insert({
     user_id: s.userId, description: r.description, amount_cents: r.amountCents, account_id: r.accountId, category_id: r.categoryId,
-    plan_line_id: r.lineId, frequency: r.frequency, next_date: r.nextDate, anchor_day: r.anchorDay,
+    plan_line_id: r.lineId, frequency: r.frequency, next_date: r.nextDate, anchor_day: r.anchorDay, ...goalCol(r.goalId),
   }).select("id").single());
   return row.id;
+}
+
+/** La meta de un recurrente: activa (ni archivada ni cumplida), porque cada movimiento nace como aporte. */
+async function activeGoal(s: Session, goalId: string): Promise<boolean> {
+  return !!must(await s.supabase.from("goals").select("id").eq("id", goalId).is("archived_at", null).is("completed_at", null).maybeSingle());
 }
 
 /** Recurrente que nace de un movimiento: empieza en la fecha siguiente y el movimiento queda apuntando a él. */
@@ -99,12 +58,15 @@ async function repeatFrom(s: Session, txId: string, r: { description: string; am
   return true;
 }
 
+const RecFields = z.object({
+  description: text(120), amount: z.string().max(40), direction: z.enum(["in", "out"]), accountId: optId, categoryId: optId, lineId: optId, frequency: freq, first: date,
+  goalId: optId,
+});
+
 export async function addRecurring(input: unknown) {
   return run({ feature: "recurrentes", revalidate: PATHS }, async (s) => {
     const m = M[s.locale];
-    const p = z.object({
-      description: text(120), amount: z.string().max(40), direction: z.enum(["in", "out"]), accountId: optId, categoryId: optId, lineId: optId, frequency: freq, first: date,
-    }).safeParse(input);
+    const p = RecFields.safeParse(input);
     if (!p.success) return fail(p.error.issues.some((i) => i.path[0] === "first") ? s.t.errors.date : s.t.errors.generic);
     const abs = parseMoney(p.data.amount);
     if (!abs) return fail(s.t.errors.amount);
@@ -112,11 +74,44 @@ export async function addRecurring(input: unknown) {
     // muy atrás generaría decenas de movimientos de golpe al abrir la pantalla
     if (p.data.first < addDays(s.today, -62)) return fail(m.errors.future);
     if (p.data.lineId && !(await lineOfYear(s, p.data.lineId, p.data.first))) return fail(m.errors.line);
+    if (p.data.goalId && !(await activeGoal(s, p.data.goalId))) return fail(s.t.errors.notFound);
     const created = await createRecurring(s, {
       description: p.data.description, amountCents: signed(abs, p.data.direction), accountId: p.data.accountId, categoryId: p.data.categoryId,
-      lineId: p.data.lineId, frequency: p.data.frequency, nextDate: p.data.first, anchorDay: anchorDayOf(p.data.first, p.data.frequency),
+      lineId: p.data.lineId, frequency: p.data.frequency, nextDate: p.data.first, anchorDay: anchorDayOf(p.data.first, p.data.frequency), goalId: p.data.goalId,
     });
     if (!created) return fail(m.errors.recExists);
+    touchPaths();
+    return ok(true);
+  });
+}
+
+/**
+ * Editar un recurrente: cambia lo que generará desde su próxima fecha. Lo ya registrado no se toca.
+ * La próxima fecha puede quedar en el pasado cercano (igual que al crearlo): se registra al abrir la pantalla.
+ */
+export async function updateRecurring(input: unknown) {
+  return run({ feature: "recurrentes", revalidate: PATHS }, async (s) => {
+    const m = M[s.locale];
+    const p = RecFields.extend({ id }).safeParse(input);
+    if (!p.success) return fail(p.error.issues.some((i) => i.path[0] === "first") ? s.t.errors.date : s.t.errors.generic);
+    const abs = parseMoney(p.data.amount);
+    if (!abs) return fail(s.t.errors.amount);
+    if (!p.data.description) return fail(m.errors.desc);
+    const cur = must(await s.supabase.from("recurring").select("*").eq("id", p.data.id))[0];
+    if (!cur) return fail(s.t.errors.notFound);
+    if (p.data.first !== cur.next_date && p.data.first < addDays(s.today, -62)) return fail(m.errors.future);
+    if (p.data.lineId && !(await lineOfYear(s, p.data.lineId, p.data.first))) return fail(m.errors.line);
+    const curGoal = (cur as { goal_id?: string | null }).goal_id ?? null;
+    if (p.data.goalId && p.data.goalId !== curGoal && !(await activeGoal(s, p.data.goalId))) return fail(s.t.errors.notFound);
+    const amountCents = signed(abs, p.data.direction);
+    const same = must(await s.supabase.from("recurring").select("id").eq("description", p.data.description).eq("amount_cents", amountCents).eq("frequency", p.data.frequency).neq("id", cur.id).limit(1));
+    if (same.length) return fail(m.errors.recExists);
+    // la meta solo se nombra si cambió (antes de la migración 040, quitar una meta que no existe no escribe nada)
+    const goal = p.data.goalId === curGoal ? {} : ({ goal_id: p.data.goalId } as never);
+    must(await s.supabase.from("recurring").update({
+      description: p.data.description, amount_cents: amountCents, account_id: p.data.accountId, category_id: p.data.categoryId, plan_line_id: p.data.lineId,
+      frequency: p.data.frequency, next_date: p.data.first, anchor_day: anchorDayOf(p.data.first, p.data.frequency), ...goal,
+    }).eq("id", cur.id).select("id"));
     touchPaths();
     return ok(true);
   });
@@ -141,6 +136,18 @@ export async function deleteRecurring(input: unknown) {
     const p = z.object({ id }).safeParse(input);
     if (!p.success) return fail(s.t.errors.generic);
     const rows = must(await s.supabase.from("recurring").delete().eq("id", p.data.id).select("id"));
+    if (rows.length === 0) return fail(s.t.errors.notFound);
+    return ok(true);
+  });
+}
+
+// ───────── Reglas ("Hacer lo mismo con los próximos movimientos que digan…") ─────────
+/** Quita una regla. Los movimientos que ya ordenó se quedan como están. */
+export async function deleteRule(input: unknown) {
+  return run({ feature: "mov", revalidate: ["/movimientos"] }, async (s) => {
+    const p = z.object({ id }).safeParse(input);
+    if (!p.success) return fail(s.t.errors.generic);
+    const rows = must(await s.supabase.from("category_rules").delete().eq("id", p.data.id).select("id"));
     if (rows.length === 0) return fail(s.t.errors.notFound);
     return ok(true);
   });

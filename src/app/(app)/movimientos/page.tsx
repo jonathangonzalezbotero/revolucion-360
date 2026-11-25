@@ -3,15 +3,15 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
-import { categoryTotals, monthName, monthShort, parts } from "@/lib/engine";
-import { loadAccounts, loadCategories, loadMonthView, loadPlan, loadTx, monthRange, must } from "@/server/data";
+import { monthName, monthShort, parts } from "@/lib/engine";
+import { loadAccounts, loadCategories, loadPlan, loadTx, monthRange, must } from "@/server/data";
 import { requireUser } from "@/server/session";
 import { Detail, type Period } from "./Detail";
-import { LevelPicker, PlanLevel, TotalsLevel, type PlanRow, type TotalRow } from "./Levels";
-import { asLevel, buildRows, moneyInput, movHref, STATES, type Filter, type Query, type RecFrequency, type StateFilter } from "./lib";
+import { buildRows, movHref, STATES, type Filter, type Query, type RecFrequency, type StateFilter } from "./lib";
 import { M } from "./messages";
 import css from "./mov.module.css";
 import { Recurring, type RecItem } from "./Recurring";
+import { Rules, type RuleItem } from "./Rules";
 import { generateDueRecurring, txAnyDate } from "./server";
 import { choiceOfEntry } from "@/lib/engine/metas";
 import { fetchAll } from "@/server/data";
@@ -40,9 +40,8 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
   const get = (k: string) => { const v = sp[k]; return typeof v === "string" ? v : ""; };
   const review = get("ver") === "revisar";
   const lineId = UUID.test(get("linea")) ? get("linea") : "";
-  // "Por revisar" y "los pagos de esta línea" son listas de movimientos: abren en "Cada movimiento" sin cambiar el nivel guardado
-  const level = asLevel(get("nivel")) ?? (review || lineId ? "detail" : s.profile.movLevel);
   const csv = s.config.flags.csv;
+  // (Desde el 25 nov 2026 no hay "niveles": un `?nivel=` viejo se ignora. Marcar pagos fijos vive en el Plan anual.)
 
   // Recurrentes vencidos: se registran ANTES de leer los movimientos, para que la lista ya los traiga.
   const generated = s.canEdit ? await generateDueRecurring(s) : 0;
@@ -54,10 +53,7 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
   const monthParam = Number.isInteger(mesN) && mesN >= 1 && mesN <= 12 ? mesN : null;
   const kind: Period["kind"] = monthParam ? "month" : mesRaw === "all" ? "year" : review || lineId ? "any" : year === s.year ? "month" : "year";
   const month = kind === "month" ? monthParam ?? s.month : null;
-  /** Mes de los niveles "Solo mi plan" y "Totales": el elegido, o el mes en curso. */
-  const workMonth = month ?? (year === s.year ? s.month : 12);
-  const query: Query = { nivel: get("nivel") && asLevel(get("nivel")) ? get("nivel") : "", anio: year === s.year ? "" : String(year), mes: monthParam ? String(monthParam) : mesRaw === "all" ? "all" : "", ver: review ? "revisar" : "", linea: lineId };
-  const monthLabel = monthName(workMonth, s.locale);
+  const query: Query = { anio: year === s.year ? "" : String(year), mes: monthParam ? String(monthParam) : mesRaw === "all" ? "all" : "", ver: review ? "revisar" : "", linea: lineId };
 
   const [categories, accounts] = await Promise.all([loadCategories(s), loadAccounts(s)]);
   const ctx: Ctx = { t: m, c: s.t, fmt: s.fmt, locale: s.locale, today: s.today, canEdit: s.canEdit };
@@ -67,11 +63,11 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
   const linesOf = async (y: number): Promise<LineOpt[]> => (await loadPlan(s, y)).lines.map((l) => ({ id: l.id, name: l.name, categoryId: l.categoryId, kind: l.kind }));
 
   const months = (
-    <div className={level === "detail" ? "only-mobile" : undefined}>
+    <div className="only-mobile">
       <div role="group" aria-label={m.months.label} className={css.months}>
-        {level === "detail" ? <Link href={movHref({ ...query, mes: "all" })} className={css.month} aria-current={kind === "year" ? "true" : undefined}>{fill(m.months.allYear, { year })}</Link> : null}
+        <Link href={movHref({ ...query, mes: "all" })} className={css.month} aria-current={kind === "year" ? "true" : undefined}>{fill(m.months.allYear, { year })}</Link>
         {Array.from({ length: 12 }, (_, i) => (
-          <Link key={i} href={movHref({ ...query, mes: String(i + 1) })} className={css.month} aria-current={(level === "detail" ? month : workMonth) === i + 1 ? "true" : undefined}>{monthShort(i + 1, s.locale)}</Link>
+          <Link key={i} href={movHref({ ...query, mes: String(i + 1) })} className={css.month} aria-current={month === i + 1 ? "true" : undefined}>{monthShort(i + 1, s.locale)}</Link>
         ))}
       </div>
     </div>
@@ -82,57 +78,10 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
       {generated > 0 ? <p role="status" className="banner banner-info">{generated === 1 ? m.rec.generatedOne : fill(m.rec.generated, { n: generated })}</p> : null}
     </>
   );
-  const picker = <LevelPicker key={level} level={level} query={query} ctx={ctx} />;
 
-  // ───── Recurrentes (debajo de cualquier nivel, si el plan lo incluye) ─────
-  const rec = must(await s.supabase.from("recurring").select("id, description, amount_cents, frequency, next_date, anchor_day, active").order("active", { ascending: false }).order("next_date"));
-  const items: RecItem[] = rec.map((r) => ({ id: r.id, description: r.description, amountCents: r.amount_cents, frequency: r.frequency as RecFrequency, nextDate: r.next_date, anchorDay: r.anchor_day, active: r.active }));
-  const recurring = <Recurring items={items} categories={cats} accounts={accs} linesByYear={{ [s.year]: await linesOf(s.year) }} ctx={ctx} />;
-
-  // ───── Nivel 1: solo mi plan ─────
-  if (level === "plan") {
-    const view = await loadMonthView(s, year, workMonth);
-    const rows: PlanRow[] = view.groups.flatMap((g) => g.lines.filter((l) => l.status !== "none").map((l) => ({
-      id: l.line.id, name: l.line.name, category: g.category.name, income: l.line.kind === "income", plannedCents: l.plannedCents, realCents: l.realCents, status: l.status,
-    })));
-    return (
-      <main className="page">
-        <PageHeader title={m.title} eyebrow={<span className="only-desktop">{eyebrow}</span>} />
-        {months}{banners}{picker}
-        {rows.length === 0
-          ? <Empty icon="plan" title={fill(m.plan.emptyTitle, { month: monthLabel.toLowerCase() })} text={m.plan.emptyText}><Link href="/plan" className="btn btn-secondary btn-sm">{m.plan.emptyCta}</Link></Empty>
-          : <PlanLevel key={`${year}-${workMonth}`} rows={rows} month={workMonth} monthLabel={monthLabel} detailHref={year === s.year ? `/plan/mes/${workMonth}` : null} ctx={ctx} />}
-        {recurring}
-      </main>
-    );
-  }
-
-  // ───── Nivel 2: totales del mes ─────
-  if (level === "totals") {
-    const [plan, saved] = await Promise.all([
-      loadPlan(s, year),
-      s.supabase.from("month_totals").select("category_id, amount_cents").eq("year", year).eq("month", workMonth),
-    ]);
-    const planned = categoryTotals(plan.lines, plan.cells, workMonth);
-    const real = new Map(must(saved).map((r) => [r.category_id, r.amount_cents]));
-    const rows: TotalRow[] = categories.map((c) => {
-      const v = real.get(c.id);
-      return { id: c.id, name: c.name, income: c.kind === "income", planCents: planned.get(c.id) ?? 0, savedCents: v ?? null, value: v === undefined ? "" : moneyInput(v) };
-    });
-    return (
-      <main className="page">
-        <PageHeader title={m.title} eyebrow={<span className="only-desktop">{eyebrow}</span>} />
-        {months}{banners}{picker}
-        {rows.length === 0
-          ? <Empty icon="plan" title={m.totals.emptyTitle} text={m.totals.emptyText}><Link href="/plan" className="btn btn-secondary btn-sm">{m.totals.emptyCta}</Link></Empty>
-          : <TotalsLevel key={`${year}-${workMonth}`} rows={rows} year={year} month={workMonth} monthLabel={monthLabel} ctx={ctx} />}
-        {recurring}
-      </main>
-    );
-  }
-
-  // ───── Nivel 3: cada movimiento ─────
+  // ───── Movimientos ─────
   // "¿Tiene que ver con una meta?": las metas para elegir y lo que hoy cuenta cada movimiento (elegido o automático).
+  // Va después de generar los recurrentes: los que nacen como aporte a una meta entran a la meta aquí.
   if (s.canEdit && s.config.menu.metas === "on") await syncGoalLinks(s);
   const [goalsRes, linked] = s.config.menu.metas === "on" ? await Promise.all([
     s.supabase.from("goals").select("id, name, completed_at").is("archived_at", null).order("created_at"),
@@ -167,13 +116,36 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
     label: kind === "month" ? `${monthName(month!, s.locale)} ${year}` : kind === "year" ? fill(m.months.allYear, { year }) : m.months.any,
   };
 
+  // ───── "Más opciones": recurrentes y reglas ─────
+  // `select("*")`: `recurring.goal_id` es de la migración 20261125000040 (sin aplicar); si aún no existe, no viene y queda sin meta.
+  const [rec, ruleRows] = await Promise.all([
+    s.supabase.from("recurring").select("*").order("active", { ascending: false }).order("next_date"),
+    s.supabase.from("category_rules").select("id, pattern, category_id, plan_line_id").order("created_at", { ascending: false }),
+  ]);
+  const items: RecItem[] = must(rec).map((r) => ({
+    id: r.id, description: r.description, amountCents: r.amount_cents, frequency: r.frequency as RecFrequency, nextDate: r.next_date, anchorDay: r.anchor_day, active: r.active,
+    accountId: r.account_id, categoryId: r.category_id, lineId: r.plan_line_id, goalId: (r as { goal_id?: string | null }).goal_id ?? null,
+  }));
+  const rulesList = must(ruleRows);
+  const ruleLineIds = [...new Set(rulesList.map((r) => r.plan_line_id).filter((id): id is string => !!id))];
+  const ruleLines = ruleLineIds.length ? new Map(must(await s.supabase.from("plan_lines").select("id, name").in("id", ruleLineIds)).map((l) => [l.id, l.name])) : new Map<string, string>();
+  const catName = new Map(categories.map((c) => [c.id, c.name]));
+  const rules: RuleItem[] = rulesList.map((r) => ({
+    id: r.id, pattern: r.pattern, category: (r.category_id && catName.get(r.category_id)) || null, line: (r.plan_line_id && ruleLines.get(r.plan_line_id)) || null,
+  }));
+  const recLines = linesByYear[String(s.year)] ?? await linesOf(s.year);
+
   return (
     <main className="page">
       <Detail header={{ title: m.title, eyebrow }} months={months} rows={rows} categories={cats} accounts={accs} linesByYear={linesByYear} period={period} years={years}
-        initial={initial} lineName={lineName} query={query} flags={{ csv, recurring: true }} locked={false} ctx={ctx} goals={goals} goalChoice={goalChoice}>
-        {banners}{picker}
+        initial={initial} lineName={lineName} query={query} flags={{ csv, recurring: true }} ctx={ctx} goals={goals} goalChoice={goalChoice}
+        tools={{
+          rules: <Rules items={rules} ctx={ctx} />, ruleCount: rules.length,
+          recurring: <Recurring items={items} categories={cats} accounts={accs} linesByYear={{ ...linesByYear, [s.year]: recLines }} goals={goals} ctx={ctx} />, recCount: items.length,
+          merchantsHref: s.config.menu.analisis === "on" ? "/analisis" : null,
+        }}>
+        {banners}
       </Detail>
-      {recurring}
     </main>
   );
 }

@@ -9,6 +9,7 @@ export const M = {
     freqs: { weekly: "Cada semana", fortnightly: "Cada 2 semanas", monthly: "Cada mes" },
     amount: "Monto", amountPh: "$0", frequency: "Frecuencia", frequencyOf: "Frecuencia de {name}", approx: "≈ {amount} al mes",
     redo: "Ya tienes un plan. Lo que armes aquí se agrega como líneas nuevas: no borramos ni cambiamos nada de lo que ya tienes.",
+    redoLoaded: "Cargamos lo que ya tienes en tu plan {year}. Lo que cambies aquí actualiza esas líneas desde {month}; lo nuevo se agrega. No borramos nada.",
     backHome: "Volver a Inicio",
     readOnlyCta: "Ir a Inicio",
     income: {
@@ -49,14 +50,16 @@ export const M = {
       title: "Tu plan anual está listo", lead: "Creamos", lines: "{n} líneas", linesOne: "1 línea",
       tail: "repartidas en los 12 meses. Los meses con 5 semanas ya tienen el pago extra.",
       in: "Entra al mes", out: "Sale al mes", cta: "Ver mi diagnóstico", toPlan: "Ir a mi Plan anual", saving: "Creando tu plan…",
+      titleLoaded: "Revisa y guarda tu plan", leadUpdate: "Al guardar actualizamos", leadAdd: "y agregamos",
+      tailLoaded: "Los meses que ya pasaron y el resto de tu plan quedan igual.", savingLoaded: "Guardando tu plan…",
     },
     surplus: "Te sobra", missing: "Te falta", perMonth: "{label} al mes",
     nav: { back: "Atrás", next: "Siguiente", create: "Crear mi plan" },
     aside: {
       title: "Tu mes hasta ahora", in: "Entra", home: "Vivienda", basics: "Lo básico", debts: "Deudas", family: "Familia", goals: "Metas",
+      rest: "El resto de tu plan",
       note: "Lo semanal se convierte a mes: semanal × 52 ÷ 12.",
       noteReal: "Así queda {month}: contamos los días de pago reales del mes. Es lo mismo que verás en Inicio.",
-      noteRedo: "Solo las líneas nuevas, en {month}: contamos los días de pago reales del mes. Se suman a lo que ya tienes.",
     },
     currencies: {
       AUD: "dólares australianos", USD: "dólares", NZD: "dólares neozelandeses", GBP: "libras", EUR: "euros", COP: "pesos colombianos",
@@ -74,6 +77,7 @@ export const M = {
     freqs: { weekly: "Every week", fortnightly: "Every 2 weeks", monthly: "Every month" },
     amount: "Amount", amountPh: "$0", frequency: "Frequency", frequencyOf: "Frequency of {name}", approx: "≈ {amount} a month",
     redo: "You already have a plan. What you build here is added as new lines: we don't delete or change anything you already have.",
+    redoLoaded: "We loaded what you already have in your {year} plan. What you change here updates those lines from {month}; anything new is added. We don't delete anything.",
     backHome: "Back to Home",
     readOnlyCta: "Go to Home",
     income: {
@@ -114,14 +118,16 @@ export const M = {
       title: "Your yearly plan is ready", lead: "We created", lines: "{n} lines", linesOne: "1 line",
       tail: "spread across the 12 months. Months with 5 weeks already include the extra payment.",
       in: "In per month", out: "Out per month", cta: "See my check-up", toPlan: "Go to my Yearly plan", saving: "Creating your plan…",
+      titleLoaded: "Review and save your plan", leadUpdate: "When you save we update", leadAdd: "and add",
+      tailLoaded: "Past months and the rest of your plan stay as they are.", savingLoaded: "Saving your plan…",
     },
     surplus: "Left over", missing: "Short", perMonth: "{label} per month",
     nav: { back: "Back", next: "Next", create: "Create my plan" },
     aside: {
       title: "Your month so far", in: "In", home: "Housing", basics: "The basics", debts: "Debts", family: "Family", goals: "Goals",
+      rest: "The rest of your plan",
       note: "Weekly amounts are converted to monthly: weekly × 52 ÷ 12.",
       noteReal: "This is {month}: we count the real paydays in the month. It's what you'll see on Home.",
-      noteRedo: "Only the new lines, in {month}: we count the real paydays in the month. They add to what you already have.",
     },
     currencies: {
       AUD: "Australian dollars", USD: "dollars", NZD: "New Zealand dollars", GBP: "pounds", EUR: "euros", COP: "Colombian pesos",

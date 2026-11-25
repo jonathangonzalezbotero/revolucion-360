@@ -3,10 +3,10 @@ import { z } from "zod";
 import { goalPlan, parseMoney, type Cents, type ISODate } from "@/lib/engine";
 import { fail, ok, run, type Result } from "@/server/action";
 import { fetchAll, loadPlan, must } from "@/server/data";
-import { archiveLine, createLine, setCells, updateLine } from "@/server/plan-write";
+import { archiveLine, createLine, setCell, updateLine } from "@/server/plan-write";
 import { award, touchWeek, tryBadge } from "@/server/rewards";
 import type { Session } from "@/server/session";
-import { canUse, planRange, resolveTargetDate } from "./lib";
+import { canUse, CONTRIB_FREQS, contribCells, contribPayDate, contribRange, planRange, resolveTargetDate, type Contribution } from "./lib";
 import { M } from "./messages";
 import { awardGoal, celebrate, leftoverFor, raw, savedNow, type Crossed } from "./server";
 import { countChallenge } from "../retos/server";
@@ -17,12 +17,54 @@ const Fields = z.object({
   name: z.string().trim().min(1).max(80), kind: z.string().trim().max(40).default(""), target: z.string().max(40).default(""),
   month: z.string().max(7).default(""), isEmergencyFund: z.boolean().default(false), accountId: z.union([Id, z.literal("")]).default(""),
   why: z.string().trim().max(160).default(""),
+  /** "¿Cuánto vas a aportar?": vacío = sin aporte (la línea del plan, si ya hay, no se toca). */
+  contribution: z.string().max(40).default(""), contribFreq: z.enum(CONTRIB_FREQS).default("monthly"),
 });
+
+/** El aporte escrito: null si está vacío; "bad" si no es un monto mayor a 0. */
+function contributionOf(d: { contribution: string; contribFreq: Contribution["frequency"] }): Contribution | null | "bad" {
+  if (!d.contribution.trim()) return null;
+  const cents = parseMoney(d.contribution);
+  return cents === null || cents <= 0 ? "bad" : { amountCents: cents, frequency: d.contribFreq };
+}
 
 const savedOf = async (s: Session, goalId: string): Promise<Cents> =>
   (await fetchAll<{ amount_cents: number }>((a, b) => s.supabase.from("goal_entries").select("amount_cents").eq("goal_id", goalId).order("id").range(a, b))).reduce((x, e) => x + e.amount_cents, 0);
 
 type GoalRow = { id: string; name: string; target_cents: number; target_date: ISODate | null };
+
+/** La categoría de tipo "goal" del usuario (la crea si no existe). */
+async function goalCategory(s: Session, categories: { id: string; kind: string; sort: number }[]): Promise<string> {
+  const found = categories.find((c) => c.kind === "goal")?.id;
+  if (found) return found;
+  const sort = Math.max(-1, ...categories.map((c) => c.sort)) + 1;
+  return must(await s.supabase.from("categories").insert({ user_id: s.userId, name: M[s.locale].category, kind: "goal", color: "#E3B800", sort }).select("id").single()).id;
+}
+
+/**
+ * "¿Cuánto vas a aportar?" → la línea del plan de la meta (año en curso, categoría de metas, `goal_id`), con ese monto y esa frecuencia,
+ * desde este mes hasta el de la meta (después queda en 0). Si la meta ya tiene línea este año, se actualiza: nunca se duplica.
+ * Decisión: en la línea de una meta, el aporte del formulario manda desde este mes hasta diciembre (igual que antes el cálculo
+ * automático); los meses pasados no se tocan. Las celdas se escriben una por una porque varias ya venían marcadas a mano por el sistema.
+ */
+async function upsertContribLine(s: Session, goal: GoalRow, c: Contribution): Promise<{ created: boolean }> {
+  const { fromMonth, toMonth } = contribRange(s.today, goal.target_date);
+  const current = must(await s.supabase.from("plan_lines").select("id, frequency, first_pay_date").eq("goal_id", goal.id).eq("year", s.year).is("archived_at", null).order("created_at").limit(1))[0];
+  const firstPayDate = contribPayDate(c.frequency, current ? { frequency: current.frequency, firstPayDate: current.first_pay_date } : null, s.today);
+  if (current) {
+    await updateLine(s, current.id, { name: goal.name, amountCents: c.amountCents, frequency: c.frequency, firstPayDate }, { fromMonth });
+    for (const cell of contribCells(c, s.year, firstPayDate, fromMonth, toMonth)) await setCell(s, current.id, cell.month, cell.amountCents);
+    return { created: false };
+  }
+  const plan = await loadPlan(s, s.year);
+  const categoryId = await goalCategory(s, plan.categories);
+  await createLine(s, {
+    year: s.year, categoryId, name: goal.name, kind: "expense", frequency: c.frequency, amountCents: c.amountCents, firstPayDate,
+    fromMonth, toMonth: c.frequency === "once" ? 12 : toMonth, goalId: goal.id,
+  });
+  return { created: true };
+}
+
 /**
  * Crea la línea de gasto de la meta en la categoría de tipo "goal", con el aporte mensual calculado,
  * desde el mes actual hasta la fecha de la meta. Siempre en el año en curso: el siguiente lo copia `loadPlan`.
@@ -32,11 +74,7 @@ async function addGoalLine(s: Session, goal: GoalRow, savedCents: Cents): Promis
   if (!goal.target_date || !gp.monthlyCents) return { state: "nodate" };
   const plan = await loadPlan(s, s.year);
   if (plan.lines.some((l) => l.goalId === goal.id)) return { state: "exists" };
-  let categoryId = plan.categories.find((c) => c.kind === "goal")?.id;
-  if (!categoryId) {
-    const sort = Math.max(-1, ...plan.categories.map((c) => c.sort)) + 1;
-    categoryId = must(await s.supabase.from("categories").insert({ user_id: s.userId, name: M[s.locale].category, kind: "goal", color: "#E3B800", sort }).select("id").single()).id;
-  }
+  const categoryId = await goalCategory(s, plan.categories);
   await createLine(s, {
     year: s.year, categoryId, name: goal.name, kind: "expense", frequency: "monthly", amountCents: gp.monthlyCents, firstPayDate: null,
     ...planRange(s.today, goal.target_date), goalId: goal.id,
@@ -44,26 +82,10 @@ async function addGoalLine(s: Session, goal: GoalRow, savedCents: Cents): Promis
   return { state: "ok", monthlyCents: gp.monthlyCents };
 }
 
-/**
- * Meta que ya tiene línea en el plan: al cambiar monto o fecha se recalcula el aporte mensual y se reescriben
- * las celdas desde el mes actual hasta la fecha (después de la fecha quedan en 0). Los meses pasados no se tocan.
- * Devuelve el aporte nuevo, o null si no había línea o no hay con qué calcular (sin fecha o ya cumplida).
- */
-async function syncGoalLine(s: Session, goal: GoalRow, recalc: boolean): Promise<Cents | null> {
-  const lines = must(await s.supabase.from("plan_lines").select("id").eq("goal_id", goal.id).eq("year", s.year).is("archived_at", null));
-  if (lines.length === 0) return null;
-  const gp = recalc && goal.target_date ? goalPlan(goal.target_cents, [await savedOf(s, goal.id)], goal.target_date, s.today) : null;
-  if (!gp?.monthlyCents || !goal.target_date) {
-    for (const l of lines) await updateLine(s, l.id, { name: goal.name });
-    return null;
-  }
-  const { fromMonth, toMonth } = planRange(s.today, goal.target_date);
-  for (const l of lines) {
-    await updateLine(s, l.id, { name: goal.name, amountCents: gp.monthlyCents }, { fromMonth });
-    await setCells(s, l.id, fromMonth, toMonth, gp.monthlyCents);
-    if (toMonth < 12) await setCells(s, l.id, toMonth + 1, 12, 0);
-  }
-  return gp.monthlyCents;
+/** La línea de la meta lleva su nombre: al renombrar la meta, se renombra (año en curso). Monto y frecuencia solo los cambia el aporte. */
+async function renameGoalLines(s: Session, goalId: string, name: string): Promise<void> {
+  const lines = must(await s.supabase.from("plan_lines").select("id, name").eq("goal_id", goalId).eq("year", s.year).is("archived_at", null));
+  for (const l of lines) if (l.name !== name) await updateLine(s, l.id, { name });
 }
 
 /** Quita del plan las líneas de la meta (año en curso y siguientes), sin perder su historia. */
@@ -74,27 +96,31 @@ async function removeGoalLines(s: Session, goalId: string): Promise<void> {
 
 export async function createGoal(input: unknown) {
   return run<{ id: string; inPlan: boolean }>({ feature: "metas", revalidate: PATHS }, async (s) => {
-    const p = Fields.extend({ addToPlan: z.boolean().default(false) }).safeParse(input);
+    const p = Fields.safeParse(input);
     if (!p.success) return fail(s.t.errors.name);
     const target = p.data.target.trim() ? parseMoney(p.data.target) : 0;
     if (target === null || target < 0) return fail(s.t.errors.amount);
+    const contrib = contributionOf(p.data);
+    if (contrib === "bad") return fail(M[s.locale].errContrib);
     const row = must(await raw(s).from("goals").insert({
       user_id: s.userId, name: p.data.name, kind: p.data.kind, target_cents: target, target_date: resolveTargetDate(p.data.month, null), is_emergency_fund: p.data.isEmergencyFund,
       account_id: p.data.accountId || null, why: p.data.why, account_linked_on: p.data.accountId ? s.today : null,
     }).select("id, name, target_cents, target_date").single()) as GoalRow;
-    // La meta ya quedó creada: si la línea del plan falla, se avisa "sin plan" y se puede agregar después desde la tarjeta.
-    const line = p.data.addToPlan ? await addGoalLine(s, row, 0).catch(() => null) : null;
-    return ok({ id: row.id, inPlan: line?.state === "ok" });
+    // La meta ya quedó creada: si la línea del plan falla, se avisa "sin plan" y se puede poner el aporte después al editarla.
+    const line = contrib ? await upsertContribLine(s, row, contrib).catch(() => null) : null;
+    return ok({ id: row.id, inPlan: !!line });
   });
 }
 
 export async function updateGoal(input: unknown) {
-  return run<{ monthlyCents: number | null }>({ feature: "metas", revalidate: PATHS }, async (s) => {
+  return run<{ contribution: Contribution | null }>({ feature: "metas", revalidate: PATHS }, async (s) => {
     const p = Fields.extend({ id: Id }).safeParse(input);
     if (!p.success) return fail(s.t.errors.name);
     const target = p.data.target.trim() ? parseMoney(p.data.target) : 0;
     if (target === null || target < 0) return fail(s.t.errors.amount);
-    const cur = must(await s.supabase.from("goals").select("target_cents, target_date, account_id").eq("id", p.data.id).maybeSingle());
+    const contrib = contributionOf(p.data);
+    if (contrib === "bad") return fail(M[s.locale].errContrib);
+    const cur = must(await s.supabase.from("goals").select("target_date, account_id, completed_at").eq("id", p.data.id).maybeSingle());
     if (!cur) return fail(s.t.errors.notFound);
     const date = resolveTargetDate(p.data.month, cur.target_date);
     const accountId = p.data.accountId || null;
@@ -108,8 +134,14 @@ export async function updateGoal(input: unknown) {
     must(await raw(s).from("goals").update({
       name: p.data.name, kind: p.data.kind, target_cents: target, target_date: date, is_emergency_fund: p.data.isEmergencyFund, account_id: accountId, why: p.data.why, ...link,
     }).eq("id", p.data.id).select("id"));
-    const monthlyCents = await syncGoalLine(s, { id: p.data.id, name: p.data.name, target_cents: target, target_date: date }, target !== cur.target_cents || date !== cur.target_date);
-    return ok({ monthlyCents });
+    const goal = { id: p.data.id, name: p.data.name, target_cents: target, target_date: date };
+    // una meta cumplida no vuelve al plan; sin aporte escrito, la línea (si hay) solo cambia de nombre
+    if (contrib && !cur.completed_at) {
+      await upsertContribLine(s, goal, contrib);
+      return ok({ contribution: contrib });
+    }
+    await renameGoalLines(s, goal.id, goal.name);
+    return ok({ contribution: null });
   });
 }
 

@@ -44,17 +44,18 @@ export async function setCells(s: Session, lineId: string, fromMonth: number, to
   if (rows.length) must(await s.supabase.from("plan_cells").upsert(rows, { onConflict: "line_id,month" }).select("month"));
 }
 
-export type LinePatch = Partial<Pick<Line, "name" | "frequency" | "amountCents" | "firstPayDate" | "categoryId" | "debtId" | "goalId" | "investmentId">>;
+export type LinePatch = Partial<Pick<Line, "name" | "kind" | "frequency" | "amountCents" | "firstPayDate" | "categoryId" | "debtId" | "goalId" | "investmentId">>;
 
 /**
  * Cambia la línea. Si cambia frecuencia, monto o fecha, recalcula SOLO las celdas no manuales;
  * con `overwriteManual` las pisa todas ("aplicar a todos los meses"). `fromMonth` protege los meses pasados.
+ * `kind` (ingreso ↔ gasto): quien llama comprueba antes que la línea no tenga movimientos unidos (Plan anual, `editLine`).
  * Devuelve cuántas celdas manuales se conservaron (para avisar en pantalla).
  */
 export async function updateLine(s: Session, lineId: string, patch: LinePatch, opts: { overwriteManual?: boolean; fromMonth?: number } = {}): Promise<{ keptManual: number }> {
   const cur = must(await s.supabase.from("plan_lines").select("*").eq("id", lineId).single());
   const next = {
-    name: patch.name?.trim().slice(0, 80) ?? cur.name, frequency: patch.frequency ?? cur.frequency, amount_cents: patch.amountCents ?? cur.amount_cents,
+    name: patch.name?.trim().slice(0, 80) ?? cur.name, kind: patch.kind ?? cur.kind, frequency: patch.frequency ?? cur.frequency, amount_cents: patch.amountCents ?? cur.amount_cents,
     first_pay_date: patch.firstPayDate === undefined ? cur.first_pay_date : patch.firstPayDate, category_id: patch.categoryId ?? cur.category_id,
     debt_id: patch.debtId === undefined ? cur.debt_id : patch.debtId, goal_id: patch.goalId === undefined ? cur.goal_id : patch.goalId,
     investment_id: patch.investmentId === undefined ? cur.investment_id : patch.investmentId,
@@ -70,6 +71,17 @@ export async function updateLine(s: Session, lineId: string, patch: LinePatch, o
   ).filter((c) => c.month >= from);
   must(await s.supabase.from("plan_cells").upsert(cells.map((c) => ({ line_id: lineId, user_id: s.userId, month: c.month, amount_cents: c.amountCents, manual: c.manual })), { onConflict: "line_id,month" }).select("month"));
   return { keptManual: opts.overwriteManual ? 0 : cells.filter((c) => c.manual).length };
+}
+
+/**
+ * Reparte montos calculados (no editados a mano) desde `fromMonth`: los meses anteriores y las celdas editadas a mano
+ * no se tocan ("la celda editada a mano gana"). Lo usa el asistente para el aporte a una meta, que va solo entre dos meses.
+ */
+export async function setAutoCells(s: Session, lineId: string, months: Cents[], fromMonth: number): Promise<void> {
+  const manual = new Set(must(await s.supabase.from("plan_cells").select("month, manual").eq("line_id", lineId)).filter((c) => c.manual).map((c) => c.month));
+  const rows = months.map((v, i) => ({ month: i + 1, v })).filter((c) => c.month >= fromMonth && !manual.has(c.month))
+    .map((c) => ({ line_id: lineId, user_id: s.userId, month: c.month, amount_cents: Math.max(0, c.v), manual: false }));
+  if (rows.length) must(await s.supabase.from("plan_cells").upsert(rows, { onConflict: "line_id,month" }).select("month"));
 }
 
 /**

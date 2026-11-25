@@ -3,9 +3,9 @@ import Link from "next/link";
 import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
 import { fixedReasons, type FixedReason } from "@/lib/engine/habito";
-import { loadPlan } from "@/server/data";
+import { loadPlan, must } from "@/server/data";
 import { requireUser } from "@/server/session";
-import { clampYear, monthState, toCellState, type LineLite } from "./lib";
+import { clampYear, linkedByMonth, marksByLine, monthState, toCellState, type LineLite, type LinkOptions } from "./lib";
 import { M } from "./messages";
 import { loadFixedInput } from "../repaso/data";
 import { PlanGrid } from "./PlanGrid";
@@ -41,13 +41,32 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
   const { overrides, ...rule } = await loadFixedInput(s, plan);
   const reasons = fixedReasons(rule);
   const auto: Record<string, FixedReason | null> = Object.fromEntries(plan.lines.filter((l) => l.kind === "expense").map((l) => [l.id, reasons.get(l.id) ?? null]));
-  const lines: LineLite[] = plan.lines.map((l) => ({ id: l.id, name: l.name, kind: l.kind, categoryId: l.categoryId, year: l.year, frequency: l.frequency, amountCents: l.amountCents, firstPayDate: l.firstPayDate, fixed: overrides?.get(l.id) ?? null }));
+  const lines: LineLite[] = plan.lines.map((l) => ({
+    id: l.id, name: l.name, kind: l.kind, categoryId: l.categoryId, year: l.year, frequency: l.frequency, amountCents: l.amountCents, firstPayDate: l.firstPayDate,
+    debtId: l.debtId ?? null, goalId: l.goalId ?? null, fixed: overrides?.get(l.id) ?? null,
+  }));
+  // "Pagado" en la rejilla: movimientos unidos del año (ya los trae la regla de fijos) y marcas a mano.
+  const linked = linkedByMonth(rule.linked, year);
+  const linkedCount: Record<string, number> = {};
+  for (const t of rule.linked) linkedCount[t.lineId] = (linkedCount[t.lineId] ?? 0) + 1;
+  // "Unir a": metas, deudas y activos del usuario. Los cumplidos, saldados o de jubilación solo se muestran si la línea ya está unida a ellos.
+  const [goals, debts, assets] = await Promise.all([
+    s.supabase.from("goals").select("id, name, completed_at").is("archived_at", null).order("created_at").then(must),
+    s.supabase.from("debts").select("id, name, closed_at").order("created_at").then(must),
+    s.supabase.from("assets").select("id, name, kind, plan_line_id").is("archived_at", null).order("created_at").then(must),
+  ]);
+  const links: LinkOptions = {
+    goals: goals.map((g) => ({ id: g.id, name: g.name, off: !!g.completed_at })),
+    debts: debts.map((d) => ({ id: d.id, name: d.name, off: !!d.closed_at })),
+    assets: assets.map((a) => ({ id: a.id, name: a.name, off: a.kind === "retirement", lineId: a.plan_line_id })),
+  };
 
   return (
     <main className="page" style={{ maxWidth: 1280 }}>
       <PlanGrid key={year} year={year} curYear={s.year} defaultMonth={year === s.year ? s.month : 1} canEdit={s.canEdit} nextExists={(next?.count ?? 0) > 0}
         states={Array.from({ length: 12 }, (_, i) => monthState(year, i + 1, s.year, s.month))}
         categories={plan.categories} lines={lines} auto={auto} cells={toCellState(lines, plan.cells)} fmt={s.fmt} locale={s.locale} m={m}
+        linked={linked} marks={marksByLine(lines.map((l) => l.id), plan.marks)} linkedCount={linkedCount} links={links}
         t={{ cancel: s.t.actions.cancel, saving: s.t.actions.saving, close: s.t.actions.close, errName: s.t.errors.name, errAmount: s.t.errors.amount, errDate: s.t.errors.date }} />
     </main>
   );

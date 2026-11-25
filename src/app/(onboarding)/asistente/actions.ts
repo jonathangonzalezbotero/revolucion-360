@@ -3,12 +3,16 @@ import { z } from "zod";
 import type { Json } from "@/lib/supabase/database.types";
 import { fail, ok, run } from "@/server/action";
 import { must, type CategoryKind } from "@/server/data";
-import { createDefaultCategories, createLine } from "@/server/plan-write";
+import type { Frequency } from "@/lib/engine";
+import { createDefaultCategories, createLine, setAutoCells, updateLine, type LinePatch } from "@/server/plan-write";
 import { firstStep, touchWeek, track, tryBadge } from "@/server/rewards";
 import { crmEvent } from "@/server/crm";
 import type { Session } from "@/server/session";
 import { wizardContext } from "./context";
-import { AnswersSchema, buildDrafts, pickCategory, roleOf, type CatLite, type Role } from "./lib";
+import {
+  AnswersSchema, buildDrafts, draftMonths, draftPatch, goalChanged, isEmptyPatch, pickCategory, roleOf,
+  type CatLite, type ExistingLine, type GoalLite, type Role,
+} from "./lib";
 import { M } from "./messages";
 
 /** Guarda el avance en cada paso: si cierra y vuelve, sigue donde iba. */
@@ -47,7 +51,9 @@ const Commit = z.object({ answers: AnswersSchema, to: z.enum(["diagnostico", "pl
 
 /**
  * Último paso: crea de verdad las deudas, las metas y las líneas del plan del año en curso.
- * Nunca borra ni cambia lo que el usuario ya tenía: solo agrega.
+ * Si el asistente arrancó con tu plan, las respuestas que vienen de una línea (`lineId`) ACTUALIZAN esa línea
+ * (y su deuda o meta) desde este mes, solo en lo que cambiaste; lo demás se crea. Nunca borra nada que ya tenías:
+ * una fila que quitaste o dejaste en blanco deja su línea tal cual.
  */
 export async function commitPlan(input: unknown) {
   return run({ allowInactive: true, revalidate: ["/inicio", "/plan", "/metas", "/deudas", "/diagnostico", "/proyeccion"] }, async (s) => {
@@ -56,31 +62,94 @@ export async function commitPlan(input: unknown) {
     if (!p.success) return fail(s.t.errors.generic);
     const { ctx } = wizardContext(s);
     const drafts = buildDrafts(p.data.answers, ctx);
-    if (!drafts.lines.some((l) => l.kind === "income")) return fail(m.errors.incomeFirst);
+    if (!drafts.lines.some((l) => l.kind === "income")) {
+      // Un ingreso del plan que el asistente no sabe leer (mes a mes, anual, único) también cuenta: no hay que escribir otro.
+      const inc = await s.supabase.from("plan_lines").select("id", { count: "exact", head: true }).eq("year", ctx.year).eq("kind", "income").is("archived_at", null);
+      if (inc.error) throw new Error(`db: ${inc.error.message}`);
+      if (!inc.count) return fail(m.errors.incomeFirst);
+    }
+
+    // Las líneas que se van a actualizar: tuyas (RLS), del año del asistente y no quitadas. Si no, se crea una nueva.
+    const ids = [...new Set([...drafts.lines, ...drafts.debts, ...drafts.goals].map((x) => x.lineId).filter((x): x is string => !!x))];
+    const rows = ids.length
+      ? must(await s.supabase.from("plan_lines").select("id, name, kind, frequency, amount_cents, first_pay_date, debt_id, goal_id").in("id", ids).eq("year", ctx.year).is("archived_at", null))
+      : [];
+    const existing = new Map<string, ExistingLine>(rows.map((r) => [r.id, {
+      id: r.id, name: r.name, kind: r.kind as "income" | "expense", frequency: r.frequency, amountCents: r.amount_cents, firstPayDate: r.first_pay_date, debtId: r.debt_id, goalId: r.goal_id,
+    }]));
+    const goalIds = [...new Set(rows.map((r) => r.goal_id).filter((x): x is string => !!x))];
+    const debtIds = [...new Set(rows.map((r) => r.debt_id).filter((x): x is string => !!x))];
+    const [goalRows, debtRows] = await Promise.all([
+      goalIds.length ? s.supabase.from("goals").select("id, name, target_cents, target_date").in("id", goalIds).is("archived_at", null).then(must) : [],
+      debtIds.length ? s.supabase.from("debts").select("id").in("id", debtIds).then(must) : [],
+    ]);
+    const goalsById = new Map<string, GoalLite>(goalRows.map((g) => [g.id, { id: g.id, name: g.name, targetCents: g.target_cents, targetDate: g.target_date }]));
+    const debtExists = new Set(debtRows.map((d) => d.id));
+    const lineOf = (lineId: string | undefined) => (lineId ? existing.get(lineId) : undefined);
 
     const cats: CatLite[] = (await createDefaultCategories(s, s.profile.country)).map((c) => ({ id: c.id, name: c.name, kind: c.kind, isBasic: c.isBasic }));
     const categoryId = new Map<Role, string>();
-    for (const role of new Set(drafts.lines.map((l) => roleOf(l.group)))) categoryId.set(role, await categoryFor(s, cats, role));
+    for (const role of new Set(drafts.lines.filter((l) => !lineOf(l.lineId)).map((l) => roleOf(l.group)))) categoryId.set(role, await categoryFor(s, cats, role));
 
-    // No hay transacción: si algo falla a mitad de camino, se deshace lo creado en este intento.
+    // No hay transacción: si algo falla a mitad de camino, se deshace SOLO lo creado en este intento (nunca lo que ya tenías).
     const first = s.profile.onboardingStep !== "done";
     const made = { debts: [] as string[], goals: [] as string[], lines: [] as string[] };
+    // Id de la deuda / meta de cada posición de `drafts.debts` / `drafts.goals` (existente o creada ahora)
+    const debtId: string[] = [], goalId: string[] = [], goalMoved: boolean[] = [];
+    let updated = 0;
     try {
-      for (const d of drafts.debts) {
-        made.debts.push(must(await s.supabase.from("debts").insert({
+      for (const [i, d] of drafts.debts.entries()) {
+        // Una línea que ya tenías conserva su deuda (o su falta de deuda): el asistente no crea deudas por líneas existentes.
+        const cur = lineOf(d.lineId);
+        if (cur) { if (cur.debtId && debtExists.has(cur.debtId)) debtId[i] = cur.debtId; continue; }
+        const id = must(await s.supabase.from("debts").insert({
           user_id: s.userId, name: d.name.slice(0, 80), kind: d.kind, payment_cents: d.paymentCents, payment_frequency: d.paymentFrequency,
-        }).select("id").single()).id);
+        }).select("id").single()).id;
+        made.debts.push(id);
+        debtId[i] = id;
       }
-      for (const g of drafts.goals) {
-        made.goals.push(must(await s.supabase.from("goals").insert({
+      for (const [i, g] of drafts.goals.entries()) {
+        const line = lineOf(g.lineId), cur = line?.goalId ? goalsById.get(line.goalId) : undefined;
+        if (line && !cur) { goalMoved[i] = false; continue; } // su meta ya no está: la línea queda como estaba
+        if (cur) {
+          goalId[i] = cur.id;
+          goalMoved[i] = goalChanged(g, cur);
+          if (goalMoved[i]) must(await s.supabase.from("goals").update({ name: g.name.slice(0, 80), target_cents: g.targetCents, target_date: g.targetDate }).eq("id", cur.id).select("id"));
+          continue;
+        }
+        const id = must(await s.supabase.from("goals").insert({
           user_id: s.userId, name: g.name.slice(0, 80), target_cents: g.targetCents, target_date: g.targetDate,
-        }).select("id").single()).id);
+        }).select("id").single()).id;
+        made.goals.push(id);
+        goalId[i] = id;
+        goalMoved[i] = true;
       }
       for (const l of drafts.lines) {
+        const cur = lineOf(l.lineId);
+        if (cur) {
+          // El aporte a una meta que no cambiaste no se recalcula (con el paso del tiempo cambiaría solo).
+          if (l.goalRef !== undefined && cur.goalId && !goalMoved[l.goalRef]) continue;
+          const patch = draftPatch(l, cur, ctx);
+          if (!patch) continue;
+          const full: LinePatch = { ...patch, frequency: patch.frequency as Frequency | undefined };
+          if (l.debtRef !== undefined && !cur.debtId && debtId[l.debtRef]) full.debtId = debtId[l.debtRef];
+          if (l.goalRef !== undefined && !cur.goalId && goalId[l.goalRef]) full.goalId = goalId[l.goalRef];
+          const ranged = l.fromMonth !== undefined || l.toMonth !== undefined;
+          if (isEmptyPatch(patch) && full.debtId === undefined && full.goalId === undefined && !ranged) continue;
+          // Desde este mes: los meses que ya pasaron quedan como estaban.
+          await updateLine(s, cur.id, full, { fromMonth: ctx.month });
+          if (ranged) await setAutoCells(s, cur.id, draftMonths(l, ctx.year), ctx.month);
+          // La cuota de la deuda sigue a su línea
+          if (patch.amountCents !== undefined && l.debtRef !== undefined && cur.debtId && debtExists.has(cur.debtId)) {
+            must(await s.supabase.from("debts").update({ payment_cents: l.amountCents, payment_frequency: l.frequency }).eq("id", cur.debtId).select("id"));
+          }
+          updated++;
+          continue;
+        }
         made.lines.push(await createLine(s, {
           year: ctx.year, categoryId: categoryId.get(roleOf(l.group))!, name: l.name, kind: l.kind, frequency: l.frequency, amountCents: l.amountCents,
           firstPayDate: l.firstPayDate, fromMonth: l.fromMonth, toMonth: l.toMonth,
-          debtId: l.debtRef === undefined ? null : made.debts[l.debtRef], goalId: l.goalRef === undefined ? null : made.goals[l.goalRef],
+          debtId: l.debtRef === undefined ? null : debtId[l.debtRef], goalId: l.goalRef === undefined ? null : goalId[l.goalRef],
         }));
       }
       must(await s.supabase.from("profiles").update({
@@ -106,6 +175,6 @@ export async function commitPlan(input: unknown) {
     await touchWeek(s);
     // Sin activar (se registró y no pagó): al terminar el asistente va a "Activa tu cuenta" (su diagnóstico sí lo puede ver).
     const next = p.data.to === "diagnostico" ? "/diagnostico" : s.plan === "free" ? "/activar" : "/plan";
-    return ok({ next, lines: made.lines.length }, { points });
+    return ok({ next, lines: made.lines.length, updated }, { points });
   });
 }

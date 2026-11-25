@@ -149,10 +149,10 @@ describe("asistente: respuestas → líneas del plan", () => {
     ];
     const d = buildDrafts(a, ctx);
     expect(d.goals).toEqual([
-      { name: "Viaje", targetCents: 700000, targetDate: "2027-05-31" },
-      { name: "Carro", targetCents: 500000, targetDate: null },
-      { name: "Salir de deudas", targetCents: 0, targetDate: null },
-      { name: "Meta", targetCents: 90000, targetDate: "2026-12-31" },
+      { name: "Viaje", targetCents: 700000, targetDate: "2027-05-31", month: "2027-05" },
+      { name: "Carro", targetCents: 500000, targetDate: null, month: "" },
+      { name: "Salir de deudas", targetCents: 0, targetDate: null, month: "" },
+      { name: "Meta", targetCents: 90000, targetDate: "2026-12-31", month: "2026-12" },
     ]);
     const viaje = d.lines.find((l) => l.goalRef === 0)!;
     expect(viaje).toMatchObject({ group: "goals", amountCents: Math.ceil(700000 / 6), fromMonth: 11, toMonth: 12, frequency: "monthly" });
@@ -249,5 +249,91 @@ describe("bienvenida: idioma del país", () => {
     expect(localeForNewUser({ step: "wizard", current: "es", countryDefault: "en" })).toBeNull();
     expect(localeForNewUser({ step: "done", current: "es", countryDefault: "en" })).toBeNull();
     expect(localeForNewUser({ step: "welcome", current: "en", countryDefault: "es" })).toBeNull();
+  });
+});
+
+describe("asistente: arranca con el plan que ya tienes y lo actualiza sin duplicar", async () => {
+  const { answersFromPlan, draftPatch, goalChanged, hasLinks, isEmptyPatch, restOfPlan, withRest, amountText } = await import("@/app/(onboarding)/asistente/lib");
+  type L = Parameters<typeof answersFromPlan>[0][number];
+  const ln = (id: string, name: string, kind: "income" | "expense", amountCents: number, extra: Partial<L> = {}): L =>
+    ({ id, name, kind, frequency: "monthly", amountCents, firstPayDate: null, debtId: null, goalId: null, ...extra });
+  const U = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+  const lines: L[] = [
+    ln(U(1), "Sueldo", "income", 135450, { frequency: "weekly", firstPayDate: "2026-01-02" }),
+    ln(U(2), "Bono", "income", 500000, { frequency: "once", firstPayDate: "2026-12-01" }),     // único: no lo representa
+    ln(U(3), "Arriendo", "expense", 33250, { frequency: "weekly", firstPayDate: "2026-01-05" }),  // lunes, no el día del sueldo
+    ln(U(4), "súper", "expense", 15000, { frequency: "weekly", firstPayDate: "2026-01-02" }),
+    ln(U(5), "Teléfono", "expense", 4050),
+    ln(U(6), "Tarjeta de crédito", "expense", 20000, { debtId: "d1" }),
+    ln(U(7), "Préstamo de mi tío", "expense", 10000, { debtId: "d2" }),
+    ln(U(8), "Viaje", "expense", 116667, { goalId: "g1" }),
+    ln(U(9), "Netflix", "expense", 2299),                                                         // otro nombre: no lo toca
+    ln(U(10), "Envío a mi familia", "expense", 30000),
+  ];
+  const goals = [{ id: "g1", name: "Viaje a Colombia", targetCents: 700000, targetDate: "2027-05-31" }];
+  const a = answersFromPlan(lines, goals, base(), labels, true);
+
+  it("lee el plan → respuestas, con la línea de cada una", () => {
+    expect(a.incomes).toEqual([{ name: "Sueldo", amount: "1354.50", freq: "weekly", payDate: "2026-01-02", freelance: false, lineId: U(1) }]);
+    expect(a.home).toEqual({ type: "rent", amount: "332.50", freq: "weekly", lineId: U(3) });
+    expect(a.basics.groceries).toEqual({ amount: "150", freq: "weekly", lineId: U(4) }); // "súper" = "Súper"
+    expect(a.basics.phone).toEqual({ amount: "40.50", freq: "monthly", lineId: U(5) });
+    expect(a.basics.utilities.lineId).toBeUndefined();
+    expect(a.debts.card).toEqual({ on: true, amount: "200", lineId: U(6) });
+    expect(a.extraDebts).toEqual([{ name: "Préstamo de mi tío", type: "other", amount: "100", lineId: U(7) }]);
+    expect(a.goals).toEqual([{ name: "Viaje a Colombia", amount: "7000", date: "2027-05", lineId: U(8) }]);
+    expect(a.family).toEqual({ on: true, amount: "300", freq: "monthly", lineId: U(10) });
+    expect(hasLinks(a)).toBe(true);
+    expect(hasLinks(base())).toBe(false);
+    expect(amountText(0)).toBe("");
+  });
+
+  it("abrir y guardar sin cambiar nada no cambia ninguna línea", () => {
+    const d = buildDrafts(a, ctx);
+    const byId = new Map(lines.map((l) => [l.id, { ...l, debtId: l.debtId ?? null, goalId: l.goalId ?? null }]));
+    const linked = d.lines.filter((l) => l.lineId);
+    expect(linked.length).toBe(8);
+    for (const l of linked) {
+      if (l.group === "goals") continue; // el aporte de una meta solo se recalcula si la meta cambia
+      expect([l.name, draftPatch(l, byId.get(l.lineId!)!, ctx)]).toEqual([l.name, {}]);
+    }
+    expect(goalChanged(d.goals[0], goals[0])).toBe(false);
+    expect(d.lines.every((l) => isEmptyPatch(l.lineId ? draftPatch(l, byId.get(l.lineId)!, ctx) : null) || l.group === "goals")).toBe(true);
+  });
+
+  it("solo cambia lo que cambiaste: monto, frecuencia, día de pago del ingreso o nombre que escribes tú", () => {
+    const b = structuredClone(a);
+    b.home.amount = "350";
+    b.basics.groceries.freq = "monthly";
+    b.incomes[0].payDate = "2026-11-24"; // martes: otro ciclo
+    b.incomes[0].name = "Restaurante";
+    const d = buildDrafts(b, ctx);
+    const cur = (id: string) => ({ ...lines.find((l) => l.id === id)!, debtId: null, goalId: null });
+    expect(draftPatch(d.lines.find((l) => l.lineId === U(3))!, cur(U(3)), ctx)).toEqual({ amountCents: 35000 }); // el lunes del arriendo se conserva
+    expect(draftPatch(d.lines.find((l) => l.lineId === U(4))!, cur(U(4)), ctx)).toEqual({ frequency: "monthly", firstPayDate: null });
+    expect(draftPatch(d.lines.find((l) => l.lineId === U(1))!, cur(U(1)), ctx)).toEqual({ name: "Restaurante", firstPayDate: "2026-01-06" });
+    // Cambiar de arriendo a hipoteca renombra la línea de vivienda
+    b.home.type = "mortgage";
+    expect(draftPatch(buildDrafts(b, ctx).lines.find((l) => l.lineId === U(3))!, cur(U(3)), ctx)).toMatchObject({ name: "Hipoteca" });
+    // La meta cambió de fecha: entonces sí se recalcula
+    b.goals[0].date = "2027-11";
+    expect(goalChanged(buildDrafts(b, ctx).goals[0], goals[0])).toBe(true);
+  });
+
+  it("las líneas que el asistente no cubre siguen contando en el resumen del mes", () => {
+    const d = buildDrafts(a, ctx);
+    const existing = lines.map((l) => ({ id: l.id, kind: l.kind, monthCents: l.id === U(2) ? 0 : l.id === U(9) ? 2299 : 1 }));
+    expect(restOfPlan(existing, d)).toEqual({ income: 0, expense: 2299 });
+    // Una fila que quitas deja su línea tal cual: pasa al resto
+    const b = structuredClone(a);
+    b.extraDebts = [];
+    expect(restOfPlan(existing, buildDrafts(b, ctx)).expense).toBe(2300);
+    const s = withRest(summarize(d, 2026, 11), { income: 100, expense: 2299 });
+    expect(s.net).toBe(summarize(d, 2026, 11).net + 100 - 2299);
+  });
+
+  it("sin plan, arranca desde cero (no cambia el punto de partida)", () => {
+    expect(answersFromPlan([], [], base(), labels, true)).toEqual(base());
+    expect(answersFromPlan([lines[1]], [], base(), labels, true).incomes).toEqual(base().incomes); // solo un pago único: nada que leer
   });
 });

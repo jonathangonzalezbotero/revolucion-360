@@ -9,6 +9,9 @@ import { closureTarget } from "@/server/closure";
 import type { MenuKey } from "@/server/config";
 import type { Session } from "@/server/session";
 import { IconLink, SideLink, TabLink } from "./NavLink";
+import { TOUR_M } from "./messages";
+import { Tour } from "./Tour";
+import { tourSeen, tourStops } from "./tour-lib";
 import type { IconName } from "@/components/ui/Icon";
 import { freeMonths, usdShort } from "@/app/(app)/suscripcion/lib";
 
@@ -39,6 +42,8 @@ export async function AppShell({ s, children }: { s: Session; children: React.Re
   const initial = (s.profile.name || s.profile.email).trim().charAt(0).toUpperCase();
   const closeMonth = target ? monthName(target.month, s.locale).toLowerCase() : "";
   const yearFree = freeMonths(s.config.billing.monthlyCents, s.config.billing.yearlyCents);
+  // Recorrido general: solo cuentas activas que pueden escribir (nunca sin activar ni en solo lectura; /admin no usa AppShell).
+  const tourOn = s.active && s.canEdit && s.profile.onboardingStep === "done";
 
   return (
     <ToastProvider ptsLabel={t.nav.pts}>
@@ -56,7 +61,7 @@ export async function AppShell({ s, children }: { s: Session; children: React.Re
               <div key={g} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <span className="eyebrow" style={{ padding: "18px 12px 6px" }}>{groups[g]}</span>
                 {items.map((i) => (
-                  <SideLink key={i.key} href={i.href} icon={i.icon} label={t.nav[i.key]}
+                  <SideLink key={i.key} href={i.href} icon={i.icon} label={t.nav[i.key]} tour={i.key}
                     soon={i.key !== "inicio" && s.config.menu[i.key] === "soon"} soonLabel={t.nav.soon}
                     badge={i.key === "academia" && s.config.gamification ? <span className="pill pill-yellow num">{points} {t.nav.pts}</span> : undefined} />
                 ))}
@@ -64,7 +69,7 @@ export async function AppShell({ s, children }: { s: Session; children: React.Re
             );
           })}
           {target ? (
-            <Link href="/cierre" style={{ textDecoration: "none", marginTop: 18, display: "flex", alignItems: "center", gap: 12, padding: 12, borderRadius: 12, border: "1px solid var(--amarillo-borde)", background: "var(--amarillo-suave)", color: "var(--tinta)" }}>
+            <Link href="/cierre" data-tour="cierre" style={{ textDecoration: "none", marginTop: 18, display: "flex", alignItems: "center", gap: 12, padding: 12, borderRadius: 12, border: "1px solid var(--amarillo-borde)", background: "var(--amarillo-suave)", color: "var(--tinta)" }}>
               <Ring value={target.progress}>{target.overdue ? "!" : `${target.daysLeft}d`}</Ring>
               <span style={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>{fill(t.closeCta.title, { month: closeMonth })}</span>
@@ -121,12 +126,13 @@ export async function AppShell({ s, children }: { s: Session; children: React.Re
         </div>
 
         <nav aria-label={t.nav.principal} className="tabbar">
-          <TabLink href="/inicio" icon="home" label={t.nav.inicio} />
-          {s.config.menu.plan !== "off" ? <TabLink href="/plan" icon="plan" label={t.nav.planShort} /> : null}
-          {s.config.menu.movimientos !== "off" ? <TabLink href="/movimientos" icon="mov" label={t.nav.movimientos} /> : null}
+          <TabLink href="/inicio" icon="home" label={t.nav.inicio} tour="inicio" />
+          {s.config.menu.plan !== "off" ? <TabLink href="/plan" icon="plan" label={t.nav.planShort} tour="plan" /> : null}
+          {s.config.menu.movimientos !== "off" ? <TabLink href="/movimientos" icon="mov" label={t.nav.movimientos} tour="movimientos" /> : null}
           {s.config.menu.academia === "on" ? <TabLink href="/academia" icon="cap" label={t.nav.academia} /> : null}
-          <TabLink href="/mas" icon="dots" label={t.nav.mas} match={["/cuentas", "/metas", "/proyeccion", "/analisis", "/deudas", "/inversiones", "/cierre", "/diagnostico", "/suscripcion", "/perfil", "/notificaciones", "/ayuda"]} />
+          <TabLink href="/mas" icon="dots" label={t.nav.mas} tour="mas" match={["/cuentas", "/metas", "/proyeccion", "/analisis", "/deudas", "/inversiones", "/cierre", "/diagnostico", "/suscripcion", "/perfil", "/notificaciones", "/ayuda"]} />
         </nav>
+        {tourOn ? <Tour m={TOUR_M[s.locale]} stops={tourStops(s.config.menu)} autoStart={!tourSeen(s.profile.prefs)} /> : null}
       </div>
     </ToastProvider>
   );

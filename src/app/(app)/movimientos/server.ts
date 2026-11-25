@@ -3,7 +3,7 @@ import { addDays, findDuplicate, parts, suggestLine, type ISODate, type LineCand
 import { fetchAll, loadMonthView, must, toTx, type Tx } from "@/server/data";
 import { setMark } from "@/server/plan-write";
 import type { Session } from "@/server/session";
-import { nextRecurringDate, type RecFrequency } from "./lib";
+import { nextRecurringDate, recurringGoal, type RecFrequency } from "./lib";
 
 type Row = Parameters<typeof toTx>[0];
 type Page = PromiseLike<{ data: Row[] | null; error: { message: string } | null }>;
@@ -85,6 +85,8 @@ export async function clearMark(s: Session, lineId: string | null, date: ISODate
  * Genera los recurrentes que ya vencieron (next_date <= hoy) como movimientos `source = 'recurring'` y avanza su fecha.
  * - Primero "reclama" la fecha (update con la fecha anterior como condición): dos pestañas abiertas no lo generan dos veces.
  * - Si ya existe un movimiento parecido (por ejemplo, llegó por CSV), no lo duplica, pero igual avanza la fecha.
+ * - Recurrente unido a una meta (`recurring.goal_id`, migración 20261125000040): el movimiento nace como aporte a esa meta
+ *   (`goal_id` + `goal_role = 'in'`) si la meta sigue activa; `syncGoalLinks` lo pasa a la meta después.
  * Devuelve cuántos movimientos creó.
  */
 export async function generateDueRecurring(s: Session): Promise<number> {
@@ -92,6 +94,11 @@ export async function generateDueRecurring(s: Session): Promise<number> {
   if (due.length === 0) return 0;
   const pad = s.config.matching.duplicateDays;
   const existing = (await txBetween(s, addDays(due[0].next_date, -pad), addDays(s.today, pad))).filter((t) => !t.parentId);
+  // `select("*")`: antes de aplicar la migración 040 la columna no existe y simplemente no viene.
+  const goalOf = (r: (typeof due)[number]) => (r as { goal_id?: string | null }).goal_id ?? null;
+  const goals = due.some(goalOf)
+    ? must(await s.supabase.from("goals").select("id, completed_at").is("archived_at", null)).map((g) => ({ id: g.id, active: !g.completed_at }))
+    : [];
   let created = 0;
   for (const r of due) {
     const freq = r.frequency as RecFrequency;
@@ -106,6 +113,7 @@ export async function generateDueRecurring(s: Session): Promise<number> {
         const row = must(await s.supabase.from("transactions").insert({
           user_id: s.userId, account_id: r.account_id, date, amount_cents: r.amount_cents, description: r.description, category_id: r.category_id,
           plan_line_id: lineId, source: "recurring", recurring_id: r.id, status: r.category_id || lineId ? "ok" : "review",
+          ...recurringGoal(goalOf(r), goals),
         }).select("id").single());
         await clearMark(s, lineId, date);
         existing.push({ ...candidate, id: row.id } as Tx);

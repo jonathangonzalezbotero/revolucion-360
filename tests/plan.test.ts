@@ -171,3 +171,84 @@ describe("plan: línea nueva", () => {
     expect(s.months[11]).toBe(40000); // diciembre 2026: viernes 4, 11, 18 y 25
   });
 });
+
+describe("plan: pagado desde el Plan anual", () => {
+  it("suma los movimientos unidos por línea y mes, solo del año que se mira", async () => {
+    const { linkedByMonth } = await import("../src/app/(app)/plan/lib");
+    const l = linkedByMonth([
+      { lineId: "home", date: "2026-03-03", amountCents: -133000 },
+      { lineId: "home", date: "2026-03-20", amountCents: -1000 },
+      { lineId: "home", date: "2025-03-03", amountCents: -999 },
+    ], 2026);
+    expect(l.home[2]).toBe(-134000);
+    expect(l.home[0]).toBeNull();
+    expect(l.sueldo).toBeUndefined();
+  });
+  it("marca y desmarca un mes sin tocar las demás filas", async () => {
+    const { marksByLine, patchMark } = await import("../src/app/(app)/plan/lib");
+    const st = marksByLine(["home", "mercado"], ["home:3"]);
+    expect(st.home[2]).toBe(true);
+    const next = patchMark(st, "home", 4, true);
+    expect(next.home[3]).toBe(true);
+    expect(next.mercado).toBe(st.mercado);
+    expect(st.home[3]).toBe(false);
+    expect(patchMark(next, "home", 3, false).home[2]).toBe(false);
+  });
+  it("usa la regla del Detalle del mes: un movimiento unido reemplaza la marca a mano", async () => {
+    const { canToggle, cellStatus, isPaid } = await import("../src/app/(app)/plan/lib");
+    expect(cellStatus(4000, null, true)).toBe("paid_manual");
+    expect(cellStatus(4000, -4000, true)).toBe("paid");      // Felix Mobile: pagado $40, no $80
+    expect(cellStatus(133000, -67000, false)).toBe("partial");
+    expect(cellStatus(4000, null, false)).toBe("pending");
+    expect(cellStatus(0, null, false)).toBe("none");
+    expect(canToggle(4000, "pending")).toBe(true);
+    expect(canToggle(4000, "paid_manual")).toBe(true);
+    expect(canToggle(4000, "paid")).toBe(false);              // lo pagó un movimiento: se cambia en el movimiento
+    expect(canToggle(0, "pending")).toBe(false);
+    expect(isPaid("over") && isPaid("paid") && isPaid("paid_manual") && !isPaid("partial")).toBe(true);
+  });
+});
+
+describe("plan: meses con un pago de más", () => {
+  const weekly = { frequency: "weekly" as const, firstPayDate: "2026-01-02", year: 2026, amountCents: 100000 };
+  it("semanal desde el viernes 2 ene 2026: enero trae 5 pagos, febrero 4 (regla cerrada)", async () => {
+    const { extraPays } = await import("../src/app/(app)/plan/lib");
+    const x = extraPays(weekly);
+    expect(x[0]).toBe(5);
+    expect(x[1]).toBeNull();
+    expect(x.filter((n) => n === 5).length).toBe(4); // 52 pagos = 12×4 + 4 meses con 5
+  });
+  it("quincenal: 3 pagos en vez de 2", async () => {
+    const { extraPays } = await import("../src/app/(app)/plan/lib");
+    const x = extraPays({ ...weekly, frequency: "fortnightly" });
+    expect(x.filter((n) => n === 3).length).toBe(2); // 26 pagos = 12×2 + 2 meses con 3
+    expect(x.every((n) => n === null || n === 3)).toBe(true);
+  });
+  it("no marca si la celda se editó a mano y ya no es pagos × monto, ni en líneas mensuales", async () => {
+    const { extraPays } = await import("../src/app/(app)/plan/lib");
+    const a = Array<number>(12).fill(400000); a[0] = 500000;
+    expect(extraPays(weekly, { a, m: Array<boolean>(12).fill(false) })[0]).toBe(5);
+    a[0] = 450000;
+    expect(extraPays(weekly, { a, m: Array<boolean>(12).fill(false) })[0]).toBeNull();
+    expect(extraPays({ ...weekly, frequency: "monthly" }).every((n) => n === null)).toBe(true);
+    expect(extraPays({ ...weekly, amountCents: 0 }).every((n) => n === null)).toBe(true);
+  });
+});
+
+describe("plan: unir a metas, deudas e inversiones", () => {
+  it("elige a qué se une según el tipo de categoría", async () => {
+    const { currentLink, linkTarget, sideOf } = await import("../src/app/(app)/plan/lib");
+    expect(linkTarget("goal")).toBe("goal");
+    expect(linkTarget("debt")).toBe("debt");
+    expect(linkTarget("saving")).toBe("asset");
+    expect(linkTarget("expense")).toBeNull();
+    expect(linkTarget("income")).toBeNull();
+    const opts = { goals: [], debts: [], assets: [{ id: "a1", name: "VOO", lineId: "l1" }] };
+    expect(currentLink({ id: "l1", goalId: "g1", debtId: null }, "goal", opts)).toBe("g1");
+    expect(currentLink({ id: "l1", goalId: null, debtId: null }, "debt", opts)).toBe("");
+    expect(currentLink({ id: "l1" }, "asset", opts)).toBe("a1");
+    expect(currentLink({ id: "l2" }, "asset", opts)).toBe("");
+    expect(sideOf("income")).toBe("income");
+    expect(sideOf("saving")).toBe("expense");
+  });
+});

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  anchorDayOf, buildRows, dueDates, filterTotals, matchRow, moneyInput, movHref, nextRecurringDate, NO_FILTER, rulePattern, signed, splitInTwo, type MovRow,
+  anchorDayOf, buildRows, dueDates, filterTotals, foldedActive, matchRow, moneyInput, movHref, nextRecurringDate, NO_FILTER, recurringGoal, rulePattern, signed, splitInTwo, type MovRow,
 } from "@/app/(app)/movimientos/lib";
 
 type TxIn = Parameters<typeof buildRows>[0][number];
@@ -139,5 +139,30 @@ describe("utilidades", () => {
     expect(movHref({ mes: "11", anio: "2026", cat: "" })).toBe("/movimientos?anio=2026&mes=11");
     expect(movHref({ ver: "revisar" })).toBe("/movimientos?ver=revisar");
     expect(movHref({ ver: "", mes: "", estado: "plan", cat: "c1" })).toBe("/movimientos?cat=c1&estado=plan");
+  });
+});
+
+describe("Movimientos simple (25 nov 2026)", () => {
+  it("un ?nivel= viejo ya no forma parte del enlace", () => {
+    expect(movHref({ ver: "revisar", ...({ nivel: "plan" } as object) })).toBe("/movimientos?ver=revisar");
+    expect(movHref({ linea: "l1", mes: "3", anio: "2025" })).toBe("/movimientos?anio=2025&mes=3&linea=l1");
+  });
+  it("Más filtros cuenta cuenta, estado y otro año", () => {
+    expect(foldedActive({ account: "", state: "" }, false)).toBe(0);
+    expect(foldedActive({ account: "acc1", state: "" }, false)).toBe(1);
+    expect(foldedActive({ account: "acc1", state: "revisar" }, true)).toBe(3);
+  });
+});
+
+describe("recurrente unido a una meta", () => {
+  const goals = [{ id: "g1", active: true }, { id: "g2", active: false }];
+  it("cada movimiento nace como aporte a la meta activa", () => {
+    expect(recurringGoal("g1", goals)).toEqual({ goal_id: "g1", goal_role: "in" });
+  });
+  it("sin meta, meta cumplida o que ya no existe: sin meta", () => {
+    expect(recurringGoal(null, goals)).toBeNull();
+    expect(recurringGoal(undefined, goals)).toBeNull();
+    expect(recurringGoal("g2", goals)).toBeNull();
+    expect(recurringGoal("g9", goals)).toBeNull();
   });
 });

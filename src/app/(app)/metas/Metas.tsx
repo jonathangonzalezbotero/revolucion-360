@@ -8,12 +8,12 @@ import { Empty, PageHeader } from "@/components/ui/basics";
 import { ConfirmButton, Switch, useToast } from "@/components/ui/client";
 import { Icon } from "@/components/ui/Icon";
 import { formatDate, formatMoney, goalPlan, parseMoney, type Cents, type GoalPlan, type ISODate, type MoneyFormat } from "@/lib/engine";
-import { MILESTONES, type GoalOutlook, type Milestone } from "@/lib/engine/metas";
+import { MILESTONES, type Milestone } from "@/lib/engine/metas";
 import type { Result } from "@/server/action";
 import { addEntry, addToPlan, archiveGoal, completeGoal, createGoal, sendLeftover, updateGoal } from "./actions";
 import { joinChallenge, leaveChallenge } from "../retos/actions";
 import type { MetasReto } from "../retos/server";
-import { GOAL_TYPES, monthOptions, resolveTargetDate, TYPE_COLOR, TYPE_IMG, whenLabel, ymOf, type GoalStatus, type GoalType } from "./lib";
+import { CONTRIB_FREQS, GOAL_TYPES, monthOptions, resolveTargetDate, TYPE_COLOR, TYPE_IMG, whenLabel, ymOf, type ContribFreq, type Contribution, type GoalStatus, type GoalType, type MetaOutlook } from "./lib";
 import type { MetasMessages } from "./messages";
 import css from "./metas.module.css";
 import { ILLU } from "@/lib/images";
@@ -21,7 +21,9 @@ import { ILLU } from "@/lib/images";
 export type GoalView = {
   id: string; name: string; kind: string; why: string; type: GoalType; targetCents: Cents; targetDate: ISODate | null; isEmergencyFund: boolean;
   accountId: string | null; accountName: string; accountMode: "auto" | "shared" | "none";
-  completed: boolean; inPlan: boolean; plan: GoalPlan; status: GoalStatus; outlook: GoalOutlook;
+  completed: boolean; inPlan: boolean; plan: GoalPlan; status: GoalStatus; outlook: MetaOutlook;
+  /** El aporte de su línea del plan (año en curso), si tiene. */
+  contribution: Contribution | null;
   reached: Milestone[]; next: { pct: Milestone; missingCents: Cents } | null;
   entries: { id: string; date: ISODate; amountCents: Cents; label: string }[];
 };
@@ -38,7 +40,9 @@ type Props = {
 type Run = <T>(fn: () => Promise<Result<T>>, after: (r: Extract<Result<T>, { ok: true }>) => void, onError: (e: string) => void) => void;
 const HISTORY = 6;
 
-function GoalForm({ p, goal, run, pending, onClose, onSaved }: { p: Props; goal?: GoalView; run: Run; pending: boolean; onClose: () => void; onSaved: (inPlan: boolean, monthlyCents: Cents | null) => void }) {
+type Saved = { inPlan: boolean; contribution: Contribution | null };
+
+function GoalForm({ p, goal, run, pending, onClose, onSaved }: { p: Props; goal?: GoalView; run: Run; pending: boolean; onClose: () => void; onSaved: (r: Saved) => void }) {
   const { m, fmt, locale, today } = p;
   const uid = goal?.id ?? "new";
   const base = monthOptions(today);
@@ -47,7 +51,8 @@ function GoalForm({ p, goal, run, pending, onClose, onSaved }: { p: Props; goal?
     custom: goal && goal.type === "other" && goal.kind !== m.types.other ? goal.kind : "",
     name: goal?.name ?? "", why: goal?.why ?? "", target: goal?.targetCents ? formatMoney(goal.targetCents, fmt) : "",
     month: goal ? (goal.targetDate ? ymOf(goal.targetDate) : "") : base[12],
-    fund: goal?.isEmergencyFund ?? false, toPlan: true, account: goal?.accountId ?? "",
+    fund: goal?.isEmergencyFund ?? false, account: goal?.accountId ?? "",
+    contrib: goal?.contribution ? formatMoney(goal.contribution.amountCents, fmt) : "", freq: (goal?.contribution?.frequency ?? "monthly") as ContribFreq,
   });
   const [error, setError] = useState("");
   const months = f.month && !base.includes(f.month) ? [f.month, ...base] : base;
@@ -55,14 +60,14 @@ function GoalForm({ p, goal, run, pending, onClose, onSaved }: { p: Props; goal?
   const date = resolveTargetDate(f.month, goal?.targetDate ?? null);
   const calc = targetCents > 0 && date ? goalPlan(targetCents, [goal?.plan.savedCents ?? 0], date, today) : null;
   const kind = f.type === "other" ? f.custom.trim() || m.types.other : m.types[f.type];
-  const fields = { name: f.name, kind, target: f.target, month: f.month, isEmergencyFund: f.fund, accountId: f.account, why: f.why };
+  const fields = { name: f.name, kind, target: f.target, month: f.month, isEmergencyFund: f.fund, accountId: f.account, why: f.why, contribution: f.contrib, contribFreq: f.freq };
   const accounts = goal?.accountId && !p.accounts.some((a) => a.id === goal.accountId) ? [{ id: goal.accountId, name: goal.accountName }, ...p.accounts] : p.accounts;
 
   return (
     <form aria-labelledby={`gf-${uid}`} className={goal ? "stack" : "form-open"} style={goal ? { gap: 14 } : undefined} onSubmit={(e) => {
       e.preventDefault(); setError("");
-      if (goal) run(() => updateGoal({ id: goal.id, ...fields }), (r) => onSaved(false, r.data.monthlyCents), setError);
-      else run(() => createGoal({ ...fields, addToPlan: f.toPlan }), (r) => onSaved(r.data.inPlan, null), setError);
+      if (goal) run(() => updateGoal({ id: goal.id, ...fields }), (r) => onSaved({ inPlan: false, ...r.data }), setError);
+      else run(() => createGoal(fields), (r) => onSaved({ inPlan: r.data.inPlan, contribution: null }), setError);
     }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
         <h2 id={`gf-${uid}`} className={css.formTitle}>{goal ? m.editTitle : m.newTitle}</h2>
@@ -99,16 +104,29 @@ function GoalForm({ p, goal, run, pending, onClose, onSaved }: { p: Props; goal?
           <span className="num small muted">{fill(m.calcW, { amount: formatMoney(calc.weeklyCents, fmt) })}</span>
         </div>
       ) : null}
+      {goal?.completed ? null : (
+        <fieldset className={css.contrib}>
+          <legend style={{ fontSize: 14, fontWeight: 600 }}>{m.contrib}</legend>
+          <span className="xs muted" style={{ lineHeight: 1.5 }}>{m.contribSub}</span>
+          <div className={css.grid2}>
+            <div className="field"><label htmlFor={`gca-${uid}`}>{m.contribAmount}</label><input id={`gca-${uid}`} className="input num" inputMode="decimal" value={f.contrib} onChange={(e) => setF({ ...f, contrib: e.target.value })} placeholder={formatMoney(0, fmt)} /></div>
+            <div className="field"><label htmlFor={`gcf-${uid}`}>{m.contribFreq}</label>
+              <select id={`gcf-${uid}`} className="select" value={f.freq} onChange={(e) => setF({ ...f, freq: e.target.value as ContribFreq })}>
+                {CONTRIB_FREQS.map((x) => <option key={x} value={x}>{m.freqs[x]}</option>)}
+              </select>
+            </div>
+          </div>
+          {calc?.monthlyCents ? (
+            <button type="button" className={css.textBtn} style={{ alignSelf: "flex-start" }} onClick={() => setF({ ...f, contrib: formatMoney(calc.monthlyCents!, fmt), freq: "monthly" })}>
+              {fill(m.useCalc, { amount: formatMoney(calc.monthlyCents, fmt) })}
+            </button>
+          ) : null}
+        </fieldset>
+      )}
       <div className={css.option}>
         <span><span style={{ fontSize: 14, fontWeight: 600 }}>{m.fund}</span><span className="xs muted">{m.fundSub}</span></span>
         <Switch checked={f.fund} onChange={(fund) => setF({ ...f, fund })} label={m.fund} />
       </div>
-      {goal ? null : (
-        <div className={css.option}>
-          <span><span style={{ fontSize: 14, fontWeight: 600 }}>{m.toPlan}</span><span className="xs muted">{m.toPlanSub}</span></span>
-          <Switch checked={f.toPlan} onChange={(toPlan) => setF({ ...f, toPlan })} label={m.toPlan} />
-        </div>
-      )}
       {error ? <p role="alert" className="error">{error}</p> : null}
       <div className="row wrap" style={{ justifyContent: "flex-end" }}>
         <button type="button" className="btn btn-secondary" onClick={onClose}>{m.cancel}</button>
@@ -175,10 +193,11 @@ export function Metas(p: Props) {
       case "reached": return m.stReached;
       case "pace": return fill(m.stPace, { when: whenLabel(o.when, locale) });
       case "date": return fill(m.stDate, { amount: money(o.monthlyCents), when: whenLabel(o.when, locale) });
+      case "plan": return fill(m.stPlan, { amount: money(o.amountCents), per: m.per[o.frequency], when: whenLabel(o.when, locale) });
       default: return fill(m.stOpen, { amount: money(o.remainingCents) });
     }
   };
-  const statusColor = (o: GoalOutlook) => (o.kind === "reached" || o.kind === "pace" ? "var(--verde-fuerte)" : o.kind === "date" ? "var(--tinta-2)" : "var(--gris)");
+  const statusColor = (o: MetaOutlook) => (o.kind === "reached" || o.kind === "pace" ? "var(--verde-fuerte)" : o.kind === "date" || o.kind === "plan" ? "var(--tinta-2)" : "var(--gris)");
   const acctText = (g: GoalView) => (g.accountMode === "auto" ? fill(m.acctNote, { account: g.accountName }) : g.accountMode === "shared" ? fill(m.acctShared, { account: g.accountName }) : m.acctNone);
 
   const pickLeftover = (goalId: string | null) => {
@@ -226,7 +245,7 @@ export function Metas(p: Props) {
       ) : null}
 
       {showNew && canEdit ? (
-        p.wall ?? <GoalForm p={p} run={run} pending={pending} onClose={closeNew} onSaved={(inPlan) => { closeNew(); toast(inPlan ? m.tCreatedPlan : m.tCreated); }} />
+        p.wall ?? <GoalForm p={p} run={run} pending={pending} onClose={closeNew} onSaved={(r) => { closeNew(); toast(r.inPlan ? m.tCreatedPlan : m.tCreated); }} />
       ) : null}
 
       {active.length === 0 ? (
@@ -273,7 +292,10 @@ export function Metas(p: Props) {
                 {open ? (
                   editId === g.id ? (
                     <div className={css.panel}>
-                      <GoalForm p={p} goal={g} run={run} pending={pending} onClose={() => setEditId("")} onSaved={(_, monthly) => { setEditId(""); toast(monthly ? fill(m.tSavedPlan, { amount: money(monthly) }) : m.tSaved); }} />
+                      <GoalForm p={p} goal={g} run={run} pending={pending} onClose={() => setEditId("")} onSaved={(r) => {
+                        setEditId("");
+                        toast(r.contribution ? fill(m.tSavedContrib, { amount: money(r.contribution.amountCents), per: m.per[r.contribution.frequency] }) : m.tSaved);
+                      }} />
                     </div>
                   ) : (
                     <div className={css.panel}>

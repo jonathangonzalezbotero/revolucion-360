@@ -4,6 +4,7 @@ import { useMemo, useState, useSyncExternalStore, useTransition } from "react";
 import { fill } from "@/i18n";
 import { Empty } from "@/components/ui/basics";
 import { Modal, useToast } from "@/components/ui/client";
+import { ReplayTourButton } from "@/components/shell/Tour";
 import { createTicket, replyTicket } from "./actions";
 import { browserLabel, buildTech, searchFaqs, TECH_KEYS, TOPICS, type Tech, type Topic } from "./lib";
 import type { AyudaMessages } from "./messages";
@@ -14,7 +15,7 @@ export type TicketView = {
   messages: { id: string; body: string; fromAdmin: boolean; when: string }[];
 };
 type Faq = { id: string; topic: string; question: string; answer: string };
-type Props = { m: AyudaMessages; faqs: Faq[]; tickets: TicketView[]; server: { appLanguage: string; plan: string; country: string; version: string }; course: { title: string; lessons: number } | null };
+type Props = { m: AyudaMessages; faqs: Faq[]; tickets: TicketView[]; server: { appLanguage: string; plan: string; country: string; version: string }; course: { title: string; lessons: number } | null; tour: boolean };
 
 const STATUS_PILL = { open: "pill-warn", answered: "pill-ok", closed: "" } as const;
 
@@ -23,7 +24,7 @@ const noop = () => () => {};
 const clientInfo = () => `${browserLabel(navigator.userAgent)}|${window.screen.width}×${window.screen.height}|${navigator.language}`;
 const useClientInfo = () => useSyncExternalStore(noop, clientInfo, () => "||");
 
-export function Help({ m, faqs, tickets, server, course }: Props) {
+export function Help({ m, faqs, tickets, server, course, tour }: Props) {
   const toast = useToast();
   const [q, setQ] = useState("");
   const [topic, setTopic] = useState<string>("all");
@@ -190,6 +191,7 @@ export function Help({ m, faqs, tickets, server, course }: Props) {
               <span className={css.mark}>{m.seeLessons}</span>
             </Link>
           ) : null}
+          {tour ? <ReplayTourButton label={m.tourAgain} /> : null}
         </div>
       </div>
 

@@ -9,19 +9,23 @@ import { formatMoney, type MoneyFormat } from "@/lib/engine";
 import css from "../onboarding.module.css";
 import { commitPlan, saveProgress } from "./actions";
 import {
-  averageSummary, BASIC_KEYS, buildDrafts, cents, DEBT_KEYS, DEBT_TYPES, HOME_TYPES, MAX_ROWS, monthlyAverage, summarize, visibleSteps,
+  averageSummary, BASIC_KEYS, buildDrafts, cents, DEBT_KEYS, DEBT_TYPES, HOME_TYPES, MAX_ROWS, monthlyAverage, restOfPlan, summarize, visibleSteps, withRest,
   type Answers, type Ctx, type DebtType, type Freq, type StepKey,
 } from "./lib";
 import type { WizardMessages } from "./messages";
 
 type Props = {
   m: WizardMessages; fmt: MoneyFormat; ctx: Ctx; monthLabel: string; redo: boolean; initial: Answers;
+  /** Arrancó con el plan que ya tenía: guardar actualiza esas líneas */
+  loaded: boolean;
+  /** Las líneas del plan del año y su monto en el mes que muestra el resumen */
+  existing: { id: string; kind: "income" | "expense"; monthCents: number }[];
   freelance: string; currencyName: string; familyCategory: string; taxSection: string; taxReserve: boolean; yes: string; no: string;
 };
 const FREQS: Freq[] = ["weekly", "fortnightly", "monthly"];
 const GREEN: React.CSSProperties = { fontSize: 12, color: "var(--verde-fuerte)", fontWeight: 600 };
 
-export function Wizard({ m, fmt, ctx, monthLabel, redo: redoNow, initial, freelance, currencyName, familyCategory, taxSection, taxReserve, yes, no }: Props) {
+export function Wizard({ m, fmt, ctx, monthLabel, redo: redoNow, loaded, existing, initial, freelance, currencyName, familyCategory, taxSection, taxReserve, yes, no }: Props) {
   const router = useRouter();
   const toast = useToast();
   const steps = useMemo(() => visibleSteps(ctx.remesas), [ctx.remesas]);
@@ -34,11 +38,17 @@ export function Wizard({ m, fmt, ctx, monthLabel, redo: redoNow, initial, freela
   const idx = steps.indexOf(a.step);
   const isPlan = a.step === "plan";
   const drafts = useMemo(() => buildDrafts(a, ctx), [a, ctx]);
+  // Lo que el asistente no cubre de tu plan (líneas que ninguna respuesta cambia), en el mes del resumen.
+  const rest = useMemo(() => restOfPlan(existing, drafts), [existing, drafts]);
   // Mientras responde: promedio mensual. En el último paso: el motor, mes real (lo mismo que verá en Inicio).
-  const sum = isPlan ? summarize(drafts, ctx.year, ctx.month) : averageSummary(drafts);
+  const sum = withRest(isPlan ? summarize(drafts, ctx.year, ctx.month) : averageSummary(drafts), rest);
+  const known = useMemo(() => new Set(existing.map((l) => l.id)), [existing]);
+  const toUpdate = drafts.lines.filter((l) => l.lineId && known.has(l.lineId)).length, toAdd = drafts.lines.length - toUpdate;
+  const nLines = (n: number) => (n === 1 ? m.plan.linesOne : fill(m.plan.lines, { n }));
   const money = (c: number) => formatMoney(c, fmt);
   const netLabel = sum.net < 0 ? m.missing : m.surplus;
-  const hasIncome = drafts.lines.some((l) => l.kind === "income");
+  // Un ingreso que el asistente no sabe leer (mes a mes, anual, único) sigue en tu plan: también cuenta.
+  const hasIncome = drafts.lines.some((l) => l.kind === "income") || existing.some((l) => l.kind === "income");
 
   const set = (patch: Partial<Answers>) => setA((cur) => ({ ...cur, ...patch }));
   const go = (step: StepKey) => {
@@ -96,7 +106,7 @@ export function Wizard({ m, fmt, ctx, monthLabel, redo: redoNow, initial, freela
         </ol>
         <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gris)", whiteSpace: "nowrap" }}>{fill(m.stepOf, { n: idx + 1, total: steps.length })}</span>
       </div>
-      {redo ? <div className="banner banner-info"><span style={{ flex: "1 1 280px" }}>{m.redo}</span><Link href="/inicio" className="link">{m.backHome}</Link></div> : null}
+      {redo ? <div className="banner banner-info"><span style={{ flex: "1 1 280px" }}>{loaded ? fill(m.redoLoaded, { year: ctx.year, month: monthLabel }) : m.redo}</span><Link href="/inicio" className="link">{m.backHome}</Link></div> : null}
 
       <div className={css.wzCols}>
         <div className={css.wzStrip}>
@@ -253,16 +263,20 @@ export function Wizard({ m, fmt, ctx, monthLabel, redo: redoNow, initial, freela
 
           {isPlan ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {lead(m.plan.title)}
-              <p style={{ fontSize: 14, color: "var(--gris)", lineHeight: 1.5 }}>{m.plan.lead} <strong style={{ color: "var(--tinta)" }}>{sum.lines === 1 ? m.plan.linesOne : fill(m.plan.lines, { n: sum.lines })}</strong> {m.plan.tail}</p>
+              {lead(toUpdate > 0 ? m.plan.titleLoaded : m.plan.title)}
+              {toUpdate > 0 ? (
+                <p style={{ fontSize: 14, color: "var(--gris)", lineHeight: 1.5 }}>{m.plan.leadUpdate} <strong style={{ color: "var(--tinta)" }}>{nLines(toUpdate)}</strong>{toAdd > 0 ? <> {m.plan.leadAdd} <strong style={{ color: "var(--tinta)" }}>{nLines(toAdd)}</strong></> : null}. {m.plan.tailLoaded}</p>
+              ) : (
+                <p style={{ fontSize: 14, color: "var(--gris)", lineHeight: 1.5 }}>{m.plan.lead} <strong style={{ color: "var(--tinta)" }}>{nLines(sum.lines)}</strong> {m.plan.tail}</p>
+              )}
               <div className={css.totals}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}><span style={{ fontSize: 12, color: "var(--gris)" }}>{m.plan.in}</span><span className="num" style={{ fontSize: 18, fontWeight: 600 }}>{money(sum.income)}</span></div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}><span style={{ fontSize: 12, color: "var(--gris)" }}>{m.plan.out}</span><span className="num" style={{ fontSize: 18, fontWeight: 600 }}>{money(sum.expense)}</span></div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}><span style={{ fontSize: 12, color: "var(--gris)" }}>{netLabel}</span><span className="num" style={{ fontSize: 18, fontWeight: 600 }}>{money(Math.abs(sum.net))}</span></div>
               </div>
-              <span className="hint only-mobile">{fill(redo ? m.aside.noteRedo : m.aside.noteReal, { month: monthLabel })}</span>
+              <span className="hint only-mobile">{fill(m.aside.noteReal, { month: monthLabel })}</span>
               {error || !hasIncome ? <p role="alert" className={css.alert}>{error || m.errors.incomeFirst}</p> : null}
-              <button type="button" className={css.cta} disabled={pending || sent || !hasIncome} onClick={() => commit("diagnostico")}>{pending || sent ? m.plan.saving : m.plan.cta}</button>
+              <button type="button" className={css.cta} disabled={pending || sent || !hasIncome} onClick={() => commit("diagnostico")}>{pending || sent ? (toUpdate > 0 ? m.plan.savingLoaded : m.plan.saving) : m.plan.cta}</button>
               <button type="button" className={css.textLink} disabled={pending || sent || !hasIncome} onClick={() => commit("plan")}>{m.plan.toPlan}</button>
             </div>
           ) : error ? <p role="alert" className={css.alert}>{error}</p> : null}
@@ -281,10 +295,11 @@ export function Wizard({ m, fmt, ctx, monthLabel, redo: redoNow, initial, freela
           <div className={css.asideRow}><span>{m.aside.debts}</span><span className="num">{money(sum.debts)}</span></div>
           {ctx.remesas ? <div className={css.asideRow}><span>{m.aside.family}</span><span className="num">{money(sum.family)}</span></div> : null}
           {sum.goals > 0 ? <div className={css.asideRow}><span>{m.aside.goals}</span><span className="num">{money(sum.goals)}</span></div> : null}
+          {rest.expense > 0 ? <div className={css.asideRow}><span>{m.aside.rest}</span><span className="num">{money(rest.expense)}</span></div> : null}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: "1px solid var(--linea)", paddingTop: 12 }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>{netLabel}</span><strong className="num big" style={{ fontSize: 26 }}>{money(Math.abs(sum.net))}</strong>
           </div>
-          <span style={{ fontSize: 12, color: "var(--gris)", lineHeight: 1.5 }}>{isPlan ? fill(redo ? m.aside.noteRedo : m.aside.noteReal, { month: monthLabel }) : m.aside.note}</span>
+          <span style={{ fontSize: 12, color: "var(--gris)", lineHeight: 1.5 }}>{isPlan ? fill(m.aside.noteReal, { month: monthLabel }) : m.aside.note}</span>
         </aside>
       </div>
     </div>

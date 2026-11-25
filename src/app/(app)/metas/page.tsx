@@ -8,7 +8,7 @@ import {
 } from "@/lib/engine/metas";
 import { fetchAll, must } from "@/server/data";
 import { requireUser } from "@/server/session";
-import { goalStatus, typeOf } from "./lib";
+import { asContribFreq, goalStatus, planOutlook, typeOf, type Contribution } from "./lib";
 import { M } from "./messages";
 import { Metas, type GoalView } from "./Metas";
 import { leftoverFor, raw, syncGoalLinks } from "./server";
@@ -44,7 +44,7 @@ export default async function MetasPage({ searchParams }: { searchParams: Search
     db.from("goals").select("id, name, kind, why, target_cents, target_date, is_emergency_fund, completed_at, account_id, account_linked_on").is("archived_at", null).order("created_at"),
     fetchAll<EntryRow>((a, b) =>
       db.from("goal_entries").select("id, goal_id, date, amount_cents, note, kind").order("date", { ascending: false }).order("created_at", { ascending: false }).order("id").range(a, b)),
-    s.supabase.from("plan_lines").select("goal_id").eq("year", s.year).is("archived_at", null).not("goal_id", "is", null),
+    s.supabase.from("plan_lines").select("goal_id, amount_cents, frequency").eq("year", s.year).is("archived_at", null).not("goal_id", "is", null).order("created_at"),
     s.supabase.from("accounts").select("id, name, archived_at").order("sort").order("created_at"),
     s.supabase.from("month_closures").select("year, month, reopened_at, snapshot").is("reopened_at", null).order("year", { ascending: false }).order("month", { ascending: false }).limit(1),
     db.from("goal_leftovers").select("year, month"),
@@ -53,7 +53,14 @@ export default async function MetasPage({ searchParams }: { searchParams: Search
   const accounts = must(accountsRes);
   const accountName = new Map(accounts.map((a) => [a.id, a.name]));
   const goals = must(goalsRes) as GoalRow[];
-  const inPlan = new Set(must(linesRes).map((l) => l.goal_id));
+  const goalLines = must(linesRes);
+  const inPlan = new Set(goalLines.map((l) => l.goal_id));
+  // El aporte de cada meta: su línea del plan de este año (la primera, si hubiera más de una). De ahí sale el ritmo.
+  const contributions = new Map<string, Contribution>();
+  for (const l of goalLines) {
+    const frequency = asContribFreq(l.frequency);
+    if (l.goal_id && frequency && l.amount_cents > 0 && !contributions.has(l.goal_id)) contributions.set(l.goal_id, { amountCents: l.amount_cents, frequency });
+  }
   const labels = [M.es.types, M.en.types];
   const shared = sharedAccounts(goals.map((g) => ({ id: g.id, accountId: g.account_id, linkedOn: g.account_linked_on, archived: false, completed: !!g.completed_at })));
 
@@ -77,7 +84,11 @@ export default async function MetasPage({ searchParams }: { searchParams: Search
       accountId: g.account_id, accountName: (g.account_id && accountName.get(g.account_id)) || "",
       accountMode: !g.account_id ? "none" : shared.has(g.account_id) ? "shared" : "auto",
       completed: !!g.completed_at, inPlan: inPlan.has(g.id), plan, status: goalStatus(plan, g.target_cents, g.target_date, s.today),
-      outlook: goalOutlook({ targetCents: g.target_cents, savedCents: plan.savedCents, targetDate: g.target_date, entries: lite, today: s.today }),
+      contribution: contributions.get(g.id) ?? null,
+      outlook: planOutlook(
+        goalOutlook({ targetCents: g.target_cents, savedCents: plan.savedCents, targetDate: g.target_date, entries: lite, today: s.today }),
+        contributions.get(g.id) ?? null, plan.remainingCents, s.today,
+      ),
       reached: milestonesReached(g.target_cents, plan.savedCents), next: nextMilestone(g.target_cents, plan.savedCents),
       entries: own.filter((e) => e.amount_cents !== 0).map((e) => ({ id: e.id, date: e.date, amountCents: e.amount_cents, label: label(e) })),
     };

@@ -50,6 +50,8 @@ export async function updateAsset(input: unknown) {
     const asset = await loadAsset(s, p.data.id);
     if (!asset) return fail(s.t.errors.notFound);
     let lineId: string | null = asset.plan_line_id;
+    // El super (jubilación) lo pone el empleador: nunca va en el plan (decisión del 25 nov 2026).
+    if (p.data.kind === "retirement" && p.data.link) return fail(m.errRetirementPlan);
     if (p.data.link === "new") {
       const monthly = p.data.monthly.trim() ? parseMoney(p.data.monthly) : null;
       if (monthly === null || monthly <= 0) return fail(m.errMonthly);
