@@ -108,7 +108,7 @@ desde la web (la persona responde START).
 | Registro confirmado (casilla) | true | Se levanta la baja |
 | Conexiones web (navegador o servidor) | false | `suppressed`: no marca nada |
 | Clic de confirmación de una conexión (`confirma:<slug>`) | true (solo correo) | Se levanta solo una baja que pidió la persona (`unsubscribe`); una baja `manual`, un rebote, una queja o un STOP → `suppressed` |
-| Importar desde systeme.io con constancia | false | `suppressed` (y quien estaba de baja allá entra de baja aquí) |
+| Importar desde systeme.io (etiqueta `newsletter` o columna con constancia) | false | `suppressed`: no marca nada (y un archivo de bajas entra de baja aquí) |
 | Importar CSV con constancia | false | `suppressed`: cuenta en "omitidos" (también una dirección suprimida **sin contacto todavía**: la supresión se busca por dirección, no por contacto) |
 | Panel (`setContactConsent`) | false | Lanza `suppressed` |
 
@@ -565,17 +565,45 @@ etiqueta debería ir solo en el webhook del pago, porque arranca el acceso.
 
 ### Importar desde systeme.io
 
-"Importar desde systeme.io" (Conexiones web): el CSV de systeme.io (Contacts → Export) se lee en el navegador; se adivinan
-las columnas (`email`, `first_name`, `surname`, `phone_number`, `tags` separadas por coma, `unsubscribed`, consentimiento y
-fecha de alta) y el Dueño las puede cambiar con vista previa. Tandas de 200, hasta 20,000 filas.
-- Une por correo; completa nombre y teléfono si faltan; la **fecha de alta** solo en contactos nuevos; origen "Importado ·
-  systeme.io".
-- Crea las etiquetas que falten y las pone **sin disparar automatizaciones** (el evento queda en el historial ya
+"Importar desde systeme.io" (Conexiones web): el CSV de systeme.io (Contacts → Export) se lee en el navegador (no se
+guarda); se adivinan las columnas y el Dueño las puede cambiar. Tandas de 100 filas, hasta 20,000 por archivo. Código:
+`src/lib/crm/connections.ts` (puro, `tests/conexiones.test.ts`), `src/server/crm/connections.ts › importSysteme` y
+`src/app/admin/conexiones/ImportSysteme.tsx`. Decisión de Jonathan (25 nov 2026, plan › "Importación desde systeme.io").
+
+**Formato real del export** (encabezados exactos, con comillas): `"Email","First name","Last name","Street address",
+"Street number","Neighborhood","Postal code","City","State/Province","Country","Phone number","Company name","Tax number",
+"partner's phone","partners name","partner's email","Tag","Date Registered"`. No trae columna de baja ni de consentimiento.
+La dirección, empresa y número de impuesto no se importan.
+
+| Columna | Qué se hace |
+|---|---|
+| `Email` | Une por correo (minúsculas); correos repetidos en el archivo: gana el primero; sin correo válido: no entra |
+| `First name` + `Last name` | Nombre, con espacios sobrantes recortados |
+| `Phone number` | Viene sin `+` y con código de país (`61479103452`) → E.164 (`+61479103452`). También `0412…` (país de la fila o AU) y `+61 4…`. Se valida el largo nacional por país (AU 9 cifras, CO 10…): un número que no calza (p. ej. `6147910345`) entra **sin teléfono** y se cuenta como inválido (`systemePhone`) |
+| `Country` | Código de 2 letras si viene; si está vacío, se deduce del prefijo del teléfono (61 → AU, 57 → CO, 593 → EC…; `1` queda sin país) |
+| `partner's phone`, `partners name`, `partner's email` | **Campos extra del contacto que lo inscribió** (`partners_phone` en E.164 asumiendo AU si no trae código; si no se puede, como vino; `partners_name`; `partners_email`). **Nunca** se crea un contacto para el acompañante ni se le da consentimiento. El filtro de montos no bloquea `partners_phone` (clave de teléfono) |
+| `Tag` | Separadas por coma. `Entrada General $10 AUD` → `entrada-general`, `Entrada VIP $20 AUD` → `entrada-vip`. Cualquier otra con precio pierde la parte del precio (`Taller $50 AUD` → `Taller`); si solo era un monto, no se pone. La vista previa lista cada etiqueta cambiada. El servidor lo vuelve a aplicar (no confía en el navegador) |
+| `Date Registered` | `2026-05-02 09:44:46 (UTC+10)` → `created_at` del contacto nuevo (`2026-05-01T23:44:46Z`). En un contacto que ya existía no se cambia |
+
+- **Contacto que ya existe:** solo se completa lo que falta (nombre, teléfono, país y campos del acompañante: modo `fill`
+  de `contactPatch`); nunca se pisa un dato. Contacto nuevo: origen "Importado · systeme.io".
+- **Etiquetas:** se crean las que falten y se ponen **sin disparar automatizaciones** (el evento queda en el historial ya
   procesado): importar no le manda nada a nadie, ni lo transaccional.
-- **Dado de baja allá** (`true`, `1`, `yes` o una fecha) → `crm_set_consent(off)`: entra con supresión "baja" y su
-  constancia; nunca recibe marketing. La baja gana sobre cualquier columna de consentimiento.
-- **Consentimiento de marketing:** ninguno, salvo que el CSV traiga una columna explícita con "sí" **y** el Dueño escriba la
-  constancia (de dónde y cuándo aceptaron); nunca levanta una baja (como Importar en Contactos).
+- **Etiqueta `newsletter`** → consentimiento de correo con constancia: `crm_set_consent` (= `crm_apply_consent` con
+  `p_lift = false`; el panel usa la sesión del Dueño y `crm_apply_consent` solo lo puede llamar la clave de servicio),
+  fuente `systeme:newsletter`, evidence `{ text: "Suscrito al newsletter en systeme.io · fecha de registro <ISO>", form:
+  "import:systeme" }`. **Nunca levanta una baja** ni una supresión. La etiqueta `newsletter` también queda puesta.
+- **Los demás** entran sin consentimiento de marketing (solo reciben lo transaccional).
+- **Bajas:** si se exportan aparte, se importan marcando **"Archivo de bajas"**: todas sus direcciones entran con
+  `crm_set_consent(off)` (supresión "baja" con constancia, aunque no tengan contacto todavía se crea). Un CSV con una
+  columna de baja (`unsubscribed`: `true`, `1`, `yes`, "baja" o una fecha) también sirve. La baja gana sobre el newsletter.
+- **Consentimiento por columna** (CSV de otro origen): solo si la fila dice "sí" **y** el Dueño escribe la constancia.
+- **Idempotente:** volver a importar el mismo archivo no duplica contactos ni etiquetas y no cambia consentimientos: a quien
+  ya tiene consentimiento o ya está de baja no se le vuelve a llamar `crm_set_consent` (no se reescribe la fecha ni se
+  agrega otra constancia).
+- **Vista previa:** total de filas, cuántos nuevos y cuántos actualizados (pregunta al servidor qué correos ya existen:
+  `previewSysteme`, solo lee), cuántos quedan con consentimiento por newsletter, etiquetas que se crearán (ya renombradas),
+  etiquetas cambiadas, teléfonos inválidos (y de acompañante) y 5 filas de ejemplo.
 
 ## Automatizaciones transaccionales (criterio legal)
 

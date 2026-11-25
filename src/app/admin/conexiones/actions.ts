@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { fail, ok } from "@/server/action";
 import {
-  createTag, importSysteme, regenerateConnectionSecret, revealConnectionSecret, saveConnection, saveTurnstileSiteKey, sendConnectionTest, setConnectionStatus,
+  createTag, importSysteme, regenerateConnectionSecret, systemeLookup, revealConnectionSecret, saveConnection, saveTurnstileSiteKey, sendConnectionTest, setConnectionStatus,
 } from "@/server/crm";
 import { adminAction, audit } from "../_shared/server";
 import { crmTry } from "../crm/server";
@@ -94,5 +94,14 @@ export async function importSystemeBatch(input: unknown) {
     const r = await crmTry(s, (db) => importSysteme(db, p.data.rows, { consentSource: p.data.proof || undefined }), M[s.locale].errors);
     if (r.ok) await audit(s, "crm_importar_systeme", null, { created: r.data.created, updated: r.data.updated, unsubscribed: r.data.unsubscribed, consented: r.data.consented });
     return r;
+  }, "crm");
+}
+
+/** Vista previa de systeme.io: qué correos ya existen (nuevos vs. actualizados) y qué etiquetas ya existen. Solo lee. */
+export async function previewSysteme(input: unknown) {
+  return adminAction([], async (s) => {
+    const p = z.object({ emails: z.array(z.string().max(254)).max(2000), tags: z.array(z.string().max(60)).max(500).default([]) }).safeParse(input);
+    if (!p.success) return fail(M[s.locale].errors.invalid);
+    return crmTry(s, (db) => systemeLookup(db, p.data.emails, p.data.tags), M[s.locale].errors);
   }, "crm");
 }

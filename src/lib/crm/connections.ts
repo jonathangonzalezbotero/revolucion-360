@@ -2,7 +2,7 @@
 // Lee lo que manda un formulario (navegador con Turnstile o servidor con la clave de la conexión), decide qué se puede
 // cambiar del contacto, revisa páginas permitidas y arma el código para pegar. Nunca acepta montos.
 import { z } from "zod";
-import { toE164 } from "./phone";
+import { CALLING_CODES, toE164 } from "./phone";
 import { formKey } from "./schema";
 import { isValidTz } from "./time";
 
@@ -304,9 +304,13 @@ export function formSnippet(url: string, siteKey: string | null, t: { name: stri
 export const SAMPLE_JSON = '{\n  "nombre": "Ana Morales",\n  "correo": "ana@correo.com",\n  "pais": "AU",\n  "acepta_correos": true\n}';
 
 // ───────── Importar desde systeme.io ─────────
-export type SystemeColumn = "email" | "firstName" | "surname" | "phone" | "country" | "tags" | "unsubscribed" | "consent" | "createdAt";
-export const SYSTEME_COLUMNS: SystemeColumn[] = ["email", "firstName", "surname", "phone", "country", "tags", "unsubscribed", "consent", "createdAt"];
-const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim().replace(/[\s-]+/g, "_");
+// Formato real del export (Contacts → Export, 25 nov 2026): "Email","First name","Last name","Street address",
+// "Street number","Neighborhood","Postal code","City","State/Province","Country","Phone number","Company name","Tax number",
+// "partner's phone","partners name","partner's email","Tag","Date Registered". Sin columna de baja ni de consentimiento.
+export type SystemeColumn =
+  | "email" | "firstName" | "surname" | "phone" | "country" | "tags" | "createdAt" | "partnerPhone" | "partnerName" | "partnerEmail" | "unsubscribed" | "consent";
+export const SYSTEME_COLUMNS: SystemeColumn[] = ["email", "firstName", "surname", "phone", "country", "tags", "createdAt", "partnerPhone", "partnerName", "partnerEmail", "unsubscribed", "consent"];
+const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim().replace(/['’`]/g, "").replace(/[\s/-]+/g, "_");
 const SYSTEME_HEADERS: Record<SystemeColumn, string[]> = {
   email: ["email", "correo", "e_mail", "email_address"],
   firstName: ["first_name", "firstname", "nombre", "name"],
@@ -314,9 +318,12 @@ const SYSTEME_HEADERS: Record<SystemeColumn, string[]> = {
   phone: ["phone_number", "phone", "telefono", "celular"],
   country: ["country", "pais"],
   tags: ["tags", "etiquetas", "tag"],
+  createdAt: ["date_registered", "created_at", "registered_at", "subscribed_at", "fecha_de_alta", "created"],
+  partnerPhone: ["partners_phone", "partner_phone", "telefono_acompanante"],
+  partnerName: ["partners_name", "partner_name", "nombre_acompanante"],
+  partnerEmail: ["partners_email", "partner_email", "correo_acompanante"],
   unsubscribed: ["unsubscribed", "is_unsubscribed", "unsubscribed_at", "desuscrito", "baja", "unsubscribe"],
   consent: ["consent", "consentimiento", "acepta_marketing", "marketing_consent", "gdpr_consent"],
-  createdAt: ["created_at", "registered_at", "date_registered", "subscribed_at", "fecha_de_alta", "created"],
 };
 /** Adivina qué columna es cada dato (el Dueño lo puede cambiar en la vista previa). */
 export function guessSystemeColumns(header: string[]): Partial<Record<SystemeColumn, number>> {
@@ -328,7 +335,136 @@ export function guessSystemeColumns(header: string[]): Partial<Record<SystemeCol
   return out;
 }
 
-export type SystemeRow = { email: string; name: string; phone: string; country: string; tags: string[]; unsubscribed: boolean; consent: boolean; createdAt: string | null };
+/** Largo del número nacional (sin el 0 inicial) por país: un número con otro largo no se adivina, cuenta como inválido. */
+const NATIONAL_LEN: Record<string, [number, number]> = {
+  AU: [9, 9], NZ: [8, 10], CO: [10, 10], US: [10, 10], CA: [10, 10], GB: [10, 10], ES: [9, 9], MX: [10, 10], CL: [9, 9], PE: [9, 9],
+  AR: [10, 11], EC: [8, 9], VE: [10, 10],
+};
+/** Códigos de país, el más largo primero ("593" antes que "59…"). "1" es de EE. UU. y Canadá: el país queda sin deducir. */
+const BY_CODE = Object.entries(CALLING_CODES).filter(([c]) => c !== "CA").map(([country, code]) => ({ country, code })).sort((a, b) => b.code.length - a.code.length);
+const lenOk = (country: string, national: string) => {
+  const [min, max] = NATIONAL_LEN[country] ?? [6, 12];
+  return national.length >= min && national.length <= max;
+};
+/**
+ * Teléfono del CSV de systeme.io → E.164 y, si se puede, el país.
+ * - Sin "+" y con código ("61479103452") → +61479103452 (AU). Con "+" o "00", igual.
+ * - Con 0 inicial ("0412345678") → nacional del país de la fila, o de `fallback` (AU) si no hay país.
+ * - Sin código ni 0 ("412345678") → nacional del país de la fila o de `fallback`, si el largo calza.
+ * - Un largo que no calza con ningún país (p. ej. "6147910345", 10 cifras) → null (teléfono inválido: no se guarda).
+ */
+export function systemePhone(raw: string, country?: string | null, fallback = "AU"): { phone: string; country: string | null } | null {
+  const t = raw.trim();
+  if (!t || !/^[+0-9 ()\-.]+$/.test(t)) return null;
+  let digits = t.replace(/\D/g, "");
+  const intl = t.startsWith("+") || digits.startsWith("00");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  const local = country && CALLING_CODES[country] ? country : fallback;
+  const out = (code: string, national: string, c: string | null) => {
+    const e = `+${code}${national}`;
+    return /^\+[1-9][0-9]{6,14}$/.test(e) ? { phone: e, country: c } : null;
+  };
+  if (!intl && digits.startsWith("0")) {
+    const national = digits.slice(1);
+    return CALLING_CODES[local] && lenOk(local, national) ? out(CALLING_CODES[local], national, local) : null;
+  }
+  for (const { country: c, code } of BY_CODE) {
+    if (!digits.startsWith(code)) continue;
+    const national = digits.slice(code.length).replace(/^0/, ""); // "+61 0412…"
+    if (lenOk(c, national)) return out(code, national, code === "1" ? (country === "US" || country === "CA" ? country : null) : c);
+  }
+  if (!intl && CALLING_CODES[local] && lenOk(local, digits)) return out(CALLING_CODES[local], digits, local);
+  if (intl) { const e = `+${digits}`; return /^\+[1-9][0-9]{6,14}$/.test(e) ? { phone: e, country: null } : null; } // "+49…": otro país, tal cual
+  return null;
+}
+
+/**
+ * Etiqueta de systeme.io → etiqueta del CRM. El CRM nunca guarda montos, ni en etiquetas:
+ * "Entrada General $10 AUD" → "entrada-general", "Entrada VIP $20 AUD" → "entrada-vip" (decisión de Jonathan). En cualquier
+ * otra, se quita la parte del precio ("Taller $50 AUD" → "Taller"); si no queda nada que no sea un monto, null (no se pone).
+ */
+const CURRENCY = "aud|usd|eur|cop|mxn|nzd|cad|gbp|ars|clp|pen|dolares|dólares|dollars?|pesos?|euros?";
+const PRICE_RES = [
+  new RegExp(`\\b(?:${CURRENCY})\\s*[$€£]?\\s*\\d[\\d.,]*`, "gi"), // AUD 10 · USD$5 (nunca "Webinars 2026")
+  new RegExp(`[$€£]\\s*\\d[\\d.,]*(?:\\s*(?:${CURRENCY})\\b)?`, "gi"), // $10 · $10 AUD
+  new RegExp(`\\d[\\d.,]*\\s*(?:[$€£]|(?:${CURRENCY})\\b)`, "gi"), // 20 AUD · 10€
+];
+export function systemeTag(raw: string): string | null {
+  const t = raw.replace(/\s+/g, " ").trim();
+  if (!t) return null;
+  const entry = /^entrada\s+(general|vip)\b/i.exec(t);
+  if (entry) return `entrada-${entry[1].toLowerCase()}`;
+  let s = t;
+  for (const re of PRICE_RES) s = s.replace(re, " ");
+  s = s.replace(/\s+/g, " ").replace(/^[\s\-–—:(·|]+|[\s\-–—:(·|]+$/g, "").replace(/\(\s*\)/g, "").trim();
+  if (!s || /[$€£]/.test(s) || looksLikeMoney(s)) return null;
+  return s.slice(0, 40);
+}
+
+/** "2026-05-02 09:44:46 (UTC+10)" → ISO en UTC (2026-05-01T23:44:46.000Z). Sin zona = UTC. También acepta ISO. */
+export function systemeDate(v: string): string | null {
+  const t = v.trim();
+  if (!t) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?\s*(?:\(?\s*(?:UTC|GMT)\s*(?:([+-])(\d{1,2})(?::?(\d{2}))?)?\s*\)?)?$/i.exec(t);
+  let ms: number;
+  if (m) {
+    const off = m[7] ? (m[7] === "-" ? -1 : 1) * (Number(m[8]) * 60 + Number(m[9] ?? 0)) : 0;
+    ms = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] ?? 0)) - off * 60_000;
+  } else if (/^\d{4}-\d{2}-\d{2}(T[\d:.]+(Z|[+-]\d{2}:?\d{2}))?$/.test(t)) ms = Date.parse(t);
+  else return null;
+  return Number.isFinite(ms) && ms > Date.parse("2000-01-01T00:00:00Z") && ms < Date.now() + 86_400_000 ? new Date(ms).toISOString() : null;
+}
+
+/** Etiqueta que da el consentimiento de correo (con constancia "Suscrito al newsletter en systeme.io" y la fecha de registro). */
+export const SYSTEME_NEWSLETTER_TAG = "newsletter";
+export const SYSTEME_NEWSLETTER_SOURCE = "systeme:newsletter";
+export const SYSTEME_NEWSLETTER_TEXT = "Suscrito al newsletter en systeme.io";
+/** Constancia del newsletter: el texto y la fecha de registro (crm_log_consent solo guarda text/url/ip/userAgent/form/confirmedAt). */
+export const newsletterEvidence = (registeredAt: string | null) => ({
+  text: registeredAt ? `${SYSTEME_NEWSLETTER_TEXT} · fecha de registro ${registeredAt}` : SYSTEME_NEWSLETTER_TEXT,
+  form: "import:systeme",
+});
+export const hasNewsletter = (tags: readonly string[]) => tags.some((t) => t.trim().toLowerCase() === SYSTEME_NEWSLETTER_TAG);
+
+export type SystemeConsentAction = "off" | "already_off" | "on_newsletter" | "on_explicit" | "already_on" | "skip_unsubscribed" | "none";
+/**
+ * Qué se hace con el consentimiento de una fila (idempotente: volver a importar no cambia nada).
+ * - Baja (columna o archivo de bajas) → "off", salvo que ya esté de baja ("already_off": no se vuelve a llamar).
+ * - Etiqueta newsletter (o columna "sí" + constancia) → alta; si ya tiene consentimiento "already_on" (no se reescribe) y
+ *   si está de baja "skip_unsubscribed" (nunca se levanta una baja).
+ * - Los demás → "none" (sin consentimiento de marketing).
+ */
+export function systemeConsentAction(
+  row: { unsubscribed: boolean; tags: readonly string[]; consent: boolean },
+  existing: { email_consent: boolean; email_unsubscribed_at: string | null } | null,
+  hasProof: boolean,
+): SystemeConsentAction {
+  const isOff = !!existing?.email_unsubscribed_at && !existing.email_consent;
+  if (row.unsubscribed) return isOff ? "already_off" : "off";
+  const newsletter = hasNewsletter(row.tags);
+  if (!newsletter && !(row.consent && hasProof)) return "none";
+  if (existing?.email_consent) return "already_on";
+  if (isOff) return "skip_unsubscribed";
+  return newsletter ? "on_newsletter" : "on_explicit";
+}
+
+export type SystemeRow = {
+  email: string; name: string; phone: string; country: string; tags: string[];
+  /** Acompañante: partners_phone (E.164 si se pudo), partners_name, partners_email. Nunca un contacto aparte. */
+  fields: Record<string, string>;
+  unsubscribed: boolean; consent: boolean; createdAt: string | null;
+};
+export type SystemeMapped = {
+  rows: SystemeRow[]; invalid: number; duplicates: number;
+  /** Filas con teléfono que no se pudo pasar a E.164 (entran sin teléfono). */
+  invalidPhones: number;
+  /** Las primeras 10 filas con teléfono inválido (correo y lo que venía), para revisarlas. */
+  invalidPhoneSamples: { email: string; raw: string }[];
+  /** Teléfonos de acompañante que no se pudieron pasar a E.164 (se guardan como vinieron). */
+  invalidPartnerPhones: number;
+  /** Etiquetas cambiadas (renombradas o sin el precio); `to: null` = no se pone (era solo un monto). */
+  renamedTags: { from: string; to: string | null }[];
+};
 export const SYSTEME_MAX_ROWS = 20000;
 const EMAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]{2,}$/;
 /** Una celda de baja: "true", "1", "yes", "sí", "unsubscribed", "baja"… o una fecha (unsubscribed_at con valor) = dado de baja. */
@@ -337,43 +473,92 @@ const isUnsub = (v: string) => {
   const t = v.trim().toLowerCase();
   return YES.has(t) || UNSUB_WORDS.has(t) || /^\d{4}-\d{2}-\d{2}/.test(t);
 };
-const isoDate = (v: string) => {
-  const t = Date.parse(v.trim());
-  return v.trim() && Number.isFinite(t) && t > Date.parse("2000-01-01") && t < Date.now() + 86_400_000 ? new Date(t).toISOString() : null;
-};
+const oneSpace = (v: string) => v.replace(/\s+/g, " ").trim();
 
-/** Filas listas para importar con el mapeo elegido, sin repetidos (gana la primera). */
-export function mapSystemeRows(table: string[][], cols: Partial<Record<SystemeColumn, number>>): { rows: SystemeRow[]; invalid: number; duplicates: number } {
+/**
+ * Filas listas para importar con el mapeo elegido, sin repetidos (gana la primera). `allUnsubscribed` = el archivo es un
+ * export de BAJAS de systeme.io: todas sus direcciones entran de baja (con supresión), traiga o no columna de baja.
+ */
+export function mapSystemeRows(table: string[][], cols: Partial<Record<SystemeColumn, number>>, opts: { allUnsubscribed?: boolean } = {}): SystemeMapped {
   const cell = (r: string[], k: SystemeColumn) => (cols[k] === undefined ? "" : (r[cols[k]!] ?? "").trim());
   const seen = new Set<string>();
+  const renamed = new Map<string, string | null>();
   const rows: SystemeRow[] = [];
-  let invalid = 0, duplicates = 0;
+  let invalid = 0, duplicates = 0, invalidPhones = 0, invalidPartnerPhones = 0;
+  const badPhones: { email: string; raw: string }[] = [];
   for (const r of table) {
     const email = cell(r, "email").toLowerCase();
     if (!EMAIL_RE.test(email) || email.length > 254) { invalid++; continue; }
     if (seen.has(email)) { duplicates++; continue; }
     seen.add(email);
-    const country = cell(r, "country");
+    const rawCountry = cell(r, "country");
+    const colCountry = /^[A-Za-z]{2}$/.test(rawCountry) ? rawCountry.toUpperCase() : null;
+    const rawPhone = cell(r, "phone");
+    const ph = rawPhone ? systemePhone(rawPhone, colCountry) : null;
+    if (rawPhone && !ph && invalidPhones++ < 10) badPhones.push({ email, raw: rawPhone.slice(0, 30) });
+    const tags: string[] = [];
+    for (const raw of cell(r, "tags").split(/[|;,]/)) {
+      const t = oneSpace(raw);
+      if (!t) continue;
+      const to = systemeTag(t);
+      if (to !== t) renamed.set(t, to);
+      if (to && !tags.some((x) => x.toLowerCase() === to.toLowerCase())) tags.push(to);
+    }
+    const partnerRaw = cell(r, "partnerPhone");
+    const partner = partnerRaw ? systemePhone(partnerRaw, null, "AU") : null;
+    if (partnerRaw && !partner) invalidPartnerPhones++;
+    const partnerEmail = cell(r, "partnerEmail").toLowerCase();
+    const { fields } = cleanFields({
+      partners_phone: partner?.phone ?? partnerRaw,
+      partners_name: oneSpace(cell(r, "partnerName")),
+      partners_email: EMAIL_RE.test(partnerEmail) ? partnerEmail : "",
+    });
     rows.push({
       email,
-      name: [cell(r, "firstName"), cell(r, "surname")].filter(Boolean).join(" ").slice(0, 120),
-      phone: cell(r, "phone").slice(0, 30),
-      country: /^[A-Za-z]{2}$/.test(country) ? country.toUpperCase() : "",
-      tags: [...new Set(cell(r, "tags").split(/[|;,]/).map((x) => x.trim().slice(0, 40)).filter(Boolean))].slice(0, 20),
-      unsubscribed: isUnsub(cell(r, "unsubscribed")),
+      name: [oneSpace(cell(r, "firstName")), oneSpace(cell(r, "surname"))].filter(Boolean).join(" ").slice(0, 120),
+      phone: ph?.phone ?? "",
+      country: colCountry ?? ph?.country ?? "",
+      tags: tags.slice(0, 20),
+      fields,
+      unsubscribed: !!opts.allUnsubscribed || isUnsub(cell(r, "unsubscribed")),
       consent: YES.has(cell(r, "consent").toLowerCase()),
-      createdAt: isoDate(cell(r, "createdAt")),
+      createdAt: systemeDate(cell(r, "createdAt")),
     });
   }
-  return { rows, invalid, duplicates };
+  return { rows, invalid, duplicates, invalidPhones, invalidPhoneSamples: badPhones, invalidPartnerPhones, renamedTags: [...renamed].map(([from, to]) => ({ from, to })) };
 }
 
+/**
+ * Vista previa: cuántos nuevos y actualizados (con los correos que ya existen en el CRM), cuántos quedan con consentimiento
+ * por el newsletter (los de baja no) y qué etiquetas se crearán (las que no existen, ya renombradas). Sin `existing*`
+ * (todavía no respondió el servidor) = null.
+ */
+export function systemeSummary(rows: readonly SystemeRow[], existingEmails: ReadonlySet<string> | null, existingTags: readonly string[] | null) {
+  const updated = existingEmails ? rows.filter((r) => existingEmails.has(r.email)).length : null;
+  const known = new Set((existingTags ?? []).map((t) => t.trim().toLowerCase()));
+  const allTags = new Map<string, string>();
+  for (const r of rows) for (const t of r.tags) if (!allTags.has(t.toLowerCase())) allTags.set(t.toLowerCase(), t);
+  return {
+    total: rows.length,
+    created: updated === null ? null : rows.length - updated,
+    updated,
+    newsletter: rows.filter((r) => !r.unsubscribed && hasNewsletter(r.tags)).length,
+    unsubscribed: rows.filter((r) => r.unsubscribed).length,
+    tags: [...allTags.values()],
+    newTags: existingTags ? [...allTags.values()].filter((t) => !known.has(t.toLowerCase())) : null,
+  };
+}
+
+/** Lo que valida el servidor (no confía en el navegador): teléfono ya en E.164, etiquetas otra vez sin montos, campos extra limpios. */
 export const SystemeRowSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
-  name: z.string().trim().max(120).default(""),
-  phone: z.string().trim().max(30).default(""),
-  country: z.string().trim().max(2).default(""),
-  tags: z.array(z.string().trim().min(1).max(40)).max(20).default([]),
+  name: z.string().max(120).default("").transform(oneSpace),
+  phone: z.string().trim().max(16).default("").refine((v) => !v || /^\+[1-9][0-9]{6,14}$/.test(v), "phone"),
+  country: z.string().trim().max(2).default("").refine((v) => !v || /^[A-Z]{2}$/.test(v), "country"),
+  tags: z.array(z.string().trim().min(1).max(60)).max(20).default([])
+    .transform((ts) => [...new Set(ts.map(systemeTag).filter((t): t is string => !!t))]),
+  fields: z.record(z.string(), z.string().max(200)).default({})
+    .transform((f) => cleanFields(Object.fromEntries(Object.entries(f).filter(([k]) => ["partners_phone", "partners_name", "partners_email"].includes(k)))).fields),
   unsubscribed: z.boolean().default(false),
   consent: z.boolean().default(false),
   createdAt: z.string().datetime().nullable().default(null),

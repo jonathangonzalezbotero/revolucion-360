@@ -3,7 +3,7 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypt
 import { z } from "zod";
 import {
   cleanRef, connectionSlug, ConnectionInput, contactPatch, DEFAULT_CONSENT_TEXT, findTagByName, ingestSmsDecision, isSecretFormat, legalReady, mayTransactional,
-  renderMarketingEmail, SystemeRowSchema, testEmailFor, thanksUrlOk, toE164, type Submission, type TurnstileReply,
+  newsletterEvidence, renderMarketingEmail, SYSTEME_NEWSLETTER_SOURCE, SystemeRowSchema, systemeConsentAction, testEmailFor, thanksUrlOk, type Submission, type TurnstileReply,
 } from "@/lib/crm";
 import { sendEmailDetailed } from "@/lib/email/send";
 import { appUrl, crmFrom, crmReplyTo, loadLegal, must, type Db } from "./db";
@@ -337,17 +337,37 @@ export async function saveTurnstileSiteKey(db: Db, siteKey: string): Promise<voi
 }
 
 // ───────── Importar desde systeme.io ─────────
+/** Vista previa: qué correos ya existen en el CRM (nuevos vs. actualizados) y qué etiquetas ya existen. Solo lee. */
+export async function systemeLookup(db: Db, emails: string[], tags: string[]): Promise<{ existing: string[]; existingTags: string[] }> {
+  const existing: string[] = [];
+  const list = [...new Set(emails.map((e) => e.trim().toLowerCase()).filter(Boolean))].slice(0, 2000);
+  for (let i = 0; i < list.length; i += 100) { // van en la dirección de la consulta: tandas cortas
+    const rows = must(await db.from("crm_contacts").select("email").in("email", list.slice(i, i + 100))) as { email: string }[];
+    existing.push(...rows.map((r) => r.email));
+  }
+  const all = tags.length ? (must(await db.from("crm_tags").select("name")) as { name: string }[]) : [];
+  return { existing, existingTags: tags.filter((t) => findTagByName(all, t)) };
+}
+
+type ExistingImport = {
+  id: string; name: string; phone: string | null; country: string | null; timezone: string | null; user_id: string | null;
+  fields: Record<string, string> | null; email_consent: boolean; email_unsubscribed_at: string | null;
+};
 /**
- * Una tanda del CSV de systeme.io (filas ya mapeadas en el navegador). Une por correo (completa nombre y teléfono si
- * faltan; la fecha de alta solo en contactos nuevos), crea las etiquetas que falten y las pone SIN disparar
- * automatizaciones (el evento queda en el historial ya procesado: importar no le manda nada a nadie).
- * - Dado de baja en systeme.io → entra de baja aquí (supresión "baja", con su constancia): nunca recibe marketing.
- * - Consentimiento solo si la fila trae "sí" en la columna de consentimiento Y el Dueño escribió la constancia; nunca
- *   levanta una baja (como importar en Contactos). La baja gana sobre la columna de consentimiento.
+ * Una tanda del CSV de systeme.io (filas ya mapeadas en el navegador; el servidor vuelve a validar). Une por correo:
+ * completa nombre, teléfono, país y campos del acompañante SOLO si faltan; la fecha de registro solo en contactos nuevos
+ * (`created_at`). Crea las etiquetas que falten y las pone SIN disparar automatizaciones (el evento queda en el
+ * historial ya procesado: importar no le manda nada a nadie). Idempotente: volver a importar el mismo archivo no
+ * duplica ni cambia consentimientos (no se vuelve a llamar al consentimiento de quien ya lo tiene o ya está de baja).
+ * - Dado de baja (columna de baja o archivo de bajas) → `crm_set_consent(off)`: supresión "baja" con constancia.
+ * - Etiqueta `newsletter` → consentimiento de correo, fuente `systeme:newsletter`, constancia "Suscrito al newsletter en
+ *   systeme.io" con la fecha de registro. `crm_set_consent` = `crm_apply_consent` con `p_lift = false`: nunca levanta una baja.
+ * - Columna de consentimiento con "sí" + constancia escrita por el Dueño → igual, fuente `import:systeme`.
+ * - Los demás, sin consentimiento de marketing. El acompañante nunca es un contacto ni recibe consentimiento.
  */
 export async function importSysteme(db: Db, rows: unknown[], opts: { consentSource?: string } = {}):
-  Promise<{ created: number; updated: number; invalid: number; unsubscribed: number; consented: number; consentSkipped: number }> {
-  let created = 0, updated = 0, invalid = 0, unsubscribed = 0, consented = 0, consentSkipped = 0;
+  Promise<{ created: number; updated: number; invalid: number; unsubscribed: number; consented: number; consentSkipped: number; alreadyConsented: number }> {
+  let created = 0, updated = 0, invalid = 0, unsubscribed = 0, consented = 0, consentSkipped = 0, alreadyConsented = 0;
   const all = must(await db.from("crm_tags").select("id, name, system_key")) as { id: string; name: string; system_key: string | null }[];
   const tagId = async (name: string): Promise<string | null> => {
     const t = findTagByName(all, name);
@@ -362,20 +382,19 @@ export async function importSysteme(db: Db, rows: unknown[], opts: { consentSour
     const p = SystemeRowSchema.safeParse(raw);
     if (!p.success) { invalid++; continue; }
     const d = p.data;
-    const country = /^[A-Z]{2}$/.test(d.country) ? d.country : null;
-    const phone = d.phone ? toE164(d.phone, country) : null;
-    const existing = must(await db.from("crm_contacts").select("id, name, phone").eq("email", d.email).maybeSingle()) as { id: string; name: string; phone: string | null } | null;
+    const country = d.country || null;
+    const phone = d.phone || null;
+    const existing = must(await db.from("crm_contacts")
+      .select("id, name, phone, country, timezone, user_id, fields, email_consent, email_unsubscribed_at").eq("email", d.email).maybeSingle()) as ExistingImport | null;
     let id: string;
     if (existing) {
-      const patch: Record<string, unknown> = {};
-      if (!existing.name && d.name) patch.name = d.name;
-      if (!existing.phone && phone) patch.phone = phone;
+      const patch = contactPatch(existing, { name: d.name, phone, country, timezone: null, fields: d.fields, mode: "fill" });
       if (Object.keys(patch).length) must(await db.from("crm_contacts").update({ ...patch, updated_at: now }).eq("id", existing.id).select("id"));
       id = existing.id;
       updated++;
     } else {
       const r = must(await db.from("crm_contacts").insert({
-        email: d.email, name: d.name, phone, country, source: "importado", source_detail: "systeme.io", ...(d.createdAt ? { created_at: d.createdAt } : {}),
+        email: d.email, name: d.name, phone, country, fields: d.fields, source: "importado", source_detail: "systeme.io", ...(d.createdAt ? { created_at: d.createdAt } : {}),
       }).select("id").single()) as { id: string };
       id = r.id;
       must(await db.from("crm_events").upsert({ contact_id: id, kind: "imported", ref: "systeme", processed_at: now }, { onConflict: "contact_id,kind,ref", ignoreDuplicates: true }).select("id"));
@@ -390,15 +409,16 @@ export async function importSysteme(db: Db, rows: unknown[], opts: { consentSour
         must(await db.from("crm_events").upsert({ contact_id: id, kind: "tag_added", ref: cleanRef(`${t}:import`), processed_at: now }, { onConflict: "contact_id,kind,ref", ignoreDuplicates: true }).select("id"));
       }
     }
-    if (d.unsubscribed) {
-      must(await db.rpc("crm_set_consent", { p_contact: id, p_channel: "email", p_on: false, p_source: "import:systeme", p_evidence: { form: "import:systeme" } }));
-      unsubscribed++;
-    } else if (d.consent && opts.consentSource) {
-      const res = must(await db.rpc("crm_set_consent", {
-        p_contact: id, p_channel: "email", p_on: true, p_source: "import:systeme", p_evidence: { text: opts.consentSource.slice(0, 500), form: "import:systeme" },
-      })) as string;
-      if (res === "suppressed") consentSkipped++; else consented++;
-    }
+    const action = systemeConsentAction(d, existing, !!opts.consentSource);
+    if (action === "off") must(await db.rpc("crm_set_consent", { p_contact: id, p_channel: "email", p_on: false, p_source: "import:systeme", p_evidence: { form: "import:systeme" } }));
+    if (action === "off" || action === "already_off") { unsubscribed++; continue; }
+    if (action === "already_on") { alreadyConsented++; continue; } // idempotente: no se vuelve a marcar
+    if (action === "skip_unsubscribed") { consentSkipped++; continue; } // nunca levanta una baja
+    if (action === "none") continue;
+    const res = must(await db.rpc("crm_set_consent", action === "on_newsletter"
+      ? { p_contact: id, p_channel: "email", p_on: true, p_source: SYSTEME_NEWSLETTER_SOURCE, p_evidence: newsletterEvidence(d.createdAt) }
+      : { p_contact: id, p_channel: "email", p_on: true, p_source: "import:systeme", p_evidence: { text: opts.consentSource!.slice(0, 500), form: "import:systeme" } })) as string;
+    if (res === "suppressed") consentSkipped++; else consented++;
   }
-  return { created, updated, invalid, unsubscribed, consented, consentSkipped };
+  return { created, updated, invalid, unsubscribed, consented, consentSkipped, alreadyConsented };
 }

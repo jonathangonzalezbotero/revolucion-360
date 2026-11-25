@@ -4,11 +4,12 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   cleanFields, ConnectionInput, connectionSlug, connectionUrl, contactPatch, exitFor, formSnippet, guessSystemeColumns, hostAllowed, isConnectionTestEmail, isMoneyKey,
-  isPublicSuffix, looksLikeMoney, mapSystemeRows, matchesTrigger, mayTransactional, normalizeHost, originOk, parseSubmission, renderMarketingEmail, requestOriginAllowed, testEmailFor, thanksUrlOk, TriggerSchema, turnstileOk,
+  hasNewsletter, isPublicSuffix, looksLikeMoney, mapSystemeRows, matchesTrigger, newsletterEvidence, SystemeRowSchema, systemeConsentAction, systemeDate, systemePhone, systemeSummary, systemeTag, mayTransactional, normalizeHost, originOk, parseSubmission, renderMarketingEmail, requestOriginAllowed, testEmailFor, thanksUrlOk, TriggerSchema, turnstileOk,
 } from "@/lib/crm";
 import { sectionOf } from "@/app/admin/actividad/roles";
 import { visibleTriggers } from "@/app/admin/automatizaciones/lib";
 import { TRIGGER_KINDS } from "@/lib/crm/schema";
+import { parseCsv } from "@/lib/engine/csv";
 import { findDangers } from "../scripts/check-migrations";
 
 const C1 = "11111111-1111-4111-8111-111111111111";
@@ -273,13 +274,146 @@ describe("importar desde systeme.io", () => {
     expect(r.invalid).toBe(1);
     expect(r.duplicates).toBe(1);
     expect(r.rows).toHaveLength(2);
-    expect(r.rows[0]).toMatchObject({ email: "ana@correo.com", name: "Ana Morales", tags: ["evento-septiembre-2026", "Entrada VIP"], unsubscribed: false, consent: false, createdAt: "2025-03-01T10:00:00.000Z" });
+    expect(r.rows[0]).toMatchObject({ email: "ana@correo.com", name: "Ana Morales", tags: ["evento-septiembre-2026", "entrada-vip"], unsubscribed: false, consent: false, createdAt: "2025-03-01T10:00:00.000Z" });
     expect(r.rows[1]).toMatchObject({ email: "pedro@correo.com", unsubscribed: true });
   });
   it("la columna de baja con palabras ('unsubscribed', 'baja') o una fecha también cuenta", () => {
     const cols = { email: 0, unsubscribed: 1 };
     const r = mapSystemeRows([["a@x.co", "Unsubscribed"], ["b@x.co", "baja"], ["c@x.co", "2025-01-02 10:00"], ["d@x.co", "subscribed"], ["e@x.co", ""]], cols);
     expect(r.rows.map((x) => x.unsubscribed)).toEqual([true, true, true, false, false]);
+  });
+  it("archivo de bajas: todas las direcciones entran de baja aunque no haya columna de baja", () => {
+    const r = mapSystemeRows([["a@x.co"], ["b@x.co"]], { email: 0 }, { allUnsubscribed: true });
+    expect(r.rows.every((x) => x.unsubscribed)).toBe(true);
+    expect(systemeSummary(r.rows, null, null)).toMatchObject({ unsubscribed: 2, newsletter: 0 });
+  });
+});
+
+describe("importar desde systeme.io: formato real del export", () => {
+  // CSV INVENTADO con los encabezados exactos del export de systeme.io (ningún dato real).
+  const CSV = [
+    `\uFEFF"Email","First name","Last name","Street address","Street number","Neighborhood","Postal code","City","State/Province","Country","Phone number","Company name","Tax number","partner's phone","partners name","partner's email","Tag","Date Registered"`,
+    `"Lucia.Prueba@ejemplo.test","  Lucía ","  Prueba  ","","","","2000","Sydney","NSW","","61400111222","","","0411222333","  Mateo   Ejemplo ","mateo@ejemplo.test","newsletter, Entrada General $10 AUD","2026-05-02 09:44:46 (UTC+10)"`,
+    `"carlos@ejemplo.test","Carlos","Demo","","","","","","","CO","573001112233","","","+61 422 333 444","Sofía","","Entrada VIP $20 AUD, evento-septiembre-2026","2026-06-10 18:05:00 (UTC+10)"`,
+    `"ana@ejemplo.test","Ana","","","","","","","","AU","6140011122","","","61433444555","","","Taller $50 AUD","2026-07-01 08:00:00 (UTC+10)"`,
+    `"lucia.prueba@ejemplo.test","Repetida","","","","","","","","","","","","","","","newsletter",""`,
+    `"no-es-correo","X","","","","","","","","","","","","","","","",""`,
+  ].join("\r\n");
+  const table = parseCsv(CSV);
+  const cols = guessSystemeColumns(table[0]);
+  const r = mapSystemeRows(table.slice(1), cols);
+
+  it("reconoce los encabezados reales (con comillas, apóstrofos y BOM)", () => {
+    expect(cols).toEqual({ email: 0, firstName: 1, surname: 2, country: 9, phone: 10, partnerPhone: 13, partnerName: 14, partnerEmail: 15, tags: 16, createdAt: 17 });
+  });
+  it("teléfono sin + con código → E.164 y país deducido del prefijo; nombres recortados", () => {
+    expect(r.invalid).toBe(1);
+    expect(r.duplicates).toBe(1);
+    expect(r.rows).toHaveLength(3);
+    expect(r.rows[0]).toMatchObject({ email: "lucia.prueba@ejemplo.test", name: "Lucía Prueba", phone: "+61400111222", country: "AU" });
+    expect(r.rows[1]).toMatchObject({ phone: "+573001112233", country: "CO" });
+  });
+  it("teléfono inválido (10 cifras con 61) → sin teléfono y contado; el país de la columna se respeta", () => {
+    expect(r.rows[2]).toMatchObject({ email: "ana@ejemplo.test", phone: "", country: "AU" });
+    expect(r.invalidPhones).toBe(1);
+    expect(r.invalidPhoneSamples).toEqual([{ email: "ana@ejemplo.test", raw: "6140011122" }]);
+  });
+  it("acompañante = campos extra del contacto (E.164 asumiendo AU), nunca una fila aparte", () => {
+    expect(r.rows[0].fields).toEqual({ partners_phone: "+61411222333", partners_name: "Mateo Ejemplo", partners_email: "mateo@ejemplo.test" });
+    expect(r.rows[1].fields).toEqual({ partners_phone: "+61422333444", partners_name: "Sofía" });
+    expect(r.rows[2].fields).toEqual({ partners_phone: "+61433444555" });
+    expect(r.rows.map((x) => x.email)).not.toContain("mateo@ejemplo.test");
+    expect(r.invalidPartnerPhones).toBe(0);
+  });
+  it("etiquetas: entradas sin precio, newsletter se conserva, precio quitado en otras (y avisado)", () => {
+    expect(r.rows[0].tags).toEqual(["newsletter", "entrada-general"]);
+    expect(r.rows[1].tags).toEqual(["entrada-vip", "evento-septiembre-2026"]);
+    expect(r.rows[2].tags).toEqual(["Taller"]);
+    expect(r.renamedTags).toEqual([
+      { from: "Entrada General $10 AUD", to: "entrada-general" },
+      { from: "Entrada VIP $20 AUD", to: "entrada-vip" },
+      { from: "Taller $50 AUD", to: "Taller" },
+    ]);
+    for (const row of r.rows) for (const t of row.tags) expect(looksLikeMoney(t) || /[$€£]/.test(t) || /\bAUD\b/i.test(t)).toBe(false);
+  });
+  it("fecha de registro con (UTC+10) → ISO en UTC", () => {
+    expect(r.rows[0].createdAt).toBe("2026-05-01T23:44:46.000Z");
+    expect(systemeDate("2026-05-02 09:44:46 (UTC-03:30)")).toBe("2026-05-02T13:14:46.000Z");
+    expect(systemeDate("2026-05-02 09:44:46")).toBe("2026-05-02T09:44:46.000Z");
+    expect(systemeDate("ayer")).toBeNull();
+  });
+  it("vista previa: total, nuevos/actualizados, consentimiento por newsletter y etiquetas que se crearán", () => {
+    const s = systemeSummary(r.rows, new Set(["carlos@ejemplo.test"]), ["Evento-Septiembre-2026", "newsletter"]);
+    expect(s).toMatchObject({ total: 3, created: 2, updated: 1, newsletter: 1, unsubscribed: 0 });
+    expect(s.newTags).toEqual(["entrada-general", "entrada-vip", "Taller"]);
+    expect(systemeSummary(r.rows, null, null)).toMatchObject({ created: null, updated: null, newTags: null });
+  });
+  it("newsletter da consentimiento (con constancia y fecha); de baja, no", () => {
+    expect(hasNewsletter(r.rows[0].tags)).toBe(true);
+    expect(hasNewsletter(r.rows[1].tags)).toBe(false);
+    expect(newsletterEvidence("2026-05-01T23:44:46.000Z")).toEqual({ text: "Suscrito al newsletter en systeme.io · fecha de registro 2026-05-01T23:44:46.000Z", form: "import:systeme" });
+    const unsub = mapSystemeRows(table.slice(1, 2), cols, { allUnsubscribed: true });
+    expect(systemeSummary(unsub.rows, null, null).newsletter).toBe(0);
+  });
+  it("idempotente: mapear el mismo archivo dos veces da lo mismo, y lo ya mapeado pasa igual por el servidor", () => {
+    expect(mapSystemeRows(parseCsv(CSV).slice(1), cols)).toEqual(r);
+    for (const row of r.rows) {
+      const p = SystemeRowSchema.parse(row);
+      expect(p).toMatchObject({ email: row.email, name: row.name, phone: row.phone, country: row.country, tags: row.tags, fields: row.fields });
+      expect(SystemeRowSchema.parse(p)).toEqual(p);
+    }
+  });
+  it("el servidor no confía en el navegador: quita precios, rechaza teléfonos sin E.164 y campos que no son del acompañante", () => {
+    const p = SystemeRowSchema.parse({ email: "x@ejemplo.test", tags: ["Entrada VIP $20 AUD", "Promo $99"], fields: { partners_phone: "0412345678", precio: "10", partners_name: "Eva" } });
+    expect(p.tags).toEqual(["entrada-vip", "Promo"]);
+    expect(p.fields).toEqual({ partners_phone: "0412345678", partners_name: "Eva" });
+    expect(SystemeRowSchema.safeParse({ email: "x@ejemplo.test", phone: "61400111222" }).success).toBe(false);
+  });
+  it("el filtro de montos no bloquea teléfonos de acompañante", () => {
+    expect(cleanFields({ partners_phone: "0412345678" }).fields).toEqual({ partners_phone: "0412345678" });
+    expect(cleanFields({ partners_phone: "61435545230" }).fields).toEqual({ partners_phone: "61435545230" });
+  });
+});
+
+describe("systemePhone y systemeTag", () => {
+  it("formatos mezclados → E.164", () => {
+    expect(systemePhone("61479103452")).toEqual({ phone: "+61479103452", country: "AU" });
+    expect(systemePhone("0412345678")).toEqual({ phone: "+61412345678", country: "AU" });
+    expect(systemePhone("+61 425 432 165")).toEqual({ phone: "+61425432165", country: "AU" });
+    expect(systemePhone("61435545230")).toEqual({ phone: "+61435545230", country: "AU" });
+    expect(systemePhone("3001112233", "CO")).toEqual({ phone: "+573001112233", country: "CO" });
+    expect(systemePhone("593991234567")).toEqual({ phone: "+593991234567", country: "EC" });
+    expect(systemePhone("6147910345")).toBeNull();
+    expect(systemePhone("+49 30 1234567")).toEqual({ phone: "+49301234567", country: null }); // otro país con +: tal cual
+    expect(systemePhone("49301234567")).toBeNull(); // sin + y con código desconocido: no se adivina
+    expect(systemePhone("abc")).toBeNull();
+    expect(systemePhone("")).toBeNull();
+  });
+  it("etiquetas sin montos", () => {
+    expect(systemeTag("Entrada General $10 AUD")).toBe("entrada-general");
+    expect(systemeTag("entrada vip $20 aud")).toBe("entrada-vip");
+    expect(systemeTag("Bootcamp 150 USD")).toBe("Bootcamp");
+    expect(systemeTag("Mentoría (AUD 300)")).toBe("Mentoría");
+    expect(systemeTag("$10")).toBeNull();
+    expect(systemeTag("evento-septiembre-2026")).toBe("evento-septiembre-2026");
+    expect(systemeTag("newsletter")).toBe("newsletter");
+    expect(systemeTag("Webinars 2026")).toBe("Webinars 2026");
+    expect(systemeTag("Open 2026")).toBe("Open 2026");
+  });
+  it("consentimiento al importar: newsletter sí, re-importar no cambia nada, nunca levanta una baja", () => {
+    const nl = { unsubscribed: false, tags: ["newsletter"], consent: false };
+    const none = { unsubscribed: false, tags: ["entrada-vip"], consent: false };
+    const off = { email_consent: false, email_unsubscribed_at: "2026-01-01T00:00:00Z" };
+    const on = { email_consent: true, email_unsubscribed_at: null };
+    expect(systemeConsentAction(nl, null, false)).toBe("on_newsletter"); // contacto nuevo
+    expect(systemeConsentAction(nl, on, false)).toBe("already_on"); // segunda importación: no se llama otra vez
+    expect(systemeConsentAction(nl, off, false)).toBe("skip_unsubscribed"); // de baja: nunca se levanta
+    expect(systemeConsentAction(none, null, false)).toBe("none"); // sin newsletter: sin marketing
+    expect(systemeConsentAction({ ...none, consent: true }, null, false)).toBe("none"); // columna sin constancia
+    expect(systemeConsentAction({ ...none, consent: true }, null, true)).toBe("on_explicit");
+    expect(systemeConsentAction({ ...nl, unsubscribed: true }, null, false)).toBe("off"); // la baja gana
+    expect(systemeConsentAction({ ...nl, unsubscribed: true }, on, false)).toBe("off");
+    expect(systemeConsentAction({ ...none, unsubscribed: true }, off, false)).toBe("already_off"); // archivo de bajas otra vez
   });
 });
 
