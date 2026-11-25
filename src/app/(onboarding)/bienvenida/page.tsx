@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { must } from "@/server/data";
 import { requireUser } from "@/server/session";
-import { GOAL_KEYS, type GoalKey } from "./lib";
+import { isGoalKey, readObjectives, type GoalKey } from "./lib";
 import { M } from "./messages";
 import { Welcome } from "./Welcome";
 
@@ -18,8 +18,10 @@ export default async function BienvenidaPage() {
   ]);
   const names: Record<string, string> = m.account.countries;
   const countries = must(countriesRes).map((c) => ({ code: c.code, name: names[c.code] ?? c.name, currency: c.currency }));
+  // Lo que ya eligió (si vuelve a la bienvenida antes de terminar): objetivos del perfil; antes vivían en wizard.seed.
   const seed = (s.profile.wizard.seed as { goals?: unknown } | undefined)?.goals;
-  const chosen = (Array.isArray(seed) ? seed : []).filter((g): g is GoalKey => (GOAL_KEYS as readonly string[]).includes(g as string));
+  const saved = readObjectives(s.profile.prefs);
+  const chosen: GoalKey[] = saved.length ? saved : (Array.isArray(seed) ? seed : []).filter(isGoalKey);
   return (
     <Welcome
       m={m}

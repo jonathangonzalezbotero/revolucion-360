@@ -7,7 +7,9 @@
 
 
 /* encabezado: título, botones y meses (los meses solo se ven en el teléfono) */
-.head { display: flex; flex-direction: column; gap: 12px; }
+/* Cada hijo directo de <main> anima su entrada (globals.css, "rise") y eso lo vuelve su propio contexto de apilamiento:
+   sin esto, el cuadro de filtros (que va después) tapa el menú "Más opciones". Queda por debajo de la barra móvil (40) y los avisos. */
+.head { display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 5; }
 .filters { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
 .filterRow { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
 .filterRow[hidden] { display: none; }

@@ -31,11 +31,9 @@ export default async function AsistentePage() {
     loadPlan(s, ctx.year),
   ]);
   const familyId = pickCategory(cats, "family");
-  // Las metas que eligió en la bienvenida llegan como punto de partida (aquí les pone nombre, monto y fecha)
-  const seeds: Record<string, string> = m.goals.seeds;
-  const seed = (s.profile.wizard.seed as { goals?: unknown } | undefined)?.goals;
-  const goalNames = (Array.isArray(seed) ? seed : []).map((g) => seeds[String(g)]).filter(Boolean);
-  const fallback = defaultAnswers({ payFrequency: s.profile.payFrequency, incomeName: m.income.defaultName, goalNames });
+  // Lo que eligió en la bienvenida ya no llena "Tus metas": son objetivos del perfil (prefs.objectives) que Metas ofrece
+  // como sugerencia. Una fila con nombre y sin monto crearía una meta igual (aprobado por Jonathan el 25 nov 2026).
+  const fallback = defaultAnswers({ payFrequency: s.profile.payFrequency, incomeName: m.income.defaultName, goalNames: [] });
   // Si ya tiene plan del año, el asistente arranca con sus datos (`answersFromPlan`) y al guardar actualiza esas líneas.
   // Un avance guardado se respeta solo si ya venía del plan; uno armado desde cero, con un plan existente, duplicaría líneas.
   const goalIds = [...new Set(plan.lines.map((l) => l.goalId).filter((x): x is string => !!x))];

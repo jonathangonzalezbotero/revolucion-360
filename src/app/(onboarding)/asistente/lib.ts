@@ -265,6 +265,8 @@ export type PlanLineLite = {
 export type GoalLite = { id: string; name: string; targetCents: Cents; targetDate: ISODate | null };
 
 const FREQS: readonly string[] = ["weekly", "fortnightly", "monthly"];
+/** Nombres anteriores de lo básico: el asistente los sigue reconociendo ("Súper" pasó a "Comida (supermercado)" el 25 nov 2026). */
+export const LEGACY_BASIC_NAMES: Partial<Record<BasicKey, readonly string[]>> = { groceries: ["Súper"] };
 /** Sin tildes ni mayúsculas: "Súper" = "super". */
 export const normName = (t: string): string => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 /** Centavos → lo que se escribe en el campo ("1330", "12.50"; vacío si es 0). `cents()` lo vuelve a leer igual. */
@@ -291,7 +293,8 @@ export function answersFromPlan(lines: PlanLineLite[], goals: GoalLite[], base: 
     break;
   }
   for (const k of BASIC_KEYS) {
-    const l = byName(labels.basics[k], (x) => !x.debtId && !x.goalId);
+    const free = (x: PlanLineLite) => !x.debtId && !x.goalId;
+    const l = [labels.basics[k], ...(LEGACY_BASIC_NAMES[k] ?? [])].reduce<PlanLineLite | undefined>((hit, name) => hit ?? byName(name, free), undefined);
     if (l) a.basics[k] = { amount: amountText(take(l).amountCents), freq: l.frequency as Freq, lineId: l.id };
   }
   for (const k of DEBT_KEYS) {

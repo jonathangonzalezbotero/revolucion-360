@@ -48,7 +48,9 @@ select.input { padding: 0 10px; }
 .logrosGrid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 16px; align-items: start; }
 .logrosGrid :global(.card) { padding: 26px; }
 .badges { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-.badge { border: 1px solid var(--linea); border-radius: var(--r-2xl); padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.badge { border: 1px solid var(--linea); border-radius: var(--r-2xl); padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; min-width: 0; }
+/* "Ganada el {fecha}": hace salto de línea dentro de la tarjeta (la .pill no lo permite) */
+.earned { white-space: normal; text-align: center; justify-content: center; max-width: 100%; line-height: 1.35; overflow-wrap: break-word; }
 .badgeImg { width: 76px; height: 76px; object-fit: contain; mix-blend-mode: multiply; }
 .badgeDesc { font-size: 11px; color: var(--gris); line-height: 1.4; }
 .badgeTrack { width: 80%; height: 5px; border-radius: 3px; background: var(--linea-2); margin-top: 2px; overflow: hidden; }

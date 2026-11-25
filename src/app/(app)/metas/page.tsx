@@ -8,7 +8,7 @@ import {
 } from "@/lib/engine/metas";
 import { fetchAll, must } from "@/server/data";
 import { requireUser } from "@/server/session";
-import { asContribFreq, goalStatus, planOutlook, typeOf, type Contribution } from "./lib";
+import { asContribFreq, customKind, goalStatus, kindLabel, objectiveSuggestions, planOutlook, sortGoals, typeOf, type Contribution } from "./lib";
 import { M } from "./messages";
 import { Metas, type GoalView } from "./Metas";
 import { leftoverFor, raw, syncGoalLinks } from "./server";
@@ -75,12 +75,13 @@ export default async function MetasPage({ searchParams }: { searchParams: Search
     }
   };
 
-  const views: GoalView[] = goals.map((g) => {
+  // Primero las que tienen algo ahorrado (de mayor a menor), después las de $0 (aprobado por Jonathan el 25 nov 2026).
+  const views: GoalView[] = sortGoals(goals.map((g) => {
     const own = entries.filter((e) => e.goal_id === g.id);
     const plan = goalPlan(g.target_cents, own.map((e) => e.amount_cents), g.target_date, s.today);
     const lite = own.map((e) => ({ date: e.date, amountCents: e.amount_cents }));
     return {
-      id: g.id, name: g.name, kind: g.kind, why: g.why ?? "", type: typeOf(g.kind, labels), targetCents: g.target_cents, targetDate: g.target_date, isEmergencyFund: g.is_emergency_fund,
+      id: g.id, name: g.name, kind: g.kind, kindLabel: kindLabel(g.kind, m.types, labels), custom: customKind(g.kind, labels), why: g.why ?? "", type: typeOf(g.kind, labels), targetCents: g.target_cents, targetDate: g.target_date, isEmergencyFund: g.is_emergency_fund,
       accountId: g.account_id, accountName: (g.account_id && accountName.get(g.account_id)) || "",
       accountMode: !g.account_id ? "none" : shared.has(g.account_id) ? "shared" : "auto",
       completed: !!g.completed_at, inPlan: inPlan.has(g.id), plan, status: goalStatus(plan, g.target_cents, g.target_date, s.today),
@@ -91,8 +92,9 @@ export default async function MetasPage({ searchParams }: { searchParams: Search
       ),
       reached: milestonesReached(g.target_cents, plan.savedCents), next: nextMilestone(g.target_cents, plan.savedCents),
       entries: own.filter((e) => e.amount_cents !== 0).map((e) => ({ id: e.id, date: e.date, amountCents: e.amount_cents, label: label(e) })),
+      savedCents: plan.savedCents,
     };
-  });
+  }));
   const active = views.filter((g) => !g.completed);
   const activeIds = new Set(active.map((g) => g.id));
   const monthIn = monthContributions(entries.filter((e) => activeIds.has(e.goal_id)).map((e) => ({ date: e.date, amountCents: e.amount_cents })), s.today);
@@ -114,6 +116,7 @@ export default async function MetasPage({ searchParams }: { searchParams: Search
       planHref={s.config.menu.plan === "on" ? "/plan" : null}
       wall={null}
       monthIn={monthIn} leftover={leftover} challenges={challenges}
+      suggestions={s.canEdit ? objectiveSuggestions(s.profile.prefs) : []}
       crossed={crossed.map((c) => ({ text: fill(m.tMilestone, { pct: c.pct, name: c.name }), points: c.points }))}
     />
   );

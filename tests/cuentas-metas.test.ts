@@ -2,7 +2,10 @@
 import { describe, expect, it } from "vitest";
 import { expectedBalance, goalPlan, monthsUntil, type AccountLite } from "@/lib/engine";
 import { balanceCheck, cardBalance, defaultsFor, initialOf, KINDS, transferBalances, transferError, transferRows } from "@/app/(app)/cuentas/lib";
-import { atFreeLimit, canUse, endOfMonth, goalStatus, isYm, monthOptions, planRange, resolveTargetDate, typeOf, whenLabel, ymOf } from "@/app/(app)/metas/lib";
+import {
+  atFreeLimit, canUse, customKind, endOfMonth, goalStatus, isYm, kindLabel, monthOptions, objectiveSuggestions, planRange, resolveTargetDate, sortGoals, typeOf, whenLabel, ymOf,
+} from "@/app/(app)/metas/lib";
+import { readObjectives, withObjectives, withoutObjective } from "@/app/(onboarding)/bienvenida/lib";
 
 describe("cuentas", () => {
   it("la cuenta de empresa nace fuera del patrimonio y de la proyección", () => {
@@ -169,5 +172,58 @@ describe("metas", () => {
     expect(canUse(120_001, 120_000)).toBe(false);
     expect(canUse(0, 120_000)).toBe(false);
     expect(canUse(100, 0)).toBe(false);
+  });
+});
+
+describe("metas: objetivos de la bienvenida, tipo legible y orden (25 nov 2026)", () => {
+  const es = { trip: "Viaje", fund: "Fondo de emergencia", buy: "Comprar algo", debt: "Pagar una deuda", invest: "Inversión", other: "Otra" };
+  const en = { trip: "Trip", fund: "Emergency fund", buy: "Buy something", debt: "Pay off a debt", invest: "Investment", other: "Other" };
+  const labels = [es, en];
+
+  it("la clave de un objetivo nunca se muestra: se traduce a un tipo", () => {
+    expect(typeOf("invest", labels)).toBe("invest");
+    expect(typeOf("debts", labels)).toBe("debt");
+    expect(typeOf("emergency", labels)).toBe("fund");
+    expect(typeOf("business", labels)).toBe("other");
+    expect(kindLabel("business", es, labels)).toBe("Otra");
+    expect(kindLabel("clarity", en, labels)).toBe("Other");
+    expect(kindLabel("invest", es, labels)).toBe("Inversión");
+    expect(kindLabel("trip", es, labels)).toBe("Viaje");
+    expect(kindLabel("", es, labels)).toBe("Otra");
+  });
+
+  it("un tipo reconocido sale en el idioma de la pantalla; uno escrito a mano, tal cual", () => {
+    expect(kindLabel("Trip", es, labels)).toBe("Viaje");
+    expect(kindLabel("Fondo de emergencia", en, labels)).toBe("Emergency fund");
+    expect(kindLabel("Other", es, labels)).toBe("Otra");
+    expect(kindLabel("Mascota", en, labels)).toBe("Mascota");
+    expect(customKind("Mascota", labels)).toBe("Mascota");
+    expect(customKind("business", labels)).toBe("");
+    expect(customKind("Otra", labels)).toBe("");
+    expect(customKind("Viaje", labels)).toBe("");
+  });
+
+  it("orden: primero las que tienen ahorro (de mayor a menor), después las de $0 en su orden", () => {
+    const g = (id: string, savedCents: number) => ({ id, savedCents });
+    const out = sortGoals([g("a", 0), g("b", 5_000), g("c", 0), g("d", 120_000), g("e", 5_000), g("f", -300)]);
+    expect(out.map((x) => x.id)).toEqual(["d", "b", "e", "a", "c", "f"]);
+    expect(sortGoals([])).toEqual([]);
+  });
+
+  it("sugerencias: solo los objetivos guardados en el perfil, con su tipo para prellenar", () => {
+    expect(objectiveSuggestions({})).toEqual([]);
+    expect(objectiveSuggestions({ objectives: "invest" })).toEqual([]);
+    expect(objectiveSuggestions({ objectives: ["business", "raro", "invest", "invest", 3] })).toEqual([
+      { key: "invest", type: "invest" }, { key: "business", type: "other" },
+    ]);
+    expect(objectiveSuggestions({ objectives: ["emergency", "debts"] }).map((x) => x.type)).toEqual(["debt", "fund"]);
+  });
+
+  it("crear o descartar una sugerencia la quita del perfil sin tocar las demás preferencias", () => {
+    const prefs = withObjectives({ notify: { close: true } }, ["invest", "trip", "nada"]);
+    expect(prefs).toEqual({ notify: { close: true }, objectives: ["trip", "invest"] });
+    const after = withoutObjective(prefs, "invest");
+    expect(after).toEqual({ notify: { close: true }, objectives: ["trip"] });
+    expect(readObjectives(withoutObjective(after, "trip"))).toEqual([]);
   });
 });

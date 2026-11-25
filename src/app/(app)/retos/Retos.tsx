@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { fill } from "@/i18n";
 import { Switch, useToast } from "@/components/ui/client";
 import { ILLU } from "@/lib/images";
@@ -15,7 +15,7 @@ import type { ActiveView, RetosData } from "./server";
 type Tab = "act" | "av" | "fin";
 const TABS: Tab[] = ["act", "av", "fin"];
 
-export function Retos({ data, m, canEdit }: { data: RetosData; m: RetosMessages; canEdit: boolean }) {
+export function Retos({ data, m, canEdit, focus = "" }: { data: RetosData; m: RetosMessages; canEdit: boolean; focus?: string }) {
   const [tab, setTab] = useState<Tab>("act");
   const [pending, start] = useTransition();
   const toast = useToast();
@@ -49,7 +49,7 @@ export function Retos({ data, m, canEdit }: { data: RetosData; m: RetosMessages;
         <div className={css.col}>
           {tab === "act" ? (
             data.active.length ? data.active.map((r) => (
-              <ActiveCard key={r.memberId} r={r} m={m} canEdit={canEdit} pending={pending}
+              <ActiveCard key={r.memberId} r={r} m={m} canEdit={canEdit} pending={pending} focused={r.challengeId === focus}
                 onYes={() => go(() => checkIn({ memberId: r.memberId, done: true }))}
                 onNo={() => go(() => checkIn({ memberId: r.memberId, done: false }))}
                 onLeave={() => go(() => leaveChallenge({ memberId: r.memberId }))} />
@@ -126,12 +126,19 @@ export function Retos({ data, m, canEdit }: { data: RetosData; m: RetosMessages;
   );
 }
 
-function ActiveCard({ r, m, canEdit, pending, onYes, onNo, onLeave }: {
-  r: ActiveView; m: RetosMessages; canEdit: boolean; pending: boolean; onYes: () => void; onNo: () => void; onLeave: () => void;
+function ActiveCard({ r, m, canEdit, pending, focused, onYes, onNo, onLeave }: {
+  r: ActiveView; m: RetosMessages; canEdit: boolean; pending: boolean; focused: boolean; onYes: () => void; onNo: () => void; onLeave: () => void;
 }) {
+  const ref = useRef<HTMLElement>(null);
+  // Abierto desde Metas: la vista llega hasta el reto y el foco queda en él (para el lector de pantalla y el teclado).
+  useEffect(() => {
+    if (!focused || !ref.current) return;
+    ref.current.scrollIntoView({ block: "center", behavior: "smooth" });
+    ref.current.focus({ preventScroll: true });
+  }, [focused]);
   const cols = Math.min(r.dots.length, 30), colsM = Math.min(r.dots.length, 15);
   return (
-    <article className={css.card}>
+    <article ref={ref} id={`reto-${r.challengeId}`} className={css.card} data-focus={focused || undefined} tabIndex={focused ? -1 : undefined} aria-current={focused ? "true" : undefined}>
       <div className={css.cardTop}>
         <Image src={r.img} alt="" aria-hidden="true" width={88} height={88} sizes="88px" className={css.cardImg} />
         <div className={css.cardText}>

@@ -89,10 +89,8 @@ export function PlanGrid(props: Props) {
     if (!r.ok) { setMarks((x) => patchMark(x, lineId, month, !paid)); toast(r.error); return; }
     toast(fill(paid ? m.mes.marked : m.mes.unmarked, { name }), r.points);
   }, [toast, m]);
-  /** Puede marcarse desde el año: gasto fijo (por su tipo o por la regla), o que ya se pagó alguna vez. */
-  const markable = useCallback((l: LineLite) => canEdit && l.kind === "expense" && (
-    l.fixed === true || (l.fixed !== false && props.auto[l.id] != null) || !!marks[l.id]?.some(Boolean) || !!linked[l.id]?.some((x) => x !== null)
-  ), [canEdit, props.auto, marks, linked]);
+  /** Toda línea de gasto puede marcarse pagada desde su celda del mes (aprobado por Jonathan el 25 nov 2026). */
+  const markable = useCallback((l: LineLite) => canEdit && l.kind === "expense", [canEdit]);
 
   function onKey(e: React.KeyboardEvent<HTMLTableElement>) {
     const el = e.target;
@@ -250,7 +248,12 @@ function GroupRows({ g, rowIndex, ...p }: RowsProps & { g: GridGroup; rowIndex: 
   return (
     <>
       <tr className={css.group}>
-        <th scope="rowgroup"><span className={css.groupName}><span aria-hidden="true" className={css.dot} style={{ background: g.category.color }} />{g.category.name}</span></th>
+        <th scope="rowgroup">
+          <span className={css.groupName}>
+            <span aria-hidden="true" className={css.dot} style={{ background: g.category.color }} />{g.category.name}
+            {p.canEdit ? <AddInButton name={g.category.name} m={p.m} onClick={() => p.onAddIn(g.category.id)} /> : null}
+          </span>
+        </th>
         {g.totals.map((v, i) => <td key={i} className="num">{v === 0 ? "—" : formatMoney(v, p.fmt)}</td>)}
         <td className="num">{formatMoney(g.total, p.fmt)}</td>
       </tr>
@@ -259,13 +262,16 @@ function GroupRows({ g, rowIndex, ...p }: RowsProps & { g: GridGroup; rowIndex: 
           states={p.states} canEdit={p.canEdit} fmt={p.fmt} locale={p.locale} m={p.m} onCommit={p.onCommit} onEdit={p.onEdit}
           tx={p.linked[r.line.id] ?? NO_TX} marked={p.marks[r.line.id] ?? NO_MARKS} markable={p.markable(r.line)} onMark={p.onMark} toast={p.toast} />
       ))}
-      {p.canEdit ? (
-        <tr className={css.addRow}>
-          <th scope="row"><button type="button" className={css.addIn} aria-label={fill(p.m.grid.addInAria, { group: g.category.name })} onClick={() => p.onAddIn(g.category.id)}>{p.m.grid.addIn}</button></th>
-          <td colSpan={13} />
-        </tr>
-      ) : null}
     </>
+  );
+}
+
+/** "+" en el título de cada categoría: abre el formulario de nueva línea con esa categoría elegida. */
+function AddInButton({ name, m, onClick }: { name: string; m: PlanText; onClick: () => void }) {
+  return (
+    <button type="button" className={css.addIn} aria-label={fill(m.grid.addInAria, { group: name })} title={fill(m.grid.addInTitle, { group: name })} onClick={onClick}>
+      <Icon name="plus" size={14} />
+    </button>
   );
 }
 
@@ -292,13 +298,13 @@ function ExtraTag({ line, n, month, m, locale, toast, big }: { line: LineLite; n
 }
 
 /** Marcar o deshacer "Pagado · a mano"; si lo pagó un movimiento, solo dice "Pagado". */
-function PaidControl({ line, month, info, m, locale, onMark, big }: { line: LineLite; month: number; info: CellInfo; m: PlanText; locale: Locale; onMark: Mark; big?: boolean }) {
+function PaidControl({ line, month, info, m, locale, onMark, big, className = "" }: { line: LineLite; month: number; info: CellInfo; m: PlanText; locale: Locale; onMark: Mark; big?: boolean; className?: string }) {
   const { status } = info, monthLabel = monthName(month, locale);
   if (info.toggle) {
     const on = status === "paid_manual";
     const label = fill(on ? m.grid.undo : m.grid.mark, { line: line.name, month: monthLabel });
     return (
-      <button type="button" className={`${css.markBtn} ${big ? css.markBig : ""}`} aria-pressed={on} aria-label={label} title={on ? m.mes.hintUndo : m.mes.hintMark} onClick={() => onMark(line.id, line.name, month, !on)}>
+      <button type="button" className={`${css.markBtn} ${big ? css.markBig : ""} ${className}`} aria-pressed={on} aria-label={label} title={on ? m.mes.hintUndo : m.mes.hintMark} onClick={() => onMark(line.id, line.name, month, !on)}>
         <Icon name="tick" size={big ? 14 : 11} />{on ? m.grid.paid : big ? m.grid.markShort : null}
       </button>
     );
@@ -323,15 +329,18 @@ const LineRow = memo(function LineRow({ line, amounts, manual, total, r, isNew, 
       </th>
       {amounts.map((v, i) => {
         const c = info[i], paidish = isPaid(c.status) || c.status === "partial";
+        // Pendiente y marcable: el ✓ aparece al pasar el mouse o al enfocar la celda (no llena la tabla de botones).
+        const reveal = c.toggle && c.status !== "paid_manual";
         return (
-          <td key={i} className={`${css[states[i]]} ${cellTone(c.status)}`}>
+          <td key={i} className={`${css[states[i]]} ${cellTone(c.status)} ${reveal ? css.markable : ""}`}>
             {canEdit ? (
               <input key={v} className={`${css.cell} num`} type="text" inputMode="decimal" autoComplete="off" aria-label={fill(m.grid.cellAria, { line: line.name, month: monthName(i + 1, locale) })}
                 defaultValue={cellText(v)} data-line={line.id} data-month={i + 1} data-r={r} data-v={v} data-m={manual[i] ? 1 : 0} onBlur={onCommit} onFocus={selectAll} />
             ) : <span className={`${css.cell} num`}>{cellText(v) || "—"}</span>}
-            {c.toggle || paidish || c.extra ? (
+            {reveal ? <PaidControl line={line} month={i + 1} info={c} m={m} locale={locale} onMark={onMark} className={css.reveal} /> : null}
+            {(c.toggle && !reveal) || paidish || c.extra ? (
               <div className={css.foot}>
-                <PaidControl line={line} month={i + 1} info={c} m={m} locale={locale} onMark={onMark} />
+                {reveal ? null : <PaidControl line={line} month={i + 1} info={c} m={m} locale={locale} onMark={onMark} />}
                 {c.extra ? <ExtraTag line={line} n={c.extra} month={i + 1} m={m} locale={locale} toast={toast} /> : null}
               </div>
             ) : null}
@@ -352,6 +361,8 @@ function MobileViews({ groups, nets, yearNet, year, curYear, defaultMonth, state
   const filled = groups.filter((g) => g.rows.length > 0);
   const all = filled.flatMap((g) => g.rows);
   const [lineId, setLineId] = useState(all[0]?.line.id ?? "");
+  /** Fila o celda tocada: solo ahí aparece "Marcar pagado" (se queda hasta tocar otra). */
+  const [active, setActive] = useState<string | null>(null);
   const row = all.find((r) => r.line.id === lineId) ?? all[0];
   const infoOf = (r: (typeof all)[number]) => cellInfo(r.line, r.amounts, r.manual, linked[r.line.id] ?? NO_TX, marks[r.line.id] ?? NO_MARKS, markable(r.line));
   const field = (id: string, lineKey: string, month: number, v: number, isManual: boolean, extra = "") => canEdit
@@ -388,11 +399,17 @@ function MobileViews({ groups, nets, yearNet, year, curYear, defaultMonth, state
           </div>
           {filled.map((g) => (
             <section key={g.category.id} className={css.mGroup}>
-              <h3><span><span aria-hidden="true" className={css.dot} style={{ background: g.category.color }} />{g.category.name}</span><span className="num">{formatMoney(g.totals[sel - 1], fmt)}</span></h3>
+              <h3>
+                <span><span aria-hidden="true" className={css.dot} style={{ background: g.category.color }} />{g.category.name}</span>
+                <span className={css.mGroupEnd}>
+                  <span className="num">{formatMoney(g.totals[sel - 1], fmt)}</span>
+                  {canEdit ? <AddInButton name={g.category.name} m={m} onClick={() => onAddIn(g.category.id)} /> : null}
+                </span>
+              </h3>
               {g.rows.map((r) => {
                 const c = infoOf(r)[sel - 1];
                 return (
-                  <div key={r.line.id} className={`${css.mRow} ${cellTone(c.status)}`}>
+                  <div key={r.line.id} className={`${css.mRow} ${cellTone(c.status)}`} onFocus={() => setActive(`m-${r.line.id}`)} onClick={() => setActive(`m-${r.line.id}`)}>
                     <div className={css.mName}>
                       <label htmlFor={`m-${r.line.id}`}>{r.line.name}{fresh.includes(r.line.id) ? <> <span className={css.mTag}>{m.mobile.newTag}</span></> : null}</label>
                       {isPaid(c.status) || c.status === "partial" || c.extra ? (
@@ -404,7 +421,7 @@ function MobileViews({ groups, nets, yearNet, year, curYear, defaultMonth, state
                       ) : null}
                     </div>
                     {field(`m-${r.line.id}`, r.line.id, sel, r.amounts[sel - 1], r.manual[sel - 1])}
-                    {c.toggle ? (
+                    {c.toggle && (c.status === "paid_manual" || active === `m-${r.line.id}`) ? (
                       <button type="button" className={`${css.tap} ${css.tapAct}`} aria-pressed={c.status === "paid_manual"}
                         aria-label={fill(c.status === "paid_manual" ? m.grid.undo : m.grid.mark, { line: r.line.name, month: monthName(sel, locale) })}
                         onClick={() => onMark(r.line.id, r.line.name, sel, c.status !== "paid_manual")}>
@@ -414,7 +431,6 @@ function MobileViews({ groups, nets, yearNet, year, curYear, defaultMonth, state
                   </div>
                 );
               })}
-              {canEdit ? <button type="button" className={css.mAddIn} aria-label={fill(m.grid.addInAria, { group: g.category.name })} onClick={() => onAddIn(g.category.id)}>{m.grid.addIn}</button> : null}
             </section>
           ))}
         </>
@@ -431,10 +447,10 @@ function MobileViews({ groups, nets, yearNet, year, curYear, defaultMonth, state
             {row.amounts.map((v, i) => {
               const c = rowInfo[i];
               return (
-                <div key={i} className={`field ${css.byLineCell} ${cellTone(c.status)}`} style={{ gap: 4 }}>
+                <div key={i} className={`field ${css.byLineCell} ${cellTone(c.status)}`} style={{ gap: 4 }} onFocus={() => setActive(`l-${i}`)} onClick={() => setActive(`l-${i}`)}>
                   <label htmlFor={`l-${i}`}>{monthShort(i + 1, locale)}</label>
                   {field(`l-${i}`, row.line.id, i + 1, v, row.manual[i], states[i] === "past" ? "" : css.future)}
-                  {c.toggle || isPaid(c.status) || c.status === "partial" ? <PaidControl line={row.line} month={i + 1} info={c} m={m} locale={locale} onMark={onMark} big /> : null}
+                  {(c.toggle && (c.status === "paid_manual" || active === `l-${i}`)) || isPaid(c.status) || c.status === "partial" ? <PaidControl line={row.line} month={i + 1} info={c} m={m} locale={locale} onMark={onMark} big /> : null}
                   {c.extra ? <ExtraTag line={row.line} n={c.extra} month={i + 1} m={m} locale={locale} toast={toast} big /> : null}
                 </div>
               );

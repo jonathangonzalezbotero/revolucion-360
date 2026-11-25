@@ -32,7 +32,7 @@ export const M = {
       cellAria: "{line} {month}", newTag: "NUEVA", editLine: "Editar {name}", invalid: "Eso no es un monto.",
       paid: "Pagado", partial: "Parcial", over: "De más", paidTx: "Pagado con un movimiento. Para cambiarlo, edita el movimiento.",
       mark: "Marcar pagado: {line}, {month}", undo: "Volver a pendiente: {line}, {month}", markShort: "Marcar pagado", undoShort: "Deshacer",
-      addIn: "+ Agregar línea", addInAria: "Agregar línea en {group}",
+      addInAria: "Agregar línea en {group}", addInTitle: "Agregar una línea a {group}",
       extra: "{n} pagos", extraAria: "{n} pagos en {month}. {why}",
       extraWhy: {
         income: { weekly: "Este mes cae un pago más: {n} sueldos semanales en vez de {normal}.", fortnightly: "Este mes cae un pago más: {n} sueldos quincenales en vez de {normal}." },
@@ -131,7 +131,7 @@ export const M = {
       cellAria: "{line} {month}", newTag: "NEW", editLine: "Edit {name}", invalid: "That's not an amount.",
       paid: "Paid", partial: "Partial", over: "Over", paidTx: "Paid with a transaction. To change it, edit the transaction.",
       mark: "Mark paid: {line}, {month}", undo: "Set back to pending: {line}, {month}", markShort: "Mark paid", undoShort: "Undo",
-      addIn: "+ Add line", addInAria: "Add line in {group}",
+      addInAria: "Add line in {group}", addInTitle: "Add a line to {group}",
       extra: "{n} payments", extraAria: "{n} payments in {month}. {why}",
       extraWhy: {
         income: { weekly: "This month has one extra payment: {n} weekly paychecks instead of {normal}.", fortnightly: "This month has one extra payment: {n} fortnightly paychecks instead of {normal}." },

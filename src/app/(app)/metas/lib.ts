@@ -2,6 +2,7 @@
 import { ILLU } from "@/lib/images";
 import { daysInMonth, iso, monthShort, parts, payDatesInMonth, type Cents, type GoalPlan, type ISODate, type Tier } from "@/lib/engine";
 import { etaDate, type GoalOutlook } from "@/lib/engine/metas";
+import { isGoalKey, readObjectives, type GoalKey } from "@/app/(onboarding)/bienvenida/lib";
 
 export const GOAL_TYPES = ["trip", "fund", "buy", "debt", "invest", "other"] as const;
 export type GoalType = (typeof GOAL_TYPES)[number];
@@ -16,11 +17,41 @@ export const TYPE_IMG: Record<GoalType, string> = {
   trip: ILLU.metaViaje, fund: ILLU.metaEmergencia, buy: ILLU.metaComprar, debt: ILLU.metaDeuda, invest: ILLU.metaInversion, other: ILLU.metaOtra,
 };
 
-/** El tipo es texto libre: se reconoce si coincide con una de las sugerencias (en cualquier idioma). */
+/**
+ * Objetivo de la bienvenida → tipo de meta. Sirve para prellenar la sugerencia y para leer las metas que antes
+ * creaba "Empezar en blanco" con la clave del objetivo como tipo (`kind` = 'invest', 'business'…).
+ */
+export const OBJECTIVE_TYPE: Record<GoalKey, GoalType> = { debts: "debt", trip: "trip", emergency: "fund", clarity: "other", invest: "invest", business: "other" };
+
+/** El tipo es texto libre: se reconoce si coincide con una de las sugerencias (en cualquier idioma) o con la clave de un objetivo. */
 export function typeOf(kind: string, labels: Record<GoalType, string>[]): GoalType {
+  if (isGoalKey(kind.trim())) return OBJECTIVE_TYPE[kind.trim() as GoalKey];
   const k = kind.trim().toLowerCase();
   for (const set of labels) for (const t of GOAL_TYPES) if (set[t].toLowerCase() === k) return t;
   return "other";
+}
+
+/** El tipo que escribió a mano (si es "otra" y no es una clave ni la palabra "Otra"/"Other"); vacío si no hay. */
+export function customKind(kind: string, labels: Record<GoalType, string>[]): string {
+  const k = kind.trim();
+  if (!k || isGoalKey(k) || typeOf(k, labels) !== "other" || labels.some((set) => set.other.toLowerCase() === k.toLowerCase())) return "";
+  return k;
+}
+
+/** Lo que se muestra como tipo: nunca la clave cruda. Un tipo reconocido sale en el idioma de la pantalla; uno escrito a mano, tal cual. */
+export function kindLabel(kind: string, shown: Record<GoalType, string>, labels: Record<GoalType, string>[]): string {
+  const t = typeOf(kind, labels);
+  return t !== "other" ? shown[t] : customKind(kind, labels) || shown.other;
+}
+
+/** Orden de las metas: primero las que tienen algo ahorrado (de mayor a menor), después las de $0 en su orden de siempre. */
+export function sortGoals<T extends { savedCents: Cents }>(goals: readonly T[]): T[] {
+  return goals.map((g, i) => ({ g, i, v: Math.max(0, g.savedCents) })).sort((a, b) => b.v - a.v || a.i - b.i).map((x) => x.g);
+}
+
+/** Sugerencias de Metas: los objetivos de la bienvenida que siguen guardados en el perfil, con el tipo para prellenar. */
+export function objectiveSuggestions(prefs: Record<string, unknown>): { key: GoalKey; type: GoalType }[] {
+  return readObjectives(prefs).map((key) => ({ key, type: OBJECTIVE_TYPE[key] }));
 }
 
 /** "2027-12" → "2027-12-31". La meta se guarda al último día del mes: así "Dic 2027" desde el 24 nov 2026 son 13 meses. */

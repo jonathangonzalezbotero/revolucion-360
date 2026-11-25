@@ -10,8 +10,9 @@ import { Icon } from "@/components/ui/Icon";
 import { formatDate, formatMoney, goalPlan, parseMoney, type Cents, type GoalPlan, type ISODate, type MoneyFormat } from "@/lib/engine";
 import { MILESTONES, type Milestone } from "@/lib/engine/metas";
 import type { Result } from "@/server/action";
-import { addEntry, addToPlan, archiveGoal, completeGoal, createGoal, sendLeftover, updateGoal } from "./actions";
-import { joinChallenge, leaveChallenge } from "../retos/actions";
+import { addEntry, addToPlan, archiveGoal, completeGoal, createGoal, dismissObjective, sendLeftover, updateGoal } from "./actions";
+import { joinChallenge } from "../retos/actions";
+import type { GoalKey } from "@/app/(onboarding)/bienvenida/lib";
 import type { MetasReto } from "../retos/server";
 import { CONTRIB_FREQS, GOAL_TYPES, monthOptions, resolveTargetDate, TYPE_COLOR, TYPE_IMG, whenLabel, ymOf, type ContribFreq, type Contribution, type GoalStatus, type GoalType, type MetaOutlook } from "./lib";
 import type { MetasMessages } from "./messages";
@@ -19,14 +20,18 @@ import css from "./metas.module.css";
 import { ILLU } from "@/lib/images";
 
 export type GoalView = {
-  id: string; name: string; kind: string; why: string; type: GoalType; targetCents: Cents; targetDate: ISODate | null; isEmergencyFund: boolean;
+  /** `kind` es lo guardado (puede ser una clave vieja como 'invest'); en pantalla siempre va `kindLabel`, y en el formulario `custom`. */
+  id: string; name: string; kind: string; kindLabel: string; custom: string; why: string; type: GoalType; targetCents: Cents; targetDate: ISODate | null; isEmergencyFund: boolean;
   accountId: string | null; accountName: string; accountMode: "auto" | "shared" | "none";
   completed: boolean; inPlan: boolean; plan: GoalPlan; status: GoalStatus; outlook: MetaOutlook;
   /** El aporte de su línea del plan (año en curso), si tiene. */
   contribution: Contribution | null;
   reached: Milestone[]; next: { pct: Milestone; missingCents: Cents } | null;
   entries: { id: string; date: ISODate; amountCents: Cents; label: string }[];
+  savedCents: Cents;
 };
+export type Suggestion = { key: GoalKey; type: GoalType };
+type Preset = { key: GoalKey; type: GoalType; name: string };
 type Props = {
   goals: GoalView[]; accounts: { id: string; name: string }[]; fmt: MoneyFormat; locale: Locale; today: ISODate; canEdit: boolean; m: MetasMessages; openNew: boolean;
   points: { contrib: number; done: number; milestone: number } | null; planHref: string | null; wall: React.ReactNode;
@@ -36,22 +41,24 @@ type Props = {
   challenges: MetasReto[];
   /** Hitos que se cruzaron al poner al día las transferencias automáticas: se celebran una vez al abrir. */
   crossed: { text: string; points: number }[];
+  /** Objetivos de la bienvenida que aún no son meta (profiles.prefs.objectives). */
+  suggestions: Suggestion[];
 };
 type Run = <T>(fn: () => Promise<Result<T>>, after: (r: Extract<Result<T>, { ok: true }>) => void, onError: (e: string) => void) => void;
 const HISTORY = 6;
 
 type Saved = { inPlan: boolean; contribution: Contribution | null };
 
-function GoalForm({ p, goal, run, pending, onClose, onSaved }: { p: Props; goal?: GoalView; run: Run; pending: boolean; onClose: () => void; onSaved: (r: Saved) => void }) {
+function GoalForm({ p, goal, preset, run, pending, onClose, onSaved }: { p: Props; goal?: GoalView; preset?: Preset | null; run: Run; pending: boolean; onClose: () => void; onSaved: (r: Saved) => void }) {
   const { m, fmt, locale, today } = p;
   const uid = goal?.id ?? "new";
   const base = monthOptions(today);
   const [f, setF] = useState({
-    type: goal?.type ?? ("trip" as GoalType),
-    custom: goal && goal.type === "other" && goal.kind !== m.types.other ? goal.kind : "",
-    name: goal?.name ?? "", why: goal?.why ?? "", target: goal?.targetCents ? formatMoney(goal.targetCents, fmt) : "",
+    type: goal?.type ?? preset?.type ?? ("trip" as GoalType),
+    custom: goal?.type === "other" ? goal.custom : "",
+    name: goal?.name ?? preset?.name ?? "", why: goal?.why ?? "", target: goal?.targetCents ? formatMoney(goal.targetCents, fmt) : "",
     month: goal ? (goal.targetDate ? ymOf(goal.targetDate) : "") : base[12],
-    fund: goal?.isEmergencyFund ?? false, account: goal?.accountId ?? "",
+    fund: goal?.isEmergencyFund ?? preset?.type === "fund", account: goal?.accountId ?? "",
     contrib: goal?.contribution ? formatMoney(goal.contribution.amountCents, fmt) : "", freq: (goal?.contribution?.frequency ?? "monthly") as ContribFreq,
   });
   const [error, setError] = useState("");
@@ -67,7 +74,7 @@ function GoalForm({ p, goal, run, pending, onClose, onSaved }: { p: Props; goal?
     <form aria-labelledby={`gf-${uid}`} className={goal ? "stack" : "form-open"} style={goal ? { gap: 14 } : undefined} onSubmit={(e) => {
       e.preventDefault(); setError("");
       if (goal) run(() => updateGoal({ id: goal.id, ...fields }), (r) => onSaved({ inPlan: false, ...r.data }), setError);
-      else run(() => createGoal(fields), (r) => onSaved({ inPlan: r.data.inPlan, contribution: null }), setError);
+      else run(() => createGoal({ ...fields, ...(preset ? { objective: preset.key } : {}) }), (r) => onSaved({ inPlan: r.data.inPlan, contribution: null }), setError);
     }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
         <h2 id={`gf-${uid}`} className={css.formTitle}>{goal ? m.editTitle : m.newTitle}</h2>
@@ -142,6 +149,8 @@ export function Metas(p: Props) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [showNew, setShowNew] = useState(p.openNew);
+  /** Formulario abierto desde una sugerencia: ya trae tipo y nombre. */
+  const [preset, setPreset] = useState<Preset | null>(null);
   const [openId, setOpenId] = useState("");
   const [editId, setEditId] = useState("");
   const [act, setAct] = useState<{ mode: "in" | "out"; amount: string } | null>(null);
@@ -165,8 +174,17 @@ export function Metas(p: Props) {
   });
   const active = goals.filter((g) => !g.completed), done = goals.filter((g) => g.completed);
   const total = active.reduce((a, g) => a + g.plan.savedCents, 0);
-  const closeNew = () => { setShowNew(false); if (p.openNew) router.replace("/metas", { scroll: false }); };
-  const toggleNew = () => (showNew ? closeNew() : setShowNew(true));
+  const closeNew = () => { setShowNew(false); setPreset(null); if (p.openNew) router.replace("/metas", { scroll: false }); };
+  const toggleNew = () => {
+    if (showNew) return closeNew();
+    setPreset(null);
+    setShowNew(true);
+  };
+  const fromSuggestion = (sg: Suggestion) => {
+    setPreset({ key: sg.key, type: sg.type, name: m.sgNames[sg.key] });
+    setShowNew(true);
+    setTimeout(() => document.getElementById("gf-new")?.scrollIntoView({ block: "start", behavior: "smooth" }), 60);
+  };
   const toggle = (id: string) => { setOpenId(openId === id ? "" : id); setEditId(""); setAct(null); setError(""); setAsk(null); };
   const finish = (g: GoalView, what: "archive" | "complete", removeLine: boolean, onError: (e: string) => void, done?: () => void) => {
     setAsk(null);
@@ -244,8 +262,33 @@ export function Metas(p: Props) {
         </section>
       ) : null}
 
+      {canEdit && p.suggestions.length ? (
+        <section aria-labelledby="sg-h" className="stack" style={{ gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <h2 id="sg-h" className={css.rtTitle}>{m.sgTitle}</h2>
+            <span className="small muted">{m.sgSub}</span>
+          </div>
+          <ul className={css.suggestions}>
+            {p.suggestions.map((sg) => (
+              <li key={sg.key} className={css.suggestion}>
+                <Image src={TYPE_IMG[sg.type]} alt="" aria-hidden="true" width={48} height={48} sizes="48px" className={css.sgImg} />
+                <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
+                  <strong style={{ fontSize: 15 }}>{m.sgNames[sg.key]}</strong>
+                  <span className="small muted" style={{ lineHeight: 1.45 }}>{m.sgAsk[sg.key]}</span>
+                </div>
+                <div className={css.sgActions}>
+                  <button type="button" className="btn btn-secondary btn-sm" aria-expanded={showNew && preset?.key === sg.key} disabled={pending} onClick={() => fromSuggestion(sg)}>{m.sgCreate}</button>
+                  <button type="button" className={css.textBtn} aria-label={fill(m.sgDismissAria, { name: m.sgNames[sg.key] })} disabled={pending}
+                    onClick={() => run(() => dismissObjective({ key: sg.key }), () => { if (preset?.key === sg.key) closeNew(); toast(m.tDismissed); }, (e) => toast(e))}>{m.sgDismiss}</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {showNew && canEdit ? (
-        p.wall ?? <GoalForm p={p} run={run} pending={pending} onClose={closeNew} onSaved={(r) => { closeNew(); toast(r.inPlan ? m.tCreatedPlan : m.tCreated); }} />
+        p.wall ?? <GoalForm key={preset?.key ?? "new"} p={p} preset={preset} run={run} pending={pending} onClose={closeNew} onSaved={(r) => { closeNew(); toast(r.inPlan ? m.tCreatedPlan : m.tCreated); }} />
       ) : null}
 
       {active.length === 0 ? (
@@ -260,13 +303,14 @@ export function Metas(p: Props) {
             const open = openId === g.id, color = TYPE_COLOR[g.type];
             const shown = full === g.id ? g.entries : g.entries.slice(0, HISTORY);
             const tip = g.outlook.kind === "pace" ? g.outlook.tip : null;
+            const saving = g.savedCents > 0;
             return (
-              <article key={g.id} className={css.goal} aria-labelledby={`g-${g.id}`}>
+              <article key={g.id} className={`${css.goal} ${saving ? css.saving : ""}`} aria-labelledby={`g-${g.id}`}>
                 <div className="row">
                   <Image src={TYPE_IMG[g.type]} alt="" aria-hidden="true" width={64} height={64} sizes="64px" className={css.typeImg} />
                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
                     <h3 id={`g-${g.id}`} style={{ fontSize: 16 }}>{g.name}</h3>
-                    <span className="xs muted">{g.kind || m.types.other}{g.isEmergencyFund && g.type !== "fund" ? ` · ${m.in}` : ""}{g.accountName ? ` · ${fill(m.inAccount, { account: g.accountName })}` : ""}</span>
+                    <span className="xs muted">{g.kindLabel}{g.isEmergencyFund && g.type !== "fund" ? ` · ${m.in}` : ""}{g.accountName ? ` · ${fill(m.inAccount, { account: g.accountName })}` : ""}</span>
                   </div>
                   {g.targetCents > 0 ? <span className="num" style={{ fontSize: 14, fontWeight: 600 }}>{Math.round(g.plan.progress * 100)}%</span> : null}
                 </div>
@@ -274,9 +318,14 @@ export function Metas(p: Props) {
                   <span className="num big" style={{ fontSize: 26 }}>{money(g.plan.savedCents)}</span>
                   <span className="num muted" style={{ fontSize: 14 }}>{g.targetCents > 0 ? fill(m.of, { target: money(g.targetCents) }) : m.noTarget} · {g.targetDate ? whenLabel(g.targetDate, locale) : m.noDate}</span>
                 </div>
-                <div className={css.track} role="progressbar" aria-label={fill(m.progress, { name: g.name })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(g.plan.progress * 100)}>
-                  <span style={{ width: `${Math.round(g.plan.progress * 100)}%`, background: color }} />
-                </div>
+                {g.targetCents > 0 || !saving ? (
+                  <div className={css.track} role="progressbar" aria-label={fill(m.progress, { name: g.name })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(g.plan.progress * 100)}>
+                    <span style={{ width: `${Math.round(g.plan.progress * 100)}%`, background: color }} />
+                  </div>
+                ) : (
+                  // Sin monto objetivo no hay porcentaje, pero sí avance: se muestra lo que lleva.
+                  <span className={`num ${css.savedTag}`}>{fill(m.savedSoFar, { amount: money(g.plan.savedCents) })}</span>
+                )}
                 {g.targetCents > 0 ? (
                   <ul aria-label={m.msAria} className={css.milestones}>
                     {MILESTONES.map((pct) => {
@@ -370,14 +419,15 @@ export function Metas(p: Props) {
             <article key={c.challengeId} className={css.reto}>
               <strong style={{ fontSize: 15 }}>{c.title}</strong>
               <span className="small muted" style={{ lineHeight: 1.5 }}>{c.text}</span>
-              {canEdit ? (
-                <button type="button" className={css.retoBtn} aria-pressed={!!c.memberId} disabled={pending}
-                  onClick={() => c.memberId
-                    ? run(() => leaveChallenge({ memberId: c.memberId }), () => toast(m.tLeave), (e) => toast(e))
-                    : run(() => joinChallenge({ challengeId: c.challengeId }), (r) => toast(fill(m.tJoin, { name: c.title }), r.points), (e) => toast(e))}>
-                  {c.memberId ? m.rtIn : m.rtJoin}
+              {c.memberId ? (
+                // "Estás dentro" abre el reto en /retos (salir de un reto solo se hace allá).
+                <Link href={`/retos?reto=${c.challengeId}`} className={css.retoBtn} data-on="true" aria-label={fill(m.rtInAria, { name: c.title })}>{m.rtIn} <span aria-hidden="true">›</span></Link>
+              ) : canEdit ? (
+                <button type="button" className={css.retoBtn} disabled={pending}
+                  onClick={() => run(() => joinChallenge({ challengeId: c.challengeId }), (r) => toast(fill(m.tJoin, { name: c.title }), r.points), (e) => toast(e))}>
+                  {m.rtJoin}
                 </button>
-              ) : c.memberId ? <span className={css.retoBtn} data-on="true">{m.rtIn}</span> : null}
+              ) : null}
             </article>
           ))}
         </div>

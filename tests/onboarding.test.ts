@@ -9,7 +9,7 @@ import { localeForNewUser, safeTimezone } from "@/app/(onboarding)/bienvenida/li
 const labels: Ctx["labels"] = {
   income: "Trabajo",
   home: { rent: "Arriendo", mortgage: "Hipoteca", family: "Vivienda" },
-  basics: { groceries: "Súper", utilities: "Luz, gas e internet", phone: "Teléfono", transport: "Transporte" },
+  basics: { groceries: "Comida (supermercado)", utilities: "Luz, gas e internet", phone: "Teléfono", transport: "Transporte" },
   debts: { card: "Tarjeta de crédito", bnpl: "Afterpay / Zip", car: "Préstamo de auto", personal: "Préstamo personal" },
   debtTypes: { mortgage: "Hipoteca", student: "Préstamo estudiantil", family: "Deuda con familia o amigos", tax: "Impuestos atrasados", other: "Otra" },
   family: "Envío a mi familia", goal: "Meta",
@@ -62,7 +62,7 @@ describe("asistente: respuestas → líneas del plan", () => {
     expect(d.lines.map((l) => [l.group, l.name, l.kind, l.frequency, l.amountCents, l.firstPayDate])).toEqual([
       ["income", "Restaurante", "income", "weekly", 125000, "2026-01-02"],
       ["home", "Arriendo", "expense", "weekly", 33000, "2026-01-02"],
-      ["basics", "Súper", "expense", "weekly", 15000, "2026-01-02"],
+      ["basics", "Comida (supermercado)", "expense", "weekly", 15000, "2026-01-02"],
       ["basics", "Teléfono", "expense", "monthly", 4000, null],
     ]);
     // noviembre 2026 tiene 4 viernes: 6, 13, 20, 27
@@ -276,7 +276,7 @@ describe("asistente: arranca con el plan que ya tienes y lo actualiza sin duplic
   it("lee el plan → respuestas, con la línea de cada una", () => {
     expect(a.incomes).toEqual([{ name: "Sueldo", amount: "1354.50", freq: "weekly", payDate: "2026-01-02", freelance: false, lineId: U(1) }]);
     expect(a.home).toEqual({ type: "rent", amount: "332.50", freq: "weekly", lineId: U(3) });
-    expect(a.basics.groceries).toEqual({ amount: "150", freq: "weekly", lineId: U(4) }); // "súper" = "Súper"
+    expect(a.basics.groceries).toEqual({ amount: "150", freq: "weekly", lineId: U(4) }); // nombre anterior: "súper" = "Súper"
     expect(a.basics.phone).toEqual({ amount: "40.50", freq: "monthly", lineId: U(5) });
     expect(a.basics.utilities.lineId).toBeUndefined();
     expect(a.debts.card).toEqual({ on: true, amount: "200", lineId: U(6) });
@@ -286,6 +286,13 @@ describe("asistente: arranca con el plan que ya tienes y lo actualiza sin duplic
     expect(hasLinks(a)).toBe(true);
     expect(hasLinks(base())).toBe(false);
     expect(amountText(0)).toBe("");
+  });
+
+  it("reconoce el supermercado por su nombre nuevo y, si están los dos, prefiere el nuevo", () => {
+    const nuevo = answersFromPlan([ln(U(20), "Comida (supermercado)", "expense", 9000)], [], base(), labels, false);
+    expect(nuevo.basics.groceries).toEqual({ amount: "90", freq: "monthly", lineId: U(20) });
+    const ambos = answersFromPlan([ln(U(21), "Súper", "expense", 5000), ln(U(22), "comida (supermercado)", "expense", 7000)], [], base(), labels, false);
+    expect(ambos.basics.groceries.lineId).toBe(U(22));
   });
 
   it("abrir y guardar sin cambiar nada no cambia ninguna línea", () => {

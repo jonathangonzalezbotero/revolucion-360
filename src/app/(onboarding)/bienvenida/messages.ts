@@ -32,7 +32,7 @@ export const M = {
       ],
     },
     goals: {
-      title: "¿Qué quieres lograr este año?", text: "Elige todas las que quieras. Así armamos tus primeras metas.", group: "Metas",
+      title: "¿Qué quieres lograr este año?", text: "Elige todas las que quieras. Te ayudamos a convertirlas en metas cuando quieras.", group: "Metas",
       names: { debts: "Salir de deudas", trip: "Ahorrar para un viaje", emergency: "Fondo de emergencia", clarity: "Saber a dónde va mi dinero", invest: "Empezar a invertir", business: "Separar mi dinero del negocio" },
     },
     account: {
@@ -54,9 +54,9 @@ export const M = {
     },
     done: {
       title: "¡Listo, {name}! Tu espacio está creado.", titleNoName: "¡Listo! Tu espacio está creado.", titleMobile: "¡Listo, {name}!", titleMobileNoName: "¡Listo!",
-      text: "Creamos estas metas para ti. Ahora armamos tu plan del año con unas preguntas simples.",
+      text: "Guardamos lo que quieres lograr. Ahora armamos tu plan del año con unas preguntas simples.",
       textNoGoals: "Ahora armamos tu plan del año con unas preguntas simples.",
-      pending: "Monto y fecha: por definir",
+      pending: "Te lo sugerimos en Metas",
       cta: "Armar mi plan · 3 min", blank: "Empezar en blanco",
       backupTitle: "Guarda tus códigos de respaldo", backupText: "Si pierdes tu teléfono, cada código te deja entrar una vez. No los volvemos a mostrar.",
     },
@@ -95,7 +95,7 @@ export const M = {
       ],
     },
     goals: {
-      title: "What do you want this year?", text: "Pick as many as you like. They become your first goals.", group: "Goals",
+      title: "What do you want this year?", text: "Pick as many as you like. We'll help you turn them into goals whenever you want.", group: "Goals",
       names: { debts: "Get out of debt", trip: "Save for a trip", emergency: "Emergency fund", clarity: "Know where my money goes", invest: "Start investing", business: "Separate my money from the business" },
     },
     account: {
@@ -117,9 +117,9 @@ export const M = {
     },
     done: {
       title: "Done, {name}! Your space is ready.", titleNoName: "Done! Your space is ready.", titleMobile: "Done, {name}!", titleMobileNoName: "Done!",
-      text: "We created these goals for you. Now let's build your plan for the year with a few simple questions.",
+      text: "We saved what you want to achieve. Now let's build your plan for the year with a few simple questions.",
       textNoGoals: "Now let's build your plan for the year with a few simple questions.",
-      pending: "Amount and date: to be set",
+      pending: "We'll suggest it in Goals",
       cta: "Build my plan · 3 min", blank: "Start from scratch",
       backupTitle: "Save your backup codes", backupText: "If you lose your phone, each code lets you in once. We won't show them again.",
     },

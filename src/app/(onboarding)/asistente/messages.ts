@@ -26,7 +26,7 @@ export const M = {
     },
     basics: {
       title: "Lo básico", text: "Un número aproximado está bien. Lo afinas después.",
-      names: { groceries: "Súper", utilities: "Luz, gas e internet", phone: "Teléfono", transport: "Transporte" },
+      names: { groceries: "Comida (supermercado)", utilities: "Luz, gas e internet", phone: "Teléfono", transport: "Transporte" },
     },
     debts: {
       title: "¿Tienes alguna de estas deudas?", text: "Marca las que tengas y escribe cuánto pagas al mes.",
@@ -41,10 +41,9 @@ export const M = {
       line: "Envío a mi familia", category: "Familia y remesas",
     },
     goals: {
-      title: "Ponle número a tus metas", text: "Cámbiales el nombre, agrega las tuyas. Si no sabes el monto todavía, déjalo vacío.",
+      title: "Ponle número a tus metas", text: "Agrega las metas que quieras, con su monto y su fecha. Si no sabes el monto todavía, déjalo vacío.",
       name: "Nombre de la meta", namePh: "Ej. Comprar un carro", amount: "Monto de la meta", amountPh: "Monto", date: "Fecha",
       remove: "Quitar meta", add: "+ Agregar meta", fallback: "Meta",
-      seeds: { debts: "Salir de deudas", trip: "Ahorrar para un viaje", emergency: "Fondo de emergencia", clarity: "Saber a dónde va mi dinero", invest: "Empezar a invertir", business: "Separar mi dinero del negocio" },
     },
     plan: {
       title: "Tu plan anual está listo", lead: "Creamos", lines: "{n} líneas", linesOne: "1 línea",
@@ -109,10 +108,9 @@ export const M = {
       line: "Money for my family", category: "Family & remittances",
     },
     goals: {
-      title: "Put a number on your goals", text: "Rename them, add your own. If you don't know the amount yet, leave it empty.",
+      title: "Put a number on your goals", text: "Add the goals you want, with an amount and a date. If you don't know the amount yet, leave it empty.",
       name: "Goal name", namePh: "E.g. Buy a car", amount: "Goal amount", amountPh: "Amount", date: "Date",
       remove: "Remove goal", add: "+ Add goal", fallback: "Goal",
-      seeds: { debts: "Get out of debt", trip: "Save for a trip", emergency: "Emergency fund", clarity: "Know where my money goes", invest: "Start investing", business: "Separate my money from the business" },
     },
     plan: {
       title: "Your yearly plan is ready", lead: "We created", lines: "{n} lines", linesOne: "1 line",

@@ -10,6 +10,8 @@ import { canUse, CONTRIB_FREQS, contribCells, contribPayDate, contribRange, plan
 import { M } from "./messages";
 import { awardGoal, celebrate, leftoverFor, raw, savedNow, type Crossed } from "./server";
 import { countChallenge } from "../retos/server";
+import type { Json } from "@/lib/supabase/database.types";
+import { GOAL_KEYS, withoutObjective, type GoalKey } from "@/app/(onboarding)/bienvenida/lib";
 
 const PATHS = ["/metas", "/inicio", "/plan", "/diagnostico", "/perfil"];
 const Id = z.string().uuid();
@@ -94,9 +96,14 @@ async function removeGoalLines(s: Session, goalId: string): Promise<void> {
   for (const l of lines) await archiveLine(s, l.id);
 }
 
+/** Quita un objetivo de la bienvenida del perfil: la sugerencia ya no aparece en Metas. */
+async function dropObjective(s: Session, key: GoalKey): Promise<void> {
+  must(await s.supabase.from("profiles").update({ prefs: withoutObjective(s.profile.prefs, key) as NonNullable<Json> }).eq("id", s.userId).select("id"));
+}
+
 export async function createGoal(input: unknown) {
   return run<{ id: string; inPlan: boolean }>({ feature: "metas", revalidate: PATHS }, async (s) => {
-    const p = Fields.safeParse(input);
+    const p = Fields.extend({ objective: z.enum(GOAL_KEYS).optional() }).safeParse(input);
     if (!p.success) return fail(s.t.errors.name);
     const target = p.data.target.trim() ? parseMoney(p.data.target) : 0;
     if (target === null || target < 0) return fail(s.t.errors.amount);
@@ -108,6 +115,8 @@ export async function createGoal(input: unknown) {
     }).select("id, name, target_cents, target_date").single()) as GoalRow;
     // La meta ya quedó creada: si la línea del plan falla, se avisa "sin plan" y se puede poner el aporte después al editarla.
     const line = contrib ? await upsertContribLine(s, row, contrib).catch(() => null) : null;
+    // Creada desde una sugerencia: el objetivo ya es meta y la sugerencia desaparece.
+    if (p.data.objective) await dropObjective(s, p.data.objective);
     return ok({ id: row.id, inPlan: !!line });
   });
 }
@@ -252,3 +261,13 @@ export async function sendLeftover(input: unknown): Promise<Result<{ amountCents
 }
 
 // Retos opcionales: entrar y salir pasan por src/app/(app)/retos/actions.ts (modelo de la migración 20261125000037_retos.sql).
+
+/** "Ahora no" en una sugerencia: el objetivo deja de sugerirse (no crea ni borra metas). */
+export async function dismissObjective(input: unknown) {
+  return run({ feature: "metas", revalidate: ["/metas"] }, async (s) => {
+    const p = z.object({ key: z.enum(GOAL_KEYS) }).safeParse(input);
+    if (!p.success) return fail(s.t.errors.generic);
+    await dropObjective(s, p.data.key);
+    return ok(null);
+  });
+}

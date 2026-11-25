@@ -296,7 +296,7 @@ function Gamification({ g, m, s }: { g: Gam; m: AcadMessages; s: Session }) {
                   <img src={badgeSrc(b)} alt="" width={58} height={58} loading="lazy" decoding="async" />
                 </span>
                 <strong style={{ fontSize: 12, lineHeight: 1.25, color: at ? "var(--tinta)" : "var(--gris)" }}>{name}</strong>
-                {at ? <span style={{ fontSize: 11, fontWeight: 600, color: "var(--amarillo-texto)" }}>{fill(m.earnedOn, { date: formatDate(todayIn(s.profile.timezone || "Australia/Sydney", new Date(at)), s.locale, "day") })}</span> : (
+                {at ? <span style={{ fontSize: 11, fontWeight: 600, color: "var(--amarillo-texto)", lineHeight: 1.35, maxWidth: "100%", overflowWrap: "break-word" }}>{fill(m.earnedOn, { date: formatDate(todayIn(s.profile.timezone || "Australia/Sydney", new Date(at)), s.locale, "day") })}</span> : (
                   <>
                     <span role="progressbar" aria-label={name} aria-valuenow={bp} aria-valuemin={0} aria-valuemax={100} style={{ width: "80%", height: 5, borderRadius: 3, background: "var(--linea-2)" }}><span style={{ display: "block", height: 5, borderRadius: 3, background: "var(--amarillo)", width: `${bp}%` }} /></span>
                     <span style={{ fontSize: 11, color: "var(--gris)", lineHeight: 1.35 }}>{badgeHint(b, g, m, s)}</span>

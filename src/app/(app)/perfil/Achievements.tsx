@@ -68,7 +68,7 @@ export function Achievements({ m, points, level, levels, streak, badges, pointVa
                   <Image src={badgeSrc(b.key)} alt="" width={76} height={76} className={css.badgeImg} style={b.earned ? undefined : { filter: "grayscale(1)", opacity: 0.45 }} />
                   <strong style={{ fontSize: 13, color: b.earned ? "var(--tinta)" : "var(--gris-3)" }}>{t.t}</strong>
                   <span className={css.badgeDesc}>{t.d}</span>
-                  {b.earned ? <span className="pill pill-yellow">{fill(m.earned, { date: b.earned })}</span> : (
+                  {b.earned ? <span className={`pill pill-yellow ${css.earned}`}>{fill(m.earned, { date: b.earned })}</span> : (
                     <>
                       {b.progress !== null ? <div aria-hidden="true" className={css.badgeTrack}><span style={{ width: `${Math.round(b.progress * 100)}%` }} /></div> : null}
                       {b.hint ? <span className={css.badgeHint}>{b.hint}</span> : null}

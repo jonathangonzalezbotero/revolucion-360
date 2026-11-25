@@ -64,10 +64,13 @@ span.cell { min-height: 32px; }
 .partialTag { font-size: 10px; font-weight: 600; color: var(--ambar-texto); white-space: nowrap; }
 .extraTag { font-size: 10px; font-weight: 600; min-height: 20px; padding: 0 6px; border-radius: var(--r-pill); border: 0; background: var(--tinta); color: var(--blanco); white-space: nowrap; cursor: help; }
 .extraBig { min-height: 44px; font-size: 11px; padding: 0 10px; align-self: flex-start; }
-.addRow th { background: var(--blanco); padding: 2px 16px 6px 30px; border-top: 1px solid var(--linea-2); }
-.addRow td { background: var(--blanco); border-top: 1px solid var(--linea-2); }
-.addIn { font: inherit; font-size: 12px; font-weight: 600; color: var(--gris-2); background: none; border: 1.5px dashed transparent; border-radius: var(--r-pill); padding: 4px 8px; min-height: 30px; }
-.addIn:hover, .addIn:focus-visible { color: var(--tinta); border-color: var(--linea-punteada); }
+/* "+" en el título de la categoría */
+.addIn { width: 28px; height: 28px; flex: none; margin-left: 4px; display: inline-flex; align-items: center; justify-content: center; border: 1.5px dashed var(--linea-punteada); border-radius: var(--r-pill); background: var(--blanco); color: var(--gris-2); padding: 0; }
+.addIn:hover, .addIn:focus-visible { color: var(--tinta); border-color: var(--tinta); }
+/* Celda pendiente que se puede marcar: el ✓ aparece al pasar el mouse o al enfocar la celda */
+.line td.markable { position: relative; }
+.reveal { position: absolute; left: 4px; top: 50%; margin-top: -10px; opacity: 0; pointer-events: none; }
+.line td.markable:hover .reveal, .line td.markable:focus-within .reveal { opacity: 1; pointer-events: auto; }
 .pastNote { margin: -4px 0 0; }
 
 .table tfoot th, .table tfoot td { padding: 14px 8px; text-align: right; font-weight: 600; }
@@ -150,7 +153,8 @@ span.cell { min-height: 32px; }
 .mName { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 6px 0; }
 .mName label { flex: none; }
 .mSub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.mAddIn { width: 100%; min-height: 44px; margin: 2px 0 8px; border: 1.5px dashed var(--linea-punteada); border-radius: var(--r-md); background: transparent; font-size: 13px; font-weight: 600; color: var(--gris-2); }
+.mGroupEnd { display: inline-flex; align-items: center; gap: 6px; }
+.mGroup .addIn { width: 44px; height: 44px; margin: -8px -8px -8px 0; }
 .byLineCell { border-radius: var(--r-md); padding: 4px; }
 .mTag { font-size: 11px; font-weight: 600; color: var(--verde-fuerte); background: var(--verde-fondo); border-radius: var(--r-pill); padding: 2px 7px; }
 .mInput { font-size: 15px; font-weight: 600; width: 96px; height: 44px; text-align: right; border: 1px solid var(--linea); border-radius: var(--r-md); padding: 0 10px; background: var(--papel-3); color: var(--tinta); flex: none; }
