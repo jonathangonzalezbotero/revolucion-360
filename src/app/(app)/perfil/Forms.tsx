@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { fill } from "@/i18n";
 import { ConfirmButton, Switch, useToast } from "@/components/ui/client";
 import type { Result } from "@/server/action";
-import { saveCategories, savePersonal, savePrefs, saveRegion, saveTerms, spendWildcard } from "./actions";
+import { saveCategories, saveMarketing, savePersonal, savePrefs, saveRegion, saveTerms, spendWildcard } from "./actions";
 import { CHANNELS, CLOSE_DAYS, CURRENCIES, isCurrency, NOTIFY_KEYS, PAY_FREQUENCIES, TERM_KEYS, type NotifyPrefs, type PayFrequency, type TermKey } from "./lib";
 import type { PerfilMessages } from "./messages";
 import css from "./perfil.module.css";
@@ -150,18 +150,29 @@ export function NamesForm({ m, countryTerms, terms, categories, canEdit }: { m: 
 }
 
 // ───────── Preferencias de notificaciones (se guardan al tocar) ─────────
-export function PrefsForm({ m, initial }: { m: PerfilMessages; initial: NotifyPrefs }) {
+/**
+ * `marketing`: consentimiento de marketing guardado en el CRM. Cuando existe, el interruptor "Novedades de Revolución del
+ * Dinero" (mismo texto del mockup) es ESE consentimiento (única fuente de verdad); `prefs.notify.news` ya no se usa.
+ * Sin CRM disponible (migración aún sin aplicar), queda como antes.
+ */
+export function PrefsForm({ m, initial, marketing }: { m: PerfilMessages; initial: NotifyPrefs; marketing?: { email: boolean } | null }) {
   const [p, setP] = useState(initial);
+  const [news, setNews] = useState(marketing?.email ?? false);
   const { error, act } = useAct();
   const save = (patch: Partial<NotifyPrefs>, next: NotifyPrefs) => { setP(next); act(() => savePrefs(patch), undefined, m.saved); };
   return (
     <section className={css.section} style={{ gap: 4 }}>
-      {NOTIFY_KEYS.map((k) => (
+      {NOTIFY_KEYS.map((k) => (k === "news" && marketing ? (
+        <div key={k} className={css.switchRow}>
+          <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}><strong style={{ fontSize: 14 }}>{m.notify.news.t}</strong><span className="xs muted">{m.notify.news.d}. {m.marketing.emailNote}</span></span>
+          <Switch checked={news} label={m.notify.news.t} onChange={(v) => { const before = news; setNews(v); act(() => saveMarketing({ email: v }).then((r) => { if (!r.ok) setNews(before); return r; }), undefined, m.saved); }} />
+        </div>
+      ) : (
         <div key={k} className={css.switchRow}>
           <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}><strong style={{ fontSize: 14 }}>{m.notify[k].t}</strong><span className="xs muted">{m.notify[k].d}</span></span>
           <Switch checked={p.notify[k]} label={m.notify[k].t} onChange={(v) => save({ notify: { ...p.notify, [k]: v } }, { ...p, notify: { ...p.notify, [k]: v } })} />
         </div>
-      ))}
+      )))}
       <div className={css.grid2} style={{ marginTop: 12 }}>
         <div className="field"><label htmlFor="n-day">{m.closeDay}</label>
           <select id="n-day" className={css.input} value={p.closeDay} onChange={(e) => { const v = e.target.value as NotifyPrefs["closeDay"]; save({ closeDay: v }, { ...p, closeDay: v }); }}>

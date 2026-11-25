@@ -8,7 +8,8 @@ src/app/(app)/…             la app con menú: inicio, plan, movimientos, cuent
                             inversiones, cierre, diagnostico, academia, suscripcion, perfil, notificaciones, ayuda, mas
 src/app/admin/…             panel de administración (requireAdmin)
 src/app/legal/…             términos y privacidad (públicas)
-src/app/api/…               stripe/webhook, cron/*, export
+src/app/api/…               stripe/webhook, cron/*, export, crm/* (motor, ingreso de leads, baja, webhooks de Resend y Twilio; docs/CRM.md)
+src/lib/crm/                CRM puro (etapas, consentimiento, horas por zona, automatizaciones, correo/SMS, firmas); src/server/crm: motor y funciones del panel
 src/lib/engine/             CÁLCULOS: funciones puras con pruebas (dinero, fechas, plan, finanzas, diagnóstico, proyección, logros, CSV, accesos)
 src/lib/supabase/           server.ts (sesión del usuario, con RLS) · admin.ts (clave de servicio, uso mínimo)
 src/server/                 session.ts · config.ts · action.ts (run) · data.ts (cargadores, must, fetchAll) · plan-write.ts (createLine, setCell, setCells, updateLine, archiveLine, setMark, createDefaultCategories) · rewards.ts · closure.ts · terms.ts

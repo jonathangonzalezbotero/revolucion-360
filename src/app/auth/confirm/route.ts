@@ -2,6 +2,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendWelcomeNow } from "@/lib/email/events";
+import { crmEvent } from "@/server/crm";
 
 // Llega desde los correos de confirmar cuenta, recuperar acceso y cambiar correo.
 export async function GET(request: NextRequest) {
@@ -17,7 +18,10 @@ export async function GET(request: NextRequest) {
   if (error) return to("/entrar?error=enlace");
   // Código de invitación escrito al registrarse → acceso de alumno
   const invite = data.user?.user_metadata?.invite;
-  if (type === "email" && typeof invite === "string" && invite) await supabase.rpc("redeem_invite", { p_code: invite });
+  if (type === "email" && typeof invite === "string" && invite) {
+    const redeemed = await supabase.rpc("redeem_invite", { p_code: invite });
+    if (redeemed.data === "ok" && data.user) await crmEvent({ userId: data.user.id }, "student_code", new Date().toISOString().slice(0, 10)); // CRM: nunca lanza
+  }
   // Correo de bienvenida en el momento en que confirma su cuenta.
   if ((type === "email" || type === "signup") && data.user) await sendWelcomeNow(data.user.id);
   return to(next);

@@ -26,30 +26,55 @@ function resend(): Resend | null {
 
 /** Envía un correo con Resend. Nunca lanza: devuelve el resultado. Los errores se registran sin la dirección ni el contenido. */
 export async function sendEmail(to: string, r: Rendered, kind: EmailKind): Promise<"sent" | "skipped" | "failed"> {
-  if (!mayEmail(to, isProduction())) return "skipped";
+  return (await sendEmailDetailed(to, r, kind)).status;
+}
+
+export type SendOptions = {
+  /** Remitente propio (ej. CRM_EMAIL_FROM "Jonathan · Revolución 360 <…>"); si falta, EMAIL_FROM. */
+  from?: string;
+  replyTo?: string;
+  /** Encabezados extra (ej. List-Unsubscribe y List-Unsubscribe-Post del CRM). */
+  headers?: Record<string, string>;
+  /** Llave de idempotencia de Resend (24 h): el mismo mensaje reintentado nunca sale dos veces. */
+  idempotencyKey?: string;
+};
+export type DetailedResult = { status: "sent" | "skipped" | "failed"; id?: string; error?: string };
+
+/**
+ * Igual que `sendEmail` (misma regla: fuera de producción solo a @revolucion360.test; mismos reintentos por límite de
+ * Resend), pero acepta encabezados, remitente e idempotencia y devuelve el id de Resend. Nunca lanza.
+ * `error` es solo el nombre técnico del error (sin direcciones ni contenido).
+ */
+export async function sendEmailDetailed(to: string, r: Pick<Rendered, "subject" | "html" | "text">, kind: string, opts: SendOptions = {}): Promise<DetailedResult> {
+  if (!mayEmail(to, isProduction())) return { status: "skipped", error: "not_allowed_outside_production" };
   const api = resend();
-  const from = (process.env.EMAIL_FROM ?? "").trim();
-  if (!api) return "skipped";
+  const from = (opts.from ?? "").trim() || (process.env.EMAIL_FROM ?? "").trim();
+  if (!api) return { status: "skipped", error: "missing_resend_api_key" };
   if (!from) {
     console.warn("[email] Falta EMAIL_FROM: no se envían correos.");
-    return "skipped";
+    return { status: "skipped", error: "missing_email_from" };
   }
   try {
-    const payload = { from, to, subject: r.subject, html: r.html, text: r.text, headers: { "X-Entity-Ref-ID": kind } };
-    let { error } = await api.emails.send(payload);
+    const payload = {
+      from, to, subject: r.subject, html: r.html, text: r.text,
+      headers: { "X-Entity-Ref-ID": kind, ...(opts.headers ?? {}) },
+      ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
+    };
+    const reqOpts = opts.idempotencyKey ? { idempotencyKey: opts.idempotencyKey } : undefined;
+    let { data, error } = await api.emails.send(payload, reqOpts);
     // Resend limita los envíos por segundo: si nos frena, esperamos un poco y reintentamos (hasta 2 veces).
     for (let i = 0; error && error.name === "rate_limit_exceeded" && i < 2; i++) {
       await new Promise((ok) => setTimeout(ok, 1100 * (i + 1)));
-      ({ error } = await api.emails.send(payload));
+      ({ data, error } = await api.emails.send(payload, reqOpts));
     }
     if (error) {
       console.error("[email] Resend rechazó el envío", kind, error.name);
-      return "failed";
+      return { status: "failed", error: String(error.name).slice(0, 60) };
     }
-    return "sent";
+    return { status: "sent", id: data?.id };
   } catch (e) {
     console.error("[email] Error al enviar", kind, e instanceof Error ? e.name : "error");
-    return "failed";
+    return { status: "failed", error: e instanceof Error ? e.name.slice(0, 60) : "error" };
   }
 }
 

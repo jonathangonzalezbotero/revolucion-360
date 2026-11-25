@@ -1,7 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC = ["/entrar", "/registro", "/recuperar", "/nueva-clave", "/verificar", "/auth", "/legal", "/api/stripe/webhook", "/api/cron", "/sin-conexion"];
+const PUBLIC = ["/entrar", "/registro", "/recuperar", "/nueva-clave", "/verificar", "/auth", "/legal", "/api/stripe/webhook", "/api/cron", "/sin-conexion", "/api/crm", "/correo"];
+// /api/crm: motor (CRON_SECRET), ingreso de leads (CRM_INGEST_KEY), webhooks de Resend y Twilio (firmas) y baja por token.
+// /correo: preferencias de correo por token (enlace de los correos de marketing).
 
 // Refresca la sesión y hace el primer filtro. La autorización real la imponen la base de datos y cada página.
 export async function proxy(request: NextRequest) {

@@ -66,6 +66,13 @@ export const M = {
     },
     closeDay: "Día del recordatorio de cierre", closeDays: { last: "En los últimos 10 días del mes", first: "En los primeros 5 días del mes siguiente" },
     channel: "Recibir por", channels: { both: "Correo y notificación", email: "Solo correo", app: "Solo notificación" },
+    // Consentimiento de marketing (CRM): "Novedades…" por correo y avisos por SMS. Los guarda el CRM, no profiles.prefs.
+    marketing: {
+      emailNote: "Por correo. Puedes darte de baja cuando quieras.",
+      smsT: "Avisos por SMS", smsD: "Recordatorios cortos de Revolución del Dinero. Responde STOP para no recibir más.",
+      phone: "Teléfono para SMS", phonePh: "+61 412 345 678", phoneHint: "Con el código de tu país (por ejemplo +61 o +57).",
+      phoneSave: "Activar SMS", phoneBad: "Escribe el teléfono con el código de tu país, por ejemplo +61 412 345 678.", saved: "Listo, guardado.",
+    },
     habit: {
       title: "Avisos del hábito", text: "En la app y al celular. Máximo uno al día y nunca de noche (de 21:00 a 8:00, en tu hora).",
       items: {
@@ -161,6 +168,12 @@ export const M = {
     },
     closeDay: "Month close reminder day", closeDays: { last: "In the last 10 days of the month", first: "In the first 5 days of the next month" },
     channel: "Receive by", channels: { both: "Email and notification", email: "Email only", app: "Notification only" },
+    marketing: {
+      emailNote: "By email. You can unsubscribe anytime.",
+      smsT: "SMS reminders", smsD: "Short reminders from Revolución del Dinero. Reply STOP to opt out.",
+      phone: "Phone for SMS", phonePh: "+61 412 345 678", phoneHint: "With your country code (for example +61 or +57).",
+      phoneSave: "Turn on SMS", phoneBad: "Type your phone with your country code, for example +61 412 345 678.", saved: "Done, saved.",
+    },
     habit: {
       title: "Habit reminders", text: "In the app and on your phone. At most one a day and never at night (9 pm to 8 am, your time).",
       items: {

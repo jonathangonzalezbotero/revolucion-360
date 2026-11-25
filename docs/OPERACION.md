@@ -16,6 +16,8 @@ Todas viven en `.env` (local, apunta a la base de producción) y en Vercel → P
 En local y en previews solo salen a `@revolucion360.test` (los usuarios de demostración); cualquier otra dirección se salta sin registrar el envío.
 Ningún correo lleva montos ni datos financieros (lo comprueba `tests/correos.test.ts`).
 
+CRM (campañas, automatizaciones, SMS, job de pg_cron cada 10 minutos, webhooks de Resend y Twilio): ver `docs/CRM.md`.
+
 ## Verificar el dominio en Resend
 1. Resend → Domains → Add domain → `revoluciondeldinero.com` (región más cercana a Sydney disponible).
 2. Copia los registros DNS que muestra (SPF `TXT`, DKIM `CNAME`/`TXT` y, si lo pide, `MX` del subdominio de rebotes) en el DNS del dominio.

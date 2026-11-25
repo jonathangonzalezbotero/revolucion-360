@@ -6,6 +6,7 @@ import {
 import { fetchAll, must } from "@/server/data";
 import { notifyHabit } from "@/server/habit-notify";
 import { award, type PointKind } from "@/server/rewards";
+import { crmEvent } from "@/server/crm";
 import type { Session } from "@/server/session";
 
 /**
@@ -52,6 +53,7 @@ export async function celebrate(s: Session, before: Map<string, number>, after: 
     for (const pct of milestonesCrossed(g.target_cents, before.get(g.id) ?? 0, after.get(g.id) ?? 0)) {
       const points = await awardGoal(s, "goal_milestone", `${g.id}:${pct}`);
       await notifyMilestone(s, g, pct, after.get(g.id) ?? 0);
+      await crmEvent({ userId: s.userId }, "goal_milestone", `${g.id}:${pct}`); // CRM: solo id y %; nunca lanza
       out.push({ goalId: g.id, name: g.name, pct, points });
     }
   }

@@ -12,6 +12,7 @@ import { Achievements, type BadgeView } from "./Achievements";
 import { NamesForm, PersonalForm, PrefsForm, RegionForm } from "./Forms";
 import { readHabitPrefs } from "@/lib/engine/habito";
 import { HabitPrefsForm } from "./HabitPrefs";
+import { SmsPrefsForm } from "./SmsPrefs";
 import { PAY_FREQUENCIES, readNotifyPrefs, TERM_KEYS, timezoneOptions, visibleTabs, type PayFrequency, type Tab, type TermKey } from "./lib";
 import { M, type PerfilMessages } from "./messages";
 import { Privacy } from "./Privacy";
@@ -27,7 +28,7 @@ export default async function PerfilPage() {
   const tz = s.profile.timezone || "Australia/Sydney";
   const day = (iso: string) => formatDate(todayIn(tz, new Date(iso)), s.locale);
 
-  const [countriesRes, catsRes, extraRes, deleteRes, mfa, userRes, achievements] = await Promise.all([
+  const [countriesRes, catsRes, extraRes, deleteRes, mfa, userRes, achievements, marketing] = await Promise.all([
     s.supabase.from("countries").select("code, name, currency, timezone, pay_frequency, terms").eq("enabled", true).order("sort"),
     s.supabase.from("categories").select("id, name, original_name, is_basic").eq("user_id", s.userId).order("sort").order("created_at"),
     s.supabase.from("profiles").select("email, last_name, phone, password_changed_at").eq("id", s.userId).single(),
@@ -35,6 +36,7 @@ export default async function PerfilPage() {
     mfaStatus(),
     s.supabase.auth.getUser(),
     s.config.gamification ? loadAchievements(s, m) : Promise.resolve(null),
+    loadMarketing(s),
   ]);
   const countries = must(countriesRes);
   const categories = must(catsRes);
@@ -60,7 +62,13 @@ export default async function PerfilPage() {
         initial={{ country: s.profile.country, currency: s.profile.currency, timezone: tz, locale: s.locale, payFrequency: (PAY_FREQUENCIES as readonly string[]).includes(s.profile.payFrequency) ? s.profile.payFrequency as PayFrequency : "monthly" }} />
     ),
     nombres: <NamesForm m={m} countryTerms={countryTerms} terms={s.profile.terms} categories={categories.map((c) => ({ id: c.id, name: c.name, original: c.original_name, isBasic: c.is_basic }))} canEdit={s.canEdit} />,
-    notificaciones: <div className="stack" style={{ gap: 16 }}><PrefsForm m={m} initial={readNotifyPrefs(s.profile.prefs)} /><HabitPrefsForm m={m} initial={readHabitPrefs(s.profile.prefs)} /></div>,
+    notificaciones: (
+      <div className="stack" style={{ gap: 16 }}>
+        <PrefsForm m={m} initial={readNotifyPrefs(s.profile.prefs)} marketing={marketing ? { email: marketing.email } : null} />
+        {marketing ? <SmsPrefsForm m={m} initial={marketing.sms} phone={marketing.phone} suggested={extra.phone || undefined} /> : null}
+        <HabitPrefsForm m={m} initial={readHabitPrefs(s.profile.prefs)} />
+      </div>
+    ),
     seguridad: <Security m={m} mfa={mfa} isAdmin={s.profile.role === "admin"} passwordChanged={extra.password_changed_at ? day(extra.password_changed_at) : null} />,
     privacidad: <Privacy m={m} pending={pendingDelete ? { id: pendingDelete.id, due: day(pendingDelete.due_at) } : null} />,
   };
@@ -77,6 +85,21 @@ export default async function PerfilPage() {
       <ProfileTabs tabs={tabs} labels={m.tabs} label={m.tabsLabel} gamification={s.config.gamification} panels={panels} />
     </main>
   );
+}
+
+/**
+ * Consentimiento de marketing (CRM, `crm_my_consent`). Si el CRM no responde (p. ej. la migración 036 aún no se aplicó),
+ * devuelve null y Perfil queda como antes: nunca rompe la página.
+ */
+async function loadMarketing(s: Session): Promise<{ email: boolean; sms: boolean; phone: string | null } | null> {
+  try {
+    const { data, error } = await s.supabase.rpc("crm_my_consent" as never);
+    if (error || !data || typeof data !== "object") return null;
+    const d = data as { email?: unknown; sms?: unknown; phone?: unknown };
+    return { email: d.email === true, sms: d.sms === true, phone: typeof d.phone === "string" ? d.phone : null };
+  } catch {
+    return null;
+  }
 }
 
 /** Resumen del plan actual con enlace a Suscripción. */

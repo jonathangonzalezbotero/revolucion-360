@@ -7,6 +7,7 @@ import { fail, ok, run } from "@/server/action";
 import type { Json } from "@/lib/supabase/database.types";
 import { must } from "@/server/data";
 import { HABIT_PREF_KEYS, mergeHabitPrefs, type HabitPrefKey } from "@/lib/engine/habito";
+import { toE164 } from "@/lib/crm/phone";
 import { isPhone, CHANNELS, CLOSE_DAYS, confirmsWord, CURRENCIES, isValidTimezone, mergeNotifyPrefs, mergeTerms, NOTIFY_KEYS, PAY_FREQUENCIES, TERM_KEYS } from "./lib";
 import { M } from "./messages";
 
@@ -130,6 +131,30 @@ export async function saveHabitPrefs(input: unknown) {
     if (!p.success) return fail(s.t.errors.generic);
     const prefs = mergeHabitPrefs(s.profile.prefs, p.data);
     must(await s.supabase.from("profiles").update({ prefs: prefs as NonNullable<Json> }).eq("id", s.userId).select("id"));
+    return ok(undefined);
+  });
+}
+
+// ───────── Novedades por correo y avisos por SMS (consentimiento de marketing, CRM) ─────────
+const Marketing = z.object({ email: z.boolean().optional(), sms: z.boolean().optional(), phone: z.string().trim().max(30).optional() });
+
+/**
+ * Cambia el consentimiento de marketing de la persona (lo guarda el CRM con fecha y fuente "perfil", vía la función
+ * `crm_set_my_consent`: el usuario no tiene acceso directo a crm_*). `allowInactive` y `write: false`: también sin activar
+ * o en solo lectura, porque darse de baja siempre debe poder hacerse. El SMS exige un teléfono con código de país.
+ */
+export async function saveMarketing(input: unknown) {
+  return run({ allowInactive: true, write: false, revalidate: ["/perfil"] }, async (s) => {
+    const m = M[s.locale];
+    const p = Marketing.safeParse(input);
+    if (!p.success || (p.data.email === undefined && p.data.sms === undefined)) return fail(s.t.errors.generic);
+    let phone: string | null = null;
+    if (p.data.phone) {
+      phone = toE164(p.data.phone, s.profile.country);
+      if (!phone) return fail(m.marketing.phoneBad);
+    }
+    const { error } = await s.supabase.rpc("crm_set_my_consent" as never, { p_email: p.data.email ?? null, p_sms: p.data.sms ?? null, p_phone: phone } as never);
+    if (error) return fail(/phone/.test(error.message) ? m.marketing.phoneBad : s.t.errors.generic);
     return ok(undefined);
   });
 }

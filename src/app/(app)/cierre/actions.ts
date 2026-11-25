@@ -6,6 +6,7 @@ import { fail, ok, run, type Result } from "@/server/action";
 import { loadMonthView, loadPlan, must } from "@/server/data";
 import { setCell, setMark } from "@/server/plan-write";
 import { award, touchWeek, track, tryBadge } from "@/server/rewards";
+import { crmEvent } from "@/server/crm";
 import { isMonthClosed } from "@/server/closure";
 import type { Session } from "@/server/session";
 import type { Json } from "@/lib/supabase/database.types";
@@ -186,6 +187,7 @@ export async function closeMonth(input: unknown): Promise<Result<CloseResult>> {
     await tryBadge(s, "flame");
     await tryBadge(s, "star");
     if (existing.length === 0) await track(s, "first_closure");
+    if (existing.length === 0) await crmEvent({ userId: s.userId }, "first_closure", ""); // CRM: nunca lanza
 
     const after = [...existing.filter((r) => !(r.year === period.year && r.month === period.month)), { year: period.year, month: period.month, reopened_at: null }];
     return ok({ ...period, points, streak: streakOf(after), reminder: reminderDate(period, s.today), already: false, leftoverCents: await leftoverFor(s, period, snapshot) }, { points });

@@ -3,6 +3,7 @@ import { asLocale } from "@/i18n";
 import type { PlanState } from "@/lib/engine";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendFirstMonthEndingNow, sendPaymentFailedNow } from "@/lib/email/events";
+import { crmEvent } from "@/server/crm";
 import { customerId, getStripe, toSubLike } from "@/lib/stripe";
 import { isStaleEvent, mapSubscription, type Grant } from "@/app/(app)/suscripcion/lib";
 import { M } from "./messages";
@@ -101,6 +102,7 @@ async function handle(stripe: Stripe, db: Admin, event: Stripe.Event) {
       await notify(db, userId, "pago", t.failedTitle, t.failedBody, `pago-fallido-${inv.id}`);
       // El correo sale en este momento, una vez por fallo (si ya estaba marcado, ya se mandó).
       if ((marked ?? []).length > 0) await sendPaymentFailedNow(userId, failedAt);
+      if ((marked ?? []).length > 0) await crmEvent({ userId }, "payment_failed", failedAt); // CRM: nunca lanza
       return;
     }
     default:
@@ -128,13 +130,16 @@ async function syncSubscription(stripe: Stripe, db: Admin, subId: string, userHi
     if (changed?.length) {
       must(await db.from("product_events").insert({ user_id: userId, name: "upgraded" }));
       await notify(db, userId, "pago", t.upgradedTitle, t.upgradedBody, `pro-${sub.id}`);
+      await crmEvent({ userId }, sub.status === "trialing" ? "first_month_paid" : "paying", sub.id); // CRM: nunca lanza
     } else {
       must(await db.from("entitlements").update(row).eq("user_id", userId));
+      if (ent.stripe_status === "trialing" && sub.status === "active") await crmEvent({ userId }, "paying", sub.id); // terminó el primer mes y pagó
     }
     return;
   }
   must(await db.from("entitlements").update(row).eq("user_id", userId));
   if (patch.state === "read_only" && ent.state !== "read_only") await notify(db, userId, "pago", t.endedTitle, t.endedBody, `fin-${sub.id}`);
+  if (patch.state === "read_only" && ent.state !== "read_only") await crmEvent({ userId }, "subscription_ended", sub.id); // CRM: nunca lanza
   if ((patch.state === "alumno" || patch.state === "fundador") && ent.state === "pro") await notify(db, userId, "acceso", t.backTitle, t.backBody, `fin-${sub.id}`);
 }
 

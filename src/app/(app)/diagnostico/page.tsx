@@ -11,6 +11,8 @@ import css from "./diagnostico.module.css";
 import { benchmarksFrom, canDiagnose, joinNames, levelCounts, levelTone, pctText, referenceVars, studentStep, valueText, withFundState } from "./lib";
 import { M } from "./messages";
 import { coverSrc } from "@/lib/images";
+import { after } from "next/server";
+import { crmEvent } from "@/server/crm";
 
 export const metadata: Metadata = { title: "Diagnóstico" };
 
@@ -50,6 +52,8 @@ export default async function DiagnosticoPage() {
     </header>
   );
 
+  // CRM "Hizo el diagnóstico" (una sola vez: el evento es único). Después de responder: no frena la página.
+  if (canDiagnose(plan.lines.length, input.incomeCents)) after(() => crmEvent({ userId: s.userId }, "diagnostic_done", "app"));
   if (!canDiagnose(plan.lines.length, input.incomeCents)) {
     return (
       <main className="page">

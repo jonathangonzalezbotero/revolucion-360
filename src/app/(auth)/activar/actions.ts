@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { fail, ok, run } from "@/server/action";
 import { track } from "@/server/rewards";
+import { crmEvent } from "@/server/crm";
 import { M } from "./messages";
 
 const Code = z.object({ code: z.string().trim().min(1).max(40) });
@@ -21,6 +22,7 @@ export async function redeemCode(input: unknown) {
     if (error) return fail(s.t.errors.generic);
     if (data !== "ok") return fail(REASONS.includes(data as (typeof REASONS)[number]) ? m.redeem[data as (typeof REASONS)[number]] : s.t.errors.generic);
     await track(s, "invite_redeemed");
+    await crmEvent({ userId: s.userId }, "student_code", s.today); // CRM: nunca lanza
     return ok(m.studentOk);
   });
 }

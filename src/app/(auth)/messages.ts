@@ -15,7 +15,7 @@ export const M = {
     password: "Contraseña", show: "Mostrar", hide: "Ocultar",
     pwHint: "Mínimo 8 caracteres. Mejor si es una frase larga, ej. \"mi-viaje-a-cali-2027\".",
     pwLevels: ["Escribe una contraseña", "Muy corta", "Débil", "Buena", "Muy segura"],
-    reg: { title: "Crea tu cuenta", sub: "Tu primer mes cuesta {first} USD. Tu plan del año listo en 10 minutos.", accept1: "Acepto los", accept2: "términos", accept3: "y la", accept4: "política de privacidad", accept5: ". Tus datos son tuyos: nunca los vendemos.", cta: "Crear mi cuenta", have: "¿Ya tienes cuenta?", signIn: "Entrar", invite: "Código de invitación", invitePh: "Si eres alumno, escríbelo aquí", optional: "opcional" },
+    reg: { title: "Crea tu cuenta", sub: "Tu primer mes cuesta {first} USD. Tu plan del año listo en 10 minutos.", accept1: "Acepto los", accept2: "términos", accept3: "y la", accept4: "política de privacidad", accept5: ". Tus datos son tuyos: nunca los vendemos.", cta: "Crear mi cuenta", have: "¿Ya tienes cuenta?", signIn: "Entrar", invite: "Código de invitación", invitePh: "Si eres alumno, escríbelo aquí", optional: "opcional", marketing: "Quiero recibir novedades y clases por correo", marketingHint: "Opcional. Puedes darte de baja cuando quieras." },
     in: { title: "Hola de nuevo", sub: "Entra para seguir con tu plan.", forgot: "Olvidé mi contraseña", cta: "Entrar", first: "¿Primera vez?", create: "Crea tu cuenta" },
     rec: { title: "Recupera tu acceso", sub: "Escribe tu correo y te mandamos un enlace para crear una contraseña nueva.", cta: "Enviar enlace", back: "‹ Volver a entrar" },
     mail: {
@@ -50,7 +50,7 @@ export const M = {
     password: "Password", show: "Show", hide: "Hide",
     pwHint: "At least 8 characters. A long phrase is better, e.g. \"my-trip-to-cali-2027\".",
     pwLevels: ["Type a password", "Too short", "Weak", "Good", "Very strong"],
-    reg: { title: "Create your account", sub: "Your first month costs {first} USD. Your yearly plan ready in 10 minutes.", accept1: "I accept the", accept2: "terms", accept3: "and the", accept4: "privacy policy", accept5: ". Your data is yours: we never sell it.", cta: "Create my account", have: "Already have an account?", signIn: "Sign in", invite: "Invite code", invitePh: "If you're a student, type it here", optional: "optional" },
+    reg: { title: "Create your account", sub: "Your first month costs {first} USD. Your yearly plan ready in 10 minutes.", accept1: "I accept the", accept2: "terms", accept3: "and the", accept4: "privacy policy", accept5: ". Your data is yours: we never sell it.", cta: "Create my account", have: "Already have an account?", signIn: "Sign in", invite: "Invite code", invitePh: "If you're a student, type it here", optional: "optional", marketing: "I want to get news and classes by email", marketingHint: "Optional. You can unsubscribe anytime." },
     in: { title: "Welcome back", sub: "Sign in to continue with your plan.", forgot: "I forgot my password", cta: "Sign in", first: "First time?", create: "Create your account" },
     rec: { title: "Recover your access", sub: "Type your email and we'll send you a link to create a new password.", cta: "Send link", back: "‹ Back to sign in" },
     mail: {

@@ -5,6 +5,7 @@ import { fail, ok, run } from "@/server/action";
 import { must, type CategoryKind } from "@/server/data";
 import { createDefaultCategories, createLine } from "@/server/plan-write";
 import { firstStep, touchWeek, track, tryBadge } from "@/server/rewards";
+import { crmEvent } from "@/server/crm";
 import type { Session } from "@/server/session";
 import { wizardContext } from "./context";
 import { AnswersSchema, buildDrafts, pickCategory, roleOf, type CatLite, type Role } from "./lib";
@@ -101,6 +102,7 @@ export async function commitPlan(input: unknown) {
     await tryBadge(s, "grid"); // la base exige onboarding terminado y al menos una línea: va después
     const points = await firstStep(s, "plan");
     await track(s, "wizard_done");
+    if (first) await crmEvent({ userId: s.userId }, "wizard_done", ""); // CRM: nunca lanza
     await touchWeek(s);
     // Sin activar (se registró y no pagó): al terminar el asistente va a "Activa tu cuenta" (su diagnóstico sí lo puede ver).
     const next = p.data.to === "diagnostico" ? "/diagnostico" : s.plan === "free" ? "/activar" : "/plan";

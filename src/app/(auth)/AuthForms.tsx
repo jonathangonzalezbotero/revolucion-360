@@ -79,7 +79,7 @@ function Password({ m, id, label, value, onChange, meter, autoComplete }: { m: A
 }
 
 export function RegisterForm({ m, invite }: { m: AuthMessages; invite?: string }) {
-  const [f, setF] = useState({ name: "", email: "", password: "", terms: false, invite: invite ?? "" });
+  const [f, setF] = useState({ name: "", email: "", password: "", terms: false, invite: invite ?? "", marketing: false });
   const { error, pending, submit } = useSubmit();
   return (
     <form style={{ display: "contents" }} onSubmit={(e) => { e.preventDefault(); submit(() => signUp(f)); }}>
@@ -92,6 +92,10 @@ export function RegisterForm({ m, invite }: { m: AuthMessages; invite?: string }
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
         <button type="button" role="checkbox" aria-checked={f.terms} aria-labelledby="terms-label" onClick={() => setF({ ...f, terms: !f.terms })} style={{ width: 24, height: 24, flex: "none", borderRadius: 7, border: "2px solid var(--tinta)", background: f.terms ? "var(--tinta)" : "var(--blanco)", color: "var(--blanco)", fontSize: 14, fontWeight: 600, padding: 0, marginTop: 1 }}>{f.terms ? "✓" : ""}</button>
         <span id="terms-label" style={{ fontSize: 13, color: "#3A3D36", lineHeight: 1.5 }}>{m.reg.accept1} <Link href="/legal/terminos" target="_blank">{m.reg.accept2}</Link> {m.reg.accept3} <Link href="/legal/privacidad" target="_blank">{m.reg.accept4}</Link>{m.reg.accept5}</span>
+      </div>
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <button type="button" role="checkbox" aria-checked={f.marketing} aria-labelledby="marketing-label" aria-describedby="marketing-hint" onClick={() => setF({ ...f, marketing: !f.marketing })} style={{ width: 24, height: 24, flex: "none", borderRadius: 7, border: "2px solid var(--tinta)", background: f.marketing ? "var(--tinta)" : "var(--blanco)", color: "var(--blanco)", fontSize: 14, fontWeight: 600, padding: 0, marginTop: 1 }}>{f.marketing ? "✓" : ""}</button>
+        <span style={{ display: "flex", flexDirection: "column", gap: 2 }}><span id="marketing-label" style={{ fontSize: 13, color: "var(--tinta-2)", lineHeight: 1.5 }}>{m.reg.marketing}</span><span id="marketing-hint" className="xs muted">{m.reg.marketingHint}</span></span>
       </div>
       <Alert text={error} />
       <button className={css.cta} disabled={pending}>{m.reg.cta}</button>

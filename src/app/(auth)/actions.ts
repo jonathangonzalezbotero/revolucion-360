@@ -23,7 +23,8 @@ function strength(pw: string): number {
   return sc;
 }
 
-export async function signUp(input: { name: string; email: string; password: string; terms: boolean; invite?: string }): Promise<AuthResult> {
+/** `marketing`: casilla DESMARCADA por defecto "Quiero recibir novedades y clases por correo" (Spam Act). La lee el CRM (disparador crm_on_profile). */
+export async function signUp(input: { name: string; email: string; password: string; terms: boolean; invite?: string; marketing?: boolean }): Promise<AuthResult> {
   const m = await msgs();
   const p = z.object({ name: z.string().trim().min(1).max(80), email: z.string().trim().toLowerCase().email(), password: z.string().min(8).max(200), terms: z.boolean(), invite: z.string().trim().max(40).optional() }).safeParse(input);
   if (!input.terms) return { ok: false, error: m.errors.terms };
@@ -32,7 +33,7 @@ export async function signUp(input: { name: string; email: string; password: str
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: p.data.email, password: p.data.password,
-    options: { data: { name: p.data.name, invite: p.data.invite?.toUpperCase() || null, terms_accepted_at: new Date().toISOString() }, emailRedirectTo: `${APP()}/auth/confirm` },
+    options: { data: { name: p.data.name, invite: p.data.invite?.toUpperCase() || null, terms_accepted_at: new Date().toISOString(), marketing_email: input.marketing === true }, emailRedirectTo: `${APP()}/auth/confirm` },
   });
   if (error) return { ok: false, error: error.status === 429 ? m.errors.rate : /registered|exists/i.test(error.message) ? m.errors.exists : m.errors.generic };
   if (data.session) return { ok: true, next: "/bienvenida" }; // confirmación de correo desactivada (solo en local)
