@@ -37,20 +37,35 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
   <header style="padding: 24px 16px 10px; display: flex; flex-direction: column; gap: 12px">
     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px">
       <h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">Movimientos</h1>
-      <button type="button" onClick="{{ toggleSheet }}" aria-expanded="{{ sheetOpen }}" aria-label="Agregar movimientos" style="font: inherit; width: 46px; height: 46px; border: 0; border-radius: 14px; background: #141612; color: #FFFFFF; font-size: 24px; font-weight: 600">+</button>
     </div>
-    <div role="group" aria-label="Mes" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px">
-      <sc-for list="{{ months }}" as="m" hint-placeholder-count="13">
-        <button type="button" onClick="{{ m.pick }}" aria-pressed="{{ m.pressed }}" style="font: inherit; flex: none; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: {{ m.bg }}; color: {{ m.fg }}">{{ m.label }}</button>
-      </sc-for>
+    <button type="button" onClick="{{ openGasto }}" aria-expanded="{{ sheetOpen }}" style="font: inherit; width: 100%; min-height: 54px; border: 0; border-radius: 14px; background: #141612; color: #FFFFFF; font-size: 17px; font-weight: 600; cursor: pointer">+ Gasto</button>
+    <div style="display: flex; gap: 6px; position: relative">
+      <a href="Importar.dc.html" style="text-decoration: none; flex: 1; font-size: 13px; font-weight: 600; min-height: 44px; padding: 0 8px; border: 1px solid #E6E4DC; border-radius: 12px; background: #FFFFFF; color: #141612; display: flex; align-items: center; justify-content: center; white-space: nowrap">Importar CSV</a>
+      <button type="button" onClick="{{ openTransfer }}" style="font: inherit; flex: 1; font-size: 13px; font-weight: 600; min-height: 44px; padding: 0 8px; border: 1px solid #E6E4DC; border-radius: 12px; background: #FFFFFF; color: #141612; cursor: pointer; white-space: nowrap">Transferencia</button>
+      <button type="button" onClick="{{ togMore }}" aria-expanded="{{ moreOpen }}" aria-controls="mas-opc-m" style="font: inherit; flex: none; font-size: 13px; font-weight: 600; min-height: 44px; padding: 0 10px; border: 0; border-radius: 12px; background: transparent; color: #3A3D36; cursor: pointer; white-space: nowrap">Más ▾</button>
+      <sc-if value="{{ more }}" hint-placeholder-val="{{ false }}">
+        <div id="mas-opc-m" style="position: absolute; right: 0; top: 50px; z-index: 4; min-width: 230px; background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; box-shadow: 0 10px 30px rgba(20,22,18,.14); padding: 6px; display: flex; flex-direction: column">
+          <a href="Importar.dc.html" style="text-decoration: none; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; min-height: 44px; justify-content: center; color: #141612"><span style="font-size: 14px; font-weight: 600">Reglas</span><span style="font-size: 12px; color: #5F6359">Qué categoría recibe cada comercio</span></a>
+          <button type="button" style="font: inherit; text-align: left; border: 0; background: transparent; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; min-height: 44px; justify-content: center; color: #141612; cursor: pointer"><span style="font-size: 14px; font-weight: 600">Recurrentes</span><span style="font-size: 12px; color: #5F6359">Pagos que se registran solos</span></button>
+        </div>
+      </sc-if>
     </div>
-    <div style="display: flex; gap: 8px">
-      <label for="mm-cat" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Categoría</label>
-      <select id="mm-cat" value="{{ cat }}" onChange="{{ pickCat }}" style="font: inherit; flex: 1; font-size: 14px; font-weight: 600; height: 44px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 12px; background: #FFFFFF; color: #141612">
+    <div style="display: flex; gap: 8px; align-items: center">
+      <div role="group" aria-label="Mes" style="flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px">
+        <sc-for list="{{ months }}" as="m" hint-placeholder-count="13">
+          <button type="button" onClick="{{ m.pick }}" aria-pressed="{{ m.pressed }}" style="font: inherit; flex: none; font-size: 13px; font-weight: 600; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 0; background: {{ m.bg }}; color: {{ m.fg }}">{{ m.label }}</button>
+        </sc-for>
+      </div>
+      <button type="button" onClick="{{ togFilters }}" aria-expanded="{{ filtersOpen }}" aria-controls="mm-filtros" style="font: inherit; flex: none; font-size: 13px; font-weight: 600; height: 44px; padding: 0 14px; border: 1px solid #E6E4DC; border-radius: 12px; background: #FFFFFF; color: #3A3D36; cursor: pointer">Filtros</button>
+    </div>
+    <sc-if value="{{ filters }}" hint-placeholder-val="{{ false }}">
+    <div id="mm-filtros" style="display: flex; flex-direction: column; gap: 6px">
+      <label for="mm-cat" style="font-size: 12px; font-weight: 500; color: #5F6359">Categoría</label>
+      <select id="mm-cat" value="{{ cat }}" onChange="{{ pickCat }}" style="font: inherit; font-size: 14px; font-weight: 600; height: 44px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 12px; background: #FFFFFF; color: #141612">
         <sc-for list="{{ catOpts }}" as="o" hint-placeholder-count="11"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
       </select>
-      <button type="button" style="font: inherit; font-size: 13px; font-weight: 600; height: 44px; padding: 0 14px; border: 1px solid #E6E4DC; border-radius: 12px; background: #FFFFFF; color: #3A3D36">Filtros</button>
     </div>
+    </sc-if>
   </header>
   <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin: 0 16px; font-size: 14px; font-weight: 600; color: #1E5A3F; background: #E3F1E8; border-radius: 12px; padding: 12px 14px">{{ toast }}</p></sc-if>
   <sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}">
@@ -70,47 +85,6 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
 
 
   <div style="flex: 1; padding: 4px 16px 24px; display: flex; flex-direction: column; gap: 12px">
-    <section aria-labelledby="lv-m" style="background: #FFFFFF; border-radius: 14px; padding: 14px; border: 1px solid #E6E4DC; display: flex; flex-direction: column; gap: 12px">
-      <h2 id="lv-m" style="margin: 0; font-size: 15px; font-weight: 600">¿Cómo quieres llevar tus gastos?</h2>
-      <div role="radiogroup" aria-labelledby="lv-m" style="display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 8px">
-        <sc-for list="{{ levels }}" as="l" hint-placeholder-count="3">
-          <button type="button" role="radio" aria-checked="{{ l.checked }}" onClick="{{ l.pick }}" style="font: inherit; text-align: left; padding: 12px 14px; border-radius: 14px; border: 2px solid {{ l.border }}; background: {{ l.bg }}; color: #141612; display: flex; gap: 10px; align-items: flex-start; cursor: pointer">
-            <span aria-hidden="true" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid #141612; background: {{ l.dot }}; box-shadow: inset 0 0 0 3px #FFFFFF; flex: none; margin-top: 1px"></span>
-            <span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 14px; font-weight: 600">{{ l.label }}</strong><span style="font-size: 12px; color: #5F6359; line-height: 1.4">{{ l.desc }}</span></span>
-          </button>
-        </sc-for>
-      </div>
-      <span style="font-size: 12px; color: #5F6359">Puedes combinar: por ejemplo, "Cada movimiento" para tu tarjeta y "Totales" para comida. Se ajusta por categoría en tu perfil.</span>
-    </section>
-
-    <sc-if value="{{ isPlanLvl }}" hint-placeholder-val="{{ false }}">
-      <section aria-label="Marcar líneas pagadas" style="background: #FFFFFF; border-radius: 14px; padding: 6px 14px; border: 1px solid #E6E4DC">
-        <h2 style="margin: 0; padding: 14px 0 6px; font-size: 15px; font-weight: 600">Noviembre: marca lo que ya pagaste</h2>
-        <sc-for list="{{ planLines }}" as="p" hint-placeholder-count="6">
-          <div style="display: flex; align-items: center; gap: 12px; min-height: 56px; border-top: 1px solid #EFEDE6">
-            <button type="button" role="switch" aria-checked="{{ p.checked }}" aria-label="{{ p.name }} pagada" onClick="{{ p.toggle }}" style="font: inherit; flex: none; width: 46px; height: 28px; border: 0; border-radius: 999px; background: {{ p.trackBg }}; position: relative; padding: 0; cursor: pointer"><span aria-hidden="true" style="position: absolute; top: 3px; left: {{ p.knobX }}; width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,.2)"></span></button>
-            <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 14px; font-weight: 600">{{ p.name }}</strong><span style="font-size: 12px; color: {{ p.stC }}; font-weight: 600">{{ p.st }}</span></span>
-            <strong class="num" style="font-size: 14px">{{ p.amt }}</strong>
-          </div>
-        </sc-for>
-      </section>
-    </sc-if>
-
-    <sc-if value="{{ isTotLvl }}" hint-placeholder-val="{{ false }}">
-      <section aria-label="Totales del mes" style="background: #FFFFFF; border-radius: 14px; padding: 6px 14px 14px; border: 1px solid #E6E4DC">
-        <h2 style="margin: 0; padding: 14px 0 4px; font-size: 15px; font-weight: 600">Noviembre: ¿cuánto gastaste en total?</h2>
-        <p style="margin: 0 0 6px; font-size: 12px; color: #5F6359">Un número por categoría. Lo comparamos con tu plan.</p>
-        <sc-for list="{{ totCats }}" as="t" hint-placeholder-count="5">
-          <div style="display: flex; align-items: center; gap: 12px; min-height: 58px; border-top: 1px solid #EFEDE6">
-            <label for="{{ t.id }}" style="flex: 1; display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 14px; font-weight: 600">{{ t.name }}</strong><span class="num" style="font-size: 12px; color: #5F6359">Plan: {{ t.plan }}</span></label>
-            <input id="{{ t.id }}" class="num" type="text" inputmode="decimal" placeholder="$0" style="font: inherit; font-size: 16px; font-weight: 600; width: 120px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; text-align: right">
-          </div>
-        </sc-for>
-        <button type="button" style="font: inherit; width: 100%; font-size: 14px; font-weight: 600; min-height: 48px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; margin-top: 8px; cursor: pointer">Guardar totales</button>
-      </section>
-    </sc-if>
-
-    <sc-if value="{{ isDetLvl }}" hint-placeholder-val="{{ true }}">
     <div style="display: flex; flex-direction: column; gap: 12px">
 
     <section style="background: #FFFFFF; border-radius: 14px; padding: 6px 8px; border: 1px solid #E6E4DC">
@@ -118,8 +92,10 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
       <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
         <p style="margin: 0; padding: 32px 12px; text-align: center; font-size: 14px; color: #5F6359">Sin movimientos para este filtro.</p>
       </sc-if>
+      <sc-for list="{{ days }}" as="day" hint-placeholder-count="5">
+      <h3 style="margin: 0; padding: 12px 8px 2px; display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #5F6359; text-transform: uppercase; letter-spacing: .06em"><span>{{ day.label }}</span><span class="num">{{ day.n }}</span></h3>
       <ul style="list-style: none; margin: 0; padding: 0">
-        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+        <sc-for list="{{ day.rows }}" as="r" hint-placeholder-count="2">
           <li><button type="button" onClick="{{ r.open }}" aria-label="Editar {{ r.desc }}" style="font: inherit; width: 100%; text-align: left; color: #141612; border: 0; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 10px 8px; min-height: 60px; border-radius: 12px; background: {{ r.rowBg }}">
             <span aria-hidden="true" style="width: 38px; height: 38px; border-radius: 12px; flex: none; background: {{ r.soft }}; color: {{ r.color }}; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px">{{ r.initial }}</span>
             <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
@@ -133,9 +109,9 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
           </button></li>
         </sc-for>
       </ul>
+      </sc-for>
     </section>
       </div>
-    </sc-if>
   </div>
 
   <sc-if value="{{ showSheetDet }}" hint-placeholder-val="{{ true }}">
@@ -160,19 +136,19 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1650}}'>
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { mes: 10, cat: 'todas', sheet: true, qc: 'Comida y ocio', edit: null, draft: null, confirmDel: false, toast: '',
-      list: [['Sueldo', 'Ingresos', 'ok', '+$5,418', 'Ubank', 'Sueldo'], ['Home', 'Hogar y básicos', 'ok', '-$1,330', 'Ubank', 'Home'], ['Groceries', 'Hogar y básicos', 'ok', '-$400', 'NAB', 'Groceries'], ['Inner Circle', 'Deudas', 'ok', '-$700', 'Ubank', 'Inner Circle'], ['Aporte a Easy Aussie', 'Negocio', 'ok', '-$400', 'Ubank', 'Aportes a Easy Aussie'], ['Vuelo a Colombia', 'Metas', 'man', '[MONTO]', 'NAB', 'Viaje a Colombia'], ['Pago tarjeta NAB', 'Entre mis cuentas', 'tr', '[MONTO]', 'Ubank → NAB', ''], ['[DESCRIPCIÓN DEL BANCO]', 'Sin categoría', 'rev', '[MONTO]', 'NAB', '']].map((r) => ({ desc: r[0], cat: r[1], st: r[2], amt: r[3], acc: r[4], line: r[5] })) }; }
+      list: [['Sueldo', 'Ingresos', 'ok', '+$5,418', 'Ubank', 'Sueldo'], ['Home', 'Hogar y básicos', 'ok', '-$1,330', 'Ubank', 'Home'], ['Groceries', 'Hogar y básicos', 'ok', '-$400', 'NAB', 'Groceries'], ['Inner Circle', 'Deudas', 'ok', '-$700', 'Ubank', 'Inner Circle'], ['Aporte a Easy Aussie', 'Negocio', 'ok', '-$400', 'Ubank', 'Aportes a Easy Aussie'], ['Vuelo a Colombia', 'Metas', 'man', '[MONTO]', 'NAB', 'Viaje a Colombia'], ['Pago tarjeta NAB', 'Entre mis cuentas', 'tr', '[MONTO]', 'Ubank → NAB', ''], ['[DESCRIPCIÓN DEL BANCO]', 'Sin categoría', 'rev', '[MONTO]', 'NAB', '']].map((r, k) => ({ desc: r[0], cat: r[1], st: r[2], amt: r[3], acc: r[4], line: r[5], date: ['2026-11-21', '2026-11-03', '2026-11-15', '2026-11-05', '2026-11-10', '2026-11-12', '2026-11-20', '2026-11-18'][k] })) }; }
   renderVals() {
     const s = this.state;
     const MS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
     const MF = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     const C = {
-      'Ingresos': ['#141612', '#EFEDE6'], 'Hogar y básicos': ['#141612', '#E3F1E8'], 'Vehículo': ['#6FA898', '#E5F1ED'], 'Deudas': ['#C46A2A', '#FBEBD8'],
+      'Ingresos': ['#141612', '#EFEDE6'], 'Hogar y básicos': ['#141612', '#E3F1E8'], 'Transporte': ['#6FA898', '#E5F1ED'], 'Deudas': ['#C46A2A', '#FBEBD8'],
       'Comida y ocio': ['#3E8C7A', '#FFF8D6'], 'Ahorro e inversión': ['#4C7FB5', '#E3ECF6'], 'Metas': ['#B86A1C', '#FBEBD8'], 'Negocio': ['#2D5C8A', '#E3ECF6'],
       'Estilo de vida': ['#3E8C7A', '#E5F1ED'], 'Familia y remesas': ['#8A6A0B', '#FBF3DC'], 'Entre mis cuentas': ['#2D5C8A', '#E3ECF6'], 'Sin categoría': ['#8A4B12', '#FBEBD8']
     };
     const ST = { ok: ['Coincide con tu plan', '#E3F1E8', '#1E5A3F'], tr: ['Transferencia', '#E3ECF6', '#24496E'], rev: ['Por revisar', '#FBEBD8', '#8A4B12'], man: ['Manual', '#EFEDE6', '#3A3D36'], ed: ['Editado', '#FFF8D6', '#5C4A00'] };
     const rows = (s.mes === 10 || s.mes === -1 ? s.list.map((r, i) => Object.assign({ i }, r)) : []).filter((r) => s.cat === 'todas' || r.cat === s.cat).map((r) => ({
-      desc: r.desc, cat: r.cat, amt: r.amt, acc: r.acc, initial: r.desc.replace('[', '').charAt(0), color: (C[r.cat] || C['Sin categoría'])[0], soft: (C[r.cat] || C['Sin categoría'])[1],
+      iso: r.date || '2026-11-01', desc: r.desc, cat: r.cat, amt: r.amt, acc: r.acc, initial: r.desc.replace('[', '').charAt(0), color: (C[r.cat] || C['Sin categoría'])[0], soft: (C[r.cat] || C['Sin categoría'])[1],
       status: ST[r.st][0], bg: ST[r.st][1], fg: ST[r.st][2], amtColor: '#141612', rowBg: r.st === 'rev' ? '#FFF8F0' : 'transparent',
       open: () => this.setState({ edit: r.i, draft: Object.assign({}, s.list[r.i]), confirmDel: false, toast: '' })
     }));
@@ -190,14 +166,17 @@ class Component extends DCLogic {
     });
     const qcats = ['Comida y ocio', 'Súper', 'Transporte', 'Hogar', 'Familia', 'Otro'].map((n) => { const on = s.qc === n; return { name: n, checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFF8D6' : '#FFFFFF', pick: () => this.setState({ qc: n }) }; });
 
-    const LV = [['plan', 'Solo mi plan', 'Marco cada línea como pagada. Sin registrar nada más.'], ['totales', 'Totales del mes', 'Escribo cuánto gasté por categoría al cerrar el mes.'], ['detalle', 'Cada movimiento', 'Registro cada gasto, a mano o con CSV.']];
-    const lvl = this.state.lvl || 'detalle';
-    const levels = LV.map(([id, label, desc]) => { const on = lvl === id; return { label, desc, checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFF8D6' : '#FFFFFF', dot: on ? '#141612' : '#FFFFFF', pick: () => this.setState({ lvl: id }) }; });
-    const pl = this.state.pl || {};
-    const planLines = [['Home', '$1,330'], ['Groceries', '$400'], ['Felix Mobile', '$40'], ['Suscripciones', '$125'], ['Inner Circle', '$700'], ['Viaje a Colombia', '$2,000']].map(([n, a], i) => { const on = pl[n] !== undefined ? pl[n] : i !== 2 && i !== 5; return { name: n, amt: a, checked: String(on), trackBg: on ? '#141612' : '#CFCCC2', knobX: on ? '20px' : '2px', st: on ? 'Pagada' : 'Pendiente', stC: on ? '#1E5A3F' : '#5F6359', toggle: () => this.setState({ pl: Object.assign({}, pl, { [n]: !on }) }) }; });
-    const totCats = [['Hogar y básicos', '$2,023'], ['Vehículo', '$450'], ['Comida y ocio', '$400'], ['Familia y remesas', '$0'], ['Estilo de vida', '$2,000']].map(([n, p], i) => ({ name: n, plan: p, id: 'tot' + i + 'm' }));
+    const DN = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const isos = rows.map((r) => r.iso).filter((v, i, a) => a.indexOf(v) === i).sort().reverse();
+    const days = isos.map((iso) => {
+      const p = iso.split('-').map(Number), dt = new Date(p[0], p[1] - 1, p[2]);
+      const dr = rows.filter((r) => r.iso === iso);
+      return { label: DN[dt.getDay()] + ' ' + p[2] + ' ' + MS[p[1] - 1].toLowerCase(), n: dr.length === 1 ? '1' : String(dr.length), rows: dr };
+    });
     return {
-      isPlanLvl: lvl === 'plan', isTotLvl: lvl === 'totales', isDetLvl: lvl === 'detalle', levels, planLines, totCats,
+      days, openGasto: () => this.setState({ sheet: true, more: false }), openTransfer: () => this.setState({ sheet: true, more: false, qc: 'Otro' }),
+      more: !!s.more, moreOpen: String(!!s.more), togMore: () => this.setState({ more: !s.more }),
+      filters: !!s.filters, filtersOpen: String(!!s.filters), togFilters: () => this.setState({ filters: !s.filters }),
       qcats, rows, months, catOpts, cat: s.cat,
       mesLabel: s.mes === -1 ? 'Todo 2026' : MF[s.mes] + ' 2026', count: rows.length, empty: rows.length === 0,
       pickCat: (e) => this.setState({ cat: e.target.value }),
@@ -208,7 +187,7 @@ class Component extends DCLogic {
       delMov: () => { if (!s.confirmDel) { this.setState({ confirmDel: true }); return; } this.setState({ list: s.list.filter((_, j) => j !== s.edit), edit: null, draft: null, confirmDel: false, toast: 'Movimiento eliminado.' }); },
       delLabel: s.confirmDel ? '¿Seguro? Toca otra vez' : 'Eliminar', delBg: s.confirmDel ? '#A1401A' : '#FFFFFF', delFg: s.confirmDel ? '#FFFFFF' : '#A1401A',
       hasToast: !!s.toast, toast: s.toast,
-      showSheet: s.sheet && s.edit === null, showSheetDet: s.sheet && s.edit === null && (this.state.lvl || 'detalle') === 'detalle', sheetOpen: String(s.sheet), toggleSheet: () => this.setState({ sheet: !s.sheet })
+      showSheet: s.sheet && s.edit === null, showSheetDet: s.sheet && s.edit === null, sheetOpen: String(s.sheet), toggleSheet: () => this.setState({ sheet: !s.sheet })
     };
   }
 }

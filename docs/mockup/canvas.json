@@ -603,6 +603,23 @@
    "title": "Admin · CRM · Conexiones web",
    "is_interactive": true,
    "expand": "fill"
+  },
+  "Recorrido.dc.html": {
+   "x": 2460,
+   "y": 16172,
+   "w": 1440,
+   "h": 1470,
+   "title": "Recorrido general · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Recorrido-movil.dc.html": {
+   "x": 3980,
+   "y": 16172,
+   "w": 390,
+   "h": 844,
+   "title": "Recorrido general · Móvil",
+   "is_interactive": true
   }
  },
  "order": [
@@ -622,6 +639,8 @@
   "Repaso.dc.html",
   "Repaso-movil.dc.html",
   "Mas-movil.dc.html",
+  "Recorrido.dc.html",
+  "Recorrido-movil.dc.html",
   "Plan.dc.html",
   "Plan-movil.dc.html",
   "Presupuesto.dc.html",

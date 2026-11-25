@@ -200,7 +200,7 @@ class Component extends DCLogic {
       return { label: label, incH: Math.round(inc[i] / 18000 * H) + 'px', expH: Math.round(exp[i] / 18000 * H) + 'px', net: fmt(net), netBg: net < 0 ? '#FBEBD8' : '#FFF8D6', netColor: net < 0 ? '#8A4B12' : '#1E5A3F' };
     });
     const total = 95346;
-    const raw = [['Hogar y básicos', 20467, '#141612'], ['Estilo de vida', 20466, '#3E8C7A'], ['Deudas', 15395, '#C46A2A'], ['Metas (viaje a Colombia)', 8400, '#E3B800'], ['Aportes a Easy Aussie', 8405, '#2D5C8A'], ['Vehículo', 4874, '#6FA898'], ['Comida y ocio', 4450, '#A8D3C3'], ['Ahorro e inversión', 2600, '#4C7FB5'], ['Otros', 580, '#CFCCC2'], ['Te sobró', 9709, '#E6E4DC']];
+    const raw = [['Hogar y básicos', 20467, '#141612'], ['Estilo de vida', 20466, '#3E8C7A'], ['Deudas', 15395, '#C46A2A'], ['Metas (viaje a Colombia)', 8400, '#E3B800'], ['Aportes a Easy Aussie', 8405, '#2D5C8A'], ['Transporte', 4874, '#6FA898'], ['Comida y ocio', 4450, '#A8D3C3'], ['Ahorro e inversión', 2600, '#4C7FB5'], ['Otros', 580, '#CFCCC2'], ['Te sobró', 9709, '#E6E4DC']];
     const split = raw.map(([name, v, color]) => ({ name, color, amt: fmt(v), pct: (v / total * 100).toFixed(1) + '%', w: (v / total * 100).toFixed(2) + '%' }));
     const src = [['Sueldo', 65016, false], ['Ingresos extra', 13030, false], ['Retiros de Easy Aussie', 11050, true], ['Renta del auto', 3625, false], ['E-bikes', 2625, false]];
     const sources = src.map(([name, v, tag]) => ({ name, tag, amt: fmt(v), pct: (v / total * 100).toFixed(0) + '%', w: (v / total * 100).toFixed(1) + '%' }));

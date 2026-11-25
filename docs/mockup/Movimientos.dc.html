@@ -67,77 +67,54 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
         <span style="font-size: 14px; color: #5F6359">Ubank, NAB y lo que agregues a mano</span>
         <h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Movimientos</h1>
       </div>
-      <button type="button" onClick="{{ togglePanel }}" aria-expanded="{{ panelOpen }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">+ Agregar movimientos</button>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; position: relative">
+        <button type="button" onClick="{{ openGasto }}" aria-expanded="{{ panelOpen }}" style="font: inherit; font-size: 16px; font-weight: 600; min-height: 52px; padding: 0 26px; border: 0; background: #141612; color: #FFFFFF; border-radius: 14px; cursor: pointer">+ Gasto</button>
+        <a href="Importar.dc.html" style="text-decoration: none; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 12px; display: flex; align-items: center">Importar CSV</a>
+        <button type="button" onClick="{{ openTransfer }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 12px; cursor: pointer">Transferencia</button>
+        <button type="button" onClick="{{ togMore }}" aria-expanded="{{ moreOpen }}" aria-controls="mas-opc" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 14px; border: 0; background: transparent; color: #3A3D36; border-radius: 12px; cursor: pointer">Más opciones ▾</button>
+        <sc-if value="{{ more }}" hint-placeholder-val="{{ false }}">
+          <div id="mas-opc" style="position: absolute; right: 0; top: 58px; z-index: 5; min-width: 240px; background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; box-shadow: 0 10px 30px rgba(20,22,18,.12); padding: 6px; display: flex; flex-direction: column">
+            <a href="Importar.dc.html" style="text-decoration: none; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; min-height: 44px; justify-content: center; color: #141612"><span style="font-size: 14px; font-weight: 600">Reglas</span><span style="font-size: 12px; color: #5F6359">Qué categoría recibe cada comercio</span></a>
+            <a href="#rec" style="text-decoration: none; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; min-height: 44px; justify-content: center; color: #141612"><span style="font-size: 14px; font-weight: 600">Recurrentes</span><span style="font-size: 12px; color: #5F6359">Pagos que se registran solos</span></a>
+          </div>
+        </sc-if>
+      </div>
     </header>
 
-<section aria-labelledby="lv-d" style="background: #FFFFFF; border-radius: 14px; padding: 18px 20px; border: 1px solid #E6E4DC; display: flex; flex-direction: column; gap: 12px">
-      <h2 id="lv-d" style="margin: 0; font-size: 15px; font-weight: 600">¿Cómo quieres llevar tus gastos?</h2>
-      <div role="radiogroup" aria-labelledby="lv-d" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
-        <sc-for list="{{ levels }}" as="l" hint-placeholder-count="3">
-          <button type="button" role="radio" aria-checked="{{ l.checked }}" onClick="{{ l.pick }}" style="font: inherit; text-align: left; padding: 12px 14px; border-radius: 14px; border: 2px solid {{ l.border }}; background: {{ l.bg }}; color: #141612; display: flex; gap: 10px; align-items: flex-start; cursor: pointer">
-            <span aria-hidden="true" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid #141612; background: {{ l.dot }}; box-shadow: inset 0 0 0 3px #FFFFFF; flex: none; margin-top: 1px"></span>
-            <span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 14px; font-weight: 600">{{ l.label }}</strong><span style="font-size: 12px; color: #5F6359; line-height: 1.4">{{ l.desc }}</span></span>
-          </button>
-        </sc-for>
-      </div>
-      <span style="font-size: 12px; color: #5F6359">Puedes combinar: por ejemplo, "Cada movimiento" para tu tarjeta y "Totales" para comida. Se ajusta por categoría en tu perfil.</span>
-    </section>
-
-    <sc-if value="{{ isPlanLvl }}" hint-placeholder-val="{{ false }}">
-      <section aria-label="Marcar líneas pagadas" style="background: #FFFFFF; border-radius: 14px; padding: 6px 20px; border: 1px solid #E6E4DC">
-        <h2 style="margin: 0; padding: 14px 0 6px; font-size: 15px; font-weight: 600">Noviembre: marca lo que ya pagaste</h2>
-        <sc-for list="{{ planLines }}" as="p" hint-placeholder-count="6">
-          <div style="display: flex; align-items: center; gap: 12px; min-height: 56px; border-top: 1px solid #EFEDE6">
-            <button type="button" role="switch" aria-checked="{{ p.checked }}" aria-label="{{ p.name }} pagada" onClick="{{ p.toggle }}" style="font: inherit; flex: none; width: 46px; height: 28px; border: 0; border-radius: 999px; background: {{ p.trackBg }}; position: relative; padding: 0; cursor: pointer"><span aria-hidden="true" style="position: absolute; top: 3px; left: {{ p.knobX }}; width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,.2)"></span></button>
-            <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 14px; font-weight: 600">{{ p.name }}</strong><span style="font-size: 12px; color: {{ p.stC }}; font-weight: 600">{{ p.st }}</span></span>
-            <strong class="num" style="font-size: 14px">{{ p.amt }}</strong>
-          </div>
-        </sc-for>
-      </section>
-    </sc-if>
-
-    <sc-if value="{{ isTotLvl }}" hint-placeholder-val="{{ false }}">
-      <section aria-label="Totales del mes" style="background: #FFFFFF; border-radius: 14px; padding: 6px 20px 14px; border: 1px solid #E6E4DC">
-        <h2 style="margin: 0; padding: 14px 0 4px; font-size: 15px; font-weight: 600">Noviembre: ¿cuánto gastaste en total?</h2>
-        <p style="margin: 0 0 6px; font-size: 12px; color: #5F6359">Un número por categoría. Lo comparamos con tu plan.</p>
-        <sc-for list="{{ totCats }}" as="t" hint-placeholder-count="5">
-          <div style="display: flex; align-items: center; gap: 12px; min-height: 58px; border-top: 1px solid #EFEDE6">
-            <label for="{{ t.id }}" style="flex: 1; display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 14px; font-weight: 600">{{ t.name }}</strong><span class="num" style="font-size: 12px; color: #5F6359">Plan: {{ t.plan }}</span></label>
-            <input id="{{ t.id }}" class="num" type="text" inputmode="decimal" placeholder="$0" style="font: inherit; font-size: 16px; font-weight: 600; width: 120px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; text-align: right">
-          </div>
-        </sc-for>
-        <button type="button" style="font: inherit; width: 100%; font-size: 14px; font-weight: 600; min-height: 48px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; margin-top: 8px; cursor: pointer">Guardar totales</button>
-      </section>
-    </sc-if>
-
-    <sc-if value="{{ isDetLvl }}" hint-placeholder-val="{{ true }}">
     <div style="display: flex; flex-direction: column; gap: 20px">
     <div style="background: #FFFFFF; border-radius: 14px; padding: 16px 18px; border: 1px solid #E6E4DC; display: flex; flex-direction: column; gap: 14px">
       <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end">
         <div style="display: flex; flex-direction: column; gap: 6px">
           <label for="f-mes" style="font-size: 12px; font-weight: 500; color: #5F6359">Mes</label>
-          <select id="f-mes" value="{{ mes }}" onChange="{{ pickMes }}" style="font: inherit; font-size: 14px; font-weight: 600; height: 42px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #FFFFFF; color: #141612; min-width: 170px">
+          <select id="f-mes" value="{{ mes }}" onChange="{{ pickMes }}" style="font: inherit; font-size: 14px; font-weight: 600; height: 44px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #FFFFFF; color: #141612; min-width: 170px">
             <sc-for list="{{ mesOpts }}" as="o" hint-placeholder-count="13"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
           </select>
         </div>
+        <div style="flex: 1 1 220px; display: flex; flex-direction: column; gap: 6px">
+          <label for="f-buscar" style="font-size: 12px; font-weight: 500; color: #5F6359">Buscar</label>
+          <input id="f-buscar" type="search" placeholder="Descripción o comercio" style="font: inherit; font-size: 14px; height: 44px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #FFFFFF; box-sizing: border-box; width: 100%">
+        </div>
+        <button type="button" onClick="{{ togFilters }}" aria-expanded="{{ filtersOpen }}" aria-controls="mas-filtros" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 44px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #141612; border-radius: 10px; cursor: pointer">{{ filtersLabel }}</button>
+      </div>
+      <sc-if value="{{ filters }}" hint-placeholder-val="{{ false }}">
+      <div id="mas-filtros" style="display: flex; flex-direction: column; gap: 14px; border-top: 1px solid #EFEDE6; padding-top: 14px">
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end">
         <div style="display: flex; flex-direction: column; gap: 6px">
           <label for="f-cuenta" style="font-size: 12px; font-weight: 500; color: #5F6359">Cuenta</label>
-          <select id="f-cuenta" style="font: inherit; font-size: 14px; font-weight: 600; height: 42px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #FFFFFF; color: #141612"><option>Todas</option><option>Ubank</option><option>NAB · tarjeta</option><option>Efectivo</option></select>
+          <select id="f-cuenta" style="font: inherit; font-size: 14px; font-weight: 600; height: 44px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #FFFFFF; color: #141612"><option>Todas</option><option>Ubank</option><option>NAB · tarjeta</option><option>Efectivo</option></select>
         </div>
         <div style="display: flex; flex-direction: column; gap: 6px">
           <label for="f-estado" style="font-size: 12px; font-weight: 500; color: #5F6359">Estado</label>
-          <select id="f-estado" style="font: inherit; font-size: 14px; font-weight: 600; height: 42px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #FFFFFF; color: #141612"><option>Todos</option><option>Por revisar</option><option>Coinciden con tu plan</option><option>Transferencias</option><option>Manuales</option></select>
-        </div>
-        <div style="flex: 1 1 220px; display: flex; flex-direction: column; gap: 6px">
-          <label for="f-buscar" style="font-size: 12px; font-weight: 500; color: #5F6359">Buscar</label>
-          <input id="f-buscar" type="search" placeholder="Descripción o comercio" style="font: inherit; font-size: 14px; height: 42px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #FFFFFF; box-sizing: border-box; width: 100%">
+          <select id="f-estado" style="font: inherit; font-size: 14px; font-weight: 600; height: 44px; padding: 0 12px; border: 1px solid #E6E4DC; border-radius: 10px; background: #FFFFFF; color: #141612"><option>Todos</option><option>Por revisar</option><option>Coinciden con tu plan</option><option>Transferencias</option><option>Manuales</option></select>
         </div>
       </div>
       <div role="group" aria-label="Categoría" style="display: flex; flex-wrap: wrap; gap: 8px">
         <sc-for list="{{ cats }}" as="c" hint-placeholder-count="11">
-          <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.pressed }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid {{ c.border }}; background: {{ c.bg }}; color: {{ c.fg }}; display: flex; align-items: center; gap: 7px; cursor: pointer"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: {{ c.color }}"></span>{{ c.name }}</button>
+          <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.pressed }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 44px; padding: 0 12px; border-radius: 999px; border: 1px solid {{ c.border }}; background: {{ c.bg }}; color: {{ c.fg }}; display: flex; align-items: center; gap: 7px; cursor: pointer"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: {{ c.color }}"></span>{{ c.name }}</button>
         </sc-for>
       </div>
+      </div>
+      </sc-if>
     </div>
 
     <form aria-label="Registro rápido" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
@@ -145,7 +122,7 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
       <label for="q-monto" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Monto</label>
       <input id="q-monto" class="num" type="text" inputmode="decimal" placeholder="$0" style="font: inherit; font-size: 16px; font-weight: 600; width: 120px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px">
       <label for="q-cat" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Categoría</label>
-      <select id="q-cat" style="font: inherit; font-size: 14px; font-weight: 600; height: 44px; padding: 0 10px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"><option>Comida y ocio</option><option>Hogar y básicos</option><option>Vehículo</option><option>Familia y remesas</option><option>Metas</option></select>
+      <select id="q-cat" style="font: inherit; font-size: 14px; font-weight: 600; height: 44px; padding: 0 10px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"><option>Comida y ocio</option><option>Hogar y básicos</option><option>Transporte</option><option>Familia y remesas</option><option>Metas</option></select>
       <label for="q-desc" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Descripción (opcional)</label>
       <input id="q-desc" type="text" placeholder="Descripción (opcional)" style="font: inherit; font-size: 14px; flex: 1 1 180px; height: 44px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px">
       <button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">Agregar</button>
@@ -163,8 +140,10 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
             <span style="font-size: 13px; color: #5F6359">Importa un CSV o agrega uno a mano.</span>
           </div>
         </sc-if>
-        <ul style="list-style: none; margin: 0; padding: 0 10px 10px">
-          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+        <sc-for list="{{ days }}" as="day" hint-placeholder-count="5">
+        <h3 style="margin: 0; padding: 12px 22px 4px; display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #5F6359; text-transform: uppercase; letter-spacing: .06em"><span>{{ day.label }}</span><span class="num">{{ day.n }}</span></h3>
+        <ul style="list-style: none; margin: 0; padding: 0 10px 6px">
+          <sc-for list="{{ day.rows }}" as="r" hint-placeholder-count="2">
             <li><button type="button" onClick="{{ r.open }}" aria-pressed="{{ r.sel }}" aria-label="Editar {{ r.desc }}" style="font: inherit; width: 100%; text-align: left; color: #141612; border: 0; cursor: pointer; display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 12px; background: {{ r.rowBg }}">
               <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 12px; flex: none; background: {{ r.soft }}; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: {{ r.color }}">{{ r.initial }}</span>
               <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
@@ -177,6 +156,7 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
             </button></li>
           </sc-for>
         </ul>
+        </sc-for>
       </section>
 
       <sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}">
@@ -264,7 +244,6 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
       </sc-if>
     </div>
     </div>
-    </sc-if>
 
     <section aria-labelledby="rec" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px">
       <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap"><div style="display: flex; flex-direction: column; gap: 3px"><h2 id="rec" style="margin: 0; font-size: 16px; font-weight: 600">Recurrentes</h2><span style="font-size: 13px; color: #5F6359">Se registran solos en su fecha. Si un CSV trae el mismo pago, no se duplica.</span></div><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 14px; border: 1px solid #E6E4DC; background: #FFFFFF; border-radius: 10px; color: #141612">+ Recurrente</button></div>
@@ -295,14 +274,14 @@ class Component extends DCLogic {
     const s = this.state;
     const MF = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     const C = {
-      'Ingresos': ['#141612', '#EFEDE6'], 'Hogar y básicos': ['#141612', '#E3F1E8'], 'Vehículo': ['#6FA898', '#E5F1ED'], 'Deudas': ['#C46A2A', '#FBEBD8'],
+      'Ingresos': ['#141612', '#EFEDE6'], 'Hogar y básicos': ['#141612', '#E3F1E8'], 'Transporte': ['#6FA898', '#E5F1ED'], 'Deudas': ['#C46A2A', '#FBEBD8'],
       'Comida y ocio': ['#3E8C7A', '#FFF8D6'], 'Ahorro e inversión': ['#4C7FB5', '#E3ECF6'], 'Metas': ['#B86A1C', '#FBEBD8'], 'Negocio': ['#2D5C8A', '#E3ECF6'],
       'Estilo de vida': ['#3E8C7A', '#E5F1ED'], 'Familia y remesas': ['#8A6A0B', '#FBF3DC'], 'Entre mis cuentas': ['#2D5C8A', '#E3ECF6'], 'Sin categoría': ['#8A4B12', '#FBEBD8']
     };
     const ST = { ok: ['Coincide con tu plan', '#E3F1E8', '#1E5A3F'], tr: ['Transferencia', '#E3ECF6', '#24496E'], rev: ['Por revisar', '#FBEBD8', '#8A4B12'], man: ['Manual', '#EFEDE6', '#3A3D36'], ed: ['Editado', '#FFF8D6', '#5C4A00'] };
     const inMonth = s.mes === '10' || s.mes === 'all';
     const rows = (inMonth ? s.list.map((r, i) => Object.assign({ i }, r)) : []).filter((r) => s.cat === 'todas' || r.cat === s.cat).map((r) => ({
-      desc: r.desc, cat: r.cat, amt: r.amt, acc: r.acc, initial: r.desc.replace('[', '').charAt(0),
+      iso: r.date, desc: r.desc, cat: r.cat, amt: r.amt, acc: r.acc, initial: r.desc.replace('[', '').charAt(0),
       date: r.date.slice(8) + '/' + r.date.slice(5, 7),
       color: (C[r.cat] || C['Sin categoría'])[0], soft: (C[r.cat] || C['Sin categoría'])[1],
       status: ST[r.st][0], bg: ST[r.st][1], fg: ST[r.st][2],
@@ -348,14 +327,19 @@ class Component extends DCLogic {
       return { label, href, current: on ? 'page' : 'false', weight: on ? '600' : '450', bg: on ? '#E3F1E8' : 'transparent', fg: on ? '#141612' : '#3A3D36', dot: on ? '#141612' : '#CFCCC2' };
     });
 
-    const LV = [['plan', 'Solo mi plan', 'Marco cada línea como pagada. Sin registrar nada más.'], ['totales', 'Totales del mes', 'Escribo cuánto gasté por categoría al cerrar el mes.'], ['detalle', 'Cada movimiento', 'Registro cada gasto, a mano o con CSV.']];
-    const lvl = this.state.lvl || 'detalle';
-    const levels = LV.map(([id, label, desc]) => { const on = lvl === id; return { label, desc, checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFF8D6' : '#FFFFFF', dot: on ? '#141612' : '#FFFFFF', pick: () => this.setState({ lvl: id }) }; });
-    const pl = this.state.pl || {};
-    const planLines = [['Home', '$1,330'], ['Groceries', '$400'], ['Felix Mobile', '$40'], ['Suscripciones', '$125'], ['Inner Circle', '$700'], ['Viaje a Colombia', '$2,000']].map(([n, a], i) => { const on = pl[n] !== undefined ? pl[n] : i !== 2 && i !== 5; return { name: n, amt: a, checked: String(on), trackBg: on ? '#141612' : '#CFCCC2', knobX: on ? '20px' : '2px', st: on ? 'Pagada' : 'Pendiente', stC: on ? '#1E5A3F' : '#5F6359', toggle: () => this.setState({ pl: Object.assign({}, pl, { [n]: !on }) }) }; });
-    const totCats = [['Hogar y básicos', '$2,023'], ['Vehículo', '$450'], ['Comida y ocio', '$400'], ['Familia y remesas', '$0'], ['Estilo de vida', '$2,000']].map(([n, p], i) => ({ name: n, plan: p, id: 'tot' + i + 'd' }));
+    const DN = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const MS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const isos = rows.map((r) => r.iso).filter((v, i, a) => a.indexOf(v) === i).sort().reverse();
+    const days = isos.map((iso) => {
+      const p = iso.split('-').map(Number), dt = new Date(p[0], p[1] - 1, p[2]);
+      const dr = rows.filter((r) => r.iso === iso);
+      return { label: DN[dt.getDay()] + ' ' + p[2] + ' ' + MS[p[1] - 1], n: dr.length === 1 ? '1 movimiento' : dr.length + ' movimientos', rows: dr };
+    });
+    const openPanel = (tipo) => () => this.setState({ panel: true, tab: 'manual', tipo, edit: null, draft: null, more: false });
     return {
-      isPlanLvl: lvl === 'plan', isTotLvl: lvl === 'totales', isDetLvl: lvl === 'detalle', levels, planLines, totCats,
+      days, openGasto: openPanel('gasto'), openTransfer: openPanel('transfer'),
+      more: !!s.more, moreOpen: String(!!s.more), togMore: () => this.setState({ more: !s.more }),
+      filters: !!s.filters, filtersOpen: String(!!s.filters), filtersLabel: s.filters ? 'Menos filtros' : 'Más filtros', togFilters: () => this.setState({ filters: !s.filters }),
       nav, rows, cats, mesOpts, tipos, accs,
       mes: s.mes, mesLabel: s.mes === 'all' ? 'Todo 2026' : MF[Number(s.mes)] + ' 2026',
       count: rows.length, empty: rows.length === 0,

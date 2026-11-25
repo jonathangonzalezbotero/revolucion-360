@@ -105,6 +105,13 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
                 <button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 12px; border-radius: 999px; border: 1.5px dashed #CFCCC2; background: #FFFFFF; color: #3A3D36; cursor: pointer">+ Nueva categoría</button>
               </div>
             </div>
+            <sc-if value="{{ showJoin }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 7px; background: #F8F7F2; border-radius: 12px; padding: 12px 14px">
+                <label for="nl-join" style="font-size: 13px; font-weight: 600">Unir a</label>
+                <select id="nl-join" style="font: inherit; font-size: 14px; height: 44px; padding: 0 10px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"><sc-for list="{{ joinOpts }}" as="o" hint-placeholder-count="3"><option>{{ o }}</option></sc-for><option>Crear nueva</option></select>
+                <span style="font-size: 12px; color: #5F6359; line-height: 1.5">{{ joinHelp }}</span>
+              </div>
+            </sc-if>
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 18px">
@@ -197,8 +204,11 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
       <span style="display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 4px; background: #EFEDE6"></span>Mes cerrado</span>
       <span style="display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 4px; background: #E3F1E8; outline: 1.5px solid #141612"></span>Mes actual</span>
       <span style="display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 4px; background: #FFFFFF; outline: 1px solid #E6E4DC"></span>Planeado</span>
+      <span style="display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 4px; background: #E3F1E8"></span>Pagado</span>
+      <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 999px; background: #E3ECF6; color: #24496E">5 pagos</span>Este mes cae un pago más: 5 sueldos semanales en vez de 4.</span>
       <span style="margin-left: auto; color: #5F6359">Edita cualquier celda: los totales se recalculan al instante.</span>
     </div>
+    <p style="margin: -10px 0 0; font-size: 13px; color: #5F6359">Llenar los meses que ya pasaron es opcional: sirve para ver tus números del año.</p>
 
     <section style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; overflow: hidden">
       <div style="overflow-x: auto">
@@ -229,11 +239,17 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
                   <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="12">
                     <td style="padding: 3px 3px; background: {{ c.bg }}; border-top: 1px solid #EFEDE6">
                       <input class="cell num" type="text" inputmode="decimal" aria-label="{{ c.label }}" value="{{ c.v }}" onChange="{{ c.set }}" style="font: inherit; font-size: 13px; width: 100%; box-sizing: border-box; text-align: right; border: 0; border-radius: 6px; padding: 7px 6px; background: transparent; color: {{ c.fg }}">
+                      <sc-if value="{{ c.paid }}" hint-placeholder-val="{{ false }}"><span style="display: block; text-align: right; padding: 0 6px 3px; font-size: 10px; font-weight: 600; color: #1E5A3F">Pagado</span></sc-if>
+                      <sc-if value="{{ c.five }}" hint-placeholder-val="{{ false }}"><span title="Este mes cae un pago más: 5 sueldos semanales en vez de 4." style="display: block; text-align: right; padding: 0 4px 3px"><span style="font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 999px; background: #E3ECF6; color: #24496E">5 pagos</span></span></sc-if>
                     </td>
                   </sc-for>
                   <td class="num" style="padding: 4px 16px; text-align: right; font-weight: 600; border-top: 1px solid #EFEDE6">{{ r.total }}</td>
                 </tr>
               </sc-for>
+              <tr>
+                <th scope="row" style="position: sticky; left: 0; z-index: 1; background: #FFFFFF; text-align: left; padding: 2px 16px 6px 26px; border-top: 1px solid #EFEDE6"><button type="button" onClick="{{ g.add }}" aria-label="Agregar línea en {{ g.name }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 44px; padding: 0 10px; border: 0; background: transparent; color: #3A3D36; border-radius: 8px; cursor: pointer">+ Agregar línea</button></th>
+                <td colspan="13" style="border-top: 1px solid #EFEDE6"></td>
+              </tr>
             </sc-for>
           </tbody>
           <tfoot>
@@ -279,7 +295,7 @@ class Component extends DCLogic {
         ['Felix Mobile', [40,40,40,40,40,40,80,40,40,40,40,40]],
         ['Suscripciones', [75,190,270,70,240,100,40,170,120,125,125,25]],
         ['Seguro de salud', [112,112,112,117,117,117,128,128,128,128,128,128]] ] },
-      { name: 'Vehículo', color: '#6FA898', rows: [
+      { name: 'Transporte', color: '#6FA898', rows: [
         ['Car expenses', Array(12).fill(180)],
         ['Bike expenses', Array(12).fill(90)],
         ['Gasolina', [30,30,30,30,30,30,0,90,100,140,100,100]],
@@ -316,6 +332,9 @@ class Component extends DCLogic {
     const short = (v) => v === 0 ? '—' : fmt(v);
     const colBg = (i) => i < CUR ? '#F8F7F2' : (i === CUR ? '#FFF8D6' : '#FFFFFF');
     const { vals, added, nl, lastKey } = this.state;
+    const PAID_NOW = ['Home', 'Groceries', 'Suscripciones', 'Seguro de salud', 'Car expenses', 'Bike expenses', 'Inner Circle', 'Investment S&P500', 'Emergency fund'];
+    const isPaid = (g, name, i, x) => !g.income && x !== 0 && (i < CUR || (i === CUR && PAID_NOW.indexOf(name) >= 0));
+    const fridays = (i) => { let c = 0; for (let d = 1; d <= 31; d++) { const dt = new Date(2026, i, d); if (dt.getMonth() === i && dt.getDay() === 5) c++; } return c; };
     const inc = Array(12).fill(0), exp = Array(12).fill(0);
     const groups = this.defs.map((g, gi) => {
       const gt = Array(12).fill(0);
@@ -330,8 +349,10 @@ class Component extends DCLogic {
           total: fmt(v.reduce((a, b) => a + b, 0)),
           cells: v.map((x, i) => ({
             v: x === 0 ? '' : String(x),
-            label: rr.name + ' ' + M[i],
-            bg: key === lastKey && x !== 0 ? '#E3F1E8' : colBg(i),
+            label: rr.name + ' ' + M[i] + (isPaid(g, rr.name, i, x) ? ' · pagado' : ''),
+            paid: isPaid(g, rr.name, i, x),
+            five: rr.name === 'Sueldo' && fridays(i) === 5,
+            bg: isPaid(g, rr.name, i, x) ? '#E3F1E8' : (key === lastKey && x !== 0 ? '#E3F1E8' : colBg(i)),
             fg: i < CUR ? '#5F6359' : '#141612',
             set: (e) => {
               const n = parseFloat(String(e.target.value).replace(/[^0-9.\-]/g, '')) || 0;
@@ -343,7 +364,7 @@ class Component extends DCLogic {
         };
       });
       gt.forEach((x, i) => { if (g.income) inc[i] += x; else exp[i] += x; });
-      return { name: g.name, color: g.color, rows, totals: gt.map(short), total: fmt(gt.reduce((a, b) => a + b, 0)) };
+      return { name: g.name, color: g.color, rows, totals: gt.map(short), total: fmt(gt.reduce((a, b) => a + b, 0)), add: () => this.setState({ show: true, nl: Object.assign({}, this.state.nl, { gi, name: '' }) }) };
     });
     const net = inc.map((x, i) => x - exp[i]);
     const tInc = inc.reduce((a, b) => a + b, 0), tExp = exp.reduce((a, b) => a + b, 0), tNet = tInc - tExp;
@@ -383,6 +404,11 @@ class Component extends DCLogic {
       { label: 'Deuda nueva por 2 meses', apply: () => this.setNl({ name: 'Deuda nueva (2 meses)', gi: 3, mode: 'range', from: '10', to: '11', amount: '', freq: 'mensual' }) },
       { label: 'Arriendo semanal', apply: () => this.setNl({ name: 'Arriendo', gi: 1, mode: 'all', from: '0', to: '11', amount: '', freq: 'semanal' }) }
     ];
+    const JOIN = {
+      'Metas': [['Viaje a Colombia', 'Fondo de emergencia'], 'Lo que pongas aquí suma a esa meta.'],
+      'Deudas': [['Inner Circle', 'Bike Payment'], 'Cada pago baja el saldo de esa deuda.'],
+      'Ahorro e inversión': [['Investment S&P500', 'Emergency fund'], 'Cada aporte suma a esa inversión.']
+    };
     const addLine = () => {
       const gi = nl.gi, list = (this.state.added[gi] || []).slice(), key = gi + '-a' + list.length;
       list.push(nl.name || 'Nueva línea');
@@ -395,6 +421,7 @@ class Component extends DCLogic {
         return { label, href, current: on ? 'page' : 'false', weight: on ? '600' : '450', bg: on ? '#E3F1E8' : 'transparent', fg: on ? '#141612' : '#3A3D36', dot: on ? '#141612' : '#CFCCC2' };
       }),
       showAdd: this.state.show, addOpen: String(this.state.show), toggleAdd: () => this.setState({ show: !this.state.show }),
+      showJoin: !!JOIN[this.defs[nl.gi].name], joinOpts: (JOIN[this.defs[nl.gi].name] || [[], ''])[0], joinHelp: (JOIN[this.defs[nl.gi].name] || [[], ''])[1],
       nl, pv, catPick, modes, presets, addLine, freqs, notMonthly: nl.freq !== 'mensual', amtLabel: nl.freq === 'semanal' ? 'por semana' : (nl.freq === 'quincenal' ? 'por pago (cada 2 semanas)' : 'por mes'),
       monthOpts: MF.map((label, i) => ({ v: String(i), label })),
       showFrom: nl.mode !== 'all', showTo: nl.mode === 'range', fromLabel: nl.mode === 'once' ? 'Mes' : 'Desde',

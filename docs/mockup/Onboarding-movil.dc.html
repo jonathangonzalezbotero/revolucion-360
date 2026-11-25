@@ -148,7 +148,7 @@ class Component extends DCLogic {
       const on = !!s.goals[id];
       return { name, iconBg, iconFg, shape, checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFF8D6' : '#FFFFFF', tick: on ? '✓' : '', tickBorder: on ? '#141612' : '#CFCCC2', tickBg: on ? '#141612' : '#FFFFFF', toggle: () => this.setState({ goals: Object.assign({}, s.goals, { [id]: !on }) }) };
     });
-    const C = [['Ingresos', '#141612'], ['Hogar y básicos', '#141612'], ['Vehículo', '#6FA898'], ['Comida y ocio', '#A8D3C3'], ['Deudas', '#C46A2A'], ['Ahorro', '#4C7FB5'], ['Metas', '#E3B800'], ['Estilo de vida', '#3E8C7A'], ['Mi negocio', '#2D5C8A']];
+    const C = [['Ingresos', '#141612'], ['Hogar y básicos', '#141612'], ['Transporte', '#6FA898'], ['Comida y ocio', '#A8D3C3'], ['Deudas', '#C46A2A'], ['Ahorro', '#4C7FB5'], ['Metas', '#E3B800'], ['Estilo de vida', '#3E8C7A'], ['Mi negocio', '#2D5C8A']];
     const cats = C.map(([name, color]) => {
       const on = !s.off[name];
       return { name, color, checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFFFFF' : '#F6F5F0', op: on ? '1' : '0.55', toggle: () => this.setState({ off: Object.assign({}, s.off, { [name]: on }) }) };

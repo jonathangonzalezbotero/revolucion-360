@@ -54,6 +54,7 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
       <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px"><sc-for list="{{ nlPresets }}" as="p" hint-placeholder-count="3"><button type="button" onClick="{{ p.apply }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612; white-space: nowrap; cursor: pointer">{{ p.label }}</button></sc-for></div>
       <div style="display: flex; flex-direction: column; gap: 6px"><label for="nlm-n" style="font-size: 12px; font-weight: 500; color: #5F6359">1. Nombre</label><input id="nlm-n" type="text" value="{{ nl.name }}" onChange="{{ setNlName }}" placeholder="Ej. Gimnasio, arriendo, bono" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
       <div style="display: flex; flex-direction: column; gap: 8px"><span id="nlm-c" style="font-size: 12px; font-weight: 500; color: #5F6359">2. Grupo</span><div role="radiogroup" aria-labelledby="nlm-c" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px"><sc-for list="{{ nlCats }}" as="c" hint-placeholder-count="9"><button type="button" role="radio" aria-checked="{{ c.checked }}" onClick="{{ c.pick }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 2px solid {{ c.border }}; background: {{ c.bg }}; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 3px; background: {{ c.color }}"></span>{{ c.name }}</button></sc-for></div></div>
+      <sc-if value="{{ showJoin }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 6px; background: #F8F7F2; border-radius: 12px; padding: 12px"><label for="nlm-j" style="font-size: 12px; font-weight: 500; color: #5F6359">Unir a</label><select id="nlm-j" style="font: inherit; font-size: 15px; height: 46px; padding: 0 8px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"><sc-for list="{{ joinOpts }}" as="o" hint-placeholder-count="2"><option>{{ o }}</option></sc-for><option>Crear nueva</option></select><span style="font-size: 12px; color: #5F6359; line-height: 1.5">{{ joinHelp }}</span></div></sc-if>
       <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 500; color: #5F6359">3. ¿Cuándo?</span><div role="radiogroup" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #F6F5F0; border-radius: 12px; padding: 4px"><sc-for list="{{ nlModes }}" as="q" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ q.checked }}" onClick="{{ q.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; border: 0; border-radius: 9px; background: {{ q.bg }}; color: {{ q.fg }}; cursor: pointer">{{ q.label }}</button></sc-for></div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
           <sc-if value="{{ showFrom }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 6px"><label for="nlm-f" style="font-size: 12px; font-weight: 500; color: #5F6359">{{ fromLabel }}</label><select id="nlm-f" value="{{ nl.from }}" onChange="{{ setNlFrom }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 8px"><sc-for list="{{ monthOpts }}" as="o" hint-placeholder-count="12"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select></div></sc-if>
@@ -90,6 +91,7 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
           <h2 style="margin: 0; font-size: 18px; font-weight: 600">{{ selName }}</h2>
           <a href="Presupuesto-movil.dc.html" style="font-size: 13px; font-weight: 600; padding: 10px 0">Plan vs. real ›</a>
         </div>
+        <p style="margin: -4px 4px 0; font-size: 12px; color: #5F6359; line-height: 1.5">Llenar los meses que ya pasaron es opcional: sirve para ver tus números del año.</p>
         <sc-for list="{{ groups }}" as="g" hint-placeholder-count="9">
           <section style="background: #FFFFFF; border-radius: 14px; padding: 6px 16px; border: 1px solid #E6E4DC">
             <h3 style="margin: 0; padding: 12px 0 6px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600">
@@ -97,11 +99,12 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
               <span class="num" style="color: #5F6359; font-weight: 600">{{ g.monthTotal }}</span>
             </h3>
             <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
-              <div style="display: flex; align-items: center; gap: 10px; min-height: 48px; border-top: 1px solid #EFEDE6">
-                <label for="{{ r.id }}" style="flex: 1; font-size: 14px">{{ r.name }}<sc-if value="{{ r.isNew }}" hint-placeholder-val="{{ false }}"> <span style="font-size: 11px; font-weight: 600; color: #1E5A3F; background: #E3F1E8; border-radius: 999px; padding: 2px 7px">Nueva</span></sc-if></label>
-                <input id="{{ r.id }}" class="num" type="text" inputmode="decimal" value="{{ r.v }}" onChange="{{ r.set }}" style="font: inherit; font-size: 15px; font-weight: 600; width: 96px; height: 40px; box-sizing: border-box; text-align: right; border: 1px solid #E6E4DC; border-radius: 10px; padding: 0 10px; background: #F8F7F2; color: #141612">
+              <div style="display: flex; align-items: center; gap: 10px; min-height: 48px; border-top: 1px solid #EFEDE6; background: {{ r.rowBg }}; margin: 0 -8px; padding: 0 8px; border-radius: 8px">
+                <label for="{{ r.id }}" style="flex: 1; font-size: 14px">{{ r.name }}<sc-if value="{{ r.isNew }}" hint-placeholder-val="{{ false }}"> <span style="font-size: 11px; font-weight: 600; color: #1E5A3F; background: #E3F1E8; border-radius: 999px; padding: 2px 7px">Nueva</span></sc-if><sc-if value="{{ r.paid }}" hint-placeholder-val="{{ false }}"><span style="display: block; font-size: 11px; font-weight: 600; color: #1E5A3F">Pagado</span></sc-if><sc-if value="{{ r.five }}" hint-placeholder-val="{{ false }}"><span style="display: block; font-size: 11px; color: #24496E; line-height: 1.4; padding-top: 2px"><span style="font-weight: 600; padding: 1px 6px; border-radius: 999px; background: #E3ECF6">5 pagos</span> Este mes cae un pago más: 5 sueldos semanales en vez de 4.</span></sc-if></label>
+                <input id="{{ r.id }}" class="num" type="text" inputmode="decimal" value="{{ r.v }}" onChange="{{ r.set }}" style="font: inherit; font-size: 15px; font-weight: 600; width: 96px; height: 44px; box-sizing: border-box; text-align: right; border: 1px solid #E6E4DC; border-radius: 10px; padding: 0 10px; background: {{ r.inBg }}; color: #141612">
               </div>
             </sc-for>
+            <button type="button" onClick="{{ g.add }}" aria-label="Agregar línea en {{ g.name }}" style="font: inherit; width: 100%; text-align: left; font-size: 13px; font-weight: 600; min-height: 44px; padding: 0 2px; border: 0; border-top: 1px solid #EFEDE6; background: transparent; color: #3A3D36; cursor: pointer">+ Agregar línea</button>
           </section>
         </sc-for>
       </div>
@@ -139,7 +142,7 @@ class Component extends DCLogic {
     this.defs = [
       { name: 'Ingresos', color: '#141612', income: true, rows: [['Sueldo', Array(12).fill(5418)], ['Retiros de Easy Aussie', [270,950,900,1330,900,1250,1250,1000,800,800,800,800]], ['Renta del auto', [500,500,500,500,625,500,500,0,0,0,0,0]], ['E-bikes', [275,470,380,350,350,0,0,0,200,200,200,200]], ['Ingresos extra', [0,10200,0,0,110,110,1610,1000,0,0,0,0]]] },
       { name: 'Hogar y básicos', color: '#141612', rows: [['Home', [1352,1270,1270,1270,1330,670,0,1330,1330,1330,1330,990]], ['Groceries', [270,300,300,300,300,100,0,300,400,400,400,400]], ['Felix Mobile', [40,40,40,40,40,40,80,40,40,40,40,40]], ['Suscripciones', [75,190,270,70,240,100,40,170,120,125,125,25]], ['Seguro de salud', [112,112,112,117,117,117,128,128,128,128,128,128]]] },
-      { name: 'Vehículo', color: '#6FA898', rows: [['Car expenses', Array(12).fill(180)], ['Bike expenses', Array(12).fill(90)], ['Gasolina', [30,30,30,30,30,30,0,90,100,140,100,100]], ['Seguro de la moto', [76,76,76,76,76,76,76,76,76,80,80,80]]] },
+      { name: 'Transporte', color: '#6FA898', rows: [['Car expenses', Array(12).fill(180)], ['Bike expenses', Array(12).fill(90)], ['Gasolina', [30,30,30,30,30,30,0,90,100,140,100,100]], ['Seguro de la moto', [76,76,76,76,76,76,76,76,76,80,80,80]]] },
       { name: 'Deudas', color: '#C46A2A', rows: [['Inner Circle', [655,655,655,655,655,655,655,655,655,700,700,700]], ['Bike Payment', [600,100,2100,2000,2300,0,0,0,100,100,100,0]]] },
       { name: 'Comida y ocio', color: '#A8D3C3', rows: [['Food and Entertainment', [500,450,450,450,400,200,0,400,400,400,400,400]], ['Otros', [0,0,0,0,200,100,0,280,0,0,0,0]]] },
       { name: 'Ahorro e inversión', color: '#4C7FB5', rows: [['Investment S&P500', [100,100,100,100,100,100,100,100,150,150,150,150]], ['Emergency fund', Array(12).fill(100)]] },
@@ -177,13 +180,22 @@ class Component extends DCLogic {
       netFg: net[i] < 0 ? '#FFB38A' : '#CFCCC2',
       pick: () => this.setState({ sel: i })
     }));
+    const PAID_NOW = ['Home', 'Groceries', 'Suscripciones', 'Seguro de salud', 'Car expenses', 'Bike expenses', 'Inner Circle', 'Investment S&P500', 'Emergency fund'];
+    const fridays = (i) => { let c = 0; for (let d = 1; d <= 31; d++) { const dt = new Date(2026, i, d); if (dt.getMonth() === i && dt.getDay() === 5) c++; } return c; };
+    const JOIN = {
+      'Metas': [['Viaje a Colombia', 'Fondo de emergencia'], 'Lo que pongas aquí suma a esa meta.'],
+      'Deudas': [['Inner Circle', 'Bike Payment'], 'Cada pago baja el saldo de esa deuda.'],
+      'Ahorro e inversión': [['Investment S&P500', 'Emergency fund'], 'Cada aporte suma a esa inversión.']
+    };
     const groups = this.defs.map((g, gi) => ({
       name: g.name, color: g.color,
       monthTotal: fmt(this.keysOf(gi).reduce((a, o) => a + vals[o.key][sel], 0)),
       rows: this.keysOf(gi).map((o) => {
         const key = o.key;
-        return { id: 'm-' + key, name: o.name, isNew: !!o.isNew, v: String(vals[key][sel]), set: (e) => this.setVal(key, sel, e.target.value) };
-      })
+        const paid = !g.income && vals[key][sel] !== 0 && (sel < 10 || (sel === 10 && PAID_NOW.indexOf(o.name) >= 0));
+        return { id: 'm-' + key, name: o.name, isNew: !!o.isNew, paid, rowBg: paid ? '#E3F1E8' : 'transparent', inBg: paid ? '#FFFFFF' : '#F8F7F2', five: o.name === 'Sueldo' && fridays(sel) === 5, v: String(vals[key][sel]), set: (e) => this.setVal(key, sel, e.target.value) };
+      }),
+      add: () => this.setState({ show: true, flash: '', nl: Object.assign({}, this.state.nl, { gi, name: '' }) })
     }));
     const lineOpts = [];
     this.defs.forEach((g, gi) => this.keysOf(gi).forEach((o) => lineOpts.push({ key: o.key, name: o.name, sel: o.key === line })));
@@ -218,6 +230,7 @@ class Component extends DCLogic {
     };
     return {
       showAdd: this.state.show, addOpen: String(this.state.show), openAdd: () => this.setState({ show: true, flash: '' }), closeAdd: () => this.setState({ show: false }),
+      showJoin: !!JOIN[this.defs[this.state.nl.gi].name], joinOpts: (JOIN[this.defs[this.state.nl.gi].name] || [[], ''])[0], joinHelp: (JOIN[this.defs[this.state.nl.gi].name] || [[], ''])[1],
       nl, addLine, notMonthly: nl.freq !== 'mensual',
       nlCats: this.defs.map((g, gi) => ({ name: g.name, color: g.color, checked: String(nl.gi === gi), border: nl.gi === gi ? '#141612' : '#E6E4DC', bg: nl.gi === gi ? '#FFF8D6' : '#FFFFFF', pick: () => this.setNl({ gi }) })),
       nlModes: seg([['once', 'Un mes'], ['range', 'Varios'], ['all', 'Todo el año']], nl.mode, 'mode'),
