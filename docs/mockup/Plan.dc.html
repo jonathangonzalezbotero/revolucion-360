@@ -143,6 +143,15 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
               <label for="nl-amt" style="font-size: 13px; font-weight: 600">5. Monto {{ amtLabel }}</label>
               <input id="nl-amt" class="num" type="text" inputmode="decimal" value="{{ nl.amount }}" onChange="{{ setAmt }}" placeholder="$0" style="font: inherit; font-size: 22px; font-weight: 600; height: 52px; padding: 0 14px; border: 1.5px solid #D9D6CC; border-radius: 12px">
             </div>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <span id="nl-type-l" style="font-size: 13px; font-weight: 600">6. Tipo de gasto</span>
+              <div role="radiogroup" aria-labelledby="nl-type-l" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #F6F5F0; border-radius: 12px; padding: 4px">
+                <button type="button" role="radio" aria-checked="true" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 44px; border: 0; border-radius: 9px; background: #FFFFFF; color: #141612; cursor: pointer">Automático</button>
+                <button type="button" role="radio" aria-checked="false" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 44px; border: 0; border-radius: 9px; background: transparent; color: #5F6359; cursor: pointer">Fijo</button>
+                <button type="button" role="radio" aria-checked="false" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 44px; border: 0; border-radius: 9px; background: transparent; color: #5F6359; cursor: pointer">Del día a día</button>
+              </div>
+              <span style="font-size: 12px; color: #5F6359; line-height: 1.5">Automático: lo decidimos por ti según su día de pago. Lo del día a día entra en «Hoy puedes gastar».</span>
+            </div>
           </div>
         </div>
 
