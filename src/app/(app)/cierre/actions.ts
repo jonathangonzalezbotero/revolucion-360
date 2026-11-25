@@ -10,7 +10,8 @@ import { isMonthClosed } from "@/server/closure";
 import type { Session } from "@/server/session";
 import type { Json } from "@/lib/supabase/database.types";
 import { buildSnapshot, cardSigned, closureStreak, nextPeriod, parsePeriod, pendingWrites, periodOfDate, reminderDate, ymRef, type Period } from "./lib";
-import { closeData } from "./server";
+import { assetName, assetValue, closeAssets, closeData } from "./server";
+import { pricePatch, untyped, type AssetRow } from "../inversiones/lib";
 import { leftoverFor } from "../metas/server";
 import { M } from "./messages";
 
@@ -18,8 +19,6 @@ const PATHS = ["/cierre", "/inicio", "/plan", "/movimientos", "/diagnostico"];
 const Id = z.string().uuid();
 const Year = z.number().int().min(2000).max(2100);
 const Month = z.number().int().min(1).max(12);
-
-const invName = (i: { platform: string; name: string }) => [i.platform, i.name].filter(Boolean).join(" · ");
 
 /** El mes pedido debe existir y no estar en el futuro. */
 const periodOf = (s: Session, year: number, month: number): Period | null => parsePeriod(year, month, { year: s.year, month: s.month }, periodOfDate(s.profile.createdAt));
@@ -153,30 +152,28 @@ export async function closeMonth(input: unknown): Promise<Result<CloseResult>> {
       if (acc) acc.balance_cents = u.cents;
     }
 
-    // 1b. Valor de hoy de las inversiones (vacío = sin cambio); queda en su historial como "valor"
-    const invOn = s.config.menu.inversiones !== "off";
-    const investments = invOn ? must(await s.supabase.from("investments").select("id, platform, name, value_cents").is("archived_at", null).order("created_at")) : [];
-    const invById = new Map(investments.map((i) => [i.id, i]));
-    const invUpdates: { id: string; cents: number }[] = [];
-    for (const v of invOn ? p.data.investments : []) {
+    // 1b. Precio o saldo de hoy de cada activo de Inversiones (vacío = sin cambio). Mismo dato que "Actualizar" en Inversiones.
+    const { assets, ops } = await closeAssets(s);
+    const assetById = new Map(assets.map((a) => [a.id, a]));
+    const assetUpdates: { asset: AssetRow; patch: NonNullable<ReturnType<typeof pricePatch>> }[] = [];
+    for (const v of assets.length ? p.data.investments : []) {
       if (!v.amount.trim()) continue;
-      const inv = invById.get(v.id);
-      if (!inv) return fail(s.t.errors.notFound);
-      const cents = parseMoney(v.amount);
-      if (cents === null || cents < 0) return fail(fill(m.badBalance, { name: invName(inv) }));
-      invUpdates.push({ id: v.id, cents });
+      const asset = assetById.get(v.id);
+      if (!asset) return fail(s.t.errors.notFound);
+      const patch = pricePatch(asset.by_units, v.amount, s.fmt.numberLocale);
+      if (!patch) return fail(fill(m.badBalance, { name: assetName(asset) }));
+      assetUpdates.push({ asset, patch });
     }
-    for (const u of invUpdates) {
-      must(await s.supabase.from("investments").update({ value_cents: u.cents, value_date: s.today }).eq("id", u.id).select("id"));
-      must(await s.supabase.from("investment_entries").insert({ user_id: s.userId, investment_id: u.id, date: s.today, kind: "valor", amount_cents: u.cents }).select("id"));
-      const inv = invById.get(u.id);
-      if (inv) inv.value_cents = u.cents;
+    for (const u of assetUpdates) {
+      const at = new Date().toISOString();
+      must(await untyped(s.supabase).from("assets").update({ ...u.patch, price_date: s.today, price_at: at }).eq("id", u.asset.id).select("id"));
+      Object.assign(u.asset, u.patch, { price_date: s.today, price_at: at });
     }
 
     // 2. Resumen del mes
     const data = await closeData(s, period);
     const snapshot = buildSnapshot({ today: s.today, plan: data.plan, cats: data.cats, unplanned: data.unplanned, accounts: accounts.map((a) => ({ id: a.id, name: a.name, kind: a.kind, balanceCents: a.balance_cents })),
-      investments: investments.map((i) => ({ id: i.id, name: invName(i), valueCents: i.value_cents })) });
+      investments: assets.map((a) => ({ id: a.id, name: assetName(a), valueCents: assetValue(a, ops) })) });
     must(await s.supabase.from("month_closures").upsert(
       { user_id: s.userId, year: period.year, month: period.month, closed_at: new Date().toISOString(), reopened_at: null, snapshot: snapshot as unknown as NonNullable<Json> },
       { onConflict: "user_id,year,month" },

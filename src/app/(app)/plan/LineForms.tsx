@@ -2,9 +2,10 @@
 import { useId, useState } from "react";
 import { fill } from "@/i18n";
 import { formatDate, formatMoney, monthName, monthShort, parseMoney, weekdayName, type Frequency, type MoneyFormat } from "@/lib/engine";
-import { ConfirmButton } from "@/components/ui/client";
+import { ConfirmButton, Segmented } from "@/components/ui/client";
+import type { FixedReason } from "@/lib/engine/habito";
 import type { Category, CategoryKind } from "@/server/data";
-import { addCategory, addLine, editLine, removeLine } from "./actions";
+import { addCategory, addLine, editLine, removeLine, setLineType } from "./actions";
 import { cellText, firstWeekday, inRange, lineShape, manualCount, type CellRow, type LineLite, type NewFrequency, type NewMode, type SavedLine } from "./lib";
 import type { PlanText } from "./messages";
 import css from "./plan.module.css";
@@ -198,9 +199,9 @@ export function AddForm({ year, defaultMonth, selMonth, categories, fmt, locale,
 const EDIT_FREQS: Frequency[] = ["monthly", "fortnightly", "weekly", "yearly", "once"];
 
 /** Editar una línea: los meses editados a mano se conservan, salvo que se pida "aplicar a todos los meses". */
-export function EditForm({ line, row, categories, defaultFrom, locale, m, t, onSaved, onRemoved }: {
-  line: LineLite; row: CellRow | undefined; categories: Category[]; defaultFrom: number; locale: Locale; m: PlanText; t: FormText;
-  onSaved: (saved: SavedLine, kept: number) => void; onRemoved: () => void;
+export function EditForm({ line, row, auto, categories, defaultFrom, locale, m, t, onSaved, onRemoved, onType }: {
+  line: LineLite; row: CellRow | undefined; auto: FixedReason | null | undefined; categories: Category[]; defaultFrom: number; locale: Locale; m: PlanText; t: FormText;
+  onSaved: (saved: SavedLine, kept: number) => void; onRemoved: () => void; onType: (lineId: string, fixed: boolean | null) => void;
 }) {
   const e = m.edit, id = useId();
   const [name, setName] = useState(line.name);
@@ -259,6 +260,7 @@ export function EditForm({ line, row, categories, defaultFrom, locale, m, t, onS
           <select id={`${id}-from`} className="select" value={from} onChange={(x) => setFrom(Number(x.target.value))}>{MONTHS.map((x) => <option key={x} value={x}>{monthName(x, locale)}</option>)}</select>
         </div>
       ) : null}
+      {line.kind === "expense" ? <TypeField line={line} auto={auto} m={m} onType={onType} onError={setError} /> : null}
       {kept > 0 ? (
         <div className={css.notice} role="status">
           <span>{kept === 1 ? e.manualOne : fill(e.manual, { n: kept })}</span>
@@ -272,5 +274,43 @@ export function EditForm({ line, row, categories, defaultFrom, locale, m, t, onS
         <ConfirmButton onConfirm={remove} label={e.remove} confirmLabel={e.removeConfirm} />
       </div>
     </form>
+  );
+}
+
+type LineType = "auto" | "fixed" | "flex";
+const toType = (fixed: boolean | null | undefined): LineType => (fixed === true ? "fixed" : fixed === false ? "flex" : "auto");
+const fromType = (v: LineType): boolean | null => (v === "auto" ? null : v === "fixed");
+
+/**
+ * "Tipo de gasto" de una línea de gasto. Se guarda al tocarlo (no espera "Guardar cambios"): solo decide si la línea
+ * cuenta en "Hoy puedes gastar". En Automático explica cómo la clasifica hoy la regla (`auto`, calculado en el servidor);
+ * si aún no hay dato (línea recién creada), solo dice que lo decidimos por ti.
+ */
+function TypeField({ line, auto, m, onType, onError }: {
+  line: LineLite; auto: FixedReason | null | undefined; m: PlanText; onType: (lineId: string, fixed: boolean | null) => void; onError: (e: string) => void;
+}) {
+  const ty = m.type;
+  const [value, setValue] = useState<LineType>(toType(line.fixed));
+  const [busy, setBusy] = useState(false);
+  async function change(v: LineType) {
+    if (busy || v === value) return;
+    const prev = value;
+    setValue(v);
+    setBusy(true);
+    const r = await setLineType({ lineId: line.id, fixed: fromType(v) });
+    setBusy(false);
+    if (!r.ok) { setValue(prev); return onError(r.error); }
+    onError("");
+    onType(line.id, fromType(v));
+  }
+  const hint = value === "fixed" ? ty.fixedHint : value === "flex" ? ty.flexHint
+    : auto === undefined ? ty.autoHint : auto === null ? ty.autoFlex : fill(ty.autoFixed, { reason: ty.reasons[auto] });
+  return (
+    <div className="field" aria-busy={busy}>
+      <span className="label">{ty.label}</span>
+      <Segmented label={ty.label} value={value} onChange={change}
+        options={[{ value: "auto", label: ty.auto }, { value: "fixed", label: ty.fixed }, { value: "flex", label: ty.flex }]} />
+      <span className="hint" aria-live="polite">{hint}</span>
+    </div>
   );
 }

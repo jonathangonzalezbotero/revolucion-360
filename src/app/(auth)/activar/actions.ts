@@ -12,7 +12,7 @@ const REASONS = ["invalid", "used_up", "expired", "already"] as const;
  * (crea el acceso gratis y pasa la cuenta a alumno o fundador, sin tarjeta). write:false → también desde solo lectura.
  */
 export async function redeemCode(input: unknown) {
-  return run({ write: false, revalidate: ["/inicio", "/suscripcion", "/activar"] }, async (s) => {
+  return run({ write: false, allowInactive: true, revalidate: ["/inicio", "/suscripcion", "/activar"] }, async (s) => {
     const m = M[s.locale];
     const p = Code.safeParse(input);
     if (!p.success) return fail(m.redeem.empty);

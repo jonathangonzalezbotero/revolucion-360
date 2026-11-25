@@ -15,9 +15,9 @@ import type { Session } from "@/server/session";
  */
 export const raw = (s: Session) => s.supabase as unknown as SupabaseClient;
 
-/** Tipos de puntos nuevos (la base los valida en award_points; `PointKind` de rewards.ts aún no los tiene). */
-export type GoalPointKind = "goal_milestone" | "goal_used" | "goal_leftover";
-export const awardGoal = (s: Session, kind: GoalPointKind, ref: string) => award(s, kind as unknown as PointKind, ref);
+/** Tipos de puntos de metas amables (la base los valida en award_points). */
+export type GoalPointKind = Extract<PointKind, "goal_milestone" | "goal_used" | "goal_leftover">;
+export const awardGoal = (s: Session, kind: GoalPointKind, ref: string) => award(s, kind, ref);
 
 /**
  * Aviso de hito con `notifyHabit` (máximo uno al día, nunca de noche, nunca el mismo dos veces; si no sale, el hito igual se ve en pantalla).

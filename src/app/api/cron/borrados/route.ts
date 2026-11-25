@@ -18,6 +18,9 @@ export async function GET(request: Request) {
     if (error) throw new Error(`db: ${error.message}`);
     for (const r of data) {
       due++;
+      // Nunca se borra automáticamente una cuenta de administrador: eso lo decide el Dueño a mano.
+      const { data: prof } = await db.from("profiles").select("role").eq("id", r.user_id).maybeSingle();
+      if (prof?.role === "admin") { console.error("[cron:borrados] Solicitud de borrado de un administrador: se omite"); failed++; continue; }
       // Una cuenta borrada no puede seguir pagando: se cancela la suscripción de Stripe antes de borrar.
       const { data: ent } = await db.from("entitlements").select("stripe_subscription_id").eq("user_id", r.user_id).maybeSingle();
       if (ent?.stripe_subscription_id) {

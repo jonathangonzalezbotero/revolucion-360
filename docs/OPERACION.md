@@ -28,10 +28,11 @@ Ningún correo lleva montos ni datos financieros (lo comprueba `tests/correos.te
 | Correo | Tarea | Cuándo | Preferencias |
 |---|---|---|---|
 | Bienvenida | `bienvenida` | Correo confirmado, cuenta de los últimos 14 días, sin `email_log` kind `welcome` | Siempre (más notificación si el canal lo permite) |
-| Recordatorio de cierre | `cierre` | `prefs.close_day`: `last` = desde que empiezan los últimos 10 días del mes; `first` = días 1 a 5 del mes siguiente. En la zona horaria del usuario. Mes sin cerrar y acceso a `cierre` (Pro por defecto) | `prefs.notify.close` y `prefs.channel` |
+| Recordatorio de cierre | `cierre` | `prefs.close_day`: `last` = desde que empiezan los últimos 10 días del mes; `first` = días 1 a 5 del mes siguiente. En la zona horaria del usuario. Mes sin cerrar y la sección Cierre encendida | `prefs.notify.close` y `prefs.channel` |
 | Acceso por vencer | `vencimientos` | Alumno con `access_until` a 8–30 días (aviso "30") y a 1–7 días (aviso "7") | `prefs.channel` |
 | Pago fallido | `pagos` | `payment_failed_at` de los últimos 7 días, uno por fallo | Siempre: es un correo importante de la cuenta (no se puede desactivar) |
 | Acceso gratis | — (lo manda el panel) | Al dar acceso de alumno o fundador con la casilla "Avisarles por correo" marcada. Uno por acceso y día; máximo 50 por acción | Siempre: es un correo de la cuenta |
+| 5 · Fin del primer mes | — (lo manda el aviso de Stripe) | Al llegar `customer.subscription.trial_will_end` (3 días antes de que termine el primer mes de $1 y se cobren $8). Uno por suscripción y fin de prueba (`email_log` kind `first_month_ending`) más un aviso en la app | Siempre: avisa un cobro. Se apaga solo con `app_config.billing.notify_first_charge = false` (`/admin/planes`) |
 
 Cada envío se reserva primero en `email_log (user_id, kind, ref)` (único): nunca sale dos veces. Si el envío falla, la reserva se suelta y se reintenta.
 Cada aviso en la app usa `notifications.dedupe`. Los textos están en `src/lib/email/messages.ts` (español del mockup e inglés según `profiles.locale`).
@@ -41,16 +42,18 @@ Cada aviso en la app usa `notifications.dedupe`. Los textos están en `src/lib/e
 |---|---|---|
 | `/api/cron/bienvenida` | `0 23 * * *` (diario, 10:00 en Sydney) | Correo de bienvenida |
 | `/api/cron/pagos` | `30 23 * * *` (diario, 10:30 en Sydney) | Correo de pago fallido (la notificación ya la crea el aviso de Stripe) |
-| `/api/cron/vencimientos` | `0 20 * * *` (7:00 en Sydney en verano) | Avisos 30/7 días; prueba vencida → Gratis; alumno vencido → Gratis (o a otro acceso gratis vigente); Pro vencido sin suscripción activa en Stripe → solo lectura |
+| `/api/cron/vencimientos` | `0 20 * * *` (7:00 en Sydney en verano) | Avisos 30/7 días; prueba vieja vencida, alumno o fundador vencido → solo lectura (o a otro acceso gratis vigente); pago vencido sin suscripción activa en Stripe → solo lectura |
 | `/api/cron/cierre` | `0 22 * * *` (9:00 en Sydney en verano) | Recordatorio de cierre |
 | `/api/cron/borrados` | `0 16 * * *` | Borra las cuentas con solicitud de borrado vencida (`auth.admin.deleteUser`, cascada) y deja constancia en `admin_audit` (`borrado_automatico`) |
 | `/api/cron/racha` | `0 21 * * 1` (lunes; martes 8:00 en Sydney, lunes en América) | Notificación "Tu racha se puede salvar" (no gasta el comodín) |
+| `/api/cron/habito?run=1` · `?run=2` · `?run=3` | `0 2 * * *`, `0 14 * * *` y `0 22 * * *` (tres tareas diarias) | Avisos del hábito (en la app + push): cierre (último día del mes) → "mañana se paga X" → repaso (domingo) → "hoy puedes gastar". Máximo **uno al día** por persona (`habit_sends`, único por día local) y **nunca de noche** (21:00 a 8:00 en su hora): cada corrida se salta a quien está de noche. 02:00 y 14:00 UTC están a 12 h, así que toda zona horaria cae de día en al menos una; 22:00 es la mañana de Sydney. Cada persona elige cuáles recibe en Perfil (`prefs.habit`) |
 
 Todas procesan de a 500, son idempotentes y devuelven un JSON con conteos. Ninguna lee montos.
 **Límite de Resend:** Resend limita los envíos por segundo (2 por segundo en el plan inicial). Si frena un envío, se espera y se reintenta hasta 2 veces; si aun así falla, el correo queda para la siguiente corrida. Con muchos usuarios, pedir a Resend un límite mayor.
 **Cuándo sale cada correo:**
 - **Bienvenida:** en el momento en que el usuario confirma su correo (`/auth/confirm`) o entra por primera vez con Google/Apple (`/auth/callback`).
 - **Pago fallido:** en el momento en que llega el aviso `invoice.payment_failed` de Stripe (`/api/stripe/webhook`).
+- **Fin del primer mes (5):** en el momento en que llega `customer.subscription.trial_will_end` (hay que agregar ese evento al webhook en Stripe).
 - **Recordatorio de cierre** y **acceso por vencer:** dependen de la fecha, no de una acción; por eso sí son tareas diarias.
 - Las tareas `bienvenida` y `pagos` quedan solo como **red de seguridad** diaria: reintentan los correos que no salieron en su momento. `email_log` impide que alguien reciba el mismo correo dos veces.
 
@@ -62,6 +65,7 @@ curl -s -H "Authorization: Bearer local-cron-secret" http://localhost:3000/api/c
 curl -s -H "Authorization: Bearer local-cron-secret" http://localhost:3000/api/cron/vencimientos | jq
 curl -s -H "Authorization: Bearer local-cron-secret" http://localhost:3000/api/cron/pagos | jq
 curl -s -H "Authorization: Bearer local-cron-secret" http://localhost:3000/api/cron/racha | jq
+curl -s -H "Authorization: Bearer local-cron-secret" "http://localhost:3000/api/cron/habito?run=1" | jq
 curl -s -H "Authorization: Bearer local-cron-secret" http://localhost:3000/api/cron/borrados | jq   # ¡borra cuentas de verdad en la base local!
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/api/cron/cierre                     # sin clave → 401
 ```

@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { dailyAllowance, fixedLineIds, fixedSlots, flexibleBudget, flexibleSpend, type Allowance, type ByCategory, type HabitLine, type LinkedTx } from "@/lib/engine/habito";
+import { dailyAllowance, fixedLineIds, fixedOverrides, fixedSlots, flexibleBudget, flexibleSpend, type Allowance, type ByCategory, type FixedInput, type HabitLine, type LinkedTx } from "@/lib/engine/habito";
 import { fetchAll, loadMonthView, loadPlan, loadTx, monthRange, must, type MonthView, type PlanData } from "@/server/data";
 import type { Session } from "@/server/session";
 
@@ -17,20 +17,37 @@ export type HabitView = {
   allowance: Allowance;
 };
 
-export const loadHabit = cache(async (s: Session): Promise<HabitView> => {
-  const [plan, view, monthTx, recRes, linkedRows] = await Promise.all([
-    loadPlan(s, s.year),
-    loadMonthView(s, s.year, s.month),
-    loadTx(s, ...monthRange(s.year, s.month)),
+/**
+ * Todo lo que la regla de "fijo / del día a día" necesita para un año del plan, con la elección del usuario (`overrides`).
+ * Lo usan "Hoy puedes gastar" (Inicio y Repaso) y el interruptor "Tipo de gasto" de Plan (que muestra la regla sin `overrides`).
+ */
+export const loadFixedInput = cache(async (s: Session, plan: PlanData): Promise<FixedInput> => {
+  const y = plan.year;
+  const [recRes, linkedRows, lineRows] = await Promise.all([
     s.supabase.from("recurring").select("plan_line_id").eq("active", true).not("plan_line_id", "is", null),
     fetchAll<{ plan_line_id: string | null; date: string; amount_cents: number; kind: string; is_split: boolean }>((a, b) =>
       s.supabase.from("transactions").select("plan_line_id, date, amount_cents, kind, is_split").is("deleted_at", null).not("plan_line_id", "is", null)
-        .gte("date", `${s.year}-01-01`).lte("date", `${s.year}-12-31`).order("date").order("id").range(a, b)),
+        .gte("date", `${y}-01-01`).lte("date", `${y}-12-31`).order("date").order("id").range(a, b)),
+    // `plan_lines.fixed` (migración 20261125000035). select("*") a propósito: mientras la migración no esté aplicada la columna
+    // no existe y nombrarla rompería Inicio; así simplemente no llega y todo queda en automático. Cast puntual hasta regenerar tipos.
+    fetchAll<{ id: string }>((a, b) => s.supabase.from("plan_lines").select("*").eq("year", y).is("archived_at", null).order("id").range(a, b)),
   ]);
-  const lines: HabitLine[] = plan.lines;
   const linked: LinkedTx[] = linkedRows.filter((t) => t.plan_line_id && t.kind === "normal" && !t.is_split).map((t) => ({ lineId: t.plan_line_id!, date: t.date, amountCents: t.amount_cents }));
   const recurringLineIds = must(recRes).map((r) => r.plan_line_id).filter((x): x is string => !!x);
-  const fixed = fixedLineIds({ lines, categories: plan.categories, cells: plan.cells, marks: plan.marks, recurringLineIds, linked });
+  const overrides = fixedOverrides(lineRows as { id: string; fixed?: boolean | null }[]);
+  return { lines: plan.lines, categories: plan.categories, cells: plan.cells, marks: plan.marks, recurringLineIds, linked, overrides };
+});
+
+export const loadHabit = cache(async (s: Session): Promise<HabitView> => {
+  const [plan, view, monthTx] = await Promise.all([
+    loadPlan(s, s.year),
+    loadMonthView(s, s.year, s.month),
+    loadTx(s, ...monthRange(s.year, s.month)),
+  ]);
+  const lines: HabitLine[] = plan.lines;
+  const input = await loadFixedInput(s, plan);
+  const linked = input.linked;
+  const fixed = fixedLineIds(input);
 
   const budget = flexibleBudget(lines, plan.cells, s.month, fixed);
   const thisMonth = `${s.year}-${String(s.month).padStart(2, "0")}`;

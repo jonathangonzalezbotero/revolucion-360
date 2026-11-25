@@ -7,6 +7,7 @@ import {
   addDays, badgeProgress, BADGES, consecutiveClosures, diagnose, formatDate, formatMoney, levelFor, parts, priority, streak, todayIn, weekStart, type BadgeKey,
 } from "@/lib/engine";
 import { fetchAll, loadDiagnosticInput, must } from "@/server/data";
+import { countAssets } from "../inversiones/lib";
 import { badgeName } from "@/server/rewards";
 import { requireUser, type Session } from "@/server/session";
 import { durationLabel, localParts, splitOn } from "./lib";
@@ -178,7 +179,7 @@ function Reco({ cv, m, indicator, points }: { cv: CourseView; m: AcadMessages; i
 type Gam = Awaited<ReturnType<typeof loadGamification>>;
 
 async function loadGamification(s: Session, cat: Catalog, diag: { emergencyFundCents: number; basicExpensesCents: number }) {
-  const [points, weeks, badgesRes, closuresRes, planRes, debtsRes, goalsRes, invRes] = await Promise.all([
+  const [points, weeks, badgesRes, closuresRes, planRes, debtsRes, goalsRes, invCount] = await Promise.all([
     totalPoints(s),
     fetchAll<{ week_start: string; wildcard: boolean }>((a, b) => s.supabase.from("activity_weeks").select("week_start, wildcard").eq("user_id", s.userId).order("week_start").range(a, b)),
     s.supabase.from("user_badges").select("badge, earned_at").eq("user_id", s.userId),
@@ -186,9 +187,9 @@ async function loadGamification(s: Session, cat: Catalog, diag: { emergencyFundC
     s.supabase.from("plan_lines").select("id", { count: "exact", head: true }),
     s.supabase.from("debts").select("id", { count: "exact", head: true }).not("closed_at", "is", null),
     s.supabase.from("goals").select("id, target_cents, completed_at, goal_entries(amount_cents)").is("archived_at", null),
-    s.supabase.from("investments").select("id", { count: "exact", head: true }),
+    countAssets(s.supabase, s.userId),
   ]);
-  for (const r of [planRes, debtsRes, invRes]) if (r.error) throw new Error(`db: ${r.error.message}`);
+  for (const r of [planRes, debtsRes]) if (r.error) throw new Error(`db: ${r.error.message}`);
   const earned = new Map(must(badgesRes).map((b) => [b.badge, b.earned_at]));
   const closed = must(closuresRes).map((c) => `${c.year}-${String(c.month).padStart(2, "0")}`);
   const goals = must(goalsRes);
@@ -201,7 +202,7 @@ async function loadGamification(s: Session, cat: Catalog, diag: { emergencyFundC
     debtsPaid: debtsRes.count ?? 0, emergencyFundCents: diag.emergencyFundCents, basicExpensesCents: diag.basicExpensesCents,
     goalsDone: goals.filter((g) => g.completed_at).length, bestGoalProgress: goalPct.length ? Math.max(...goalPct) : 0,
     coursesDone: cat.courses.filter((c) => c.progress.complete).length, bestCourseProgress: started ? started.progress.done / started.progress.total : 0,
-    investments: invRes.count ?? 0,
+    investments: invCount,
   };
   const current = weekStart(s.today);
   return {

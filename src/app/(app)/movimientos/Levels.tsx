@@ -11,8 +11,8 @@ import css from "./mov.module.css";
 import type { Ctx } from "./types";
 
 /** Los 3 niveles. Se guarda en el perfil; en solo lectura solo cambia la vista. */
-export function LevelPicker({ level, proLocked, query, ctx }: { level: Level; proLocked: boolean; query: Query; ctx: Ctx }) {
-  const { t, c } = ctx;
+export function LevelPicker({ level, query, ctx }: { level: Level; query: Query; ctx: Ctx }) {
+  const { t } = ctx;
   const router = useRouter();
   const toast = useToast();
   const [busy, start] = useTransition();
@@ -42,7 +42,7 @@ export function LevelPicker({ level, proLocked, query, ctx }: { level: Level; pr
           <button key={o.id} type="button" role="radio" aria-checked={o.id === picked} className={css.level} onClick={() => pick(o.id)}>
             <span aria-hidden="true" className={css.dot} />
             <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-              <strong style={{ fontSize: 14 }}>{o.label}{o.id === "detail" && proLocked ? <span className="pill pill-yellow" style={{ marginLeft: 8 }}>{c.nav.pro}</span> : null}</strong>
+              <strong style={{ fontSize: 14 }}>{o.label}</strong>
               <span className="xs muted" style={{ lineHeight: 1.4 }}>{o.desc}</span>
             </span>
           </button>

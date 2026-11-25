@@ -47,6 +47,15 @@ export function freeMonths(monthlyCents: number, yearlyCents: number): number {
   return Math.max(0, Math.round((monthlyCents * 12 - yearlyCents) / monthlyCents));
 }
 
+/**
+ * ¿El cupón de Stripe aplica SOLO al producto del plan ($8 / $80)? Uno sin `applies_to` también descontaría el $1 del
+ * primer mes. Ojo: Stripe solo devuelve `applies_to` si se pide con `expand: ["applies_to"]`.
+ */
+export function couponOnlyForPlan(coupon: { applies_to?: { products: string[] } | null } | null | undefined, productId: string): boolean {
+  const products = coupon?.applies_to?.products ?? [];
+  return !!productId && products.length > 0 && products.every((p) => p === productId);
+}
+
 /** Ids de los precios en Stripe (fila 'DEFAULT' de price_regions, los guarda scripts/stripe-setup.ts). */
 export type StripePrices = { monthly: string | null; yearly: string | null; first: string | null };
 

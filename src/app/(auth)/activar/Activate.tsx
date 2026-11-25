@@ -91,6 +91,7 @@ export function Activate({ m, options, initial, publishableKey, paymentsActive, 
 
       <div className={own.foot}>
         <Link href="/diagnostico" className={css.textBtn}>{m.diag}</Link>
+        <Link href="/perfil" className={css.textBtn}>{m.profile}</Link>
         <form action={signOut}><button type="submit" className={css.textBtn}>{m.signOut}</button></form>
       </div>
     </div>

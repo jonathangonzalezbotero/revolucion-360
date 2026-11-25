@@ -1,13 +1,25 @@
 // Inversiones: lectura de las tablas nuevas y formato. Los cálculos viven en src/lib/engine/inversiones.ts (con pruebas).
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { formatMoney, type Cents, type ISODate, type MoneyFormat } from "@/lib/engine";
-import { DEC_ONE, decFromDb, decToDb, formatDec, hasSubCent, unitPriceToCents, type AssetKind, type AssetOp, type AssetState, type Dec, type OpKind } from "@/lib/engine/inversiones";
+import { isMissingTable } from "@/app/api/export/lib";
+import { formatMoney, parseMoney, type Cents, type ISODate, type MoneyFormat } from "@/lib/engine";
+import { DEC_ONE, decFromDb, decToDb, formatDec, hasSubCent, parseUnitPrice, unitPriceToCents, type AssetKind, type AssetOp, type AssetState, type Dec, type OpKind } from "@/lib/engine/inversiones";
 
 /**
  * `assets` y `asset_operations` vienen en la migración 20261125000032 (aún sin aplicar): los tipos generados no las tienen.
  * Mientras se regeneran (`npm run db:types`), se consultan con un cliente sin tipos; las filas se tipan abajo a mano.
  */
 export const untyped = (db: unknown) => db as SupabaseClient;
+
+/**
+ * Cuántos activos tiene (insignia "Primera inversión" en Perfil y Academia). GET con `count`, no HEAD: así el error
+ * trae su código y, si la migración 20261125000032 aún no está aplicada, cuenta 0 en vez de romper la pantalla.
+ */
+export async function countAssets(db: unknown, userId: string): Promise<number> {
+  const r = await untyped(db).from("assets").select("id", { count: "exact" }).eq("user_id", userId).limit(1);
+  if (isMissingTable(r.error)) return 0;
+  if (r.error) throw new Error(`db: ${r.error.message}`);
+  return r.count ?? 0;
+}
 
 export const ASSET_COLS = "id, name, kind, platform, by_units, unit_price_cents::text, balance_cents, price_date, price_at, plan_line_id, recurring_from, archived_at, created_at";
 export type AssetRow = {
@@ -24,6 +36,20 @@ export const toOp = (o: OpRow): AssetOp => ({ id: o.id, date: o.date, kind: o.ki
 export const toState = (a: AssetRow, ops: OpRow[]): AssetState => ({
   byUnits: a.by_units, unitPriceCents: decFromDb(a.unit_price_cents), balanceCents: a.balance_cents, priceDate: a.price_date, priceAt: a.price_at, ops: ops.map(toOp),
 });
+
+/**
+ * Precio de hoy por unidad (activo por unidades) o saldo de hoy (por saldo), escrito a mano → columnas de `assets`.
+ * Lo usan Inversiones y el paso de saldos del Cierre de mes. null si el texto no es un monto válido.
+ * Quien lo guarda agrega `price_date` (hoy del usuario) y `price_at` (ahora).
+ */
+export function pricePatch(byUnits: boolean, text: string, numberLocale: string): { unit_price_cents: string } | { balance_cents: Cents } | null {
+  if (byUnits) {
+    const price = parseUnitPrice(text, numberLocale);
+    return price === null ? null : { unit_price_cents: decToDb(price) };
+  }
+  const cents = parseMoney(text);
+  return cents === null || cents < 0 ? null : { balance_cents: cents };
+}
 
 /** Color de cada tipo (solo tokens; Fondo usa el azul más cercano al del mockup). */
 export const KIND_COLOR: Record<AssetKind, string> = {

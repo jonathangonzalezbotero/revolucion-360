@@ -5,6 +5,7 @@ import { BADGES, consecutiveClosures, badgeProgress, formatDate, formatMoney, le
 import { mfaStatus } from "@/app/(auth)/actions";
 import { closureTarget } from "@/server/closure";
 import { fetchAll, loadDiagnosticInput, must } from "@/server/data";
+import { countAssets } from "../inversiones/lib";
 import { requireUser, type Session } from "@/server/session";
 import { term } from "@/server/terms";
 import { Achievements, type BadgeView } from "./Achievements";
@@ -103,21 +104,20 @@ function PlanSummary({ s, m }: { s: Session; m: PerfilMessages }) {
 
 /** Nivel, racha, insignias con su avance real. Solo si los logros están encendidos en Admin. */
 async function loadAchievements(s: Session, m: PerfilMessages) {
-  const [points, badgesRes, weeks, closuresRes, debtsRes, goalsRes, invRes, linesRes, progress, coursesRes, diag, target] = await Promise.all([
+  const [points, badgesRes, weeks, closuresRes, debtsRes, goalsRes, invCount, linesRes, progress, coursesRes, diag, target] = await Promise.all([
     fetchAll<{ points: number; kind: string }>((a, b) => s.supabase.from("point_events").select("points, kind").eq("user_id", s.userId).order("at").order("id").range(a, b)),
     s.supabase.from("user_badges").select("badge, earned_at").eq("user_id", s.userId),
     fetchAll<{ week_start: string; wildcard: boolean }>((a, b) => s.supabase.from("activity_weeks").select("week_start, wildcard").eq("user_id", s.userId).order("week_start").range(a, b)),
     s.supabase.from("month_closures").select("year, month, reopened_at").eq("user_id", s.userId),
     s.supabase.from("debts").select("id, closed_at").eq("user_id", s.userId),
     s.supabase.from("goals").select("id, name, target_cents, completed_at, archived_at, goal_entries(amount_cents)").eq("user_id", s.userId),
-    s.supabase.from("investments").select("id", { count: "exact", head: true }).eq("user_id", s.userId),
+    countAssets(s.supabase, s.userId),
     s.supabase.from("plan_lines").select("id", { count: "exact", head: true }).eq("user_id", s.userId),
     fetchAll<{ lesson_id: string }>((a, b) => s.supabase.from("lesson_progress").select("lesson_id").eq("user_id", s.userId).order("lesson_id").range(a, b)),
     s.supabase.from("courses").select("id, title, sort, lessons(id)").eq("status", "published").order("sort"),
     loadDiagnosticInput(s, s.year, s.month),
     closureTarget(s),
   ]);
-  if (invRes.error) throw new Error(`db: ${invRes.error.message}`);
   if (linesRes.error) throw new Error(`db: ${linesRes.error.message}`);
   const earned = new Map(must(badgesRes).map((b) => [b.badge, b.earned_at]));
   const closures = must(closuresRes).filter((c) => !c.reopened_at).map((c) => `${c.year}-${String(c.month).padStart(2, "0")}`);
@@ -141,7 +141,7 @@ async function loadAchievements(s: Session, m: PerfilMessages) {
     lessonsDone: done.size, planBuilt: s.profile.onboardingStep === "done" && (linesRes.count ?? 0) > 0, closures: closures.length, consecutiveClosures: consecutive,
     debtsPaid: debts.filter((d) => d.closed_at).length, emergencyFundCents: diag.emergencyFundCents, basicExpensesCents: diag.basicExpensesCents,
     goalsDone: goals.filter((g) => g.completed_at).length, bestGoalProgress: bestGoal?.progress ?? 0,
-    coursesDone: points.filter((p) => p.kind === "course").length, bestCourseProgress: bestCourse ? bestCourse.done / bestCourse.total : 0, investments: invRes.count ?? 0,
+    coursesDone: points.filter((p) => p.kind === "course").length, bestCourseProgress: bestCourse ? bestCourse.done / bestCourse.total : 0, investments: invCount,
   });
   const b = m.badge;
   const targetMonth = target ? (s.locale === "es" ? monthName(target.month, "es").toLowerCase() : monthName(target.month, "en")) : "";

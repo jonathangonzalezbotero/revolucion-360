@@ -47,8 +47,8 @@ export async function revokeAccess(input: unknown) {
 }
 
 /**
- * "Pasar a plan pagado": quita su acceso gratis (misma función que "Quitar acceso gratis"; su cuenta queda sin activar)
- * para que en su próxima visita la app le pida la tarjeta. No cobra nada ni le escribe: lo decide al poner la tarjeta.
+ * "Pasar a plan pagado": quita su acceso gratis (misma función que "Quitar acceso gratis"; con la migración 034 su cuenta
+ * queda en solo lectura: ve y exporta todo y reactiva con su tarjeta). No cobra nada ni le escribe: lo decide al poner la tarjeta.
  * Queda en el registro como un paso a plan pagado, además del "quitó el acceso" que anota la base.
  */
 export async function moveToPaid(input: unknown) {

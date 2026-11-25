@@ -1,7 +1,7 @@
 import "server-only";
 import { addDays, lineMonthStatus, parts, type ISODate } from "@/lib/engine";
 import {
-  dailyAllowance, fixedLineIds, fixedSlots, flexibleBudget, flexibleSpend, upcomingPayments,
+  dailyAllowance, fixedLineIds, fixedOverrides, fixedSlots, flexibleBudget, flexibleSpend, upcomingPayments,
   type Allowance, type DuePayment, type HabitCategory, type HabitLine, type HabitTx, type LinkedTx,
 } from "@/lib/engine/habito";
 import type { Admin } from "@/lib/email/cron";
@@ -27,8 +27,10 @@ export type HabitPlan = { lines: HabitLine[]; cells: PlanCell[]; fixed: Set<stri
 /** Plan del año, qué es fijo y qué está pagado. null si no tiene plan este año. */
 export async function loadHabitPlan(db: Admin, userId: string, today: ISODate): Promise<HabitPlan | null> {
   const { y, m } = parts(today);
-  const linesRows = await all<{ id: string; name: string; kind: string; category_id: string; year: number; frequency: string; amount_cents: number; first_pay_date: string | null; debt_id: string | null; goal_id: string | null; investment_id: string | null }>((a, b) =>
-    db.from("plan_lines").select("id, name, kind, category_id, year, frequency, amount_cents, first_pay_date, debt_id, goal_id, investment_id").eq("user_id", userId).eq("year", y).is("archived_at", null).order("id").range(a, b));
+  // select("*") a propósito: trae `fixed` (migración 20261125000035, "Tipo de gasto" en Plan) cuando existe; mientras no esté aplicada
+  // la columna no llega y todo queda en automático, sin romper la tarea. Tipo puntual hasta regenerar los tipos.
+  const linesRows = await all<{ id: string; name: string; kind: string; category_id: string; year: number; frequency: string; amount_cents: number; first_pay_date: string | null; debt_id: string | null; goal_id: string | null; investment_id: string | null; fixed?: boolean | null }>((a, b) =>
+    db.from("plan_lines").select("*").eq("user_id", userId).eq("year", y).is("archived_at", null).order("id").range(a, b));
   if (!linesRows.length) return null;
   const lines: HabitLine[] = linesRows.map((l) => ({
     id: l.id, name: l.name, kind: l.kind as HabitLine["kind"], categoryId: l.category_id, year: l.year, frequency: l.frequency as HabitLine["frequency"],
@@ -50,7 +52,7 @@ export async function loadHabitPlan(db: Admin, userId: string, today: ISODate): 
   const allTx: HabitTx[] = txs.map((t) => ({ date: t.date, amountCents: t.amount_cents, categoryId: t.category_id, planLineId: t.plan_line_id, kind: t.kind === "transfer" ? "transfer" : "normal", isSplit: t.is_split }));
   const linked: LinkedTx[] = allTx.filter((t) => t.planLineId && t.kind === "normal" && !t.isSplit).map((t) => ({ lineId: t.planLineId!, date: t.date, amountCents: t.amountCents }));
   const markKeys = marks.map((k) => `${k.line_id}:${k.month}`);
-  const fixed = fixedLineIds({ lines, categories, cells: planCells, marks: markKeys, recurringLineIds: rec.map((r) => r.plan_line_id!).filter(Boolean), linked });
+  const fixed = fixedLineIds({ lines, categories, cells: planCells, marks: markKeys, recurringLineIds: rec.map((r) => r.plan_line_id!).filter(Boolean), linked, overrides: fixedOverrides(linesRows) });
 
   // Pagado por línea y mes, con la misma regla que el detalle del mes (`lineMonthStatus`).
   const markSet = new Set(markKeys);

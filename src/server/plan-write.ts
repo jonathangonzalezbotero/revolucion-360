@@ -72,6 +72,15 @@ export async function updateLine(s: Session, lineId: string, patch: LinePatch, o
   return { keptManual: opts.overwriteManual ? 0 : cells.filter((c) => c.manual).length };
 }
 
+/**
+ * "Tipo de gasto" de una línea de gasto: null = automático (regla de src/lib/engine/habito.ts), true = fijo, false = del día a día.
+ * Va aparte de `updateLine` a propósito: así ninguna otra escritura de líneas nombra la columna `fixed` (migración 20261125000035)
+ * y nada se rompe si esa migración aún no está aplicada. `as never` puntual hasta regenerar los tipos.
+ */
+export async function setLineFixed(s: Session, lineId: string, fixed: boolean | null): Promise<void> {
+  must(await s.supabase.from("plan_lines").update({ fixed } as never).eq("id", lineId).eq("kind", "expense").select("id"));
+}
+
 /** Quita una línea del plan sin perder su historia (los movimientos unidos conservan su categoría). */
 export async function archiveLine(s: Session, lineId: string): Promise<void> {
   must(await s.supabase.from("plan_lines").update({ archived_at: new Date().toISOString() }).eq("id", lineId).select("id"));

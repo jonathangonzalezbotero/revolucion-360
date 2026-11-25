@@ -1,7 +1,7 @@
 import "server-only";
 import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { priceMatches, readBilling, type BillingConfig, type CheckoutPlan, type Interval, type StripePrices, type SubLike } from "@/app/(app)/suscripcion/lib";
+import { couponOnlyForPlan, priceMatches, readBilling, type BillingConfig, type CheckoutPlan, type Interval, type StripePrices, type SubLike } from "@/app/(app)/suscripcion/lib";
 
 /**
  * Stripe solo en el servidor. Sin STRIPE_SECRET_KEY la app sigue funcionando: los pagos se muestran como "aún no activos".
@@ -66,6 +66,7 @@ export function toSubLike(sub: Stripe.Subscription): SubLike {
   };
 }
 
+export { couponOnlyForPlan };
 export const customerId = (c: string | { id: string } | null | undefined) => (typeof c === "string" ? c : c?.id ?? null);
 
 // ───────── Un solo plan en USD: configuración y precios ─────────
@@ -104,4 +105,29 @@ export async function pricesInSync(stripe: Stripe, plan: CheckoutPlan, interval:
     const p = got[i];
     return priceMatches(p ? { unit_amount: p.unit_amount, currency: p.currency, active: p.active, recurring: p.recurring ? { interval: p.recurring.interval } : null } : null, w.cents, w.kind);
   });
+}
+
+// ───────── Cupones: solo al plan ($8 / $80), nunca al cargo de $1 del primer mes ─────────
+/**
+ * Producto del plan en Stripe: el del precio mensual guardado (scripts/stripe-setup.ts lo creó con metadata.app
+ * 'revolucion360_plan'; el $1 vive en un producto aparte). null si aún no hay precio configurado.
+ */
+export async function planProductId(stripe: Stripe, prices: StripePrices): Promise<string | null> {
+  const id = prices.monthly ?? prices.yearly;
+  if (!id) return null;
+  const p = await stripe.prices.retrieve(id);
+  return typeof p.product === "string" ? p.product : p.product.id;
+}
+
+/**
+ * Cupón de Stripe con su `applies_to` (Stripe NO lo devuelve si no se pide con expand), o null si no existe.
+ * Otros errores (red, clave) se lanzan: nunca se toma un cupón bueno por uno sin restricción.
+ */
+export async function retrieveCoupon(stripe: Stripe, id: string): Promise<Stripe.Coupon | null> {
+  try {
+    return await stripe.coupons.retrieve(id, { expand: ["applies_to"] });
+  } catch (e) {
+    if (e instanceof Stripe.errors.StripeInvalidRequestError && e.statusCode === 404) return null;
+    throw e;
+  }
 }

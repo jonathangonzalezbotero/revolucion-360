@@ -59,6 +59,9 @@ export async function ensurePlanYear(s: Session, year: number): Promise<boolean>
     s.supabase.from("debts").select("id, kind, closed_at, balance_cents"),
     s.supabase.from("goals").select("id, completed_at, archived_at, target_date"),
   ]);
+  // "Tipo de gasto" (`plan_lines.fixed`, migración 20261125000035) viaja al año nuevo. loadLines usa select("*"): llega solo si la
+  // columna existe; se copia solo cuando es true/false, así el insert no la nombra mientras la migración no esté aplicada.
+  const fixedOf = new Map(prevLines.map((r) => [r.id, (r as { fixed?: boolean | null }).fixed]));
   const debts = new Map(must(debtsRes).map((d) => [d.id, d]));
   const goals = new Map(must(goalsRes).map((g) => [g.id, g]));
   // No se copian: pagos únicos, cuotas de deudas saldadas o de compra-ahora-paga-después (son de 4 pagos),
@@ -88,6 +91,8 @@ export async function ensurePlanYear(s: Session, year: number): Promise<boolean>
     const row = must(await s.supabase.from("plan_lines").insert({
       user_id: s.userId, year, category_id: l.categoryId, name: l.name, kind: l.kind, frequency: l.frequency, amount_cents: l.amountCents,
       first_pay_date: first, sort: l.sort, debt_id: l.debtId ?? null, goal_id: l.goalId ?? null, investment_id: l.investmentId ?? null,
+      // `as never` puntual hasta regenerar los tipos con la columna `fixed`.
+      ...(typeof fixedOf.get(l.id) === "boolean" ? ({ fixed: fixedOf.get(l.id) } as never) : {}),
     }).select("id").single());
     const cells = l.frequency === "custom"
       ? prevCells.filter((c) => c.line_id === l.id).map((c) => ({ lineId: row.id, month: c.month, amountCents: c.amount_cents, manual: false }))

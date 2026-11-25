@@ -13,13 +13,16 @@ import {
   type CellState, type GridGroup, type LineLite, type MonthState, type SavedLine,
 } from "./lib";
 import { AddForm, EditForm, type FormText } from "./LineForms";
+import type { FixedReason } from "@/lib/engine/habito";
 import type { PlanText } from "./messages";
 import css from "./plan.module.css";
 
 type Locale = "es" | "en";
 type Props = {
   year: number; curYear: number; defaultMonth: number; states: MonthState[]; canEdit: boolean; nextExists: boolean;
-  categories: Category[]; lines: LineLite[]; cells: CellState; fmt: MoneyFormat; locale: Locale; m: PlanText; t: FormText & { close: string };
+  categories: Category[]; lines: LineLite[]; cells: CellState;
+  /** Cómo clasifica hoy la regla automática cada línea de gasto (null = del día a día). Viene fresca del servidor en cada refresco. */
+  auto: Record<string, FixedReason | null>; fmt: MoneyFormat; locale: Locale; m: PlanText; t: FormText & { close: string };
 };
 type Commit = (e: React.FocusEvent<HTMLInputElement>) => void;
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -93,6 +96,10 @@ export function PlanGrid(props: Props) {
     merge(saved);
     setEditing(null);
     toast(kept === 0 ? m.edit.saved : kept === 1 ? m.edit.savedKeptOne : fill(m.edit.savedKept, { n: kept }));
+  }
+  function onType(lineId: string, fixed: boolean | null) {
+    setLines((ls) => ls.map((l) => (l.id === lineId ? { ...l, fixed } : l)));
+    toast(fill(m.type.saved, { type: fixed === null ? m.type.auto : fixed ? m.type.fixed : m.type.flex }));
   }
   function onRemoved(line: LineLite) {
     setLines((ls) => ls.filter((l) => l.id !== line.id));
@@ -187,7 +194,7 @@ export function PlanGrid(props: Props) {
 
       <Modal open={!!editLine} onClose={() => setEditing(null)} title={m.edit.title} labelClose={t.close}>
         {editLine ? (
-          <EditForm key={editLine.id} line={editLine} row={cells[editLine.id]} categories={categories} defaultFrom={defaultMonth} locale={locale} m={m} t={t}
+          <EditForm key={editLine.id} line={editLine} row={cells[editLine.id]} auto={props.auto[editLine.id]} onType={onType} categories={categories} defaultFrom={defaultMonth} locale={locale} m={m} t={t}
             onSaved={onSaved} onRemoved={() => onRemoved(editLine)} />
         ) : null}
       </Modal>

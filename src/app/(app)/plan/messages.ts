@@ -45,6 +45,16 @@ export const M = {
       save: "Guardar cambios", saved: "Línea actualizada.", savedKeptOne: "Línea actualizada. Se conservó 1 mes editado a mano.", savedKept: "Línea actualizada. Se conservaron {n} meses editados a mano.",
       remove: "Quitar del plan", removeConfirm: "Toca otra vez para quitar", removeHint: "Sale de tu plan; sus movimientos conservan su categoría.", removed: "\"{name}\" salió del plan.",
     },
+    type: {
+      label: "Tipo de gasto", auto: "Automático", fixed: "Fijo", flex: "Del día a día",
+      autoHint: "Lo decidimos por ti.", autoFixed: "Lo decidimos por ti: hoy cuenta como fijo porque {reason}.", autoFlex: "Lo decidimos por ti: hoy cuenta como del día a día.",
+      fixedHint: "Pago fijo: no entra en \"Hoy puedes gastar\".", flexHint: "Del día a día: entra en \"Hoy puedes gastar\".",
+      reasons: {
+        override: "lo elegiste tú", category: "su categoría es de deudas, ahorro o metas", linked: "está unida a una deuda, una meta o una inversión",
+        one_off: "se paga una vez al año o una sola vez", dated: "tiene día de pago", recurring: "tiene un recurrente activo", paid_as_bill: "este año ya la pagaste como cuenta",
+      },
+      saved: "Tipo de gasto: {type}.", income: "Los ingresos no tienen tipo de gasto.",
+    },
     empty: { title: "Aún no tienes un plan para {year}", text: "Ármalo en unos minutos: lo que entra, lo que sale, tus deudas y tus metas, mes a mes.", cta: "Armar mi plan", other: "Tu plan de este año no tiene líneas.", back: "Ir a {year}" },
     soon: { title: "Próximamente", text: "El Plan anual estará disponible muy pronto.", cta: "Volver a Inicio" },
     errors: { year: "Ese año no está disponible.", side: "Esa categoría es del otro lado del plan: un ingreso no pasa a gasto.", frequency: "Esa frecuencia no aplica a esta línea." },
@@ -105,6 +115,16 @@ export const M = {
       applyAll: "Apply to every month", applyAllHint: "Also overwrites the months edited by hand.",
       save: "Save changes", saved: "Line updated.", savedKeptOne: "Line updated. 1 month edited by hand was kept.", savedKept: "Line updated. {n} months edited by hand were kept.",
       remove: "Remove from plan", removeConfirm: "Tap again to remove", removeHint: "It leaves your plan; its transactions keep their category.", removed: "\"{name}\" left the plan.",
+    },
+    type: {
+      label: "Expense type", auto: "Automatic", fixed: "Fixed", flex: "Day to day",
+      autoHint: "We decide for you.", autoFixed: "We decide for you: today it counts as fixed because {reason}.", autoFlex: "We decide for you: today it counts as day to day.",
+      fixedHint: "Fixed payment: not part of \"You can spend today\".", flexHint: "Day to day: part of \"You can spend today\".",
+      reasons: {
+        override: "you chose it", category: "its category is debts, savings or goals", linked: "it's linked to a debt, a goal or an investment",
+        one_off: "it's paid once a year or just once", dated: "it has a payment day", recurring: "it has an active recurring transaction", paid_as_bill: "you already paid it as a bill this year",
+      },
+      saved: "Expense type: {type}.", income: "Income has no expense type.",
     },
     empty: { title: "You don't have a plan for {year} yet", text: "Build it in a few minutes: what comes in, what goes out, your debts and your goals, month by month.", cta: "Build my plan", other: "Your plan for this year has no lines.", back: "Go to {year}" },
     soon: { title: "Coming soon", text: "The yearly plan will be available very soon.", cta: "Back to Home" },

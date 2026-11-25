@@ -56,7 +56,7 @@ const Region = z.object({
 });
 
 export async function saveRegion(input: unknown) {
-  return run({ write: false, revalidate: PATHS }, async (s) => {
+  return run({ write: false, allowInactive: true, revalidate: PATHS }, async (s) => {
     const m = M[s.locale];
     const p = Region.safeParse(input);
     if (!p.success || !isValidTimezone(p.data.timezone)) return fail(m.regionBad);
@@ -75,7 +75,7 @@ export async function saveRegion(input: unknown) {
 const Terms = z.object(Object.fromEntries(TERM_KEYS.map((k) => [k, z.string().max(80).optional()])) as Record<(typeof TERM_KEYS)[number], z.ZodOptional<z.ZodString>>);
 
 export async function saveTerms(input: unknown) {
-  return run({ write: false, revalidate: [...PATHS, "/plan", "/deudas", "/proyeccion"] }, async (s) => {
+  return run({ allowInactive: true, write: false, revalidate: [...PATHS, "/plan", "/deudas", "/proyeccion"] }, async (s) => {
     const p = Terms.safeParse(input);
     if (!p.success) return fail(s.t.errors.generic);
     must(await s.supabase.from("profiles").update({ terms: mergeTerms(s.profile.terms, p.data) }).eq("id", s.userId).select("id"));
@@ -111,7 +111,7 @@ const Prefs = z.object({
 });
 
 export async function savePrefs(input: unknown) {
-  return run({ write: false, revalidate: ["/perfil"] }, async (s) => {
+  return run({ allowInactive: true, write: false, revalidate: ["/perfil"] }, async (s) => {
     const p = Prefs.safeParse(input);
     if (!p.success) return fail(s.t.errors.generic);
     const notify = p.data.notify ? Object.fromEntries(Object.entries(p.data.notify).filter(([, v]) => typeof v === "boolean")) as Record<(typeof NOTIFY_KEYS)[number], boolean> : undefined;
@@ -125,7 +125,7 @@ export async function savePrefs(input: unknown) {
 const HabitPrefsInput = z.object(Object.fromEntries(HABIT_PREF_KEYS.map((k) => [k, z.boolean().optional()])) as Record<HabitPrefKey, z.ZodOptional<z.ZodBoolean>>);
 
 export async function saveHabitPrefs(input: unknown) {
-  return run({ write: false, revalidate: ["/perfil", "/repaso"] }, async (s) => {
+  return run({ allowInactive: true, write: false, revalidate: ["/perfil", "/repaso"] }, async (s) => {
     const p = HabitPrefsInput.safeParse(input);
     if (!p.success) return fail(s.t.errors.generic);
     const prefs = mergeHabitPrefs(s.profile.prefs, p.data);
@@ -136,7 +136,7 @@ export async function saveHabitPrefs(input: unknown) {
 
 // ───────── Seguridad ─────────
 export async function changePassword(input: unknown) {
-  return run({ write: false }, async (s) => {
+  return run({ allowInactive: true, write: false }, async (s) => {
     const m = M[s.locale];
     const p = z.object({ password: z.string().min(8).max(200) }).safeParse(input);
     if (!p.success || strength(p.data.password) < 3) return fail(m.pwWeak);
@@ -148,7 +148,7 @@ export async function changePassword(input: unknown) {
 
 /** Cierra la sesión en todos los dispositivos (incluido este). El cliente lleva a /entrar. */
 export async function signOutEverywhere() {
-  return run({ write: false }, async (s) => {
+  return run({ write: false, allowInactive: true }, async (s) => {
     const { error } = await s.supabase.auth.signOut({ scope: "global" });
     if (error) return fail(s.t.errors.generic);
     return ok(undefined);
@@ -175,7 +175,7 @@ export async function spendWildcard(input: unknown) {
  * El borrado real lo hace una tarea programada. Funciona también en solo lectura.
  */
 export async function requestDeletion(input: unknown) {
-  return run({ write: false, revalidate: ["/perfil"] }, async (s) => {
+  return run({ write: false, allowInactive: true, revalidate: ["/perfil"] }, async (s) => {
     const m = M[s.locale];
     const p = z.object({ word: z.string().max(40) }).safeParse(input);
     if (!p.success || !confirmsWord(p.data.word, m.delWord)) return fail(fill(m.delWrong, { word: m.delWord }));
@@ -187,7 +187,7 @@ export async function requestDeletion(input: unknown) {
 }
 
 export async function cancelDeletion(input: unknown) {
-  return run({ write: false, revalidate: ["/perfil"] }, async (s) => {
+  return run({ write: false, allowInactive: true, revalidate: ["/perfil"] }, async (s) => {
     const p = z.string().uuid().safeParse(input);
     if (!p.success) return fail(s.t.errors.notFound);
     must(await s.supabase.from("privacy_requests").update({ status: "cancelled" }).eq("id", p.data).eq("user_id", s.userId).eq("kind", "delete").eq("status", "pending").select("id"));

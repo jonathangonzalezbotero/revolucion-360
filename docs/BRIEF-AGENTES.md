@@ -25,7 +25,7 @@ Varias personas trabajan a la vez en otras pantallas del mismo repositorio. Resp
 - Colores: solo tokens `var(--…)` de `globals.css`. Si el mockup usa un color que no tiene token, usa el más cercano y repórtalo.
 - Escribir: acciones del servidor con `run()` + zod. Montos de formularios llegan como texto → `parseMoney`. Después de escribir, `revalidate` de las rutas afectadas (incluye `/inicio`).
 - Leer: `must(...)` y `fetchAll(...)`. Nunca `data ?? []` a ciegas.
-- Respeta `s.canEdit` (solo lectura), `s.has(feature)` (Gratis o Pro, con `<ProWall>`), `s.config.menu` y `s.config.flags`.
+- Respeta `s.canEdit` (solo lectura), `s.config.menu` y `s.config.flags`. Un solo plan, todo incluido (CLAUDE.md regla 6). Una cuenta sin activar ya la frena `requireUser()` (la manda a `/activar`) y `run()` (rechaza sus acciones).
 - Estados vacíos con `<Empty>`: qué falta y el botón para resolverlo. Nunca un gráfico vacío.
 - Accesibilidad: `<button>`/`<a>`/`<label>` reales, `aria-label` en botones de solo ícono, foco visible, 44 px en móvil.
 - Logros donde aplique: `touchWeek(s)` en toda acción válida de la semana (registrar un gasto, marcar un pago, ver una clase, cerrar el mes), `award`, `tryBadge`, `firstStep`, y el aviso con `useToast()(texto, puntos)`.

@@ -1,6 +1,28 @@
 # Estado del desarrollo
 
-Actualizado: 24 de noviembre de 2026. Todo el código está en `main` en GitHub.
+Actualizado: 25 de noviembre de 2026. Todo el código está en `main` en GitHub.
+
+## Hoy, 25 nov 2026: un solo plan, hábito, metas amables, inversiones por activo y subroles (SIN PROBAR EN PANTALLA)
+**Nada de esto se ha probado en el navegador.** Pasa tipos (`tsc`), linter y pruebas (`vitest`), y nada más.
+- **Cobro:** un solo plan en USD: primer mes $1 + $8 al mes, o $80 al año. "Activa tu cuenta" (`/activar`) con la tarjeta dentro de la app (Stripe Embedded Checkout), cupones (solo al plan, nunca al $1) y código de alumno. Correo 5 "Fin del primer mes" con `customer.subscription.trial_will_end`. Detalle en `docs/STRIPE.md`.
+- **Sin activar:** quien se registra y no paga solo abre bienvenida, asistente, diagnóstico y Mi perfil; el servidor (`run`) rechaza cualquier otra acción suya.
+- **Solo lectura:** aviso arriba en toda la app con "Reactivar por $8 USD al mes", "O $80 USD al año · 2 meses gratis" (montos de `app_config.billing`) y "Exportar mis datos". Quitar un acceso gratis desde el panel deja la cuenta en solo lectura.
+- **Sin Gratis/Pro** en la app y el panel; Planes en USD; Academia visible por grupo; los videos exigen cuenta activa.
+- **Hábito:** "Hoy puedes gastar" en Inicio, repaso semanal (`/repaso`), avisos (uno al día, nunca de noche) con `/api/cron/habito` tres veces al día.
+- **Metas amables:** cuenta unida, aportes automáticos, hitos (+20), "para qué", retos, sobrante del mes al cerrar. Cumplir una meta da +50 (antes +100).
+- **Inversiones por activo:** compras, ventas y dividendos (`assets`, `asset_operations`). El Cierre de mes ya anota el precio o saldo de hoy de cada activo.
+- **Subroles de admin:** Dueño, Contenido, Soporte, impuestos en la base.
+
+### Migraciones 028 a 034: pendientes de aprobar y aplicar
+`20261125000028_cobro` · `029_un_plan` · `030_habito` · `031_metas` · `032_inversiones_activos` · `033_admin_roles` · `034_integracion`.
+**Ninguna está aplicada.** Las revisa una persona; después `npm run db:migrate` y `npm run db:types` (para quitar los `as never` / clientes sin tipos). Mientras no estén aplicadas, lo que usa tablas o columnas nuevas (Inversiones, partes de Metas, Repaso, avisos del hábito, cobro del primer mes) puede fallar contra la base; Cierre, Perfil, Academia y el export toleran que falten `assets` y las tablas nuevas de metas y hábito.
+
+### Stripe: pasos para Jonathan (modo prueba)
+1. Aplicar las migraciones (la 028 crea `app_config.billing` y `price_regions.stripe_price_first`).
+2. Correr `npx tsx scripts/stripe-setup.ts`: crea el producto del plan y el del primer mes, los precios USD $1 / $8 / $80, los guarda en `price_regions` y crea o **rehace** los cupones para que apliquen solo al plan.
+3. Agregar el evento **`customer.subscription.trial_will_end`** al webhook de Stripe.
+4. Poner `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_…` en `.env` (y en Vercel).
+5. Customer Portal: permitir **cambiar entre mensual ($8) y anual ($80)**, además de tarjeta, facturas y cancelar al final del periodo.
 
 ## Resumen
 - Construido: la app completa del usuario (31 rutas), Stripe, importar CSV y el panel de administración parte 1. Los correos, tareas programadas y app instalable están en esta misma entrega (ver abajo su estado exacto).
@@ -102,7 +124,7 @@ Videos de las clases (mínimo el curso "Empieza aquí"), tu foto y tu frase para
 ## Cosas conocidas (no son errores, pero hay que decidir)
 - La foto de perfil, sesiones activas, adjuntar capturas en soporte y el resumen semanal no existen (no hay almacenamiento ni esa función).
 - Los videos de YouTube deben ser "no listados" (los privados no se pueden insertar). Mux solo con playback público.
-- Cancelar Pro o dejar de pagar deja la cuenta en **solo lectura** (regla del plan); la prueba gratis y el acceso de alumno vencidos pasan a Gratis.
+- Cancelar o dejar de pagar deja la cuenta en **solo lectura** (regla del plan); el acceso de alumno o fundador vencido, también. Nunca se borra nada.
 - La transferencia entre cuentas hace 3 escrituras seguidas (no es atómica).
 - El export de datos arma todo en memoria; con mucho historial podría pasar el límite de respuesta de Vercel.
 - Varias pantallas no traen mockup móvil propio (Importar CSV, curso de la Academia): el diseño móvil se hizo siguiendo el sistema.

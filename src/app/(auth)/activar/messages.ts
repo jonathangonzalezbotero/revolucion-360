@@ -32,7 +32,7 @@ export const M = {
     notComplete: "El pago no se completó. Puedes intentarlo de nuevo.",
     notActive: "Los pagos aún no están activos. El cobro se abrirá pronto. Si eres alumno, entra con tu código.",
     termsPre: "Al activar aceptas los", termsLink: "Términos y condiciones",
-    diag: "Ver mi diagnóstico", signOut: "Salir",
+    diag: "Ver mi diagnóstico", profile: "Mi perfil y mis datos", signOut: "Salir",
   },
   en: {
     title: "Activate your account",
@@ -63,7 +63,7 @@ export const M = {
     notComplete: "The payment didn't go through. You can try again.",
     notActive: "Payments aren't active yet. Checkout opens soon. If you're a student, get in with your code.",
     termsPre: "By activating you accept the", termsLink: "Terms and conditions",
-    diag: "See my check-up", signOut: "Sign out",
+    diag: "See my check-up", profile: "My profile and data", signOut: "Sign out",
   },
 } satisfies Messages<unknown>;
 

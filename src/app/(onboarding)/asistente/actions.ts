@@ -12,7 +12,7 @@ import { M } from "./messages";
 
 /** Guarda el avance en cada paso: si cierra y vuelve, sigue donde iba. */
 export async function saveProgress(input: unknown) {
-  return run({}, async (s) => {
+  return run({ allowInactive: true }, async (s) => {
     const p = AnswersSchema.safeParse(input);
     if (!p.success) return fail(s.t.errors.generic);
     const seed = s.profile.wizard.seed as Json | undefined;
@@ -49,7 +49,7 @@ const Commit = z.object({ answers: AnswersSchema, to: z.enum(["diagnostico", "pl
  * Nunca borra ni cambia lo que el usuario ya tenía: solo agrega.
  */
 export async function commitPlan(input: unknown) {
-  return run({ revalidate: ["/inicio", "/plan", "/metas", "/deudas", "/diagnostico", "/proyeccion"] }, async (s) => {
+  return run({ allowInactive: true, revalidate: ["/inicio", "/plan", "/metas", "/deudas", "/diagnostico", "/proyeccion"] }, async (s) => {
     const m = M[s.locale];
     const p = Commit.safeParse(input);
     if (!p.success) return fail(s.t.errors.generic);

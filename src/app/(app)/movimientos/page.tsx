@@ -78,11 +78,11 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
   );
   const banners = (
     <>
-      {!s.canEdit ? <div className="banner"><span>{m.readOnly}</span><Link href="/suscripcion" className="link">{s.t.readOnly.cta}</Link></div> : null}
+      {!s.canEdit ? <div className="banner"><span>{m.readOnly}</span>{s.plan === "read_only" ? <Link href="/activar" className="link">{s.t.readOnly.cta}</Link> : null}</div> : null}
       {generated > 0 ? <p role="status" className="banner banner-info">{generated === 1 ? m.rec.generatedOne : fill(m.rec.generated, { n: generated })}</p> : null}
     </>
   );
-  const picker = <LevelPicker key={level} level={level} proLocked={false} query={query} ctx={ctx} />;
+  const picker = <LevelPicker key={level} level={level} query={query} ctx={ctx} />;
 
   // ───── Recurrentes (debajo de cualquier nivel, si el plan lo incluye) ─────
   const rec = must(await s.supabase.from("recurring").select("id, description, amount_cents, frequency, next_date, anchor_day, active").order("active", { ascending: false }).order("next_date"));

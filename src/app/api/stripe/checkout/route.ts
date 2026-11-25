@@ -1,6 +1,6 @@
 import type Stripe from "stripe";
 import { z } from "zod";
-import { appUrl, ensureCustomer, getStripe, loadBilling, loadStripePrices, pricesInSync } from "@/lib/stripe";
+import { appUrl, couponOnlyForPlan, ensureCustomer, getStripe, loadBilling, loadStripePrices, planProductId, pricesInSync, retrieveCoupon } from "@/lib/stripe";
 import { getSession } from "@/server/session";
 import { checkoutPlan, couponUsable, firstMonthApplies, isPaying } from "@/app/(app)/suscripcion/lib";
 import { M } from "@/app/(app)/suscripcion/messages";
@@ -69,6 +69,15 @@ export async function POST(request: Request) {
       }
       const promo = await stripe.promotionCodes.list({ code: coupon, active: true, limit: 1 });
       if (!promo.data[0]) return json({ error: m.badCoupon }, 400);
+      // El cupón aplica solo al plan ($8 / $80), nunca al $1 del primer mes. Uno viejo sin esa restricción no se usa
+      // hasta que scripts/stripe-setup.ts lo rehaga (paso 5). `applies_to` solo llega pidiéndolo (retrieveCoupon).
+      const ref = promo.data[0].promotion?.coupon;
+      const couponId = typeof ref === "string" ? ref : ref?.id ?? null;
+      const [c, productId] = await Promise.all([couponId ? retrieveCoupon(stripe, couponId) : null, planProductId(stripe, prices)]);
+      if (!productId || !couponOnlyForPlan(c, productId)) {
+        console.error("[stripe-checkout] cupón sin restricción al plan: correr scripts/stripe-setup.ts");
+        return json({ error: m.badCoupon }, 400);
+      }
       discounts = [{ promotion_code: promo.data[0].id }];
     }
 

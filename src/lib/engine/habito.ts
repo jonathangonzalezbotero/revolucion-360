@@ -13,7 +13,7 @@ export type HabitLine = Pick<PlanLine, "id" | "name" | "kind" | "categoryId" | "
 /**
  * Por qué una línea de gasto del plan cuenta como pago FIJO (Jonathan, 25 nov 2026: flexible = todo gasto que no es un pago fijo del plan).
  * El modelo no guarda "fijo" en la línea, así que se deduce de lo que sí existe, en este orden:
- * - `override`: el usuario lo eligió (reservado para un interruptor futuro en Plan; hoy nadie lo escribe).
+ * - `override`: el usuario lo eligió en Plan ("Tipo de gasto", columna `plan_lines.fixed`: null = automático, true = fijo, false = del día a día).
  * - `category`: su categoría es de deudas, ahorro o metas.
  * - `linked`: la línea está unida a una deuda, una meta o una inversión.
  * - `one_off`: frecuencia anual o pago único (seguros, matrículas, registros).
@@ -88,6 +88,16 @@ export function fixedReasons(input: FixedInput): Map<string, FixedReason> {
   return out;
 }
 export const fixedLineIds = (input: FixedInput): Set<string> => new Set(fixedReasons(input).keys());
+
+/**
+ * `overrides` a partir de `plan_lines.fixed`. Solo entran los booleanos: null o sin columna (migración aún sin aplicar)
+ * = automático. Un null dentro del mapa NO puede entrar: `fixedReasons` lo tomaría como "del día a día".
+ */
+export function fixedOverrides(rows: Iterable<{ id: string; fixed?: boolean | null }>): Map<string, boolean> {
+  const out = new Map<string, boolean>();
+  for (const r of rows) if (typeof r.fixed === "boolean") out.set(r.id, r.fixed);
+  return out;
+}
 
 // ───────── Presupuesto y gasto del día a día ─────────
 export type ByCategory = Map<string | null, Cents>;

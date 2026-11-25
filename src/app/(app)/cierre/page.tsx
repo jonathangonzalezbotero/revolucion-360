@@ -4,14 +4,16 @@ import { redirect } from "next/navigation";
 import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
 import { Icon } from "@/components/ui/Icon";
-import { cellMap, cellOf, expectedBalance, formatDate, monthName } from "@/lib/engine";
+import { cellMap, cellOf, expectedBalance, formatDate, formatMoney, monthName } from "@/lib/engine";
 import { closureTarget } from "@/server/closure";
 import { loadAccounts, loadPlan, loadTx, must } from "@/server/data";
 import { requireUser } from "@/server/session";
 import { Cierre, type CierreProps } from "./Cierre";
 import { cardShown, deviations, nextPeriod, parsePeriod, pendingOptions, periodOfDate, readSnapshot, realTotals, type Period } from "./lib";
 import { M } from "./messages";
-import { closeData } from "./server";
+import { assetName, closeAssets, closeData } from "./server";
+import { formatUnitPrice } from "../inversiones/lib";
+import { decFromDb } from "@/lib/engine/inversiones";
 import { leftoverFor, raw } from "../metas/server";
 
 export const metadata: Metadata = { title: "Cierre de mes" };
@@ -44,13 +46,12 @@ export default async function CierrePage({ searchParams }: { searchParams: Promi
   const name = monthName(period.month, s.locale), nextName = monthName(next.month, s.locale);
   const lower = name.toLowerCase(), nextLower = nextName.toLowerCase();
 
-  const invOn = s.config.menu.inversiones !== "off";
-  const [data, closuresRes, reviewRes, nextPlan, thisPlan, accounts, invRes] = await Promise.all([
+  const [data, closuresRes, reviewRes, nextPlan, thisPlan, accounts, inv] = await Promise.all([
     closeData(s, period),
     s.supabase.from("month_closures").select("year, month, closed_at, reopened_at, snapshot").order("year", { ascending: false }).order("month", { ascending: false }),
     s.supabase.from("transactions").select("id", { count: "exact", head: true }).eq("status", "review").is("deleted_at", null),
     loadPlan(s, next.year), loadPlan(s, period.year), loadAccounts(s),
-    invOn ? s.supabase.from("investments").select("id, platform, name, value_cents, value_date").is("archived_at", null).order("created_at") : Promise.resolve({ data: [], error: null }),
+    closeAssets(s),
   ]);
   // Lo que sobró: ¿a qué meta va? Una sola decisión por mes (aunque se reabra y se cierre de nuevo).
   const [goalsRes, decidedRes] = await Promise.all([
@@ -58,7 +59,15 @@ export default async function CierrePage({ searchParams }: { searchParams: Promi
     raw(s).from("goal_leftovers").select("year").eq("year", period.year).eq("month", period.month),
   ]);
   const decided = (must(decidedRes) as unknown[]).length > 0;
-  const investments: CierreProps["investments"] = must(invRes).map((i) => ({ id: i.id, name: [i.platform, i.name].filter(Boolean).join(" · "), valueCents: i.value_cents, dateLabel: formatDate(i.value_date, s.locale, "short") }));
+  // Activos de Inversiones: por unidades se escribe el precio por unidad de hoy; por saldo, el saldo de hoy.
+  const investments: CierreProps["investments"] = inv.assets.map((a) => {
+    const price = decFromDb(a.unit_price_cents);
+    const date = a.price_date ? formatDate(a.price_date, s.locale, "short") : null;
+    const note = !date ? m.noValue
+      : a.by_units ? (price !== null ? fill(m.lastPrice, { amount: formatUnitPrice(price, s.fmt), date }) : m.noValue)
+      : fill(m.lastValue, { amount: formatMoney(a.balance_cents ?? 0, s.fmt), date });
+    return { id: a.id, name: assetName(a), byUnits: a.by_units, note };
+  });
   const closures = must(closuresRes);
   if (reviewRes.error) throw new Error(`db: ${reviewRes.error.message}`);
   const view = data.view;

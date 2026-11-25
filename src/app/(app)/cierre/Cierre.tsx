@@ -6,6 +6,7 @@ import { ConfirmButton, useToast } from "@/components/ui/client";
 import { Empty } from "@/components/ui/basics";
 import { Icon } from "@/components/ui/Icon";
 import { formatDate, formatMoney, monthName, parseMoney, type Cents, type MoneyFormat } from "@/lib/engine";
+import { parseUnitPrice } from "@/lib/engine/inversiones";
 import { closeMonth, reopenMonth, resolvePending, saveNext, undoPending, type CloseResult, type Undo } from "./actions";
 import css from "./cierre.module.css";
 import { adjustedNet, balanceGap, cardSigned, changedCells, moneyInput, type Deviation, type PendingOpt, type Period, type Snapshot, type Totals } from "./lib";
@@ -20,7 +21,8 @@ export type CierreProps = {
   pending: Pending[]; over: { lineId: string; name: string; overCents: Cents }[]; review: number; unplanned: number;
   compare: { plan: Totals; real: Totals; devs: Deviation[] };
   adjust: { year: number; month: number; income: Cents; lines: { lineId: string; name: string; cents: Cents }[] };
-  investments: { id: string; name: string; valueCents: Cents; dateLabel: string }[];
+  /** Activos de Inversiones: por unidades se escribe el precio por unidad de hoy; por saldo, el saldo de hoy. `note`: último dato escrito. */
+  investments: { id: string; name: string; byUnits: boolean; note: string }[];
   balances: { id: string; name: string; kind: string; card: boolean; balanceCents: Cents; shownCents: Cents; expectedCents: Cents; reconcile: boolean; dateLabel: string }[];
   list: { month: number; label: string; reopened: boolean; href: string; current: boolean }[];
   links: { review: string | null; monthPlan: string; nextPlan: string; cuentas: string };
@@ -183,7 +185,7 @@ export function Cierre(p: CierreProps) {
       if (!p.canEdit) return;
       const bad = p.balances.find((b) => (bal[b.id] ?? "").trim() !== "" && parseMoney(bal[b.id]) === null);
       if (bad) return setError(fill(m.badBalance, { name: bad.name }));
-      const badInv = p.investments.find((i) => (inv[i.id] ?? "").trim() !== "" && ((parseMoney(inv[i.id]) ?? -1) < 0));
+      const badInv = p.investments.find((i) => (inv[i.id] ?? "").trim() !== "" && (i.byUnits ? parseUnitPrice(inv[i.id], fmt.numberLocale) === null : (parseMoney(inv[i.id]) ?? -1) < 0));
       if (badInv) return setError(fill(m.badBalance, { name: badInv.name }));
       setBusy("close");
       const r = await closeMonth({ year: p.period.year, month: p.period.month, balances: p.balances.map((b) => ({ id: b.id, amount: bal[b.id] ?? "" })), investments: p.investments.map((i) => ({ id: i.id, amount: inv[i.id] ?? "" })) });
@@ -335,10 +337,10 @@ export function Cierre(p: CierreProps) {
                 })}
                 {p.investments.map((i) => (
                   <div key={i.id} className={css.field}>
-                    <label htmlFor={`inv-${i.id}`}>{fill(m.invLabel, { name: i.name })}</label>
+                    <label htmlFor={`inv-${i.id}`}>{fill(i.byUnits ? m.invPriceLabel : m.invLabel, { name: i.name })}</label>
                     <input id={`inv-${i.id}`} className="num" type="text" inputMode="decimal" placeholder={money(0)} value={inv[i.id] ?? ""} readOnly={!p.canEdit}
                       aria-describedby={`inv-n-${i.id}`} onChange={(e) => setInv((x) => ({ ...x, [i.id]: e.target.value }))} />
-                    <span id={`inv-n-${i.id}`} className={css.fieldNote}>{fill(m.lastValue, { amount: money(i.valueCents), date: i.dateLabel })}</span>
+                    <span id={`inv-n-${i.id}`} className={css.fieldNote}>{i.note}</span>
                   </div>
                 ))}
               </div>

@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_LEVELS, DEFAULT_MATCH, type FeatureConfig, type LevelDef, type MatchConfig, type MenuState } from "@/lib/engine";
+import { readBilling, type BillingConfig } from "@/app/(app)/suscripcion/lib";
 
 export type MenuKey = "plan" | "movimientos" | "cuentas" | "metas" | "proyeccion" | "analisis" | "deudas" | "inversiones" | "academia" | "cierre";
 export type AppConfig = {
@@ -17,6 +18,8 @@ export type AppConfig = {
   // student.mode: 'auto' = el curso que ataca la prioridad · 'course' = el curso fijo `course` (slug) · 'none' = nada. Sin mode = 'auto'.
   diagCta: { lead: { title: string; text: string; url: string; button: string }; student: { title: string; text: string; button: string; mode: DiagStudentMode; course: string } };
   legal: { company: string; abn: string; contact: string; updated: string };
+  /** Montos del plan único en USD (`app_config.billing`, con valores por defecto: $1, $8 y $80). */
+  billing: BillingConfig;
 };
 
 const DEFAULTS: AppConfig = {
@@ -24,13 +27,15 @@ const DEFAULTS: AppConfig = {
   features: {},
   flags: { csv: true, comercios: true, remesas: true, multimoneda: false },
   limits: { free_goals: 2 },
-  points: { lesson: 10, course: 50, closure: 30, debt_paid: 50, goal_done: 100, goal_contrib: 5, week_active: 5, first_step: 10 },
+  // goal_done 50: aprobado por Jonathan el 25 nov 2026 (antes 100). goal_milestone: hitos 25/50/75/100 % (metas amables).
+  points: { lesson: 10, course: 50, closure: 30, debt_paid: 50, goal_done: 50, goal_contrib: 5, week_active: 5, first_step: 10, goal_milestone: 20, goal_used: 10, goal_leftover: 10 },
   levels: DEFAULT_LEVELS,
   trial: { enabled: true, days: 14 },
   matching: DEFAULT_MATCH,
   gamification: true,
   diagCta: { lead: { title: "", text: "", url: "", button: "" }, student: { title: "", text: "", button: "", mode: "auto", course: "" } },
   legal: { company: "[RAZÓN SOCIAL]", abn: "[ABN]", contact: "[CORREO DE CONTACTO]", updated: "[FECHA]" },
+  billing: readBilling(null),
 };
 
 export type DiagStudentMode = "auto" | "course" | "none";
@@ -65,5 +70,6 @@ export const getConfig = cache(async (): Promise<AppConfig> => {
     gamification: v.gamification_enabled !== false,
     diagCta: diagCtaFrom(v.diag_cta),
     legal: { ...DEFAULTS.legal, ...(v.legal ?? {}) },
+    billing: readBilling(v.billing),
   };
 });

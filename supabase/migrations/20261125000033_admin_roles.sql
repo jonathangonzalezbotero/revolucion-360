@@ -291,6 +291,7 @@ create or replace function public.admin_set_suspended(p_user uuid, p_on boolean)
 language plpgsql security definer set search_path = public as $$
 begin
   if not public.is_admin_of('soporte') then raise exception 'forbidden'; end if;
+  if p_user = auth.uid() then raise exception 'forbidden'; end if;  -- nadie se suspende a sí mismo (nunca quedan cero dueños)
   if not public.is_admin_owner() and exists (select 1 from public.profiles x where x.id = p_user and x.role = 'admin') then
     raise exception 'forbidden';
   end if;
@@ -306,7 +307,7 @@ create or replace function public.admin_set_role(p_user uuid, p_role text) retur
 language plpgsql security definer set search_path = public as $$
 declare cur text;
 begin
-  if not public.is_admin_owner() or p_role not in ('user','admin') or p_user = auth.uid() then raise exception 'forbidden'; end if;
+  if not public.is_admin_owner() or coalesce(p_role, '') not in ('user','admin') or p_user = auth.uid() then raise exception 'forbidden'; end if;
   -- null si aún no es admin; un admin sin subrol es Dueño (cuenta heredada) y lo sigue siendo.
   select coalesce(x.admin_role, 'owner') into cur from public.profiles x where x.id = p_user and x.role = 'admin';
   update public.profiles
@@ -323,7 +324,7 @@ create or replace function public.admin_invite(p_email text, p_role text) return
 language plpgsql security definer set search_path = public as $$
 declare target public.profiles%rowtype;
 begin
-  if not public.is_admin_owner() or p_role not in ('owner','content','support') then raise exception 'forbidden'; end if;
+  if not public.is_admin_owner() or coalesce(p_role, '') not in ('owner','content','support') then raise exception 'forbidden'; end if;
   select * into target from public.profiles p where lower(p.email) = lower(trim(coalesce(p_email, ''))) limit 1;
   if not found then return 'not_found'; end if;
   if target.id = auth.uid() then return 'self'; end if;
@@ -339,7 +340,7 @@ end $$;
 create or replace function public.admin_set_admin_role(p_user uuid, p_role text) returns void
 language plpgsql security definer set search_path = public as $$
 begin
-  if not public.is_admin_owner() or p_role not in ('owner','content','support','none') or p_user = auth.uid() then
+  if not public.is_admin_owner() or coalesce(p_role, '') not in ('owner','content','support','none') or p_user = auth.uid() then
     raise exception 'forbidden';
   end if;
   if not exists (select 1 from public.profiles x where x.id = p_user and x.role = 'admin') then raise exception 'not_admin'; end if;
@@ -380,3 +381,32 @@ grant execute on function public.is_admin_of(text) to authenticated;
 grant execute on function public.admin_invite(text, text) to authenticated;
 grant execute on function public.admin_set_admin_role(uuid, text) to authenticated;
 grant execute on function public.admin_admins() to authenticated;
+
+
+-- ───────────── Revisión del 25 nov ─────────────
+-- Una solicitud de privacidad nunca cambia de dueño ni de tipo desde la app (ni siquiera Soporte):
+-- así nadie puede apuntar un borrado a otra cuenta. El servidor (clave de servicio) no pasa por aquí.
+create or replace function public.protect_privacy_request() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if coalesce(auth.role(), '') = 'authenticated' then
+    new.user_id := old.user_id;
+    new.kind := old.kind;
+    new.requested_at := old.requested_at;
+    new.due_at := old.due_at;
+  end if;
+  return new;
+end $$;
+revoke execute on function public.protect_privacy_request() from public, anon;
+create trigger protect_privacy_request before update on public.privacy_requests
+  for each row execute function public.protect_privacy_request();
+
+-- Defensa en profundidad: las funciones del panel de la 002 nunca se le quitaron a anon/public.
+revoke execute on function public.admin_users(text, text, int, int) from public, anon;
+revoke execute on function public.admin_user(uuid) from public, anon;
+revoke execute on function public.admin_grant_access(uuid, text, timestamptz, uuid) from public, anon;
+revoke execute on function public.admin_revoke_access(uuid) from public, anon;
+revoke execute on function public.admin_set_suspended(uuid, boolean) from public, anon;
+revoke execute on function public.admin_set_role(uuid, text) from public, anon;
+revoke execute on function public.admin_log(text, uuid, jsonb) from public, anon;
+revoke execute on function public.admin_summary(int) from public, anon;

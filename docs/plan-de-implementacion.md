@@ -111,7 +111,7 @@ Academia |
 Solo cursos de uso de la app y de finanzas (no Ruta del Revolucionario por ahora). 9 cursos, portadas 3D negro y amarillo. | 
 | 
 Puntos y niveles | 
-Niveles: Despertar 0, Orden 300, Ahorro 500, Inversión 1,000, Revolucionario 2,000. Puntos: clase +10, curso +50, cierre +30, saldar deuda +50, meta +100, aporte a meta +5, semana activa +5. Solo premian buen comportamiento financiero. | 
+Niveles: Despertar 0, Orden 300, Ahorro 500, Inversión 1,000, Revolucionario 2,000. Puntos: clase +10, curso +50, cierre +30, saldar deuda +50, meta +50 (antes +100; cambio del 25 nov 2026), aporte a meta +5, semana activa +5. Solo premian buen comportamiento financiero. | 
 | 
 Insignias | 
 10 insignias 3D negro y dorado. Bloqueadas en gris con su avance; al ganarla, celebración, color, fecha y notificación. | 
@@ -154,10 +154,12 @@ Reemplazan lo que digan otras secciones de este documento.
 - **Solo lectura:** al cancelar (al final del periodo), si falla el pago y no se arregla, o al vencer un acceso gratis. Ve y exporta todo; no edita. Nada se borra.
 - **Academia:** cada curso es visible para todos o solo para un grupo de alumnos.
 - **Hábito:** "Hoy puedes gastar $X" en Inicio = lo que queda para gastos no fijos del mes ÷ días que faltan (todo gasto que no es un pago fijo del plan). Repaso semanal el domingo. Notificaciones: máximo una al día, nunca de noche (21:00 a 8:00 hora del usuario), cada persona elige cuáles.
+  - **Tipo de gasto por línea** (Jonathan, 25 nov 2026): cada línea de gasto del Plan tiene "Tipo de gasto: Automático / Fijo / Del día a día" (`plan_lines.fixed`: null / true / false, migración 20261125000035). Automático usa la regla de `src/lib/engine/habito.ts` y la pantalla explica cómo la clasifica hoy; lo que elige el usuario gana siempre. Se conserva al copiar el plan al año siguiente.
 - **Metas amables:** cada meta unida a una cuenta (las transferencias a esa cuenta cuentan solas como aporte), "Aporte a…" / "Pagado con…" en Movimientos, hitos 25/50/75/100% (+20 puntos), frase de "para qué", retos opcionales, y al cerrar el mes "te sobraron $X, ¿a qué meta va?".
 - **Inversiones por activo:** activos con símbolo, tipo y plataforma; operaciones compra, venta y dividendo; cantidad, costo promedio, valor y resultado; precios escritos a mano; compras recurrentes ligadas al plan. Tablas nuevas; las anteriores se conservan.
 - **Subroles de admin:** Dueño (todo), Contenido (Academia y países), Soporte (soporte y usuarios). Solo el Dueño invita y asigna rol. 2 pasos obligatorios.
 - **CRM** (contactos, campañas, automatizaciones con Resend): diseñado; se construye después del cobro y el hábito.
+- **Integración (25 nov 2026):** cumplir una meta da **+50 puntos** (antes +100; aprobado por Jonathan). Quitar un acceso gratis desde el panel deja la cuenta en **solo lectura** (no sin activar), salvo que tenga una suscripción pagando. Los videos de la Academia exigen **cuenta activa** (solo lectura no los ve; sí ve su avance). Una cuenta sin activar puede abrir también **Mi perfil** (exportar, borrar, idioma, 2 pasos, cerrar sesión) y el servidor rechaza cualquier otra acción suya. Los **cupones** aplican solo al plan ($8 / $80), nunca al $1 del primer mes. El Cierre de mes anota el precio o saldo de hoy de cada activo de Inversiones (tablas nuevas).
 
 ## Alcance por fases
 Se construye todo lo diseñado, pero en 4 fases: cada una termina con algo usable por personas reales y con un criterio claro para pasar a la siguiente.

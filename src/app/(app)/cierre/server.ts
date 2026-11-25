@@ -1,5 +1,8 @@
 import "server-only";
-import { loadCategories, loadMonthView, must, type MonthView } from "@/server/data";
+import { fetchAll, loadCategories, loadMonthView, must, type MonthView } from "@/server/data";
+import { computeHolding } from "@/lib/engine/inversiones";
+import { isMissingTable } from "@/app/api/export/lib";
+import { ASSET_COLS, OP_COLS, toState, untyped, type AssetRow, type OpRow } from "../inversiones/lib";
 import type { Session } from "@/server/session";
 import { categoryReal, type CatResult, type Period, type Totals, type UnplannedInput } from "./lib";
 
@@ -19,3 +22,25 @@ export async function closeData(s: Session, p: Period): Promise<{ view: MonthVie
   );
   return { view, plan: view.plan, cats, unplanned };
 }
+
+/**
+ * Activos de Inversiones que siguen abiertos, con sus operaciones (tablas `assets` / `asset_operations` de la
+ * migración 20261125000032). El paso de saldos escribe el precio o saldo de hoy de cada uno. Si la migración aún no
+ * está aplicada, el cierre sigue sin el bloque de inversiones (nunca se cae el cierre por eso).
+ */
+export async function closeAssets(s: Session): Promise<{ assets: AssetRow[]; ops: OpRow[] }> {
+  if (s.config.menu.inversiones === "off") return { assets: [], ops: [] };
+  const db = untyped(s.supabase);
+  const res = await db.from("assets").select(ASSET_COLS).is("archived_at", null).order("created_at");
+  if (isMissingTable(res.error)) return { assets: [], ops: [] };
+  const assets = must(res) as AssetRow[];
+  if (!assets.length) return { assets, ops: [] };
+  const ids = assets.map((a) => a.id);
+  const ops = await fetchAll<OpRow>((a, b) => db.from("asset_operations").select(OP_COLS).in("asset_id", ids).is("deleted_at", null).order("date").order("created_at").order("id").range(a, b));
+  return { assets, ops };
+}
+
+/** Nombre del activo en el cierre: "VOO · Stake". */
+export const assetName = (a: Pick<AssetRow, "name" | "platform">) => [a.name, a.platform].filter(Boolean).join(" · ");
+/** Lo que vale hoy (cantidad × precio, o saldo + aportes posteriores), con la misma cuenta que Inversiones. */
+export const assetValue = (a: AssetRow, ops: OpRow[]) => computeHolding(toState(a, ops.filter((o) => o.asset_id === a.id))).valueCents;

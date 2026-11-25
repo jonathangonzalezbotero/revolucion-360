@@ -3,13 +3,14 @@ import { z } from "zod";
 import { parseMoney, type Frequency } from "@/lib/engine";
 import { fail, ok, run, type Result } from "@/server/action";
 import { loadCategories, must, type Category, type CategoryKind } from "@/server/data";
-import { archiveLine, createLine, setCell, setMark, updateLine, type LinePatch } from "@/server/plan-write";
+import { archiveLine, createLine, setCell, setLineFixed, setMark, updateLine, type LinePatch } from "@/server/plan-write";
 import { firstStep, touchWeek } from "@/server/rewards";
 import type { Session } from "@/server/session";
 import { lineShape, parseCell, type SavedLine } from "./lib";
 import { M } from "./messages";
 
-const PLAN = ["/plan", "/inicio"];
+// /repaso también: "Hoy puedes gastar" y el día a día salen del plan.
+const PLAN = ["/plan", "/inicio", "/repaso"];
 const MONTH = ["/plan", "/inicio", "/movimientos", "/cierre"];
 const Id = z.string().uuid();
 const Month = z.number().int().min(1).max(12);
@@ -17,14 +18,16 @@ const DateText = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((d) => !Number.i
 
 /** La línea tal como quedó guardada, con sus 12 meses. RLS solo deja ver las del usuario. */
 async function readLine(s: Session, lineId: string): Promise<SavedLine | null> {
-  const { data: l, error } = await s.supabase.from("plan_lines").select("id, name, kind, category_id, year, frequency, amount_cents, first_pay_date").eq("id", lineId).is("archived_at", null).maybeSingle();
+  // select("*") para traer `fixed` (migración 20261125000035) sin nombrarlo: antes de aplicarla la columna no llega y queda en automático.
+  const { data: l, error } = await s.supabase.from("plan_lines").select("*").eq("id", lineId).is("archived_at", null).maybeSingle();
   if (error) throw new Error(`db: ${error.message}`);
   if (!l) return null;
   const cells = must(await s.supabase.from("plan_cells").select("month, amount_cents, manual").eq("line_id", lineId));
   const a = Array<number>(12).fill(0), m = Array<boolean>(12).fill(false);
   for (const c of cells) { a[c.month - 1] = c.amount_cents; m[c.month - 1] = c.manual; }
   return {
-    line: { id: l.id, name: l.name, kind: l.kind as "income" | "expense", categoryId: l.category_id, year: l.year, frequency: l.frequency as Frequency, amountCents: l.amount_cents, firstPayDate: l.first_pay_date },
+    line: { id: l.id, name: l.name, kind: l.kind as "income" | "expense", categoryId: l.category_id, year: l.year, frequency: l.frequency as Frequency, amountCents: l.amount_cents, firstPayDate: l.first_pay_date,
+      fixed: (l as { fixed?: boolean | null }).fixed ?? null },
     row: { a, m },
   };
 }
@@ -115,6 +118,23 @@ export async function editLine(input: z.input<typeof EditLine>): Promise<Result<
     const saved = await readLine(s, d.lineId);
     if (!saved) return fail(s.t.errors.generic);
     return ok({ ...saved, keptManual });
+  });
+}
+
+/**
+ * "Tipo de gasto" de una línea de gasto: Automático (null, lo decide la regla del hábito), Fijo (true) o Del día a día (false).
+ * Cambia "Hoy puedes gastar" en Inicio y el Repaso. Los ingresos no tienen tipo.
+ */
+export async function setLineType(input: { lineId: string; fixed: boolean | null }): Promise<Result> {
+  return run({ revalidate: PLAN }, async (s) => {
+    const p = z.object({ lineId: Id, fixed: z.boolean().nullable() }).safeParse(input);
+    if (!p.success) return fail(s.t.errors.generic);
+    const { data, error } = await s.supabase.from("plan_lines").select("id, kind").eq("id", p.data.lineId).is("archived_at", null).maybeSingle();
+    if (error) throw new Error(`db: ${error.message}`);
+    if (!data) return fail(s.t.errors.notFound);
+    if (data.kind !== "expense") return fail(M[s.locale].type.income);
+    await setLineFixed(s, p.data.lineId, p.data.fixed);
+    return ok(undefined);
   });
 }
 

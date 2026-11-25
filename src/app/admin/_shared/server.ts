@@ -19,7 +19,7 @@ export type AdminSession = Session & { adminRole: AdminRole };
  */
 export async function adminAction<T>(revalidate: string[], fn: (s: AdminSession) => Promise<Result<T>>, section?: AdminSection): Promise<Result<T>> {
   const { adminRole } = await requireAdmin(section);
-  return run({ write: false, revalidate }, (s) => fn({ ...s, adminRole }));
+  return run({ write: false, allowInactive: true, revalidate }, (s) => fn({ ...s, adminRole }));
 }
 
 /** Texto del panel para la sesión. */

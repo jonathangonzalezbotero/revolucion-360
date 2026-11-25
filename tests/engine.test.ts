@@ -341,8 +341,8 @@ describe("planes y accesos (un solo plan, desde el 25 nov 2026)", () => {
   });
   it("puerta 'Activa tu cuenta': sin activar solo abre bienvenida, asistente y diagnóstico", () => {
     const free = { ...base, state: "free" as const };
-    for (const p of ["/inicio", "/plan", "/movimientos/importar", "/suscripcion", "/perfil", "/diagnosticos"]) expect(activationRedirect(free, p, now)).toBe(true);
-    for (const p of ["/diagnostico", "/activar", "/asistente", "/bienvenida"]) expect(activationRedirect(free, p, now)).toBe(false);
+    for (const p of ["/inicio", "/plan", "/movimientos/importar", "/suscripcion", "/perfiles", "/diagnosticos"]) expect(activationRedirect(free, p, now)).toBe(true);
+    for (const p of ["/diagnostico", "/activar", "/asistente", "/bienvenida", "/perfil", "/perfil/x"]) expect(activationRedirect(free, p, now)).toBe(false);
     expect(activationRedirect(free, null, now)).toBe(true); // sin la ruta, se cierra
     expect(activationRedirect({ ...base, state: "pro" }, "/plan", now)).toBe(false);
     expect(activationRedirect({ ...base, state: "read_only" }, "/plan", now)).toBe(false); // solo lectura ve todo

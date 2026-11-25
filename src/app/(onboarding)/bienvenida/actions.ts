@@ -23,7 +23,7 @@ const Space = z.object({
  * crea las categorías sugeridas y deja listo el asistente (onboarding_step = 'wizard').
  */
 export async function createSpace(input: unknown) {
-  return run({ revalidate: ["/bienvenida", "/asistente"] }, async (s) => {
+  return run({ allowInactive: true, revalidate: ["/bienvenida", "/asistente"] }, async (s) => {
     const m = M[s.locale];
     if (s.profile.onboardingStep === "done") return ok(null); // ya terminó: no se toca su perfil desde aquí
     const p = Space.safeParse(input);
@@ -53,7 +53,7 @@ export async function createSpace(input: unknown) {
  * "Empezar en blanco": sin asistente. Crea las metas que eligió (sin monto ni fecha) y abre la app.
  */
 export async function startBlank() {
-  const r = await run({ revalidate: ["/inicio", "/plan", "/metas"] }, async (s) => {
+  const r = await run({ allowInactive: true, revalidate: ["/inicio", "/plan", "/metas"] }, async (s) => {
     if (s.profile.onboardingStep === "welcome") return fail(s.t.errors.generic);
     if (s.profile.onboardingStep === "done") return ok({ next: "/plan" });
     const names = M[s.locale].goals.names;

@@ -9,7 +9,7 @@ import { loadPlan, must } from "@/server/data";
 import { createLine } from "@/server/plan-write";
 import { touchWeek, tryBadge } from "@/server/rewards";
 import type { Session } from "@/server/session";
-import { ASSET_COLS, OP_COLS, toOp, toState, untyped, type AssetRow, type OpRow } from "./lib";
+import { ASSET_COLS, OP_COLS, pricePatch, toOp, toState, untyped, type AssetRow, type OpRow } from "./lib";
 import { M } from "./messages";
 
 const PATHS = ["/inversiones", "/inicio"];
@@ -94,16 +94,8 @@ export async function setAssetPrice(input: unknown) {
     if (!p.success) return fail(s.t.errors.amount);
     const asset = await loadAsset(s, p.data.id);
     if (!asset) return fail(s.t.errors.notFound);
-    let patch: Record<string, unknown>;
-    if (asset.by_units) {
-      const price = parseUnitPrice(p.data.price, s.fmt.numberLocale);
-      if (price === null) return fail(s.t.errors.amount);
-      patch = { unit_price_cents: decToDb(price) };
-    } else {
-      const cents = parseMoney(p.data.price);
-      if (cents === null || cents < 0) return fail(s.t.errors.amount);
-      patch = { balance_cents: cents };
-    }
+    const patch = pricePatch(asset.by_units, p.data.price, s.fmt.numberLocale);
+    if (!patch) return fail(s.t.errors.amount);
     must(await db(s).from("assets").update({ ...patch, price_date: s.today, price_at: new Date().toISOString() }).eq("id", asset.id).select("id"));
     await touchWeek(s);
     return ok(undefined);

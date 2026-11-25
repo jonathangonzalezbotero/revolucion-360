@@ -15,5 +15,5 @@ Cada regla tiene su prueba en `tests/engine.test.ts`.
 | Saldo esperado | Último saldo escrito + movimientos posteriores a esa fecha. | $5,000 el 1 nov −$1,330 +$5,418 = $9,088. |
 | Meta | Ahorrado = aportes − usos. Mensual = lo que falta / meses que faltan (mínimo 1). Semanal = mensual × 12 / 52. | |
 | Estados del plan | prueba vencida → Gratis · alumno vencido → Gratis (sin perder datos) · Pro sin pagar → solo lectura. | |
-| Puntos | clase +10, curso +50, cierre +30, saldar deuda +50, meta cumplida +100, aporte a meta +5 (1 por día), semana activa +5. Los valores se editan en Admin. | El plan decía "+50" para la meta en un lugar y "+100" en otro: quedó +100, editable. |
+| Puntos | clase +10, curso +50, cierre +30, saldar deuda +50, meta cumplida +50, hito de meta (25/50/75/100 %) +20, aporte a meta +5 (1 por día), semana activa +5. Los valores se editan en Admin. | El plan decía "+50" para la meta en un lugar y "+100" en otro: quedó +100 y el 25 nov 2026 Jonathan aprobó bajarlo a +50 (migración `…034_integracion.sql`). |
 | Comodín de racha | 1 por mes calendario. **Se avisa antes de gastarlo**: el usuario decide usarlo cuando una semana falló. | |

@@ -10,6 +10,7 @@ import type { MenuKey } from "@/server/config";
 import type { Session } from "@/server/session";
 import { IconLink, SideLink, TabLink } from "./NavLink";
 import type { IconName } from "@/components/ui/Icon";
+import { freeMonths, usdShort } from "@/app/(app)/suscripcion/lib";
 
 const ITEMS: { key: MenuKey | "inicio"; href: string; icon: IconName; group: 0 | 1 | 2 }[] = [
   { key: "inicio", href: "/inicio", icon: "home", group: 0 },
@@ -37,6 +38,7 @@ export async function AppShell({ s, children }: { s: Session; children: React.Re
   const groups = [t.nav.groupMoney, t.nav.groupNumbers, t.nav.groupLearn];
   const initial = (s.profile.name || s.profile.email).trim().charAt(0).toUpperCase();
   const closeMonth = target ? monthName(target.month, s.locale).toLowerCase() : "";
+  const yearFree = freeMonths(s.config.billing.monthlyCents, s.config.billing.yearlyCents);
 
   return (
     <ToastProvider ptsLabel={t.nav.pts}>
@@ -101,9 +103,18 @@ export async function AppShell({ s, children }: { s: Session; children: React.Re
 
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
           {!s.canEdit ? (
-            <div className="banner" role="note" style={{ borderRadius: 0 }}>
+            <div className="banner" role="note" style={{ borderRadius: 0, flexWrap: "wrap", gap: 10 }}>
               <span><strong>{t.readOnly.title}.</strong> {t.readOnly.body}</span>
-              <Link href="/suscripcion" className="btn btn-sm">{t.readOnly.cta}</Link>
+              {s.plan === "read_only" ? (
+                // Mockup Bloqueo-movil: reactivar mensual o anual (montos de app_config.billing) y exportar. Suspendido: solo el aviso.
+                <span style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12 }}>
+                  <Link href="/activar" className="btn btn-sm">{fill(t.readOnly.monthly, { price: usdShort(s.config.billing.monthlyCents) })}</Link>
+                  <Link href="/activar?plan=anual" className="link" style={{ fontSize: 14, fontWeight: 600 }}>
+                    {yearFree > 0 ? fill(t.readOnly.yearly, { price: usdShort(s.config.billing.yearlyCents), free: yearFree }) : fill(t.readOnly.yearlyPlain, { price: usdShort(s.config.billing.yearlyCents) })}
+                  </Link>
+                  <Link href="/perfil#privacidad" className="link" style={{ fontSize: 14, fontWeight: 600 }}>{t.readOnly.export}</Link>
+                </span>
+              ) : null}
             </div>
           ) : null}
           {children}

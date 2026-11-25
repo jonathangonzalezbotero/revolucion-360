@@ -1,7 +1,7 @@
 "use server";
 import type Stripe from "stripe";
 import { z } from "zod";
-import { getStripe } from "@/lib/stripe";
+import { couponOnlyForPlan, getStripe, loadStripePrices, planProductId, retrieveCoupon } from "@/lib/stripe";
 import type { Json } from "@/lib/supabase/database.types";
 import { fail, ok } from "@/server/action";
 import { must } from "@/server/data";
@@ -12,8 +12,8 @@ import { checkBilling, checkCoupon, mergeBilling, stripeExpiry, type CouponData 
 import { M } from "./messages";
 
 const PATHS = ["/admin/planes", "/admin/actividad", "/admin", "/suscripcion"];
-// Igual que scripts/stripe-setup.ts: así el script reconoce lo que crea esta pantalla.
-const PRODUCT_TAG = "revolucion360_pro";
+// Igual que scripts/stripe-setup.ts (PLAN_TAG): así el script reconoce lo que crea esta pantalla.
+const PRODUCT_TAG = "revolucion360_plan";
 
 const SaveBody = z.object({ first: z.string().max(30), monthly: z.string().max(30), yearly: z.string().max(30), notifyDays: z.string().max(4) });
 
@@ -45,15 +45,25 @@ export async function saveBilling(input: unknown) {
 
 type CouponRow = Omit<CouponData, "applies_to"> & { id: string; active: boolean; stripe_coupon_id: string | null; stripe_promo_id: string | null };
 
-/** Crea el cupón y su código de promoción en Stripe, guardando cada id apenas existe (igual que el script). */
+/**
+ * Crea el cupón y su código de promoción en Stripe, guardando cada id apenas existe (igual que el script).
+ * El cupón aplica SOLO al producto del plan ($8 / $80), nunca al cargo de $1 del primer mes (producto aparte).
+ * Un cupón de Stripe guardado que no tiene esa restricción (creado antes) no se reutiliza: se crea uno nuevo.
+ * Sin precios del plan en Stripe no se crea nada (queda pendiente para scripts/stripe-setup.ts).
+ */
 async function pushToStripe(s: Session, stripe: Stripe, c: CouponRow): Promise<void> {
-  const couponId = c.stripe_coupon_id ?? (await stripe.coupons.create({
+  const productId = await planProductId(stripe, await loadStripePrices(s.supabase));
+  if (!productId) throw new Error("sin producto del plan en Stripe");
+  const saved = c.stripe_coupon_id ? await retrieveCoupon(stripe, c.stripe_coupon_id) : null;
+  const reuse = saved && couponOnlyForPlan(saved, productId) ? saved.id : null;
+  const couponId = reuse ?? (await stripe.coupons.create({
     percent_off: c.percent_off, name: c.code,
+    applies_to: { products: [productId] }, // al precio del plan, nunca al cargo de $1
     ...(c.duration_months ? { duration: "repeating" as const, duration_in_months: c.duration_months } : { duration: "forever" as const }),
     ...(c.max_redemptions ? { max_redemptions: c.max_redemptions } : {}),
     metadata: { app: PRODUCT_TAG, coupon_row: c.id },
   })).id;
-  if (!c.stripe_coupon_id) must(await s.supabase.from("coupons").update({ stripe_coupon_id: couponId }).eq("id", c.id).select("id").single());
+  if (couponId !== c.stripe_coupon_id) must(await s.supabase.from("coupons").update({ stripe_coupon_id: couponId }).eq("id", c.id).select("id").single());
   const promo = await stripe.promotionCodes.create({ promotion: { type: "coupon", coupon: couponId }, code: c.code, active: c.active, ...stripeExpiry(c.expires_at), metadata: { app: PRODUCT_TAG } });
   must(await s.supabase.from("coupons").update({ stripe_promo_id: promo.id }).eq("id", c.id).select("id").single());
 }

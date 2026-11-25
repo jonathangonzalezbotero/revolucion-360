@@ -24,7 +24,7 @@ export const M = {
     adjustTitle: "Ajusta {next}", adjustBar: "Entra {in} · sale {out}", adjustNeg: "Así planeado, en {next} te falta. Baja alguna línea hasta que no quede en negativo.",
     adjustEmpty: "Tu plan de {next} no tiene gastos", adjustEmptyText: "Agrégalos en el Plan anual y vuelve a este paso.", seeNext: "Ver {next} completo en el Plan anual ›", badAmount: "Revisa el monto de {name}.",
     // 4. Saldos
-    balTitle: "Anota tus saldos de hoy", balText: "Un minuto. Con esto la Proyección y tus Inversiones quedan al día.", cardSuffix: " (lo que debes)", invLabel: "{name} · vale hoy", lastValue: "Último valor: {amount} el {date}",
+    balTitle: "Anota tus saldos de hoy", balText: "Un minuto. Con esto la Proyección y tus Inversiones quedan al día.", cardSuffix: " (lo que debes)", invLabel: "{name} · vale hoy", invPriceLabel: "{name} · precio por unidad hoy", lastValue: "Último valor: {amount} el {date}", lastPrice: "Último precio: {amount} el {date}", noValue: "Aún sin precio ni saldo de hoy.",
     balEmpty: "Aún no tienes cuentas", balEmptyText: "Agrega tus cuentas para anotar su saldo en cada cierre. Puedes cerrar el mes igual.", balEmptyCta: "Agregar una cuenta",
     gapMissing: "Te faltan {amount} por registrar.", gapExtra: "Registraste {amount} de más.", gapOk: "Cuadra con tus movimientos.", lastBal: "Último saldo: {amount} el {date}", balHint: "Si lo dejas vacío, queda como está.", badBalance: "Revisa el saldo de {name}.",
     // Navegación
@@ -63,7 +63,7 @@ export const M = {
     compareNote: "It's not to make you feel bad: it's so your {next} plan is more realistic.",
     adjustTitle: "Adjust {next}", adjustBar: "In {in} · out {out}", adjustNeg: "Planned like this, you're short in {next}. Lower a line until it's not negative.",
     adjustEmpty: "Your {next} plan has no expenses", adjustEmptyText: "Add them in the yearly plan and come back to this step.", seeNext: "See all of {next} in the yearly plan ›", badAmount: "Check the amount for {name}.",
-    balTitle: "Write down today's balances", balText: "One minute. This keeps your Forecast and Investments up to date.", cardSuffix: " (what you owe)", invLabel: "{name} · worth today", lastValue: "Last value: {amount} on {date}",
+    balTitle: "Write down today's balances", balText: "One minute. This keeps your Forecast and Investments up to date.", cardSuffix: " (what you owe)", invLabel: "{name} · worth today", invPriceLabel: "{name} · price per unit today", lastValue: "Last value: {amount} on {date}", lastPrice: "Last price: {amount} on {date}", noValue: "No price or balance written yet.",
     balEmpty: "You don't have accounts yet", balEmptyText: "Add your accounts to write their balance at every close. You can still close the month.", balEmptyCta: "Add an account",
     gapMissing: "You have {amount} left to log.", gapExtra: "You logged {amount} too much.", gapOk: "Matches your transactions.", lastBal: "Last balance: {amount} on {date}", balHint: "Leave it empty to keep it as is.", badBalance: "Check the balance for {name}.",
     back: "‹ Back", next: "Next", finish: "Finish close", saving: "Saving…",

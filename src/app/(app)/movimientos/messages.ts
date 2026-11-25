@@ -14,13 +14,6 @@ export const M = {
       saved: "Listo. Así llevas tus gastos ahora.",
     },
     months: { label: "Mes", allYear: "Todo {year}", any: "Todas las fechas", year: "Año" },
-    pro: {
-      title: "Registra cada movimiento con Pro",
-      text: "Tus otros niveles siguen abiertos: marca lo pagado en \"Solo mi plan\" o escribe los totales del mes.",
-      bullets: ["Cada gasto, a mano o con el CSV de tu banco", "La app aprende tus categorías y sugiere a qué línea del plan va cada pago", "Recurrentes que se registran solos en su fecha"],
-      recTitle: "Recurrentes que se registran solos", recText: "Arriendo, celular, sueldo: los anotas una vez y aparecen en su fecha.",
-      yours: "Tus movimientos siguen aquí",
-    },
     plan: {
       heading: "{month}: marca lo que ya pagaste", aria: "Marcar líneas pagadas", switchAria: "{name} pagada",
       byTx: "Pagada con un movimiento. Se cambia editando el movimiento.", received: "Entra", open: "Ver el detalle del mes ›",
@@ -97,13 +90,6 @@ export const M = {
       saved: "Done. That's how you track your spending now.",
     },
     months: { label: "Month", allYear: "All of {year}", any: "All dates", year: "Year" },
-    pro: {
-      title: "Log every transaction with Pro",
-      text: "Your other levels stay open: mark what's paid in \"Just my plan\" or write your monthly totals.",
-      bullets: ["Every expense, by hand or with your bank's CSV", "The app learns your categories and suggests which plan line each payment belongs to", "Recurring items that log themselves on their date"],
-      recTitle: "Recurring items that log themselves", recText: "Rent, phone, salary: write them once and they show up on their date.",
-      yours: "Your transactions are still here",
-    },
     plan: {
       heading: "{month}: mark what you've already paid", aria: "Mark paid lines", switchAria: "{name} paid",
       byTx: "Paid with a transaction. Edit the transaction to change it.", received: "In", open: "See the month in detail ›",

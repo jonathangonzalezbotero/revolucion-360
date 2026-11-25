@@ -2,7 +2,10 @@
 import { cellMap, cellOf, iso, isoWeekday, monthAmounts, type Cents, type Frequency, type ISODate, type PlanCell, type PlanLine } from "@/lib/engine";
 import type { Category } from "@/server/data";
 
-export type LineLite = Pick<PlanLine, "id" | "name" | "kind" | "categoryId" | "year" | "frequency" | "amountCents" | "firstPayDate">;
+export type LineLite = Pick<PlanLine, "id" | "name" | "kind" | "categoryId" | "year" | "frequency" | "amountCents" | "firstPayDate"> & {
+  /** "Tipo de gasto" (`plan_lines.fixed`): null o sin dato = automático, true = fijo, false = del día a día. */
+  fixed?: boolean | null;
+};
 /** Los 12 meses de una línea: montos y cuáles se editaron a mano (índice 0 = enero). */
 export type CellRow = { a: Cents[]; m: boolean[] };
 export type CellState = Record<string, CellRow>;

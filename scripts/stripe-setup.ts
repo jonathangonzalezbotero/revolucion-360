@@ -10,10 +10,11 @@
 //    stripe_price_first (columna de la migración 20261125000028_cobro.sql). Solo esa fila; nunca borra nada.
 // 4. Crea en Stripe los cupones de la tabla coupons que aún no tienen stripe_promo_id (cupón + código de promoción, con su
 //    vencimiento; los vencidos se omiten). Los cupones nuevos aplican SOLO al producto del plan (no al $1).
+// 5. Rehace los cupones ya creados que no tienen esa restricción (nuevo cupón restringido + mismo código; el viejo se pausa).
 // Se puede correr varias veces: no duplica nada. Los productos y precios viejos ("Revolución 360 Pro", por región) se conservan.
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
-import { BILLING_CURRENCY, couponExpired, readBilling, toStripeAmount } from "../src/app/(app)/suscripcion/lib";
+import { BILLING_CURRENCY, couponExpired, couponOnlyForPlan, readBilling, toStripeAmount } from "../src/app/(app)/suscripcion/lib";
 
 process.loadEnvFile(".env");
 const KEY = (process.env.STRIPE_SECRET_KEY ?? "").trim();
@@ -80,23 +81,53 @@ async function main() {
   if (!upd.length) must(await db.from("price_regions").insert({ region: "DEFAULT", currency: BILLING_CURRENCY, ...patch } as never).select("region"));
   console.log("Fila DEFAULT de price_regions actualizada.");
 
-  const coupons = must(await db.from("coupons").select("*").is("stripe_promo_id", null).eq("active", true)) as { id: string; code: string; percent_off: number; duration_months: number | null; max_redemptions: number | null; stripe_coupon_id: string | null; expires_at: string | null }[];
+  type Row = { id: string; code: string; percent_off: number; duration_months: number | null; max_redemptions: number | null; stripe_coupon_id: string | null; stripe_promo_id: string | null; expires_at: string | null; active: boolean };
+  // ¿El cupón de Stripe aplica SOLO al plan? Uno sin applies_to (creado antes desde el panel) también descontaría el $1.
+  // `applies_to` solo llega con expand. Un cupón que no existe cuenta como "sin restricción"; cualquier otro error detiene el script.
+  const onlyPlan = async (id: string | null) => {
+    if (!id) return false;
+    try {
+      return couponOnlyForPlan(await stripe.coupons.retrieve(id, { expand: ["applies_to"] }), planProduct);
+    } catch (e) {
+      if (e instanceof Stripe.errors.StripeInvalidRequestError && e.statusCode === 404) return false;
+      throw e;
+    }
+  };
+  const newCoupon = async (c: Row) => (await stripe.coupons.create({
+    percent_off: c.percent_off, name: c.code,
+    applies_to: { products: [planProduct] }, // al precio recurrente, nunca al cargo de $1
+    ...(c.duration_months ? { duration: "repeating" as const, duration_in_months: c.duration_months } : { duration: "forever" as const }),
+    ...(c.max_redemptions ? { max_redemptions: c.max_redemptions } : {}),
+    metadata: { app: PLAN_TAG, coupon_row: c.id },
+  })).id;
+  const newPromo = async (c: Row, couponId: string) => (await stripe.promotionCodes.create({
+    promotion: { type: "coupon", coupon: couponId }, code: c.code, active: c.active, metadata: { app: PLAN_TAG },
+    ...(c.expires_at ? { expires_at: Math.floor(Date.parse(c.expires_at) / 1000) } : {}),
+  })).id;
+
+  // 4. Cupones que aún no están en Stripe.
+  const coupons = must(await db.from("coupons").select("*").is("stripe_promo_id", null).eq("active", true)) as Row[];
   for (const c of coupons) {
     // Stripe no acepta un código que ya venció: se omite (en la app ya no se puede usar).
     if (couponExpired(c.expires_at)) { console.log(`Cupón ${c.code}: ya venció, se omite.`); continue; }
-    const couponId = c.stripe_coupon_id ?? (await stripe.coupons.create({
-      percent_off: c.percent_off, name: c.code,
-      applies_to: { products: [planProduct] }, // al precio recurrente, nunca al cargo de $1
-      ...(c.duration_months ? { duration: "repeating" as const, duration_in_months: c.duration_months } : { duration: "forever" as const }),
-      ...(c.max_redemptions ? { max_redemptions: c.max_redemptions } : {}),
-      metadata: { app: PLAN_TAG, coupon_row: c.id },
-    })).id;
-    const promo = await stripe.promotionCodes.create({
-      promotion: { type: "coupon", coupon: couponId }, code: c.code, metadata: { app: PLAN_TAG },
-      ...(c.expires_at ? { expires_at: Math.floor(Date.parse(c.expires_at) / 1000) } : {}),
-    });
-    must(await db.from("coupons").update({ stripe_coupon_id: couponId, stripe_promo_id: promo.id }).eq("id", c.id).select("id"));
-    console.log(`Cupón ${c.code}:`, promo.id);
+    const couponId = (await onlyPlan(c.stripe_coupon_id)) ? (c.stripe_coupon_id as string) : await newCoupon(c);
+    const promo = await newPromo(c, couponId);
+    must(await db.from("coupons").update({ stripe_coupon_id: couponId, stripe_promo_id: promo }).eq("id", c.id).select("id"));
+    console.log(`Cupón ${c.code}:`, promo);
+  }
+
+  // 5. Cupones YA creados en Stripe sin la restricción al plan (antes también descontaban el $1 del primer mes).
+  //    Stripe no deja cambiar applies_to de un cupón: se crea uno nuevo restringido, se pausa el código viejo y se crea
+  //    otro con el MISMO código (mismo estado activo/pausado). Nunca se borra nada; los usos ya hechos quedan en el viejo.
+  const created = must(await db.from("coupons").select("*").not("stripe_promo_id", "is", null)) as Row[];
+  for (const c of created) {
+    if (await onlyPlan(c.stripe_coupon_id)) continue;
+    if (couponExpired(c.expires_at)) { console.log(`Cupón ${c.code}: ya venció, se deja como está.`); continue; }
+    const couponId = await newCoupon(c);
+    await stripe.promotionCodes.update(c.stripe_promo_id as string, { active: false });
+    const promo = await newPromo(c, couponId);
+    must(await db.from("coupons").update({ stripe_coupon_id: couponId, stripe_promo_id: promo }).eq("id", c.id).select("id"));
+    console.log(`Cupón ${c.code}: rehecho solo para el plan:`, promo);
   }
 
   console.log("Listo. Stripe (modo prueba) quedó configurado: un solo plan en USD.");

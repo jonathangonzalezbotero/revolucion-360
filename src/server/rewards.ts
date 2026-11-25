@@ -2,7 +2,8 @@ import "server-only";
 import type { Session } from "./session";
 import { weekStart, type BadgeKey } from "@/lib/engine";
 
-export type PointKind = "lesson" | "course" | "closure" | "debt_paid" | "goal_done" | "goal_contrib" | "week_active" | "first_step";
+export type PointKind = "lesson" | "course" | "closure" | "debt_paid" | "goal_done" | "goal_contrib" | "week_active" | "first_step"
+  | "goal_milestone" | "goal_used" | "goal_leftover"; // metas amables (20261125000031_metas.sql)
 
 /** Suma puntos por un hecho real (la base de datos lo valida y nunca los da dos veces). Devuelve los puntos ganados. */
 export async function award(s: Session, kind: PointKind, ref: string): Promise<number> {

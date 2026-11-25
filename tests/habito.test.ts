@@ -1,7 +1,7 @@
 // Hábito de uso: "Hoy puedes gastar", repaso semanal y avisos (src/lib/engine/habito.ts).
 import { describe, expect, it } from "vitest";
 import {
-  dailyAllowance, daysLeftInMonth, fixedLineIds, fixedReasons, fixedSlots, flexibleBudget, flexibleSpend, isLastDayOfMonth, isQuietHour, isSunday,
+  dailyAllowance, daysLeftInMonth, fixedLineIds, fixedOverrides, fixedReasons, fixedSlots, flexibleBudget, flexibleSpend, isLastDayOfMonth, isQuietHour, isSunday,
   localClock, mergeHabitPrefs, pickHabit, pickOneThing, readHabitPrefs, repasoWeek, upcomingPayments, wantsHabit,
   type FixedInput, type HabitCategory, type HabitLine, type HabitTx,
 } from "@/lib/engine/habito";
@@ -69,6 +69,48 @@ describe("qué es fijo y qué es del día a día", () => {
     const r = fixedReasons(input(lines, { overrides: new Map([["tarjeta", false], ["salidas", true]]) }));
     expect(r.has("tarjeta")).toBe(false);
     expect(r.get("salidas")).toBe("override");
+  });
+});
+
+describe("Tipo de gasto elegido en Plan (plan_lines.fixed)", () => {
+  // Arriendo mensual recién creado: sin día de pago, sin recurrente y nunca pagado. La regla lo deja en el día a día.
+  const rent = line("arriendo", "hogar", 160_000);
+  const lines = [line("sueldo", "inc", 541_800, { kind: "income" }), rent, line("super", "hogar", 40_000), line("tarjeta", "deuda", 20_000)];
+  const today = "2026-11-25"; // quedan 6 días
+  const perDay = (overrides?: Map<string, boolean>) => {
+    const fixed = fixedLineIds(input(lines, { overrides }));
+    const budget = flexibleBudget(lines, cellsOf(lines), 11, fixed);
+    const a = dailyAllowance({ budgetCents: budget.totalCents, spentCents: 0, today, planNetCents: 0 });
+    return a.state === "ok" ? a.perDayCents : null;
+  };
+
+  it("de las filas de la base: solo true/false; null, undefined o sin columna = automático", () => {
+    const o = fixedOverrides([{ id: "a", fixed: true }, { id: "b", fixed: false }, { id: "c", fixed: null }, { id: "d" }]);
+    expect([...o.entries()]).toEqual([["a", true], ["b", false]]);
+    expect(o.has("c")).toBe(false); // un null en el mapa volvería "del día a día" a la línea
+  });
+
+  it("automático: el arriendo nuevo infla 'Hoy puedes gastar' (la regla no lo ve fijo)", () => {
+    expect(fixedReasons(input(lines)).has("arriendo")).toBe(false);
+    expect(perDay(fixedOverrides([{ id: "arriendo", fixed: null }]))).toBe(Math.floor(200_000 / 6)); // $1,600 + $400
+  });
+
+  it("fijo: el arriendo sale del día a día y la cifra baja", () => {
+    const o = fixedOverrides([{ id: "arriendo", fixed: true }]);
+    expect(fixedReasons(input(lines, { overrides: o })).get("arriendo")).toBe("override");
+    expect(perDay(o)).toBe(Math.floor(40_000 / 6)); // solo el supermercado
+  });
+
+  it("del día a día: gana sobre la regla aunque la categoría sea de deudas", () => {
+    const o = fixedOverrides([{ id: "tarjeta", fixed: false }]);
+    expect(fixedReasons(input(lines)).get("tarjeta")).toBe("category");
+    expect(fixedLineIds(input(lines, { overrides: o })).has("tarjeta")).toBe(false);
+    expect(perDay(o)).toBe(Math.floor(220_000 / 6));
+  });
+
+  it("en un ingreso no hace nada", () => {
+    const o = fixedOverrides([{ id: "sueldo", fixed: true }]);
+    expect(fixedLineIds(input(lines, { overrides: o })).has("sueldo")).toBe(false);
   });
 });
 

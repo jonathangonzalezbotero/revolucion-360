@@ -78,8 +78,11 @@ export function daysLeft(until: string | null, now: Date = new Date()): number |
 }
 
 // ───────── "Activa tu cuenta": qué rutas puede abrir una cuenta sin activar ─────────
-/** Rutas que una cuenta sin activar SÍ puede abrir. Bienvenida y asistente no pasan por aquí (requireUser con allowOnboarding). */
-export const INACTIVE_ROUTES: readonly string[] = ["/diagnostico", "/activar", "/bienvenida", "/asistente"];
+/**
+ * Rutas que una cuenta sin activar SÍ puede abrir. Bienvenida y asistente no pasan por aquí (requireUser con allowOnboarding).
+ * /perfil: siempre puede exportar o borrar sus datos, cambiar idioma, 2 pasos y cerrar sesión (regla 9).
+ */
+export const INACTIVE_ROUTES: readonly string[] = ["/diagnostico", "/activar", "/bienvenida", "/asistente", "/perfil"];
 
 /** ¿Hay que mandarla a /activar? Sin la ruta (no llegó la cabecera) se cierra: va a /activar. */
 export function activationRedirect(e: Entitlement, path: string | null, now: Date = new Date()): boolean {

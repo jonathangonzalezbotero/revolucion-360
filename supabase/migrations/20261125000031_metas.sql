@@ -26,7 +26,7 @@ create trigger same_owner_goal before insert or update on public.transactions fo
 -- goal_id null = "Ahora no". La llave primaria impide sumar dos veces el mismo mes (aunque se reabra y se cierre de nuevo).
 create table if not exists public.goal_leftovers (
   user_id uuid not null references auth.users(id) on delete cascade,
-  year int not null,
+  year int not null check (year between 2020 and 2100),
   month smallint not null check (month between 1 and 12),
   goal_id uuid references public.goals(id) on delete set null,
   amount_cents bigint not null default 0 check (amount_cents >= 0),
@@ -34,7 +34,12 @@ create table if not exists public.goal_leftovers (
   decided_at timestamptz not null default now(),
   primary key (user_id, year, month)
 );
-create trigger same_owner before insert or update on public.goal_leftovers for each row execute function public.same_owner('goal_id','goals','entry_id','goal_entries');
+-- Dos disparadores separados: el SET NULL de una llave (al borrar una meta o un aporte) no revalida la otra,
+-- así borrar una cuenta o una meta nunca falla por "referencia ajena" (revisión del 25 nov).
+create trigger same_owner_goal before insert or update of goal_id on public.goal_leftovers
+  for each row when (new.goal_id is not null) execute function public.same_owner('goal_id','goals');
+create trigger same_owner_entry before insert or update of entry_id on public.goal_leftovers
+  for each row when (new.entry_id is not null) execute function public.same_owner('entry_id','goal_entries');
 
 -- ───────────── Retos opcionales: estado por usuario (nadie más lo ve; admin no tiene política) ─────────────
 create table if not exists public.user_challenges (
@@ -103,7 +108,7 @@ begin
   elsif p_kind = 'goal_milestone' then    -- ref = '<id de la meta>:<25|50|75|100>'; lo ahorrado llegó a ese % del monto
     g_id := split_part(p_ref, ':', 1);
     g_pct := case split_part(p_ref, ':', 2) when '25' then 25 when '50' then 50 when '75' then 75 when '100' then 100 else null end;
-    ok := g_pct is not null and exists (
+    ok := g_pct is not null and p_ref = g_id || ':' || g_pct::text and exists (
       select 1 from public.goals g
        where g.user_id = uid and g.id::text = g_id and g.archived_at is null and g.target_cents > 0
          and coalesce((select sum(e.amount_cents) from public.goal_entries e where e.goal_id = g.id), 0) * 100 >= g.target_cents * g_pct);
@@ -115,6 +120,7 @@ begin
   elsif p_kind = 'goal_leftover' then     -- ref = 'YYYY-MM'; mandó lo que le sobró de ese mes a una meta
     ok := exists (select 1 from public.goal_leftovers where user_id = uid and goal_id is not null and amount_cents > 0
                    and (year::text || '-' || lpad(month::text, 2, '0')) = p_ref);
+    month_cap := 1;
   end if;
   if not ok then return 0; end if;
   if month_cap is not null and (select count(*) from public.point_events
