@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración · Retos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+summary::-webkit-details-marker{display:none}details:not([open]) .chev{transform:rotate(-90deg)}summary:hover{color:#FFFFFF}
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Administración" style="flex: 1 1 220px; max-width: 256px; background: #141612; color: #FFFFFF; padding: 28px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 8px"><img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 38px; height: 38px"><span style="display: flex; flex-direction: column"><strong style="font-size: 15px">Revolución 360</strong><span style="font-size: 12px; color: #8FD3B9; font-weight: 600">Administración</span></span></div>
+    <a href="Main.dc.html" style="text-decoration: none; font-size: 13px; color: #9FC8B9; padding: 6px 10px 22px">‹ Volver a la app</a>
+    <a href="Admin.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Resumen</a><details open style="display: block"><summary style="list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #8FA39C; padding: 18px 12px 6px; user-select: none">Usuarios y pagos<span aria-hidden="true" class="chev" style="font-size: 12px; transition: transform .15s">▾</span></summary><div style="display: flex; flex-direction: column; gap: 4px"><a href="AdminUsuarios.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Usuarios y accesos</a><a href="AdminPlanes.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Planes y precios</a><a href="AdminSoporte.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Soporte y privacidad</a></div></details><details open style="display: block"><summary style="list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #8FA39C; padding: 18px 12px 6px; user-select: none">La app<span aria-hidden="true" class="chev" style="font-size: 12px; transition: transform .15s">▾</span></summary><div style="display: flex; flex-direction: column; gap: 4px"><a href="AdminMenu.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Menú y funciones</a><a href="AdminAcademia.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Academia</a><a href="AdminRetos.dc.html" aria-current="page" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: #2A2D27; color: #FFFFFF">Retos</a><a href="AdminPaises.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contenido por país</a></div></details><details open style="display: block"><summary style="list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #8FA39C; padding: 18px 12px 6px; user-select: none">CRM y correos<span aria-hidden="true" class="chev" style="font-size: 12px; transition: transform .15s">▾</span></summary><div style="display: flex; flex-direction: column; gap: 4px"><a href="AdminCRM.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contactos</a><a href="AdminCampanas.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Campañas de correo</a><a href="AdminAuto.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Automatizaciones</a><a href="AdminConexiones.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Conexiones web</a></div></details><details open style="display: block"><summary style="list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #8FA39C; padding: 18px 12px 6px; user-select: none">Control<span aria-hidden="true" class="chev" style="font-size: 12px; transition: transform .15s">▾</span></summary><div style="display: flex; flex-direction: column; gap: 4px"><a href="AdminActividad.dc.html" style="text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Registro de actividad</a></div></details>
+    <p style="margin-top: auto; font-size: 12px; color: #7FA9A0; line-height: 1.5; padding: 0 10px">Este panel no muestra los datos financieros de los usuarios.</p>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 44px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; max-width: 1280px">
+<header style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap"><div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Comunidad</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Retos</h1></div><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; background: #141612">+ Nuevo reto</button></header>
+    <section aria-labelledby="rl" style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px"><h2 id="rl" style="margin: 0; font-size: 17px; font-weight: 600">Tus retos</h2>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px"><thead><tr style="text-align: left; font-size: 12px; color: #5F6359"><th style="padding: 8px">Reto</th><th style="padding: 8px">Estado</th><th style="padding: 8px">Para quién</th><th style="padding: 8px">Cómo se mide</th><th style="padding: 8px; text-align: right">Se unieron</th><th style="padding: 8px; text-align: right">Lo terminaron</th><th style="padding: 8px; text-align: right">Salieron</th></tr></thead>
+      <tbody><sc-for list="{{ list }}" as="r" hint-placeholder-count="5"><tr onClick="{{ r.pick }}" aria-selected="{{ r.cur }}" style="border-top: 1px solid #EFEEE8; background: {{ r.bg }}; cursor: pointer"><td style="padding: 12px 8px; font-weight: 600">{{ r.t }}</td><td style="padding: 12px 8px; color: {{ r.stc }}; font-weight: 600">{{ r.st }}</td><td style="padding: 12px 8px">{{ r.aud }}</td><td style="padding: 12px 8px; color: #5F6359">{{ r.how }}</td><td class="num" style="padding: 12px 8px; text-align: right">{{ r.n }}</td><td class="num" style="padding: 12px 8px; text-align: right">{{ r.fin }}</td><td class="num" style="padding: 12px 8px; text-align: right">{{ r.out }}</td></tr></sc-for></tbody></table></section>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; align-items: start">
+      <section aria-labelledby="ed" style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <h2 id="ed" style="margin: 0; font-size: 17px; font-weight: 600">Editar reto</h2>
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="rt" style="font-size: 12px; font-weight: 500; color: #5F6359">Nombre</label><input id="rt" type="text" value="{{ f.t }}" onChange="{{ setT }}" placeholder="" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="rd" style="font-size: 12px; font-weight: 500; color: #5F6359">Descripción corta</label><input id="rd" type="text" value="{{ f.d }}" onChange="{{ setD }}" placeholder="" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 500; color: #5F6359">Ilustración</span><div role="radiogroup" aria-label="Ilustración" style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{ imgs }}" as="i" hint-placeholder-count="8"><button type="button" role="radio" aria-checked="{{ i.checked }}" onClick="{{ i.pick }}" style="width: 56px; height: 56px; padding: 2px; border-radius: 12px; border: 2px solid {{ i.bd }}; background: #F8F7F2; cursor: pointer"><img src="{{ i.src }}" alt="" style="width: 100%; height: 100%; object-fit: contain"></button></sc-for></div></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="rk" style="font-size: 12px; font-weight: 500; color: #5F6359">Cómo se mide</label><select id="rk" value="{{ f.kind }}" onChange="{{ setKind }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option>Lo marca la persona cada día</option><option>Lo mide la app</option></select></div>
+          <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 6px"><label for="ra" style="font-size: 12px; font-weight: 500; color: #5F6359">Acción en la app</label><select id="ra" value="{{ f.act }}" onChange="{{ setAct }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option>Registrar un gasto</option><option>Hacer el cierre de mes</option><option>Aportar a una meta</option><option>Terminar una clase</option><option>Abrir la app</option></select></div></sc-if>
+          <sc-if value="{{ isCheck }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="rc" style="font-size: 12px; font-weight: 500; color: #5F6359">Comodines (días que puede fallar)</label><input id="rc" class="num" type="text" inputmode="decimal" value="{{ f.com }}" onChange="{{ setCom }}" placeholder="1" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div></sc-if>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="rn" style="font-size: 12px; font-weight: 500; color: #5F6359">Duración (días)</label><input id="rn" class="num" type="text" inputmode="decimal" value="{{ f.days }}" onChange="{{ setDays }}" placeholder="30" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="rs" style="font-size: 12px; font-weight: 500; color: #5F6359">Empieza</label><input id="rs" type="text" value="{{ f.start }}" onChange="{{ setStart }}" placeholder="Cuando se una" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="ru" style="font-size: 12px; font-weight: 500; color: #5F6359">Para quién</label><select id="ru" value="{{ f.aud }}" onChange="{{ setAud }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option>Todos</option><option>Un grupo de alumnos</option><option>Quien tenga un código</option></select></div>
+          <sc-if value="{{ isGroup }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px"><label for="rg" style="font-size: 12px; font-weight: 500; color: #5F6359">Grupo</label><select id="rg" value="{{ f.grp }}" onChange="{{ setGrp }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option>Ruta 2026</option><option>Fundadores</option><option>Webinar enero</option></select></div></sc-if>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="rp" style="font-size: 12px; font-weight: 500; color: #5F6359">Puntos al terminar</label><input id="rp" class="num" type="text" inputmode="decimal" value="{{ f.pts }}" onChange="{{ setPts }}" placeholder="100" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="rb" style="font-size: 12px; font-weight: 500; color: #5F6359">Insignia (opcional)</label><input id="rb" type="text" value="{{ f.badge }}" onChange="{{ setBadge }}" placeholder="Nombre de la insignia" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px"><span style="font-size: 14px">Mostrar tabla del grupo (solo días, nunca montos)</span><button type="button" role="switch" aria-checked="{{ boardS }}" aria-label="Mostrar tabla del grupo (solo días, nunca montos)" onClick="{{ togBoard }}" style="font: inherit; width: 48px; height: 28px; border-radius: 999px; border: 0; padding: 3px; cursor: pointer; background: {{ boardBg }}; display: flex; justify-content: {{ boardJ }}; flex: none"><span style="width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF"></span></button></div>
+        <div style="background: #F8F7F2; border-radius: 12px; padding: 12px 14px; font-size: 13px; color: #3A3D36; line-height: 1.5"><strong>Conectar con correos:</strong> al publicarlo se crea la automatización "Reto: recordatorio" (a quien no marca en 3 días) y "Reto: ¡lo lograste!". Se editan en Automatizaciones.</div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end"><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Guardar borrador</button><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; background: #141612">Publicar reto</button></div>
+      </section>
+      <section aria-labelledby="pv" style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 12px; background: #F1F0EA">
+        <h2 id="pv" style="margin: 0; font-size: 17px; font-weight: 600">Así lo ve el alumno</h2>
+        <article style="background: #FFFFFF; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 8px 24px rgba(20,22,18,.08)">
+          <img src="{{ pimg }}" alt="" style="width: 96px; height: 96px; object-fit: contain; margin: -8px 0 -6px -10px">
+          <span style="font-size: 12px; color: #5F6359">{{ pwho }}</span><strong style="font-size: 17px">{{ f.t }}</strong>
+          <span style="font-size: 13px; color: #3A3D36; line-height: 1.5">{{ f.d }}</span>
+          <span style="font-size: 12px; color: #5F6359">{{ phow }} · {{ f.days }} días · empieza {{ f.start }}</span>
+          <span style="font-size: 12px; color: #5F6359">Premio: <strong style="color: #141612">{{ ppts }}</strong></span>
+          <span style="align-self: flex-start; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 999px; border: 1.5px solid #141612">Me animo</span>
+        </article>
+        <p style="margin: 0; font-size: 12px; color: #5F6359; line-height: 1.5">Resultados solo en totales: cuántos se unieron, cuántos terminaron y cuántos salieron. Nunca ves qué hizo cada persona ni sus montos.</p>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: 0, f: { t: 'Tu fondo de emergencia en 30 días', d: 'Cada día aparta algo para tu fondo, aunque sea $1. Al final tendrás el hábito y el colchón.', kind: 'Lo marca la persona cada día', act: 'Registrar un gasto', days: '30', aud: 'Un grupo de alumnos', grp: 'Ruta 2026', start: '1 ene 2027', pts: '100', badge: 'Colchón listo', com: '1', board: true, img: 'meta-emergencia' } };
+  }
+  renderVals() {
+    const s = this.state, f = s.f;
+    const IMGS = {'meta-emergencia': '/_blob/56dfe277e7eb7d98e981c42a45983834', 'vacio-movimientos': '/_blob/b27f8fa4a48b0d92aedb1096202abd06', 'meta-comprar': '/_blob/3b3c58e62dff6d4199158bd746b3de2a', 'cel-cierre': '/_blob/d4ab04da457d45173e8e8bedc9a894dd', 'onb-metas': '/_blob/5ca23fa27a6a689089714f162fa6c03d', 'cel-racha': '/_blob/3d619c621f540b58f5dd1715e5387e9b', 'meta-viaje': '/_blob/4b59694c575a3dcc52742f8b20c7043a', 'meta-deuda': '/_blob/45a4360cfd2b5e7a940c353ae752cbf5'};
+    const set = (k) => (e) => this.setState({ f: Object.assign({}, f, { [k]: e.target.value }) });
+    const L = [
+      ['Tu fondo de emergencia en 30 días', 'Activo', 'Ruta 2026', '62', '18%', '6%', 'Lo marca la persona'],
+      ['7 días registrando tus gastos', 'Activo · siempre abierto', 'Todos', '418', '41%', '12%', 'App: registrar un gasto'],
+      ['Semana de la Academia', 'Programado · 1 dic', 'Ruta 2026', '24', '—', '—', 'App: terminar clases'],
+      ['Café en casa por 2 semanas', 'Activo · siempre abierto', 'Todos', '133', '35%', '15%', 'Lo marca la persona'],
+      ['Reto de noviembre: cierra tu mes', 'Terminado', 'Todos', '506', '58%', '9%', 'App: cierre de mes']
+    ];
+    const list = L.map((r, i) => ({ t: r[0], st: r[1], aud: r[2], n: r[3], fin: r[4], out: r[5], how: r[6], cur: String(s.sel === i), bg: s.sel === i ? '#FFF8D6' : 'transparent', stc: r[1].indexOf('Activo') === 0 ? '#1E5A3F' : '#5F6359', pick: () => this.setState({ sel: i }) }));
+    const isApp = f.kind === 'Lo mide la app';
+    const imgs = Object.keys(IMGS).map((k) => ({ src: IMGS[k], checked: String(f.img === k), bd: f.img === k ? '#141612' : 'transparent', pick: () => this.setState({ f: Object.assign({}, f, { img: k }) }) }));
+    return { list, f, setT: set('t'), setD: set('d'), setKind: set('kind'), setAct: set('act'), setDays: set('days'), setAud: set('aud'), setGrp: set('grp'), setStart: set('start'), setPts: set('pts'), setBadge: set('badge'), setCom: set('com'),
+      isApp, isCheck: !isApp, isGroup: f.aud === 'Un grupo de alumnos', imgs, pimg: IMGS[f.img],
+      phow: isApp ? 'Se marca solo: ' + f.act.toLowerCase() : 'Cada día la persona marca si lo cumplió',
+      ppts: '+' + f.pts + ' pts' + (f.badge ? ' y la insignia "' + f.badge + '"' : ''), pwho: f.aud === 'Un grupo de alumnos' ? f.grp + ' · creado por Jonathan' : 'Para todos',
+      boardS: String(f.board), togBoard: () => this.setState({ f: Object.assign({}, f, { board: !f.board }) }), boardBg: f.board ? '#141612' : '#C9C6BC', boardJ: f.board ? 'flex-end' : 'flex-start' };
+  }
+}
+</script>
+</body>
+</html>

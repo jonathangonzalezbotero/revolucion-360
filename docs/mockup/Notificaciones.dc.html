@@ -104,10 +104,13 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = { f: 'Todas', items: [
+      { id: 9, g: 'Hoy', k: 'Recordatorios', t: 'Hoy puedes gastar $42', d: 'Te quedan $252 para comida, salidas y antojos en los 6 días que faltan.', time: '9:00', cta: 'Ver Inicio', href: 'Main.dc.html', unread: true },
+      { id: 10, g: 'Hoy', k: 'Logros', t: 'Reto: día 11 de 30', d: 'Tu fondo de emergencia en 30 días. ¿Lo cumpliste hoy?', time: '8:30', cta: 'Marcar', href: 'Retos.dc.html', unread: true },
       { id: 1, g: 'Hoy', k: 'Recordatorios', t: 'Cierra noviembre en 5 minutos', d: 'Quedan 6 días. Revisa, compara y ajusta diciembre.', time: '9:00', cta: 'Empezar cierre', href: 'Cierre.dc.html', unread: true },
       { id: 2, g: 'Hoy', k: 'Logros', t: 'Racha de 3 semanas', d: 'Registraste gastos 3 semanas seguidas. +15 puntos.', time: '8:12', cta: 'Ver mis logros', href: 'Perfil.dc.html', unread: true },
       { id: 3, g: 'Hoy', k: 'Recordatorios', t: 'Mañana pagas Inner Circle', d: 'Cuota de $600 desde Ubank Spend. Tienes $2,340.', time: '7:30', cta: 'Ver deuda', href: 'Deudas.dc.html', unread: true },
-      { id: 4, g: 'Esta semana', k: 'Alertas', t: 'Comida fuera va en 92%', d: 'Llevas $460 de $500 en noviembre y faltan 6 días.', time: 'Dom', cta: 'Ver detalle', href: 'Presupuesto.dc.html', unread: false },
+      { id: 4, g: 'Esta semana', k: 'Recordatorios', t: 'Tu repaso de la semana está listo', d: 'Registraste 12 movimientos y apartaste $200 para tus metas. 2 minutos.', time: 'Dom', cta: 'Ver mi semana', href: 'Repaso.dc.html', unread: false },
+      { id: 8, g: 'Esta semana', k: 'Logros', t: '¡75% de Viaje a Colombia!', d: 'Te faltan $1,600. A este ritmo llegas en enero.', time: 'Sáb', cta: 'Ver meta', href: 'Metas.dc.html', unread: false },
       { id: 5, g: 'Esta semana', k: 'Academia', t: 'Clase nueva: Tu fondo de emergencia', d: 'Curso 08 · 6 minutos.', time: 'Vie', cta: 'Ver clase', href: 'Leccion.dc.html', unread: false },
       { id: 6, g: 'Esta semana', k: 'Cuenta', t: 'Entraste desde un equipo nuevo', d: 'Chrome en Windows · Sydney. ¿No fuiste tú? Cambia tu contraseña.', time: 'Jue', cta: 'Revisar seguridad', href: 'Perfil.dc.html', unread: false },
       { id: 7, g: 'Antes', k: 'Cuenta', t: 'Tu acceso fundador vence el 1 de marzo', d: 'Te avisamos 30 y 7 días antes. Tus datos no se pierden.', time: '15 nov', cta: 'Ver suscripción', href: 'Suscripcion.dc.html', unread: false }

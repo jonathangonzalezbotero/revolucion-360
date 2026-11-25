@@ -225,7 +225,7 @@
   },
   "Forecast.dc.html": {
    "x": 0,
-   "y": 34707,
+   "y": 36827,
    "w": 1440,
    "h": 1350,
    "title": "Proyección · Escritorio",
@@ -234,7 +234,7 @@
   },
   "Forecast-movil.dc.html": {
    "x": 1520,
-   "y": 34707,
+   "y": 36827,
    "w": 390,
    "h": 1700,
    "title": "Proyección · Móvil",
@@ -242,7 +242,7 @@
   },
   "Analisis.dc.html": {
    "x": 0,
-   "y": 36827,
+   "y": 38947,
    "w": 1440,
    "h": 2300,
    "title": "Análisis · Escritorio",
@@ -251,7 +251,7 @@
   },
   "Analisis-movil.dc.html": {
    "x": 1520,
-   "y": 36827,
+   "y": 38947,
    "w": 390,
    "h": 2300,
    "title": "Análisis · Móvil",
@@ -259,7 +259,7 @@
   },
   "Bloqueo-movil.dc.html": {
    "x": 1990,
-   "y": 36827,
+   "y": 38947,
    "w": 390,
    "h": 1050,
    "title": "Solo lectura · Móvil",
@@ -267,7 +267,7 @@
   },
   "Deudas.dc.html": {
    "x": 0,
-   "y": 39547,
+   "y": 41667,
    "w": 1440,
    "h": 1900,
    "title": "Deudas e impuestos · Escritorio",
@@ -276,7 +276,7 @@
   },
   "Deudas-movil.dc.html": {
    "x": 1520,
-   "y": 39547,
+   "y": 41667,
    "w": 390,
    "h": 1900,
    "title": "Deudas e impuestos · Móvil",
@@ -284,7 +284,7 @@
   },
   "Inversiones.dc.html": {
    "x": 0,
-   "y": 41867,
+   "y": 43987,
    "w": 1440,
    "h": 1240,
    "title": "Inversiones · Escritorio",
@@ -293,7 +293,7 @@
   },
   "Inversiones-movil.dc.html": {
    "x": 1520,
-   "y": 41867,
+   "y": 43987,
    "w": 390,
    "h": 2000,
    "title": "Inversiones · Móvil",
@@ -301,7 +301,7 @@
   },
   "Cierre.dc.html": {
    "x": 0,
-   "y": 44287,
+   "y": 46407,
    "w": 1440,
    "h": 1100,
    "title": "Cierre de mes · Escritorio",
@@ -310,7 +310,7 @@
   },
   "Cierre-movil.dc.html": {
    "x": 1520,
-   "y": 44287,
+   "y": 46407,
    "w": 390,
    "h": 960,
    "title": "Cierre de mes · Móvil",
@@ -318,7 +318,7 @@
   },
   "Academia.dc.html": {
    "x": 0,
-   "y": 45807,
+   "y": 47927,
    "w": 1440,
    "h": 2161,
    "title": "Academia · Escritorio",
@@ -327,7 +327,7 @@
   },
   "Academia-movil.dc.html": {
    "x": 1520,
-   "y": 45807,
+   "y": 47927,
    "w": 390,
    "h": 2376,
    "title": "Academia · Móvil",
@@ -335,7 +335,7 @@
   },
   "Leccion.dc.html": {
    "x": 0,
-   "y": 48603,
+   "y": 50723,
    "w": 1440,
    "h": 1500,
    "title": "Clase · Escritorio",
@@ -344,7 +344,7 @@
   },
   "Leccion-movil.dc.html": {
    "x": 1520,
-   "y": 48603,
+   "y": 50723,
    "w": 390,
    "h": 2100,
    "title": "Clase · Móvil",
@@ -352,7 +352,7 @@
   },
   "Suscripcion.dc.html": {
    "x": 0,
-   "y": 51123,
+   "y": 53243,
    "w": 1440,
    "h": 1500,
    "title": "Suscripción · Escritorio",
@@ -361,7 +361,7 @@
   },
   "Suscripcion-movil.dc.html": {
    "x": 1520,
-   "y": 51123,
+   "y": 53243,
    "w": 390,
    "h": 2400,
    "title": "Suscripción · Móvil",
@@ -369,7 +369,7 @@
   },
   "Perfil.dc.html": {
    "x": 0,
-   "y": 53943,
+   "y": 56063,
    "w": 1440,
    "h": 1300,
    "title": "Mi perfil · Escritorio",
@@ -378,7 +378,7 @@
   },
   "Perfil-movil.dc.html": {
    "x": 1520,
-   "y": 53943,
+   "y": 56063,
    "w": 390,
    "h": 2100,
    "title": "Mi perfil · Móvil",
@@ -386,7 +386,7 @@
   },
   "Notificaciones.dc.html": {
    "x": 0,
-   "y": 56463,
+   "y": 58583,
    "w": 1440,
    "h": 1250,
    "title": "Notificaciones · Escritorio",
@@ -395,7 +395,7 @@
   },
   "Notificaciones-movil.dc.html": {
    "x": 1520,
-   "y": 56463,
+   "y": 58583,
    "w": 390,
    "h": 1500,
    "title": "Notificaciones · Móvil",
@@ -403,7 +403,7 @@
   },
   "Correos.dc.html": {
    "x": 1990,
-   "y": 56463,
+   "y": 58583,
    "w": 1440,
    "h": 2140,
    "title": "Correos automáticos",
@@ -412,7 +412,7 @@
   },
   "Ayuda.dc.html": {
    "x": 0,
-   "y": 59023,
+   "y": 61143,
    "w": 1440,
    "h": 1140,
    "title": "Ayuda · Escritorio",
@@ -421,7 +421,7 @@
   },
   "Ayuda-movil.dc.html": {
    "x": 1520,
-   "y": 59023,
+   "y": 61143,
    "w": 390,
    "h": 1700,
    "title": "Ayuda · Móvil",
@@ -429,7 +429,7 @@
   },
   "Legal.dc.html": {
    "x": 0,
-   "y": 61143,
+   "y": 63263,
    "w": 1440,
    "h": 1400,
    "title": "Términos y privacidad · Escritorio",
@@ -438,7 +438,7 @@
   },
   "Legal-movil.dc.html": {
    "x": 1520,
-   "y": 61143,
+   "y": 63263,
    "w": 390,
    "h": 1900,
    "title": "Términos y privacidad · Móvil",
@@ -446,7 +446,7 @@
   },
   "Admin.dc.html": {
    "x": 0,
-   "y": 63463,
+   "y": 65583,
    "w": 1440,
    "h": 1150,
    "title": "Admin · Resumen",
@@ -455,7 +455,7 @@
   },
   "AdminUsuarios.dc.html": {
    "x": 1520,
-   "y": 63463,
+   "y": 65583,
    "w": 1440,
    "h": 1400,
    "title": "Admin · Usuarios y accesos",
@@ -464,7 +464,7 @@
   },
   "AdminUsuario.dc.html": {
    "x": 0,
-   "y": 65283,
+   "y": 67403,
    "w": 1440,
    "h": 1350,
    "title": "Admin · Gestionar usuario",
@@ -473,7 +473,7 @@
   },
   "AdminMenu.dc.html": {
    "x": 1520,
-   "y": 65283,
+   "y": 67403,
    "w": 1440,
    "h": 1684,
    "title": "Admin · Menú y funciones",
@@ -482,7 +482,7 @@
   },
   "AdminAcademia.dc.html": {
    "x": 0,
-   "y": 67387,
+   "y": 69507,
    "w": 1440,
    "h": 2830,
    "title": "Admin · Academia",
@@ -491,7 +491,7 @@
   },
   "AdminPlanes.dc.html": {
    "x": 1520,
-   "y": 67387,
+   "y": 69507,
    "w": 1440,
    "h": 900,
    "title": "Admin · Planes y precios",
@@ -500,7 +500,7 @@
   },
   "AdminPaises.dc.html": {
    "x": 0,
-   "y": 70637,
+   "y": 74527,
    "w": 1440,
    "h": 1350,
    "title": "Admin · Contenido por país",
@@ -509,7 +509,7 @@
   },
   "AdminSoporte.dc.html": {
    "x": 1520,
-   "y": 70637,
+   "y": 74527,
    "w": 1440,
    "h": 1000,
    "title": "Admin · Soporte y privacidad",
@@ -518,7 +518,7 @@
   },
   "AdminActividad.dc.html": {
    "x": 3040,
-   "y": 70637,
+   "y": 74527,
    "w": 1440,
    "h": 1150,
    "title": "Admin · Registro de actividad",
@@ -544,7 +544,7 @@
   },
   "AdminCRM.dc.html": {
    "x": 0,
-   "y": 72407,
+   "y": 76297,
    "w": 1440,
    "h": 930,
    "title": "Admin · CRM · Contactos",
@@ -553,7 +553,7 @@
   },
   "AdminCampanas.dc.html": {
    "x": 1520,
-   "y": 72407,
+   "y": 76297,
    "w": 1440,
    "h": 1270,
    "title": "Admin · CRM · Campañas de correo",
@@ -562,10 +562,45 @@
   },
   "AdminAuto.dc.html": {
    "x": 3040,
-   "y": 72407,
+   "y": 76297,
    "w": 1440,
    "h": 1130,
    "title": "Admin · CRM · Automatizaciones",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Retos.dc.html": {
+   "x": 0,
+   "y": 34707,
+   "w": 1440,
+   "h": 950,
+   "title": "Retos · Escritorio",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "Retos-movil.dc.html": {
+   "x": 1520,
+   "y": 34707,
+   "w": 390,
+   "h": 1700,
+   "title": "Retos · Móvil",
+   "is_interactive": true
+  },
+  "AdminRetos.dc.html": {
+   "x": 0,
+   "y": 72757,
+   "w": 1440,
+   "h": 1350,
+   "title": "Admin · Retos",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "AdminConexiones.dc.html": {
+   "x": 4560,
+   "y": 76297,
+   "w": 1440,
+   "h": 1840,
+   "title": "Admin · CRM · Conexiones web",
    "is_interactive": true,
    "expand": "fill"
   }
@@ -598,6 +633,8 @@
   "Cuentas-movil.dc.html",
   "Metas.dc.html",
   "Metas-movil.dc.html",
+  "Retos.dc.html",
+  "Retos-movil.dc.html",
   "Forecast.dc.html",
   "Forecast-movil.dc.html",
   "Analisis.dc.html",
@@ -629,13 +666,15 @@
   "AdminUsuario.dc.html",
   "AdminMenu.dc.html",
   "AdminAcademia.dc.html",
+  "AdminRetos.dc.html",
   "AdminPlanes.dc.html",
   "AdminPaises.dc.html",
   "AdminSoporte.dc.html",
   "AdminActividad.dc.html",
   "AdminCRM.dc.html",
   "AdminCampanas.dc.html",
-  "AdminAuto.dc.html"
+  "AdminAuto.dc.html",
+  "AdminConexiones.dc.html"
  ],
  "notes": {
   "t0": {
@@ -731,112 +770,112 @@
   },
   "t13": {
    "x": 0,
-   "y": 34447,
+   "y": 36567,
    "text": "4 · Proyección",
    "kind": "title1",
    "maxW": 2380
   },
   "t14": {
    "x": 0,
-   "y": 36567,
+   "y": 38687,
    "text": "5 · Análisis  (+ cuenta en solo lectura)",
    "kind": "title1",
    "maxW": 2380
   },
   "t15": {
    "x": 0,
-   "y": 39287,
+   "y": 41407,
    "text": "6 · Deudas e impuestos",
    "kind": "title1",
    "maxW": 2380
   },
   "t16": {
    "x": 0,
-   "y": 41607,
+   "y": 43727,
    "text": "7 · Inversiones por activo",
    "kind": "title1",
    "maxW": 2380
   },
   "t17": {
    "x": 0,
-   "y": 44027,
+   "y": 46147,
    "text": "8 · Cierre de mes",
    "kind": "title1",
    "maxW": 2380
   },
   "t18": {
    "x": 0,
-   "y": 45547,
+   "y": 47667,
    "text": "9 · Academia",
    "kind": "title1",
    "maxW": 2380
   },
   "t19": {
    "x": 0,
-   "y": 48343,
+   "y": 50463,
    "text": "9b · Clase",
    "kind": "title1",
    "maxW": 2380
   },
   "t20": {
    "x": 0,
-   "y": 50863,
+   "y": 52983,
    "text": "10 · Suscripción",
    "kind": "title1",
    "maxW": 2380
   },
   "t21": {
    "x": 0,
-   "y": 53683,
+   "y": 55803,
    "text": "11 · Mi perfil",
    "kind": "title1",
    "maxW": 2380
   },
   "t22": {
    "x": 0,
-   "y": 56203,
+   "y": 58323,
    "text": "12 · Notificaciones  (+ correos automáticos)",
    "kind": "title1",
    "maxW": 2380
   },
   "t23": {
    "x": 0,
-   "y": 58763,
+   "y": 60883,
    "text": "13 · Ayuda y soporte",
    "kind": "title1",
    "maxW": 2380
   },
   "t24": {
    "x": 0,
-   "y": 60883,
+   "y": 63003,
    "text": "14 · Términos y privacidad (borrador)",
    "kind": "title1",
    "maxW": 2380
   },
   "t25": {
    "x": 0,
-   "y": 63203,
+   "y": 65323,
    "text": "Admin · Resumen y usuarios",
    "kind": "title1",
    "maxW": 2380
   },
   "t26": {
    "x": 0,
-   "y": 65023,
+   "y": 67143,
    "text": "Admin · Gestionar un usuario y menú",
    "kind": "title1",
    "maxW": 2380
   },
   "t27": {
    "x": 0,
-   "y": 67127,
+   "y": 69247,
    "text": "Admin · Academia y planes (un solo plan USD + cupones)",
    "kind": "title1",
    "maxW": 2380
   },
   "t28": {
    "x": 0,
-   "y": 70377,
+   "y": 74267,
    "text": "Admin · Países, soporte y actividad",
    "kind": "title1",
    "maxW": 2380
@@ -850,10 +889,24 @@
   },
   "t30": {
    "x": 0,
-   "y": 72147,
+   "y": 76037,
    "text": "Admin · CRM: contactos, campañas y automatizaciones (Resend)",
    "kind": "title1",
    "maxW": 4480
+  },
+  "t31": {
+   "x": 0,
+   "y": 34447,
+   "text": "3e · Retos  (opcionales, sin castigo; desde Metas)",
+   "kind": "title1",
+   "maxW": 2380
+  },
+  "t32": {
+   "x": 0,
+   "y": 72497,
+   "text": "Admin · Retos para alumnos (solo totales)",
+   "kind": "title1",
+   "maxW": 2380
   }
  },
  "designSystems": []
