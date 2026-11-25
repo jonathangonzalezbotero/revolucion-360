@@ -89,7 +89,7 @@ Todos los textos tienen versión `en` en los `messages.ts` de cada pantalla. Fal
 
 ### 5. Publicar
 1. Cambiar las claves que se compartieron en el chat (Stripe, Resend, webhook, contraseña de la base).
-2. Stripe en **modo prueba** (`sk_test_` en `.env`, desde el 25 nov). `scripts/stripe-setup.ts` ya corrió: creó el producto Pro. **Faltan los precios:** ninguna región de `price_regions` tiene monto. Ponerlos en `/admin/planes` y volver a correr el script para crear los precios en Stripe; luego probar un pago (ver `docs/STRIPE.md`).
+2. Stripe en **modo prueba** (`sk_test_` en `.env`). ✅ Precios de AU (AUD) y DEFAULT (USD) creados con `scripts/stripe-setup.ts`; **pago de prueba anual verificado el 25 nov**: el webhook pasó la cuenta a Pro (`stripe_status = active`), anotó `upgraded` y la notificación "Ya tienes Pro". Faltan precios de CO, MX y EU. Falta probar: cancelar desde el Portal (debe quedar en solo lectura al vencer), pago fallido (tarjeta `4000 0000 0000 0341`) y un cupón.
 3. Supabase producción: las claves ya están en `.env`; las migraciones se aplican con `npm run db:migrate`. Pegar las plantillas de `supabase/templates/` en Authentication → Emails; activar MFA (TOTP); poner la URL del sitio y las de redirección; contraseña mínima 8.
 4. NUNCA correr `seed.sql` (desactiva los 2 pasos de admin). Antes de lanzar, Jonathan decide si quita a mano los usuarios de demostración `@revolucion360.test`. Crear tu usuario y darle `role = 'admin'` desde el SQL Editor.
 5. Resend: verificar el dominio `revoluciondeldinero.com`.
