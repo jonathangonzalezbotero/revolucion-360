@@ -61,19 +61,21 @@ Con `demo@revolucion360.test`:
 `/admin/menu`, `/admin/academia`, `/admin/planes` y `/admin/paises`. Pasan tipos, linter, build y sus pruebas (`tests/admin-*.test.ts`). Nada se borra: cursos, cupones y países se pasan a borrador o se pausan. Las escrituras en `app_config` mezclan con lo guardado (dos pantallas editan `features` y `points` sin pisarse).
 **Decisiones pendientes de Jonathan:**
 - **Precios en Stripe producción:** cambiar un monto en `/admin/planes` actualiza la app, pero Stripe cobra el precio viejo hasta correr `scripts/stripe-setup.ts`, que solo acepta `sk_test_`. Falta decidir cómo se sincroniza en producción.
-- **Cupones "Aplica a" y "Vence"** (están en el mockup): necesitan columnas nuevas en `coupons` (migración). `coupons.redemptions` no lo escribe nadie; los usos salen de Stripe.
-- **Diagnóstico, siguiente paso para alumnos** (`diag_cta.student`; mockup AdminMenu "automático / curso fijo / nada"): no se edita en ninguna pantalla y el mockup no coincide con lo que guarda la base.
+- `coupons.redemptions` no lo escribe nadie; los usos salen de Stripe.
 - **Academia:** una clase o un módulo sueltos no se pueden ocultar (no hay columna de estado en `lessons`); "dónde abandonan" necesita una función de base.
-- **Países:** "Idioma por defecto" y "Apartado para impuestos" del mockup no tienen columna. Si un país pasa a borrador, sus usuarios no pueden guardar su región en Perfil; una moneda fuera de las 11 conocidas no se puede elegir en Perfil. La bandera `remesas` depende del nombre exacto de la categoría "Familia y remesas".
+- **Países:** si un país pasa a borrador, sus usuarios no pueden guardar su región en Perfil; una moneda fuera de las 11 conocidas no se puede elegir en Perfil. La bandera `remesas` depende del nombre exacto de la categoría "Familia y remesas".
 - **Menú:** `flags.multimoneda` y el plan de "Plan anual" (`features.plan`) se guardan pero ninguna pantalla los usa.
 
-### 3b. Mejoras pendientes del panel (parte 1)
-- Función de base `admin_emails(uuid[])` para traer correos en lote (hoy se piden de a uno con `admin_user`; pesado con miles de usuarios).
-- `admin_users`: filtro por rol y por país, búsqueda exacta por correo, y opción de 7 días en el filtro "vencen pronto" (el resumen cuenta 7 días y el filtro 30).
-- Función para "dónde más abandonan" en la Academia (hoy dice "Sin datos aún").
-- Del mockup quedaron fuera (sin función detrás): "Cambiar a Pro pagado", "Cerrar sesiones", "Enviarle sus datos", "Avisarles por correo" al dar acceso, subroles de admin y dispositivo del último acceso.
+### 3b. Panel parte 1: lo que faltaba del mockup (25 nov)
+- Hecho en código, sin probar en pantalla: "Avisarles por correo" al dar acceso, filtros por rol, país, correo exacto y "vencen en 7 días", correos en lote y "dónde más abandonan" en el resumen. Usan funciones de la migración `…027_admin_parte1.sql` (mientras no esté aplicada, el panel usa el camino anterior).
+- Sin construir, por decisión: "Cerrar sesiones" (habría que borrar filas de sesiones; choca con la regla 0, Jonathan decide), "Enviarle sus datos" (la regla 4), "Cambiar a Pro pagado" y subroles de admin (falta definir qué son), dispositivo del último acceso.
 - Borrar una cuenta desde el panel es inmediato (el mockup decía 30 días; el borrado programado de 30 días es el que pide el usuario desde su perfil).
 - Probar en vivo: reiniciar 2 pasos, borrar cuenta, responder soporte (notificación) y el filtro del registro de actividad.
+
+### 3c. Diseño de la parte 2 completado (25 nov)
+- Cupones con "Aplica a" y "Vence" (migración `…026`, aplicada); el pago rechaza un cupón de otro plan o vencido (función `coupon_rule` de `…027`). La página de Stripe ya no tiene campo de cupón: se escribe en la app.
+- Países con idioma por defecto (se aplica al guardar la bienvenida si el idioma sigue en español) y apartado para impuestos con su aviso (Deudas lo oculta si el país lo apaga; el asistente no lo enciende).
+- Diagnóstico: siguiente paso para alumnos (automático / curso fijo / nada) en `/admin/menu`.
 
 ### Correos, tareas programadas y app instalable
 - Construido y sin ejecutar: 4 correos (`src/lib/email/`), crons en `src/app/api/cron/*` (horarios en `vercel.json`), PWA (`public/manifest.webmanifest`, `public/sw.js`, `public/icons/`) y push (`/api/push/subscribe`).

@@ -58,6 +58,22 @@ export function discounted(cents: number, pct: number): number {
 /** Id del cupón de alumno en Stripe (lo crea scripts/stripe-setup.ts, uno por porcentaje). */
 export const studentCouponId = (pct: number) => `alumno-${Math.round(pct)}`;
 
+// ───────── Cupones ─────────
+/** A qué frecuencia aplica un cupón (columna `coupons.applies_to`). */
+export type CouponAppliesTo = "month" | "year" | "both";
+export const COUPON_APPLIES: readonly CouponAppliesTo[] = ["month", "year", "both"];
+export const asAppliesTo = (v: string | null | undefined): CouponAppliesTo => (v === "month" || v === "year" ? v : "both");
+
+/** ¿Ya venció? `expires_at` null = no vence; vence justo en el instante guardado. */
+export const couponExpired = (expiresAt: string | null, now: Date = new Date()) => !!expiresAt && new Date(expiresAt).getTime() <= now.getTime();
+
+/** ¿Se puede usar este cupón para la frecuencia elegida? "interval" = es de la otra frecuencia; "expired" = venció. */
+export function couponUsable(c: { applies_to: string | null; expires_at: string | null }, interval: Interval, now: Date = new Date()): "ok" | "interval" | "expired" {
+  if (couponExpired(c.expires_at, now)) return "expired";
+  const a = asAppliesTo(c.applies_to);
+  return a === "both" || a === interval ? "ok" : "interval";
+}
+
 // ───────── Accesos gratis (alumno / fundador) ─────────
 export type Grant = { kind: "alumno" | "fundador"; expires_at: string | null; revoked_at: string | null };
 

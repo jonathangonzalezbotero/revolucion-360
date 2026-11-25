@@ -10,7 +10,7 @@ import admin from "../_shared/admin.module.css";
 import type { AdminText } from "../_shared/messages";
 import { AdminHeader } from "../_shared/ui";
 import { createCountry, saveCountry, saveDiagCta, saveLegal, setCountryEnabled } from "./actions";
-import { BENCH_KEYS, CATEGORY_KINDS, GENERIC, LEGAL_KEYS, PAY_FREQUENCIES, TERM_KEYS, type BenchForm, type CategoryKind, type CatView, type CountryStatus, type LeadForm, type LegalForm, type PayFrequency, type TermKey } from "./lib";
+import { BENCH_KEYS, CATEGORY_KINDS, COUNTRY_LOCALES, GENERIC, TAX_NOTE_MAX, type CountryLocale, LEGAL_KEYS, PAY_FREQUENCIES, TERM_KEYS, type BenchForm, type CategoryKind, type CatView, type CountryStatus, type LeadForm, type LegalForm, type PayFrequency, type TermKey } from "./lib";
 import type { PaisesText } from "./messages";
 import css from "./paises.module.css";
 
@@ -18,6 +18,7 @@ export type CountryRow = { code: string; name: string; currency: string; status:
 export type CountryEdit = {
   rev: string; code: string; name: string; currency: string; timezone: string; enabled: boolean; payFrequency: PayFrequency;
   terms: Record<TermKey, string>; categories: CatView[]; benchmarks: BenchForm;
+  defaultLocale: CountryLocale; taxReserveEnabled: boolean; taxReserveNote: string;
 };
 type R = { ok: true } | { ok: false; error: string };
 type Act = (fn: () => Promise<R>, okText: string, after?: () => void) => void;
@@ -113,6 +114,9 @@ function CountryEditor({ t, m, c, timezones }: { t: AdminText; m: PaisesText; c:
   const [terms, setTerms] = useState(c.terms);
   const [cats, setCats] = useState<CatView[]>(c.categories);
   const [bench, setBench] = useState<BenchForm>(c.benchmarks);
+  const [lang, setLang] = useState<CountryLocale>(c.defaultLocale);
+  const [taxOn, setTaxOn] = useState(c.taxReserveEnabled);
+  const [taxNote, setTaxNote] = useState(c.taxReserveNote);
   const [newCat, setNewCat] = useState<{ name: string; kind: CategoryKind; basic: boolean; index: number | null } | null>(null);
   const generic = c.code === GENERIC;
 
@@ -123,7 +127,7 @@ function CountryEditor({ t, m, c, timezones }: { t: AdminText; m: PaisesText; c:
     setNewCat(null);
   };
   const save = () => act(() => saveCountry({
-    code: c.code, currency, timezone, payFrequency: freq, terms, benchmarks: bench,
+    code: c.code, currency, timezone, payFrequency: freq, terms, benchmarks: bench, defaultLocale: lang, taxReserveEnabled: taxOn, taxReserveNote: taxNote,
     categories: cats.map((x) => ({ name: x.name, kind: x.kind, from: x.from, basic: x.basic })),
   }), m.savedCountry);
 
@@ -154,6 +158,11 @@ function CountryEditor({ t, m, c, timezones }: { t: AdminText; m: PaisesText; c:
         <div className="field"><label htmlFor="c-frec">{m.freq}</label>
           <select id="c-frec" className="select" value={freq} onChange={(e) => setFreq(e.target.value as PayFrequency)}>
             {PAY_FREQUENCIES.map((f) => <option key={f} value={f}>{m.freqs[f]}</option>)}
+          </select>
+        </div>
+        <div className="field"><label htmlFor="c-idi">{m.locale}</label>
+          <select id="c-idi" className="select" value={lang} onChange={(e) => setLang(e.target.value as CountryLocale)}>
+            {COUNTRY_LOCALES.map((l) => <option key={l} value={l} lang={l}>{m.locales[l]}</option>)}
           </select>
         </div>
       </div>
@@ -200,6 +209,16 @@ function CountryEditor({ t, m, c, timezones }: { t: AdminText; m: PaisesText; c:
             ) : null}
           </div>
         ) : null}
+      </div>
+
+      <div className={css.panel}>
+        <div className={css.publish}>
+          <Switch checked={taxOn} label={m.taxSwitch} onChange={setTaxOn} />
+          <strong style={{ fontSize: 14 }}>{m.taxTitle}</strong>
+        </div>
+        <label htmlFor="c-taxtxt" className="label">{m.taxNote}</label>
+        <textarea id="c-taxtxt" className="textarea" rows={2} value={taxNote} maxLength={TAX_NOTE_MAX}
+          onChange={(e) => setTaxNote(e.target.value)} />
       </div>
 
       <div className={css.panel}>

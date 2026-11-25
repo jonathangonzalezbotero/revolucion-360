@@ -4,7 +4,7 @@ import {
   anchorPayDate, averageSummary, buildDrafts, cents, defaultAnswers, draftMonths, goalDate, monthlyAverage, pickCategory, readAnswers,
   summarize, visibleSteps, type Answers, type CatLite, type Ctx,
 } from "@/app/(onboarding)/asistente/lib";
-import { safeTimezone } from "@/app/(onboarding)/bienvenida/lib";
+import { localeForNewUser, safeTimezone } from "@/app/(onboarding)/bienvenida/lib";
 
 const labels: Ctx["labels"] = {
   income: "Trabajo",
@@ -235,5 +235,19 @@ describe("bienvenida: zona horaria", () => {
     expect(safeTimezone("", "UTC")).toBe("UTC");
     expect(safeTimezone(undefined, "UTC")).toBe("UTC");
     expect(safeTimezone("+10:00", "Australia/Sydney")).toBe("Australia/Sydney");
+  });
+});
+
+describe("bienvenida: idioma del país", () => {
+  it("usuario nuevo en español y país en inglés: pasa a inglés", () => {
+    expect(localeForNewUser({ step: "welcome", current: "es", countryDefault: "en" })).toBe("en");
+  });
+  it("país en español: no cambia nada", () => {
+    expect(localeForNewUser({ step: "welcome", current: "es", countryDefault: "es" })).toBeNull();
+  });
+  it("nunca después del primer guardado ni si ya eligió inglés", () => {
+    expect(localeForNewUser({ step: "wizard", current: "es", countryDefault: "en" })).toBeNull();
+    expect(localeForNewUser({ step: "done", current: "es", countryDefault: "en" })).toBeNull();
+    expect(localeForNewUser({ step: "welcome", current: "en", countryDefault: "es" })).toBeNull();
   });
 });

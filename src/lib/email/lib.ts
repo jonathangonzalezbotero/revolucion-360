@@ -4,7 +4,7 @@ import { addDays, daysInMonth, daysLeft, nextStateOnExpiry, parts, todayIn, week
 import { readNotifyPrefs, type NotifyPrefs } from "@/app/(app)/perfil/lib";
 import { activeGrant, isPaying, type Grant } from "@/app/(app)/suscripcion/lib";
 
-export type EmailKind = "welcome" | "close_reminder" | "access_expiring" | "payment_failed";
+export type EmailKind = "welcome" | "close_reminder" | "access_expiring" | "payment_failed" | "access_granted";
 export type Period = { year: number; month: number };
 
 // ───────── Preferencias (las guarda Perfil en profiles.prefs) ─────────
@@ -84,6 +84,13 @@ export function expiryTransition(e: ExpiryRow, grants: Grant[], now: Date = new 
 /** El pago fallido es "reciente" durante 7 días; el `ref` es el momento exacto del fallo (uno por fallo). */
 export const PAYMENT_RECENT_DAYS = 7;
 export const paymentRef = (failedAt: string) => new Date(failedAt).toISOString();
+
+// ───────── Acceso gratis dado desde el panel ─────────
+/**
+ * `ref` del aviso de acceso gratis: día en que se dio + tipo + vencimiento. Repetir el mismo acceso el mismo día
+ * no manda otro correo; extenderlo (otra fecha) o darlo otro día, sí.
+ */
+export const grantRef = (day: ISODate, kind: string, until: ISODate | null) => `${day}-${kind}-${until ?? "vida"}`;
 
 // ───────── Racha ─────────
 /**

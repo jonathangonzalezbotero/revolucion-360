@@ -13,17 +13,17 @@ import { deleteAccount, markExportDone } from "../../soporte/actions";
 import { addNote, addToGroup, deleteNote, grantOne, removeFromGroup, revokeAccess, sendPasswordReset, setRole, setSuspended, resetMfa } from "./actions";
 import type { UserText } from "./messages";
 
-type R = { ok: true } | { ok: false; error: string };
+type R = { ok: true; data?: unknown } | { ok: false; error: string };
 /** Ejecuta una acción, avisa y refresca. Devuelve el error (o null). */
 function useAct() {
   const router = useRouter();
   const toast = useToast();
   const [busy, start] = useTransition();
-  const act = (fn: () => Promise<R>, okText: string, after?: () => void) =>
+  const act = (fn: () => Promise<R>, okText: string | ((r: R) => string), after?: () => void) =>
     new Promise<string | null>((resolve) => start(async () => {
       const r = await fn();
       if (!r.ok) { toast(r.error); return resolve(r.error); }
-      toast(okText); after?.(); router.refresh(); resolve(null);
+      toast(typeof okText === "string" ? okText : okText(r)); after?.(); router.refresh(); resolve(null);
     }));
   return { act, busy, router, toast };
 }
@@ -31,14 +31,18 @@ function useAct() {
 export function AccessPanel({ t, m, locale, today, userId, state, from, kind }: { t: AdminText; m: UserText; locale: string; today: string; userId: string; state: string; from?: string; kind: "alumno" | "fundador" }) {
   const { act, busy } = useAct();
   const free = state === "alumno" || state === "fundador";
-  const [v, setV] = useState<GrantValue>({ kind, mode: "meses", months: free ? "3" : "12", until: "" });
+  const [v, setV] = useState<GrantValue>({ kind, mode: "meses", months: free ? "3" : "12", until: "", notify: true });
+  const grantedText = (r: R) => {
+    const mailed = r.ok ? (r.data as { mailed: boolean | null } | undefined)?.mailed : null;
+    return mailed === true ? m.extendedMail : mailed === false ? m.extendedNoMail : m.extended;
+  };
   return (
     <>
       <div className="stack" style={{ gap: 12, borderTop: "1px solid var(--linea-2)", paddingTop: 14 }}>
         <strong style={{ fontSize: 13 }}>{free ? m.extend : m.giveTitle}</strong>
-        <GrantFields t={t} locale={locale} today={today} from={from} value={v} onChange={setV} idPrefix="ex" />
+        <GrantFields t={t} locale={locale} today={today} from={from} value={v} onChange={setV} idPrefix="ex" one />
         {state === "pro" ? <span className="xs muted">{t.grant.proNote}</span> : null}
-        <div><button type="button" className="btn" disabled={busy} onClick={() => act(() => grantOne({ userId, ...v }), m.extended)}>{free ? m.extendBtn : m.giveBtn}</button></div>
+        <div><button type="button" className="btn" disabled={busy} onClick={() => act(() => grantOne({ userId, ...v }), grantedText)}>{free ? m.extendBtn : m.giveBtn}</button></div>
       </div>
       {free ? (
         <div className="row wrap" style={{ borderTop: "1px solid var(--linea-2)", paddingTop: 14 }}>

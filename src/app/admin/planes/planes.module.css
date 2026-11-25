@@ -26,7 +26,7 @@
 .cupHead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .addBtn { font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 14px; border: 1.5px dashed var(--linea-punteada); background: transparent; color: var(--tinta); border-radius: var(--r-md); }
 .cupForm { background: var(--papel-3); border-radius: var(--r-xl); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-.cupGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.cupGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
 .code { font-weight: 600; letter-spacing: .06em; }
 .cupFoot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 14px; }
 

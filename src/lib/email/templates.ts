@@ -29,6 +29,8 @@ export type WelcomeData = Base & { name: string };
 export type CloseData = Base & { period: Period; streak: number; points: number | null; showStreak: boolean; late?: boolean };
 export type AccessData = Base & { until: ISODate; daysLeft: number; discountPct: number | null };
 export type PaymentData = Base & { failedOn: ISODate };
+/** Acceso gratis dado desde el panel: tipo y hasta cuándo (null = de por vida). Nunca montos. */
+export type GrantData = Base & { name: string; kind: "alumno" | "fundador"; until: ISODate | null };
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const url = (base: string, path: string) => `${base.replace(/\/+$/, "")}${path}`;
@@ -157,11 +159,29 @@ export function paymentEmail(d: PaymentData): Rendered {
   return finish(l, t.payment.subject);
 }
 
+export function grantEmail(d: GrantData): Rendered {
+  const t = M[d.locale];
+  const name = firstName(d.name);
+  const kind = t.grant.kinds[d.kind];
+  const l: Layout = {
+    t, appUrl: d.appUrl, locale: d.locale, preheader: t.grant.subject, label: t.grant.label,
+    title: name ? fill(t.grant.titleName, { name }) : t.grant.titleNoName,
+    blocks: [
+      { kind: "p", text: d.until ? fill(t.grant.p1Until, { kind, date: formatDate(d.until, d.locale) }) : fill(t.grant.p1Life, { kind }) },
+      { kind: "p", text: d.until ? t.grant.p2Until : t.grant.p2Life },
+    ],
+    cta: { text: t.grant.cta, href: url(d.appUrl, "/inicio") },
+    footer: t.footer.account,
+  };
+  return finish(l, t.grant.subject);
+}
+
 export type AnyEmail =
   | { kind: "welcome"; data: WelcomeData }
   | { kind: "close_reminder"; data: CloseData }
   | { kind: "access_expiring"; data: AccessData }
-  | { kind: "payment_failed"; data: PaymentData };
+  | { kind: "payment_failed"; data: PaymentData }
+  | { kind: "access_granted"; data: GrantData };
 
 export function renderEmail(e: AnyEmail): Rendered {
   switch (e.kind) {
@@ -169,6 +189,7 @@ export function renderEmail(e: AnyEmail): Rendered {
     case "close_reminder": return closeEmail(e.data);
     case "access_expiring": return accessEmail(e.data);
     case "payment_failed": return paymentEmail(e.data);
+    case "access_granted": return grantEmail(e.data);
   }
 }
-export const EMAIL_KINDS: EmailKind[] = ["welcome", "close_reminder", "access_expiring", "payment_failed"];
+export const EMAIL_KINDS: EmailKind[] = ["welcome", "close_reminder", "access_expiring", "payment_failed", "access_granted"];

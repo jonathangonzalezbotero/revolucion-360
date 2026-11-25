@@ -31,6 +31,7 @@ Ningún correo lleva montos ni datos financieros (lo comprueba `tests/correos.te
 | Recordatorio de cierre | `cierre` | `prefs.close_day`: `last` = desde que empiezan los últimos 10 días del mes; `first` = días 1 a 5 del mes siguiente. En la zona horaria del usuario. Mes sin cerrar y acceso a `cierre` (Pro por defecto) | `prefs.notify.close` y `prefs.channel` |
 | Acceso por vencer | `vencimientos` | Alumno con `access_until` a 8–30 días (aviso "30") y a 1–7 días (aviso "7") | `prefs.channel` |
 | Pago fallido | `pagos` | `payment_failed_at` de los últimos 7 días, uno por fallo | Siempre: es un correo importante de la cuenta (no se puede desactivar) |
+| Acceso gratis | — (lo manda el panel) | Al dar acceso de alumno o fundador con la casilla "Avisarles por correo" marcada. Uno por acceso y día; máximo 50 por acción | Siempre: es un correo de la cuenta |
 
 Cada envío se reserva primero en `email_log (user_id, kind, ref)` (único): nunca sale dos veces. Si el envío falla, la reserva se suelta y se reintenta.
 Cada aviso en la app usa `notifications.dedupe`. Los textos están en `src/lib/email/messages.ts` (español del mockup e inglés según `profiles.locale`).

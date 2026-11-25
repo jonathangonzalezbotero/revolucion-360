@@ -72,7 +72,7 @@ export const M = {
       resume: "Seguir con Pro", resumed: "Tu suscripción sigue activa.",
     },
     errors: {
-      notActive: "Los pagos aún no están activos.", noPrice: "Todavía no hay precio para tu región.", badCoupon: "Ese cupón no existe o ya venció.",
+      notActive: "Los pagos aún no están activos.", noPrice: "Todavía no hay precio para tu región.", badCoupon: "Ese cupón no existe o ya venció.", couponExpired: "Ese cupón ya venció.", couponMonthly: "Ese cupón es solo para el plan mensual. Elige mensual o quita el cupón.", couponYearly: "Ese cupón es solo para el plan anual. Elige anual o quita el cupón.",
       alreadyPro: "Ya tienes una suscripción activa. Gestiónala en Stripe.", noCustomer: "Aún no tienes pagos en Stripe.", noSub: "No tienes una suscripción activa.",
       trial: "La prueba gratis ya no está disponible para tu cuenta.", name: "Falta el nombre.",
     },
@@ -148,7 +148,7 @@ export const M = {
       resume: "Keep Pro", resumed: "Your subscription is still active.",
     },
     errors: {
-      notActive: "Payments aren't active yet.", noPrice: "There's no price for your region yet.", badCoupon: "That coupon doesn't exist or has expired.",
+      notActive: "Payments aren't active yet.", noPrice: "There's no price for your region yet.", badCoupon: "That coupon doesn't exist or has expired.", couponExpired: "That coupon has expired.", couponMonthly: "That coupon is only for the monthly plan. Choose monthly or remove the coupon.", couponYearly: "That coupon is only for the yearly plan. Choose yearly or remove the coupon.",
       alreadyPro: "You already have an active subscription. Manage it in Stripe.", noCustomer: "You don't have payments in Stripe yet.", noSub: "You don't have an active subscription.",
       trial: "The free trial is no longer available for your account.", name: "The name is missing.",
     },

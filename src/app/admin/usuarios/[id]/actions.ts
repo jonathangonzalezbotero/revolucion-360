@@ -5,7 +5,7 @@ import { fail, ok, type Result } from "@/server/action";
 import { must } from "@/server/data";
 import type { Session } from "@/server/session";
 import { checkNote, endOfDay, expiryDay, expiryFrom } from "../../_shared/lib";
-import { adminAction, adminText, appUrl, audit, loadUser } from "../../_shared/server";
+import { adminAction, adminText, appUrl, audit, loadUser, mailGrant } from "../../_shared/server";
 import { M } from "./messages";
 
 const paths = (id: string) => [`/admin/usuarios/${id}`, "/admin/usuarios", "/admin", "/admin/actividad"];
@@ -25,7 +25,7 @@ const sameEmail = (a: string, b: string) => a.trim().toLowerCase() === b.trim().
 
 /** Da o extiende el acceso gratis. Extender suma desde el vencimiento actual si aún no venció. */
 export async function grantOne(input: unknown) {
-  return onUser(input, { kind: z.enum(["alumno", "fundador"]), mode: z.enum(["vida", "meses", "fecha"]), months: z.string().max(4).default(""), until: z.string().max(10).default("") }, async (s, d) => {
+  return onUser(input, { kind: z.enum(["alumno", "fundador"]), mode: z.enum(["vida", "meses", "fecha"]), months: z.string().max(4).default(""), until: z.string().max(10).default(""), notify: z.boolean().default(false) }, async (s, d) => {
     const t = adminText(s);
     const u = await loadUser(s, d.userId);
     if (!u) return fail(t.errors.notFound);
@@ -33,7 +33,9 @@ export async function grantOne(input: unknown) {
     const e = expiryFrom(d.mode as "vida" | "meses" | "fecha", { months: d.months as string, until: d.until as string }, s.today, current);
     if (!e.ok) return fail(t.errors[e.error]);
     must(await s.supabase.rpc("admin_grant_access", { p_user: d.userId, p_kind: d.kind as string, p_expires: endOfDay(e.until) as string }));
-    return ok(e.until);
+    // "Avisarle por correo": el aviso en la app ya lo crea admin_grant_access.
+    const mail = d.notify ? await mailGrant(s, [d.userId], d.kind as "alumno" | "fundador", e.until) : null;
+    return ok({ until: e.until, mailed: mail ? mail.sent > 0 : null });
   });
 }
 

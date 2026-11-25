@@ -136,6 +136,15 @@ Términos y privacidad en lenguaje simple, como borrador para revisar con abogad
 | 
 Entorno de desarrollo (25 nov 2026) | 
 Sin Docker. La app se prueba en local (`npm run dev`) contra la base de producción (claves en `.env`, fuera de git). Jonathan acepta el riesgo con una condición: la base nunca se resetea ni se borra, ni en pruebas, ni con scripts nuevos, ni en un deploy (CLAUDE.md, regla 0). Barreras: hook `.claude/hooks/proteger-base.sh`, scripts que solo crean, pruebas de permisos solo contra Supabase local, migraciones que solo agregan y se revisan antes de `db:migrate`. Reemplaza la regla anterior "nunca se usan datos de producción en desarrollo". | 
+| 
+Cupones (25 nov 2026) | 
+Cada cupón aplica a mensual, anual o ambos y puede vencer (fin del día elegido, 23:59:59 UTC). El código se escribe solo en la app: la página de pago de Stripe no muestra campo de cupón, porque Stripe no distingue mensual de anual. Los cupones se pausan, nunca se borran. | 
+| 
+Países (25 nov 2026) | 
+Cada país tiene idioma por defecto (se aplica al primer guardado de la bienvenida si el usuario sigue en español) y puede apagar el apartado para impuestos de independientes (se oculta, los datos no se borran). Un país nunca se borra: pasa a borrador. | 
+| 
+Diagnóstico para alumnos (25 nov 2026) | 
+El siguiente paso para alumnos es automático (curso de su prioridad), un curso fijo o nada; se edita en Menú y funciones. La clase gratuita para quien no es alumno se edita en Contenido por país. | 
 
 ## Alcance por fases
 Se construye todo lo diseñado, pero en 4 fases: cada una termina con algo usable por personas reales y con un criterio claro para pasar a la siguiente.

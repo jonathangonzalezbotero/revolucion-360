@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Schemas, checkLevels, diffConfig, formToValues, menuPreview, parseWhole, sameJson, touchedKeys, valuesToForm, type MenuValues } from "@/app/admin/menu/lib";
+import { Schemas, StudentSchema, checkLevels, checkStudent, mergeDiagStudent, studentToForm, diffConfig, formToValues, menuPreview, parseWhole, sameJson, touchedKeys, valuesToForm, type MenuValues } from "@/app/admin/menu/lib";
 
 const base: MenuValues = {
   menu: { plan: "on", movimientos: "on", cuentas: "on", metas: "on", proyeccion: "on", analisis: "on", deudas: "on", inversiones: "on", academia: "on", cierre: "on" },
@@ -119,5 +119,28 @@ describe("touchedKeys", () => {
     expect(touchedKeys(f, f)).toEqual([]);
     const g = { ...f, freeGoals: "3", adminMfa: false, menu: { ...f.menu, cierre: "off" as const } };
     expect(touchedKeys(f, g)).toEqual(["menu", "limits", "admin_mfa_required"]);
+  });
+});
+
+describe("siguiente paso del Diagnóstico para alumnos", () => {
+  const stored = { lead: { title: "Clase", text: "t", url: "https://x.co", button: "Ver" }, student: { title: "T", text: "X", button: "B" }, otra: 1 };
+  it("sin mode (o uno raro) es automático", () => {
+    expect(studentToForm(stored)).toEqual({ mode: "auto", course: "" });
+    expect(studentToForm({ student: { mode: "raro" } })).toEqual({ mode: "auto", course: "" });
+    expect(studentToForm(null)).toEqual({ mode: "auto", course: "" });
+    expect(studentToForm({ student: { mode: "course", course: "ahorro" } })).toEqual({ mode: "course", course: "ahorro" });
+  });
+  it("guardar solo toca student.mode y student.course: no pisa lead ni los textos", () => {
+    const out = mergeDiagStudent(stored, { mode: "course", course: " ahorro " });
+    expect(out).toEqual({ lead: stored.lead, student: { title: "T", text: "X", button: "B", mode: "course", course: "ahorro" }, otra: 1 });
+    // Otro modo conserva el curso fijo anterior
+    expect(mergeDiagStudent(out, { mode: "none", course: "" })).toEqual({ lead: stored.lead, student: { title: "T", text: "X", button: "B", mode: "none", course: "ahorro" }, otra: 1 });
+    expect(mergeDiagStudent(undefined, { mode: "auto", course: "" })).toEqual({ student: { mode: "auto", course: "" } });
+  });
+  it("un curso fijo tiene que existir", () => {
+    expect(checkStudent({ mode: "course", course: "ahorro" }, ["ahorro"])).toBeNull();
+    expect(checkStudent({ mode: "course", course: "" }, ["ahorro"])).toBe("course");
+    expect(checkStudent({ mode: "auto", course: "" }, [])).toBeNull();
+    expect(StudentSchema.safeParse({ mode: "otro", course: "" }).success).toBe(false);
   });
 });

@@ -65,3 +65,14 @@ export function withFundState(ind: Indicator[], fundMarked: boolean): Indicator[
 
 /** Hay con qué diagnosticar: un plan con ingresos en el mes. Si no, nunca se inventan indicadores. */
 export const canDiagnose = (lines: number, incomeCents: number) => lines > 0 && incomeCents > 0;
+
+/**
+ * Siguiente paso para alumnos (`app_config.diag_cta.student.mode`, lo edita /admin/menu):
+ * 'auto' (o sin mode) = el curso publicado que ataca la prioridad · 'course' = el curso fijo si está publicado
+ * (si no, como 'auto') · 'none' = no se muestra el bloque. Quien no es alumno nunca ve este bloque.
+ */
+export function studentStep(p: { student: boolean; mode: unknown; course: unknown }): { show: boolean; fixedSlug: string | null } {
+  if (!p.student || p.mode === "none") return { show: false, fixedSlug: null };
+  const slug = p.mode === "course" && typeof p.course === "string" ? p.course.trim() : "";
+  return { show: true, fixedSlug: slug || null };
+}

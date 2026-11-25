@@ -4,7 +4,8 @@ import { formatDate, todayIn, type ISODate } from "@/lib/engine";
 import { run, type Result } from "@/server/action";
 import { must } from "@/server/data";
 import { requireAdmin, type Session } from "@/server/session";
-import type { Json } from "@/lib/supabase/database.types";
+import type { Database, Json } from "@/lib/supabase/database.types";
+import { sendGrantEmails, type GrantMailResult } from "@/lib/email/grant";
 import { expiryDay } from "./lib";
 import { A } from "./messages";
 
@@ -43,42 +44,118 @@ export async function loadUser(s: Session, id: string): Promise<AdminUser | null
   return r && typeof r === "object" ? (r as AdminUser) : null;
 }
 
+// ───────── Funciones de la migración 20261125000027_admin_parte1.sql ─────────
+// Aún no están en los tipos generados (`npm run db:types` después de aplicarla): se llaman con un cast puntual (`as never`).
+// Mientras no se aplique, PostgREST responde PGRST202 ("función no encontrada") y se usa el camino anterior.
+type RpcResult<T> = { data: T | null; error: { message: string; code?: string } | null };
+async function rpcNew<T>(s: Session, fn: "admin_emails" | "admin_users_v2" | "admin_academy_dropoff", args: Record<string, unknown>): Promise<RpcResult<T> | null> {
+  const r = (await s.supabase.rpc(fn as never, args as never)) as unknown as RpcResult<T>;
+  if (r.error?.code === "PGRST202") return null; // migración sin aplicar
+  return r;
+}
+
 export type UserRef = { id: string; email: string; name: string };
+export type UserContact = UserRef & { locale: string | null };
+
 /**
- * Correo y nombre de varios usuarios. El admin no puede leer `profiles` ajenos (RLS):
- * solo `admin_user`, de a pocos en paralelo. Un usuario borrado no aparece en el mapa.
+ * Correo, nombre e idioma de varios usuarios. El admin no puede leer `profiles` ajenos (RLS):
+ * `admin_emails` en lotes de 500 (o, si la migración no está aplicada, `admin_user` de a pocos, sin idioma).
+ * Un usuario borrado no aparece en el mapa.
  */
-export async function lookupUsers(s: Session, ids: (string | null | undefined)[]): Promise<Map<string, UserRef>> {
+export async function loadContacts(s: Session, ids: (string | null | undefined)[]): Promise<Map<string, UserContact>> {
   const unique = [...new Set(ids.filter((x): x is string => !!x))];
-  const out = new Map<string, UserRef>();
-  for (let i = 0; i < unique.length; i += 10) {
-    const chunk = unique.slice(i, i + 10);
-    const rows = await Promise.all(chunk.map((id) => loadUser(s, id)));
-    rows.forEach((u) => { if (u) out.set(u.id, { id: u.id, email: u.email, name: u.name }); });
+  const out = new Map<string, UserContact>();
+  for (let i = 0; i < unique.length; i += 500) {
+    const chunk = unique.slice(i, i + 500);
+    const r = await rpcNew<UserContact[]>(s, "admin_emails", { p_ids: chunk });
+    if (r) {
+      must(r).forEach((u) => out.set(u.id, { id: u.id, email: u.email, name: u.name, locale: u.locale }));
+      continue;
+    }
+    for (let j = 0; j < chunk.length; j += 10) {
+      const rows = await Promise.all(chunk.slice(j, j + 10).map((id) => loadUser(s, id)));
+      rows.forEach((u) => { if (u) out.set(u.id, { id: u.id, email: u.email, name: u.name, locale: null }); });
+    }
   }
   return out;
 }
 
-/** Busca usuarios por correo exacto (la búsqueda de `admin_users` es parcial). */
+/** Correo y nombre de varios usuarios (ver `loadContacts`). */
+export async function lookupUsers(s: Session, ids: (string | null | undefined)[]): Promise<Map<string, UserRef>> {
+  const contacts = await loadContacts(s, ids);
+  return new Map([...contacts].map(([id, u]) => [id, { id: u.id, email: u.email, name: u.name }]));
+}
+
+/** Fila de la lista de usuarios (mismas columnas en `admin_users` y `admin_users_v2`). */
+export type AdminUserRow = Database["public"]["Functions"]["admin_users"]["Returns"][number];
+export type UserListQuery = { p_search: string; p_email: string; p_filter: string; p_role: string; p_country: string };
+
+/**
+ * Lista de usuarios con filtros (`admin_users_v2`). Si la migración no está aplicada, cae a `admin_users`:
+ * sin filtro de rol ni de país, "7 días" se vuelve "30 días" y el correo exacto se filtra en esta página.
+ */
+export async function listUsers(s: Session, q: UserListQuery, limit: number, offset: number): Promise<AdminUserRow[]> {
+  const r = await rpcNew<AdminUserRow[]>(s, "admin_users_v2", { ...q, p_limit: limit, p_offset: offset });
+  if (r) return must(r);
+  const rows = must(await s.supabase.rpc("admin_users", {
+    p_search: q.p_email || q.p_search, p_filter: q.p_filter === "expiring7" ? "expiring" : q.p_filter, p_limit: limit, p_offset: offset,
+  }));
+  return q.p_email ? rows.filter((u) => u.email.toLowerCase() === q.p_email.toLowerCase()) : rows;
+}
+const ALL: UserListQuery = { p_search: "", p_email: "", p_filter: "all", p_role: "", p_country: "" };
+
+/** Busca un usuario por correo exacto. */
 export async function findByEmail(s: Session, email: string): Promise<{ id: string; email: string; role: string } | null> {
   for (let offset = 0; offset < 20_000; offset += 1000) {
-    const rows = must(await s.supabase.rpc("admin_users", { p_search: email, p_filter: "all", p_limit: 1000, p_offset: offset }));
-    const hit = rows.find((r) => r.email.toLowerCase() === email.toLowerCase());
+    const rows = await listUsers(s, { ...ALL, p_email: email.trim().toLowerCase() }, 1000, offset);
+    const hit = rows.find((r) => r.email.toLowerCase() === email.trim().toLowerCase());
     if (hit) return { id: hit.id, email: hit.email, role: hit.role };
     if (rows.length < 1000) break;
   }
   return null;
 }
 
-/** Todos los administradores. `admin_users` no filtra por rol: se recorre la lista de a 1,000. */
+/** Todos los administradores (filtro de rol de `admin_users_v2`; sin la migración, recorre la lista de a 1,000). */
 export async function loadAdmins(s: Session): Promise<UserRef[]> {
   const out: UserRef[] = [];
   for (let offset = 0; offset < 50_000; offset += 1000) {
-    const rows = must(await s.supabase.rpc("admin_users", { p_search: "", p_filter: "all", p_limit: 1000, p_offset: offset }));
+    const rows = await listUsers(s, { ...ALL, p_role: "admin" }, 1000, offset);
     rows.filter((r) => r.role === "admin").forEach((r) => out.push({ id: r.id, email: r.email, name: r.name }));
     if (rows.length < 1000) break;
   }
   return out;
+}
+
+/**
+ * Clase donde más alumnos se quedan entre los que empezaron un curso en los últimos `days` días (el mismo periodo
+ * que `admin_summary`). null si no hay datos o la migración no está aplicada.
+ */
+export async function loadDropoff(s: Session, days: number): Promise<{ lesson: string; course: string; stuck: number } | null> {
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
+  const r = await rpcNew<{ lesson_id: string; lesson_title: string; course_title: string; stuck: number }[]>(s, "admin_academy_dropoff", { p_since: since });
+  if (!r) return null;
+  const row = must(r)[0];
+  return row ? { lesson: row.lesson_title, course: row.course_title, stuck: Number(row.stuck) } : null;
+}
+
+/**
+ * Casilla "Avisarles por correo": manda el correo de acceso gratis a cada usuario que lo recibió.
+ * Los correos salen de `admin_emails` (nunca de leer perfiles con la clave de servicio). Queda en el registro
+ * cuántos salieron. Nunca falla la acción: el acceso ya se dio.
+ */
+export async function mailGrant(s: Session, ids: string[], kind: "alumno" | "fundador", until: ISODate | null): Promise<GrantMailResult> {
+  if (!ids.length) return { sent: 0, skipped: 0, failed: 0 };
+  let res: GrantMailResult;
+  try {
+    const contacts = await loadContacts(s, ids);
+    res = await sendGrantEmails([...contacts.values()], { kind, until, day: s.today });
+    res.skipped += ids.length - contacts.size;
+  } catch {
+    console.error("[admin] aviso de acceso por correo no enviado"); // sin datos personales
+    return { sent: 0, skipped: 0, failed: ids.length };
+  }
+  if (res.sent > 0) await audit(s, "dar_acceso_correo", ids.length === 1 ? ids[0] : null, { kind, sent: res.sent, of: ids.length }).catch(() => undefined);
+  return res;
 }
 
 /** Día (en la zona horaria del admin) de un instante guardado en la base. */

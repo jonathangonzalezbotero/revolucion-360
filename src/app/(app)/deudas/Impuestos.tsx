@@ -11,6 +11,8 @@ import css from "./deudas.module.css";
 
 type Entry = { id: string; date: ISODate; kind: "ingreso" | "apartado" | "pago"; amountCents: Cents; note: string };
 type Props = {
+  /** Aviso del país (admin, Contenido por país). Si tiene texto, reemplaza el aviso general. */
+  note: string;
   enabled: boolean; percentBps: number; status: TaxStatus; entries: Entry[]; freelance: string; retirement: string; taxOffice: string;
   year: number; today: ISODate; canEdit: boolean; m: DeudasMessages; fmt: MoneyFormat; locale: Locale;
 };
@@ -60,7 +62,7 @@ export function Impuestos(p: Props) {
             <div className={css.ledgerCell}><span>{m.setAside}</span><strong className="num big">{money(st.monthToSetAsideCents)}</strong></div>
           </div>
           {p.percentBps === 0 ? <p className="small muted">{m.needPct}</p> : null}
-          <p className={css.warn}>{fill(m.taxWarn, { retirement: p.retirement })}</p>
+          <p className={css.warn} style={p.note ? { whiteSpace: "pre-line" } : undefined}>{p.note || fill(m.taxWarn, { retirement: p.retirement })}</p>
 
           <div className={css.yearRow}>
             <div><span>{fill(m.yIncome, { year: p.year })}</span><strong className="num">{money(st.yearIncomeCents)}</strong></div>

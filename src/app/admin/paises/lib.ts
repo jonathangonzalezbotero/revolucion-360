@@ -191,6 +191,15 @@ export function mergeCategories(raw: unknown, items: { name: string; kind: Categ
   return { ok: true, value: out };
 }
 
+// ───────── Idioma por defecto y apartado de impuestos de independientes ─────────
+/** Idioma con el que empieza un usuario nuevo del país (`countries.default_locale`). */
+export const COUNTRY_LOCALES = ["es", "en"] as const;
+export type CountryLocale = (typeof COUNTRY_LOCALES)[number];
+export const asCountryLocale = (v: unknown): CountryLocale => (v === "en" ? "en" : "es");
+/** Aviso del apartado de impuestos (`countries.tax_reserve_note`). Vacío: no se muestra aviso propio. */
+export const TAX_NOTE_MAX = 400;
+export const cleanTaxNote = (v: string): string => v.trim().replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n");
+
 // ───────── app_config.diag_cta y app_config.legal ─────────
 export type LeadForm = { title: string; text: string; url: string; button: string };
 export const leadToForm = (raw: unknown): LeadForm => {

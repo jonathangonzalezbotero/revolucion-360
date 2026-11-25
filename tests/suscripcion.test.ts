@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  activeGrant, canStartTrial, discounted, fromStripeAmount, toStripeAmount, invoiceInterval, isStaleEvent, isStudent, mapSubscription, monthlyEquivalent,
+  activeGrant, asAppliesTo, canStartTrial, couponExpired, couponUsable, discounted, fromStripeAmount, toStripeAmount, invoiceInterval, isStaleEvent, isStudent, mapSubscription, monthlyEquivalent,
   pickRegion, priceFor, stateAfterSubscription, stripePriceFor, trialEnd, yearlySavingsPct, type Grant, type PriceRegion, type SubLike,
 } from "@/app/(app)/suscripcion/lib";
 
@@ -190,5 +190,30 @@ describe("montos en Stripe", () => {
     expect(toStripeAmount(990000, "CLP")).toBe(9900);
     expect(fromStripeAmount(9900, "clp")).toBe(990000);
     expect(fromStripeAmount(1299, "USD")).toBe(1299);
+  });
+});
+
+describe("cupón: aplica a la frecuencia y no venció", () => {
+  const until = "2026-12-31T23:59:59Z";
+  it("ambos planes, sin vencimiento: sirve para mensual y anual", () => {
+    expect(couponUsable({ applies_to: "both", expires_at: null }, "month", NOW)).toBe("ok");
+    expect(couponUsable({ applies_to: "both", expires_at: null }, "year", NOW)).toBe("ok");
+  });
+  it("solo mensual / solo anual", () => {
+    expect(couponUsable({ applies_to: "month", expires_at: until }, "month", NOW)).toBe("ok");
+    expect(couponUsable({ applies_to: "month", expires_at: until }, "year", NOW)).toBe("interval");
+    expect(couponUsable({ applies_to: "year", expires_at: null }, "year", NOW)).toBe("ok");
+    expect(couponUsable({ applies_to: "year", expires_at: null }, "month", NOW)).toBe("interval");
+  });
+  it("vence justo en el instante guardado; vencido gana a la frecuencia", () => {
+    expect(couponUsable({ applies_to: "both", expires_at: until }, "month", new Date("2026-12-31T23:59:58Z"))).toBe("ok");
+    expect(couponUsable({ applies_to: "both", expires_at: until }, "month", new Date(until))).toBe("expired");
+    expect(couponUsable({ applies_to: "year", expires_at: "2026-11-01T23:59:59Z" }, "month", NOW)).toBe("expired");
+    expect(couponExpired(null, NOW)).toBe(false);
+  });
+  it("un valor raro se lee como ambos planes", () => {
+    expect(asAppliesTo("month")).toBe("month");
+    expect(asAppliesTo(null)).toBe("both");
+    expect(couponUsable({ applies_to: "x", expires_at: null }, "year", NOW)).toBe("ok");
   });
 });

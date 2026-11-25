@@ -5,7 +5,7 @@ import {
   adjustedNet, balanceGap, buildSnapshot, cardShown, cardSigned, categoryReal, changedCells, closureStreak, deviations, moneyInput,
   nextPeriod, parsePeriod, pendingOptions, pendingWrites, periodOfDate, readSnapshot, realTotals, reminderDate, ymRef, type CatInput,
 } from "@/app/(app)/cierre/lib";
-import { benchmarksFrom, canDiagnose, joinNames, levelCounts, levelTone, monthsText, pctText, referenceVars, valueText, withFundState } from "@/app/(app)/diagnostico/lib";
+import { benchmarksFrom, canDiagnose, joinNames, levelCounts, levelTone, monthsText, pctText, referenceVars, studentStep, valueText, withFundState } from "@/app/(app)/diagnostico/lib";
 import { M as DM } from "@/app/(app)/diagnostico/messages";
 
 const cats: CatInput[] = [
@@ -197,5 +197,22 @@ describe("diagnóstico", () => {
     expect(joinNames(["Inner Circle"], "y")).toBe("Inner Circle");
     expect(joinNames(["Inner Circle", "Bike Payment"], "y")).toBe("Inner Circle y Bike Payment");
     expect(joinNames(["A", "B", "C", "D"], "and")).toBe("A, B and C");
+  });
+});
+
+describe("diagnóstico · siguiente paso del alumno", () => {
+  it("quien no es alumno nunca ve el bloque de alumno", () => {
+    expect(studentStep({ student: false, mode: "course", course: "ahorro" })).toEqual({ show: false, fixedSlug: null });
+  });
+  it("sin mode o 'auto': el automático", () => {
+    expect(studentStep({ student: true, mode: undefined, course: "" })).toEqual({ show: true, fixedSlug: null });
+    expect(studentStep({ student: true, mode: "auto", course: "ahorro" })).toEqual({ show: true, fixedSlug: null });
+  });
+  it("'course': el curso fijo; sin curso, como automático", () => {
+    expect(studentStep({ student: true, mode: "course", course: "ahorro" })).toEqual({ show: true, fixedSlug: "ahorro" });
+    expect(studentStep({ student: true, mode: "course", course: "" })).toEqual({ show: true, fixedSlug: null });
+  });
+  it("'none': nada", () => {
+    expect(studentStep({ student: true, mode: "none", course: "ahorro" }).show).toBe(false);
   });
 });

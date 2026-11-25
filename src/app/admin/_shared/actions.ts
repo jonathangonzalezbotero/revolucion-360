@@ -3,14 +3,17 @@ import { z } from "zod";
 import { fail, ok } from "@/server/action";
 import { fetchAll, must } from "@/server/data";
 import { endOfDay, expiryFrom, parseEmails } from "./lib";
-import { adminAction, adminText, audit, findByEmail } from "./server";
+import { adminAction, adminText, audit, findByEmail, mailGrant } from "./server";
 
 const Grant = z.object({
   kind: z.enum(["alumno", "fundador"]),
   mode: z.enum(["vida", "meses", "fecha"]),
   months: z.string().max(4).default(""),
   until: z.string().max(10).default(""),
+  /** "Avisarles por correo" (el aviso en la app lo crea siempre `admin_grant_access`). */
+  notify: z.boolean().default(false),
 });
+const NO_MAIL = null as { sent: number; of: number } | null;
 const REVALIDATE = ["/admin", "/admin/usuarios", "/admin/grupos", "/admin/actividad"];
 
 /** Da acceso gratis (alumno o fundador) a usuarios elegidos y/o a correos pegados. */
@@ -32,7 +35,8 @@ export async function grantUsers(input: unknown) {
     for (const id of ids) {
       must(await s.supabase.rpc("admin_grant_access", { p_user: id, p_kind: p.data.kind, p_expires: endOfDay(e.until) as string }));
     }
-    return ok({ granted: ids.size, notFound });
+    const mail = p.data.notify ? await mailGrant(s, [...ids], p.data.kind, e.until) : null;
+    return ok({ granted: ids.size, notFound, mail: mail ? { sent: mail.sent, of: ids.size } : NO_MAIL });
   });
 }
 
@@ -48,7 +52,8 @@ export async function grantGroup(input: unknown) {
     for (const m of members) {
       must(await s.supabase.rpc("admin_grant_access", { p_user: m.user_id, p_kind: p.data.kind, p_expires: endOfDay(e.until) as string, p_group: p.data.groupId }));
     }
-    return ok({ granted: members.length, notFound: [] as string[] });
+    const mail = p.data.notify ? await mailGrant(s, members.map((m) => m.user_id), p.data.kind, e.until) : null;
+    return ok({ granted: members.length, notFound: [] as string[], mail: mail ? { sent: mail.sent, of: members.length } : NO_MAIL });
   });
 }
 

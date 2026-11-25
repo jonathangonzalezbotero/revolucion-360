@@ -2,8 +2,8 @@
 import { z } from "zod";
 import { fail, ok } from "@/server/action";
 import { must } from "@/server/data";
-import { checkCode, checkMaxUses, codeDuration, csvCell, parseFilter, parseSearch } from "../_shared/lib";
-import { adminAction, adminText, audit } from "../_shared/server";
+import { checkCode, checkMaxUses, codeDuration, csvCell, parseCountry, parseFilter, parseRole, parseSearch, userQuery } from "../_shared/lib";
+import { adminAction, adminText, audit, listUsers } from "../_shared/server";
 import { M } from "./messages";
 
 const REVALIDATE = ["/admin/usuarios", "/admin/actividad"];
@@ -46,19 +46,19 @@ export async function setInviteActive(input: unknown) {
 /** Lista de usuarios en CSV (sin datos financieros: correo, nombre, país, plan, fechas). Queda en el registro. */
 export async function exportUsers(input: unknown) {
   return adminAction(["/admin/actividad"], async (s) => {
-    const p = z.object({ q: z.string().max(200).default(""), filtro: z.string().max(20).default("all") }).safeParse(input);
+    const p = z.object({ q: z.string().max(200).default(""), filtro: z.string().max(20).default("all"), rol: z.string().max(10).default("all"), pais: z.string().max(10).default("all") }).safeParse(input);
     if (!p.success) return fail(adminText(s).errors.generic);
-    const q = parseSearch(p.data.q), filter = parseFilter(p.data.filtro);
+    const q = parseSearch(p.data.q), filter = parseFilter(p.data.filtro), role = parseRole(p.data.rol), pais = parseCountry(p.data.pais);
     const head = ["email", "name", "country", "role", "plan", "access_until", "pro_until", "payment_failed", "suspended", "created_at", "last_active_at", "groups"];
     const lines = [head.join(",")];
     for (let offset = 0; offset < 100_000; offset += 1000) {
-      const rows = must(await s.supabase.rpc("admin_users", { p_search: q, p_filter: filter, p_limit: 1000, p_offset: offset }));
+      const rows = await listUsers(s, userQuery(q, filter, role, pais), 1000, offset);
       for (const r of rows) {
         lines.push([r.email, r.name, r.country, r.role, r.state, r.access_until, r.pro_until, r.payment_failed_at ? "yes" : "", r.suspended_at ? "yes" : "", r.created_at, r.last_active_at, (r.groups ?? []).join(" | ")].map(csvCell).join(","));
       }
       if (rows.length < 1000) break;
     }
-    await audit(s, "exportar_lista", null, { filter, search: q || undefined, rows: lines.length - 1 });
+    await audit(s, "exportar_lista", null, { filter, search: q || undefined, role: role === "all" ? undefined : role, country: pais === "all" ? undefined : pais, rows: lines.length - 1 });
     return ok(lines.join("\n"));
   });
 }

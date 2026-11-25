@@ -7,9 +7,9 @@ import type { Json } from "@/lib/supabase/database.types";
 import { fail, ok } from "@/server/action";
 import { must } from "@/server/data";
 import type { Session } from "@/server/session";
-import { studentCouponId } from "@/app/(app)/suscripcion/lib";
+import { couponExpired, studentCouponId } from "@/app/(app)/suscripcion/lib";
 import { adminAction, adminText, audit } from "../_shared/server";
-import { PLAN_FEATURES, changedFeatures, checkCoupon, checkTrial, regionPatch, tierOf, type CouponData } from "./lib";
+import { PLAN_FEATURES, changedFeatures, checkCoupon, checkTrial, regionPatch, stripeExpiry, tierOf, type CouponData } from "./lib";
 import { M } from "./messages";
 
 const PATHS = ["/admin/planes", "/admin/actividad", "/admin", "/suscripcion"];
@@ -101,7 +101,7 @@ export async function savePlans(input: unknown) {
   });
 }
 
-type CouponRow = CouponData & { id: string; active: boolean; stripe_coupon_id: string | null; stripe_promo_id: string | null };
+type CouponRow = Omit<CouponData, "applies_to"> & { id: string; active: boolean; stripe_coupon_id: string | null; stripe_promo_id: string | null };
 
 /** Crea el cupón y su código de promoción en Stripe, guardando cada id apenas existe (igual que el script). */
 async function pushToStripe(s: Session, stripe: Stripe, c: CouponRow): Promise<void> {
@@ -112,7 +112,7 @@ async function pushToStripe(s: Session, stripe: Stripe, c: CouponRow): Promise<v
     metadata: { app: PRODUCT_TAG, coupon_row: c.id },
   })).id;
   if (!c.stripe_coupon_id) must(await s.supabase.from("coupons").update({ stripe_coupon_id: couponId }).eq("id", c.id).select("id").single());
-  const promo = await stripe.promotionCodes.create({ promotion: { type: "coupon", coupon: couponId }, code: c.code, active: c.active, metadata: { app: PRODUCT_TAG } });
+  const promo = await stripe.promotionCodes.create({ promotion: { type: "coupon", coupon: couponId }, code: c.code, active: c.active, ...stripeExpiry(c.expires_at), metadata: { app: PRODUCT_TAG } });
   must(await s.supabase.from("coupons").update({ stripe_promo_id: promo.id }).eq("id", c.id).select("id").single());
 }
 
@@ -120,14 +120,14 @@ async function pushToStripe(s: Session, stripe: Stripe, c: CouponRow): Promise<v
 export async function createCoupon(input: unknown) {
   return adminAction(PATHS, async (s) => {
     const m = M[s.locale], t = adminText(s);
-    const p = z.object({ code: z.string().max(60), pct: z.string().max(5), months: z.string().max(5), max: z.string().max(8) }).safeParse(input);
+    const p = z.object({ code: z.string().max(60), pct: z.string().max(5), months: z.string().max(5), max: z.string().max(8), appliesTo: z.string().max(10), until: z.string().max(20) }).safeParse(input);
     if (!p.success) return fail(t.errors.generic);
-    const c = checkCoupon(p.data);
+    const c = checkCoupon(p.data, s.today);
     if (!c.ok) return fail(m.errors[c.error]);
-    const { data: row, error } = await s.supabase.from("coupons").insert(c.coupon).select("id, code, percent_off, duration_months, max_redemptions, active, stripe_coupon_id, stripe_promo_id").single();
+    const { data: row, error } = await s.supabase.from("coupons").insert(c.coupon).select("id, code, percent_off, duration_months, max_redemptions, expires_at, active, stripe_coupon_id, stripe_promo_id").single();
     if (error?.code === "23505") return fail(m.errors.taken);
     if (error || !row) throw new Error(error?.message ?? "cupón");
-    await audit(s, "cupon_crear", null, { code: row.code, pct: row.percent_off, months: row.duration_months ?? undefined });
+    await audit(s, "cupon_crear", null, { code: row.code, pct: row.percent_off, months: row.duration_months ?? undefined, applies: c.coupon.applies_to, until: row.expires_at ?? undefined });
     const stripe = getStripe();
     if (!stripe) return ok<{ stripe: StripeStatus }>({ stripe: "off" });
     try {
@@ -146,8 +146,9 @@ export async function pushCoupon(input: unknown) {
     const m = M[s.locale], t = adminText(s);
     const p = z.object({ id: z.string().uuid() }).safeParse(input);
     if (!p.success) return fail(t.errors.generic);
-    const row = must(await s.supabase.from("coupons").select("id, code, percent_off, duration_months, max_redemptions, stripe_coupon_id, stripe_promo_id, active").eq("id", p.data.id).single());
+    const row = must(await s.supabase.from("coupons").select("id, code, percent_off, duration_months, max_redemptions, expires_at, stripe_coupon_id, stripe_promo_id, active").eq("id", p.data.id).single());
     if (row.stripe_promo_id) return ok(undefined);
+    if (couponExpired(row.expires_at)) return fail(m.errors.expired); // Stripe no acepta un código que ya venció
     const stripe = getStripe();
     if (!stripe) return fail(m.errors.stripeOff);
     try {

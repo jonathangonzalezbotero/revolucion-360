@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useTransition } from "react";
 import { fill } from "@/i18n";
@@ -7,20 +8,28 @@ import { Icon } from "@/components/ui/Icon";
 import type { MenuState } from "@/lib/engine";
 import adm from "../_shared/admin.module.css";
 import { AdminHeader } from "../_shared/ui";
-import { saveMenuConfig } from "./actions";
-import { FLAG_KEYS, INNER_FEATURES, MAX_LEVELS, MENU_KEYS, MENU_STATES, POINT_KEYS, SECTION_FEATURE, formToValues, menuPreview, sameJson, touchedKeys, type MenuForm } from "./lib";
+import { saveDiagStudent, saveMenuConfig } from "./actions";
+import { FLAG_KEYS, INNER_FEATURES, MAX_LEVELS, MENU_KEYS, MENU_STATES, POINT_KEYS, SECTION_FEATURE, STUDENT_MODES, formToValues, menuPreview, sameJson, touchedKeys, type MenuForm, type StudentForm, type StudentMode } from "./lib";
 import type { MenuText } from "./messages";
 import css from "./menu.module.css";
 
 type SectionKey = (typeof MENU_KEYS)[number];
 
-export function MenuView({ m, names, initial, aal2 }: { m: MenuText; names: Record<"inicio" | SectionKey, string>; initial: MenuForm; aal2: boolean }) {
+export function MenuView({ m, names, initial, aal2, student, courses }: {
+  m: MenuText; names: Record<"inicio" | SectionKey, string>; initial: MenuForm; aal2: boolean; student: StudentForm; courses: { slug: string; label: string }[];
+}) {
   const router = useRouter();
   const toast = useToast();
   const [busy, start] = useTransition();
   const [f, setF] = useState<MenuForm>(initial);
   const [error, setError] = useState<string | null>(null);
-  const dirty = !sameJson(f, initial);
+  const [st, setSt] = useState<StudentForm>(student);
+  const menuDirty = !sameJson(f, initial);
+  // El curso fijo solo cuenta como cambio si el modo es "Un curso fijo".
+  const stDirty = st.mode !== student.mode || (st.mode === "course" && st.course !== student.course);
+  const dirty = menuDirty || stDirty;
+  // Un curso guardado que ya no existe se sigue mostrando como opción (para no cambiarlo sin querer).
+  const courseOptions = student.course && !courses.some((x) => x.slug === student.course) ? [...courses, { slug: student.course, label: fill(m.courseMissing, { slug: student.course }) }] : courses;
   const preview = useMemo(() => menuPreview(f.menu, f.features), [f.menu, f.features]);
   const radios = useRef<Record<string, HTMLButtonElement | null>>({});
   const mfaBlocked = f.adminMfa && !initial.adminMfa && !aal2;
@@ -39,17 +48,27 @@ export function MenuView({ m, names, initial, aal2 }: { m: MenuText; names: Reco
   const togglePlan = (fk: keyof MenuForm["features"]) => set("features", { ...f.features, [fk]: f.features[fk] === "pro" ? "free" : "pro" });
 
   const save = () => {
-    if (mfaBlocked) { setError(m.errors.mfa); return; }
+    if (menuDirty && mfaBlocked) { setError(m.errors.mfa); return; }
     const r = formToValues(f);
-    if (!r.ok) {
+    if (menuDirty && !r.ok) {
       const msg = r.error === "points" ? fill(m.errors.points, { name: m.pointItems[r.field as keyof typeof m.pointItems] ?? "" }) : m.errors[r.error];
       setError(msg); toast(msg); return;
     }
+    if (stDirty && st.mode === "course" && !st.course) { setError(m.errors.studentCourse); toast(m.errors.studentCourse); return; }
     start(async () => {
       setError(null);
-      const res = await saveMenuConfig({ form: f, initial, keys: touchedKeys(initial, f) });
-      if (!res.ok) { setError(res.error); toast(res.error); return; }
-      if (!res.data.changed) { setF(initial); toast(m.nothing); return; }
+      let changed = 0;
+      if (menuDirty) {
+        const res = await saveMenuConfig({ form: f, initial, keys: touchedKeys(initial, f) });
+        if (!res.ok) { setError(res.error); toast(res.error); return; }
+        changed += res.data.changed;
+      }
+      if (stDirty) {
+        const res = await saveDiagStudent(st);
+        if (!res.ok) { setError(res.error); toast(res.error); if (changed) router.refresh(); return; }
+        changed += res.data.changed;
+      }
+      if (!changed) { setF(initial); setSt(student); toast(m.nothing); return; }
       toast(m.saved);
       router.refresh();
     });
@@ -67,7 +86,7 @@ export function MenuView({ m, names, initial, aal2 }: { m: MenuText; names: Reco
     <>
       <AdminHeader eyebrow={m.eyebrow} title={m.title}>
         <span className={css.status}>
-          {dirty ? <><span role="status">{m.dirty}</span><button type="button" className={`btn btn-ghost btn-sm ${css.small}`} onClick={() => { setError(null); setF(initial); }}>{m.undo}</button></> : null}
+          {dirty ? <><span role="status">{m.dirty}</span><button type="button" className={`btn btn-ghost btn-sm ${css.small}`} onClick={() => { setError(null); setF(initial); setSt(student); }}>{m.undo}</button></> : null}
           <button type="button" className="btn" disabled={busy || !dirty} onClick={save}>{busy ? m.saving : m.save}</button>
         </span>
       </AdminHeader>
@@ -123,6 +142,32 @@ export function MenuView({ m, names, initial, aal2 }: { m: MenuText; names: Reco
                 <Switch checked={f.flags[k]} label={m.flagItems[k][0]} onChange={(v) => set("flags", { ...f.flags, [k]: v })} />
               </div>
             ))}
+          </section>
+
+          {/* ── Siguiente paso al final del Diagnóstico ── */}
+          <section aria-labelledby="cta" className={`${css.card} ${css.ctaCard}`}>
+            <h2 id="cta">{m.cta}</h2>
+            <p className={css.cardSub}>{m.ctaSub}</p>
+            <div className={css.ctaBlock}>
+              <strong>{m.ctaLead}</strong>
+              <span className={css.ctaNote}>{m.ctaLeadNote} <Link href="/admin/paises">{m.ctaLeadLink}</Link></span>
+            </div>
+            <div className={css.ctaBlock}>
+              <strong>{m.ctaStudent}</strong>
+              <label htmlFor="cta-s" className="label">{m.ctaShow}</label>
+              <select id="cta-s" className="select" value={st.mode} onChange={(e) => { setError(null); const mode = e.target.value as StudentMode; setSt({ mode, course: mode === "course" && !st.course ? courseOptions[0]?.slug ?? "" : st.course }); }}>
+                {STUDENT_MODES.map((k) => <option key={k} value={k}>{m.ctaModes[k]}</option>)}
+              </select>
+              {st.mode === "course" ? (
+                courseOptions.length ? <>
+                  <label htmlFor="cta-c" className="label">{m.ctaCourse}</label>
+                  <select id="cta-c" className="select" value={st.course} aria-describedby="cta-c-h" onChange={(e) => { setError(null); setSt({ ...st, course: e.target.value }); }}>
+                    {courseOptions.map((x) => <option key={x.slug} value={x.slug}>{x.label}</option>)}
+                  </select>
+                  <span id="cta-c-h" className="hint">{m.ctaCourseHelp}</span>
+                </> : <span className={css.ctaNote}>{m.ctaNoCourses} <Link href="/admin/academia">{m.ctaNoCoursesLink}</Link></span>
+              ) : null}
+            </div>
           </section>
 
           {/* ── Plan Gratis, logros y seguridad ── */}

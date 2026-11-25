@@ -5,12 +5,16 @@ import css from "./admin.module.css";
 import { expiryFrom, type DurationMode } from "./lib";
 import type { AdminText } from "./messages";
 
-export type GrantValue = { kind: "alumno" | "fundador"; mode: DurationMode; months: string; until: string };
-export const GRANT_DEFAULT: GrantValue = { kind: "alumno", mode: "meses", months: "12", until: "" };
+/** `notify`: casilla "Avisarles por correo" (marcada por defecto, como en el mockup). */
+export type GrantValue = { kind: "alumno" | "fundador"; mode: DurationMode; months: string; until: string; notify: boolean };
+export const GRANT_DEFAULT: GrantValue = { kind: "alumno", mode: "meses", months: "12", until: "", notify: true };
 
-/** Tipo de acceso + duración + vista previa del vencimiento. Lo usan Usuarios, Grupos y la ficha del usuario. */
-export function GrantFields({ t, locale, today, from, value, onChange, idPrefix, showKind = true }: {
-  t: AdminText; locale: string; today: string; from?: string; value: GrantValue; onChange: (v: GrantValue) => void; idPrefix: string; showKind?: boolean;
+/**
+ * Tipo de acceso + duración + vista previa del vencimiento + "Avisarles por correo".
+ * Lo usan Usuarios, Grupos y la ficha del usuario (`one`: texto en singular). Los códigos de invitación no avisan (`showNotify`).
+ */
+export function GrantFields({ t, locale, today, from, value, onChange, idPrefix, showKind = true, showNotify = true, one = false }: {
+  t: AdminText; locale: string; today: string; from?: string; value: GrantValue; onChange: (v: GrantValue) => void; idPrefix: string; showKind?: boolean; showNotify?: boolean; one?: boolean;
 }) {
   const g = t.grant;
   const set = (p: Partial<GrantValue>) => onChange({ ...value, ...p });
@@ -49,6 +53,12 @@ export function GrantFields({ t, locale, today, from, value, onChange, idPrefix,
           <span className={css.preview} aria-live="polite">{preview}</span>
         </div>
       </div>
+      {showNotify ? (
+        <label htmlFor={`${idPrefix}-n`} className="row" style={{ gap: 10, fontSize: 14, minHeight: 44, cursor: "pointer" }}>
+          <input id={`${idPrefix}-n`} type="checkbox" checked={value.notify} onChange={(ev) => set({ notify: ev.target.checked })} style={{ width: 20, height: 20, accentColor: "var(--tinta)", margin: 0 }} />
+          {one ? g.notifyMailOne : g.notifyMail}
+        </label>
+      ) : null}
     </>
   );
 }

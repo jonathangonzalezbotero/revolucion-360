@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   actionGroupFilter, checkCode, checkMaxUses, checkNote, codeDuration, csvCell, endOfDay, expiryFrom, isUuid, listHref,
-  noteHasMoney, pageCount, pageRange, parseActionGroup, parseEmails, parseFilter, parsePage, parseSearch, pct,
+  isEmail, noteHasMoney, pageCount, pageRange, parseActionGroup, parseCountry, parseEmails, parseFilter, parsePage, parseRole, parseSearch, pct, splitSearch, userQuery,
 } from "@/app/admin/_shared/lib";
 
 describe("vencimiento de un acceso", () => {
@@ -119,5 +119,37 @@ describe("vencimiento guardado", () => {
   it("vuelve al mismo día que eligió el admin", async () => {
     const { endOfDay, expiryDay } = await import("@/app/admin/_shared/lib");
     expect(expiryDay(endOfDay("2027-03-01")!)).toBe("2027-03-01");
+  });
+});
+
+describe("filtros de usuarios (rol, país, correo exacto, 7 días)", () => {
+  it("vencen en 7 o en 30 días", () => {
+    expect(parseFilter("expiring7")).toBe("expiring7");
+    expect(parseFilter("expiring")).toBe("expiring");
+    expect(parseFilter("expiring14")).toBe("all");
+  });
+  it("rol", () => {
+    expect(parseRole("admin")).toBe("admin");
+    expect(parseRole("user")).toBe("user");
+    expect(parseRole("root")).toBe("all");
+    expect(parseRole(undefined)).toBe("all");
+  });
+  it("país: código de 2 letras, 'otro' o todos", () => {
+    expect(parseCountry("co")).toBe("CO");
+    expect(parseCountry("AU")).toBe("AU");
+    expect(parseCountry("otro")).toBe("otro");
+    expect(parseCountry("AUS")).toBe("all");
+    expect(parseCountry("' or 1=1")).toBe("all");
+    expect(parseCountry(["NZ", "AU"])).toBe("NZ");
+  });
+  it("un correo completo se busca exacto; lo demás, parcial", () => {
+    expect(splitSearch("Ana@Correo.com")).toEqual({ search: "", email: "ana@correo.com" });
+    expect(splitSearch("ana")).toEqual({ search: "ana", email: "" });
+    expect(splitSearch("@gmail.com")).toEqual({ search: "@gmail.com", email: "" });
+    expect(isEmail("x@y")).toBe(false);
+  });
+  it("parámetros de la consulta", () => {
+    expect(userQuery("ana@correo.com", "expiring7", "admin", "CO")).toEqual({ p_search: "", p_email: "ana@correo.com", p_filter: "expiring7", p_role: "admin", p_country: "CO" });
+    expect(userQuery("ana", "all", "all", "all")).toEqual({ p_search: "ana", p_email: "", p_filter: "all", p_role: "", p_country: "" });
   });
 });

@@ -16,12 +16,12 @@ import type { WizardMessages } from "./messages";
 
 type Props = {
   m: WizardMessages; fmt: MoneyFormat; ctx: Ctx; monthLabel: string; redo: boolean; initial: Answers;
-  freelance: string; currencyName: string; familyCategory: string; taxSection: string; yes: string; no: string;
+  freelance: string; currencyName: string; familyCategory: string; taxSection: string; taxReserve: boolean; yes: string; no: string;
 };
 const FREQS: Freq[] = ["weekly", "fortnightly", "monthly"];
 const GREEN: React.CSSProperties = { fontSize: 12, color: "var(--verde-fuerte)", fontWeight: 600 };
 
-export function Wizard({ m, fmt, ctx, monthLabel, redo: redoNow, initial, freelance, currencyName, familyCategory, taxSection, yes, no }: Props) {
+export function Wizard({ m, fmt, ctx, monthLabel, redo: redoNow, initial, freelance, currencyName, familyCategory, taxSection, taxReserve, yes, no }: Props) {
   const router = useRouter();
   const toast = useToast();
   const steps = useMemo(() => visibleSteps(ctx.remesas), [ctx.remesas]);
@@ -131,7 +131,7 @@ export function Wizard({ m, fmt, ctx, monthLabel, redo: redoNow, initial, freela
                   </div>
                 </div>
               ))}
-              {a.incomes.some((r) => r.freelance) ? <p className={css.warn}>{fill(m.income.freelanceNote, { term: freelance, section: taxSection })}</p> : null}
+              {taxReserve && a.incomes.some((r) => r.freelance) ? <p className={css.warn}>{fill(m.income.freelanceNote, { term: freelance, section: taxSection })}</p> : null}
               {a.incomes.length < MAX_ROWS ? <button type="button" className={css.dashed} onClick={() => set({ incomes: [...a.incomes, { name: "", amount: "", freq: "monthly", payDate: "", freelance: false }] })}>{m.income.add}</button> : null}
             </div>
           ) : null}

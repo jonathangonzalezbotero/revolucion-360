@@ -119,7 +119,10 @@ export function GroupsView({ t, m, locale, today, groups, open }: { t: AdminText
             <span className="xs muted">{t.grant.note} {t.grant.notify}</span>
             {error ? <p role="alert" className={css.err}>{error}</p> : null}
             <div><button type="button" className="btn" disabled={busy || current.members === 0}
-              onClick={() => act(() => grantGroup({ ...grant, groupId: open.id }), (r) => fill(m.grantedN, { n: (r as { ok: true; data: { granted: number } }).data.granted }))}>{busy ? t.grant.giving : t.grant.give}</button></div>
+              onClick={() => act(() => grantGroup({ ...grant, groupId: open.id }), (r) => {
+                const d = (r as { ok: true; data: { granted: number; mail: { sent: number; of: number } | null } }).data;
+                return fill(m.grantedN, { n: d.granted }) + (d.mail ? ` ${fill(t.grant.mailed, { n: d.mail.sent, total: d.mail.of })}` : "");
+              })}>{busy ? t.grant.giving : t.grant.give}</button></div>
           </section>
         </div>
       ) : null}

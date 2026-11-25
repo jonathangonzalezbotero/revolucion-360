@@ -2,7 +2,7 @@
 import { addMonths, type ISODate } from "@/lib/engine";
 
 // ───────── Filtros y paginación de usuarios ─────────
-export const USER_FILTERS = ["all", "free", "trial", "pro", "alumno", "fundador", "read_only", "failed", "expiring", "suspended"] as const;
+export const USER_FILTERS = ["all", "free", "trial", "pro", "alumno", "fundador", "read_only", "failed", "expiring7", "expiring", "suspended"] as const;
 export type UserFilter = (typeof USER_FILTERS)[number];
 export const PAGE_SIZE = 25;
 
@@ -18,6 +18,32 @@ export function parsePage(v: string | string[] | undefined): number {
 }
 /** Búsqueda limpia: sin espacios de más, máximo 80 caracteres. */
 export const parseSearch = (v: string | string[] | undefined) => one(v).trim().replace(/\s+/g, " ").slice(0, 80);
+
+export const USER_ROLES = ["all", "user", "admin"] as const;
+export type RoleFilter = (typeof USER_ROLES)[number];
+export function parseRole(v: string | string[] | undefined): RoleFilter {
+  const r = one(v);
+  return (USER_ROLES as readonly string[]).includes(r) ? (r as RoleFilter) : "all";
+}
+/** País: código de 2 letras, "otro" (país fuera de la lista) o "all". */
+export function parseCountry(v: string | string[] | undefined): string {
+  const c = one(v).trim();
+  if (c === "otro") return c;
+  return /^[A-Za-z]{2}$/.test(c) ? c.toUpperCase() : "all";
+}
+/**
+ * Un correo completo se busca EXACTO (no trae a "ana@x.com" y "juliana@x.com.co" juntos);
+ * cualquier otra cosa es búsqueda parcial por nombre o correo.
+ */
+export function splitSearch(q: string): { search: string; email: string } {
+  const v = q.trim();
+  return isEmail(v) ? { search: "", email: v.toLowerCase() } : { search: v, email: "" };
+}
+/** Parámetros de `admin_users_v2` para la lista y la exportación. */
+export function userQuery(q: string, filter: UserFilter, role: RoleFilter, country: string) {
+  const { search, email } = splitSearch(q);
+  return { p_search: search, p_email: email, p_filter: filter, p_role: role === "all" ? "" : role, p_country: country === "all" ? "" : country };
+}
 
 export const pageRange = (page: number, size = PAGE_SIZE) => ({ limit: size, offset: (Math.max(1, page) - 1) * size });
 export const pageCount = (total: number, size = PAGE_SIZE) => Math.max(1, Math.ceil(Math.max(0, total) / size));
@@ -105,6 +131,7 @@ export function codeDuration(mode: DurationMode, input: { months?: string | numb
 
 // ───────── Correos pegados ─────────
 const EMAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]{2,}$/;
+export const isEmail = (v: string) => EMAIL_RE.test(v.trim().toLowerCase());
 export function parseEmails(text: string): { valid: string[]; invalid: string[] } {
   const parts = text.split(/[\s,;]+/).map((p) => p.trim().toLowerCase()).filter(Boolean);
   const valid: string[] = [], invalid: string[] = [];

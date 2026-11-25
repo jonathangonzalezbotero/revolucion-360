@@ -10,7 +10,7 @@ import { term } from "@/server/terms";
 import { Deudas, type DebtView } from "./Deudas";
 import { Empresa } from "./Empresa";
 import { Impuestos } from "./Impuestos";
-import { companySummary, parseSchedule, taxStatus, type CompanyClass, type DebtKind, type PayFreq } from "./lib";
+import { companySummary, parseSchedule, taxReserveOf, taxStatus, type CompanyClass, type DebtKind, type PayFreq } from "./lib";
 import { M } from "./messages";
 
 export const metadata: Metadata = { title: "Deudas e impuestos" };
@@ -38,11 +38,13 @@ export default async function DeudasPage() {
     fetchAll<{ id: string; date: string; kind: string; amount_cents: number; note: string }>((a, b) => s.supabase.from("tax_entries").select("id, date, kind, amount_cents, note").order("date", { ascending: false }).order("created_at", { ascending: false }).order("id").range(a, b)),
     fetchAll<{ id: string; date: string; kind: string; class: string; amount_cents: number; note: string }>((a, b) => s.supabase.from("company_entries").select("id, date, kind, class, amount_cents, note").order("date", { ascending: false }).order("created_at", { ascending: false }).order("id").range(a, b)),
     loadPlan(s, s.year), loadAccounts(s),
-    s.supabase.from("countries").select("terms").eq("code", s.profile.country).maybeSingle(),
+    s.supabase.from("countries").select("terms, tax_reserve_enabled, tax_reserve_note").eq("code", s.profile.country).maybeSingle(),
     s.supabase.from("plan_lines").select("debt_id").gt("year", s.year).is("archived_at", null).not("debt_id", "is", null),
   ]);
   const debts = must(debtsRes), tax = must(taxRes), future = new Set(must(futureRes).map((l) => l.debt_id));
-  const countryTerms = (must(countryRes)?.terms ?? {}) as Record<string, string>;
+  const countryRow = must(countryRes);
+  const countryTerms = (countryRow?.terms ?? {}) as Record<string, string>;
+  const taxReserve = taxReserveOf(countryRow);
   const freelance = term(s, "freelance", countryTerms), retirement = term(s, "retirement", countryTerms), taxOffice = term(s, "tax_office", countryTerms);
   const company = term(s, "company", countryTerms), bnpl = term(s, "bnpl", countryTerms);
 
@@ -81,10 +83,10 @@ export default async function DeudasPage() {
         fmt={s.fmt} locale={s.locale} today={s.today} year={s.year} canEdit={s.canEdit} m={m} t={{ cancel: s.t.actions.cancel, save: s.t.actions.save }}
         bnpl={bnpl} category={debtCat?.name ?? m.category} planOn={s.config.menu.plan === "on"}
       />
-      <Impuestos
-        enabled={!!tax?.enabled} percentBps={tax?.percent_bps ?? 0} status={taxStatus(taxList, tax?.percent_bps ?? 0, s.year, s.month)} entries={taxList.slice(0, 8)}
+      {taxReserve.show ? <Impuestos
+        note={taxReserve.note} enabled={!!tax?.enabled} percentBps={tax?.percent_bps ?? 0} status={taxStatus(taxList, tax?.percent_bps ?? 0, s.year, s.month)} entries={taxList.slice(0, 8)}
         freelance={freelance} retirement={retirement} taxOffice={taxOffice} year={s.year} today={s.today} canEdit={s.canEdit} m={m} fmt={s.fmt} locale={s.locale}
-      />
+      /> : null}
       <Empresa
         title={coTitle} summaryLabel={business?.name ? fill(m.coSummaryNamed, { name: business.name }) : m.coSummary}
         note={s.profile.country === "AU" ? fill(m.co7a, { name: business?.name || m.coYours, company }) : m.coNoAdvice}

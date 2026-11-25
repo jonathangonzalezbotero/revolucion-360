@@ -26,9 +26,10 @@ export const A = {
       note: "Al vencer pasan a Gratis automáticamente, sin perder sus datos. Puedes extender o quitar el acceso cuando quieras.",
       notify: "Les avisamos en la app.", proNote: "Ya paga Pro: su plan pagado no cambia y el acceso queda en su historial.",
       give: "Dar acceso", giving: "Dando acceso…",
+      notifyMail: "Avisarles por correo", notifyMailOne: "Avisarle por correo", mailed: "Correos enviados: {n} de {total}.",
     },
     actions: {
-      dar_acceso: "Dio acceso gratis", quitar_acceso: "Quitó el acceso gratis", suspender: "Suspendió una cuenta", reactivar: "Reactivó una cuenta",
+      dar_acceso: "Dio acceso gratis", dar_acceso_correo: "Avisó por correo del acceso gratis", quitar_acceso: "Quitó el acceso gratis", suspender: "Suspendió una cuenta", reactivar: "Reactivó una cuenta",
       cambiar_rol: "Cambió el rol", reiniciar_2pasos: "Reinició los 2 pasos", restablecer_clave: "Envió el correo para cambiar la contraseña",
       borrar_cuenta: "Borró una cuenta", nota_agregar: "Escribió una nota interna", nota_borrar: "Borró una nota interna",
       grupo_crear: "Creó un grupo", grupo_renombrar: "Renombró un grupo", grupo_borrar: "Borró un grupo", grupo_agregar: "Sumó a alguien a un grupo", grupo_quitar: "Quitó a alguien de un grupo",
@@ -46,7 +47,7 @@ export const A = {
       precio_region: "Cambió el precio de una región", plan_prueba: "Cambió la prueba gratis", plan_funciones: "Cambió qué incluye cada plan",
       cupon_crear: "Creó un cupón", cupon_stripe: "Creó un cupón en Stripe", cupon_pausar: "Pausó un cupón", cupon_activar: "Activó un cupón",
       pais_crear: "Agregó un país", pais_editar: "Editó un país", pais_publicar: "Publicó un país", pais_ocultar: "Pasó un país a borrador",
-      config_clase_gratuita: "Cambió la clase gratuita del Diagnóstico", config_legal: "Cambió los datos legales",
+      config_clase_gratuita: "Cambió la clase gratuita del Diagnóstico", config_siguiente_paso_alumno: "Cambió el siguiente paso del Diagnóstico para alumnos", config_legal: "Cambió los datos legales",
     } as Record<string, string>,
     resumen: {
       title: "Resumen", eyebrow: "Cómo va Revolución 360", period: "Periodo", d30: "30 días", d90: "90 días",
@@ -83,9 +84,10 @@ export const A = {
       note: "When it expires they move to Free automatically, without losing their data. You can extend or remove access any time.",
       notify: "We let them know in the app.", proNote: "They already pay for Pro: their paid plan doesn't change and the access stays in their history.",
       give: "Give access", giving: "Giving access…",
+      notifyMail: "Email them too", notifyMailOne: "Email them too", mailed: "Emails sent: {n} of {total}.",
     },
     actions: {
-      dar_acceso: "Gave free access", quitar_acceso: "Removed free access", suspender: "Suspended an account", reactivar: "Reactivated an account",
+      dar_acceso: "Gave free access", dar_acceso_correo: "Emailed about free access", quitar_acceso: "Removed free access", suspender: "Suspended an account", reactivar: "Reactivated an account",
       cambiar_rol: "Changed the role", reiniciar_2pasos: "Reset 2-step verification", restablecer_clave: "Sent the password reset email",
       borrar_cuenta: "Deleted an account", nota_agregar: "Wrote an internal note", nota_borrar: "Deleted an internal note",
       grupo_crear: "Created a group", grupo_renombrar: "Renamed a group", grupo_borrar: "Deleted a group", grupo_agregar: "Added someone to a group", grupo_quitar: "Removed someone from a group",
@@ -103,7 +105,7 @@ export const A = {
       precio_region: "Changed a region's price", plan_prueba: "Changed the free trial", plan_funciones: "Changed what each plan includes",
       cupon_crear: "Created a coupon", cupon_stripe: "Created a coupon in Stripe", cupon_pausar: "Paused a coupon", cupon_activar: "Turned a coupon on",
       pais_crear: "Added a country", pais_editar: "Edited a country", pais_publicar: "Published a country", pais_ocultar: "Moved a country to draft",
-      config_clase_gratuita: "Changed the Diagnosis free lesson", config_legal: "Changed the legal details",
+      config_clase_gratuita: "Changed the Diagnosis free lesson", config_siguiente_paso_alumno: "Changed the Diagnosis next step for students", config_legal: "Changed the legal details",
     } as Record<string, string>,
     resumen: {
       title: "Overview", eyebrow: "How Revolución 360 is doing", period: "Period", d30: "30 days", d90: "90 days",

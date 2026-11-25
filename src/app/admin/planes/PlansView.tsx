@@ -9,18 +9,19 @@ import type { Tier } from "@/lib/engine";
 import css from "../_shared/admin.module.css";
 import { AdminHeader } from "../_shared/ui";
 import { createCoupon, pushCoupon, savePlans, setCouponActive } from "./actions";
+import { COUPON_APPLIES } from "@/app/(app)/suscripcion/lib";
 import { PLAN_FEATURES, changedFeatures, cleanCouponCode } from "./lib";
 import type { PlanesText } from "./messages";
 import p from "./planes.module.css";
 
 export type RegionView = { region: string; name: string; currency: string; monthly: string; yearly: string; student: string; info: string; pending: boolean };
-export type CouponView = { id: string; code: string; discount: string; uses: string; active: boolean; inStripe: boolean };
+export type CouponView = { id: string; code: string; discount: string; applies: string; uses: string; until: string; expired: boolean; active: boolean; inStripe: boolean };
 type R<T = unknown> = { ok: true; data: T } | { ok: false; error: string };
 type RegionEdit = { region: string; monthly: string; yearly: string; student: string };
-const EMPTY_CUP = { code: "", pct: "", months: "", max: "" };
+const EMPTY_CUP = { code: "", pct: "", months: "", max: "", appliesTo: "both", until: "" };
 
-export function PlansView({ m, stripeOn, regions, coupons, trial: trial0, features: feats0, freeGoals }: {
-  m: PlanesText; stripeOn: boolean; regions: RegionView[]; coupons: CouponView[];
+export function PlansView({ m, stripeOn, regions, coupons, trial: trial0, features: feats0, freeGoals, minUntil }: {
+  m: PlanesText; stripeOn: boolean; regions: RegionView[]; coupons: CouponView[]; minUntil: string;
   trial: { enabled: boolean; days: string }; features: Record<string, Tier>; freeGoals: number;
 }) {
   const router = useRouter();
@@ -123,7 +124,13 @@ export function PlansView({ m, stripeOn, regions, coupons, trial: trial0, featur
               <div className="field"><label htmlFor="cu-c">{m.cup.code}</label><input id="cu-c" className={`input ${p.code}`} autoComplete="off" maxLength={40} value={cup.code} onChange={(e) => setCup({ ...cup, code: cleanCouponCode(e.target.value) })} /></div>
               <div className="field"><label htmlFor="cu-p">{m.cup.pct}</label><input id="cu-p" className="input num" inputMode="numeric" maxLength={3} value={cup.pct} onChange={(e) => setCup({ ...cup, pct: e.target.value })} /></div>
               <div className="field"><label htmlFor="cu-m">{m.cup.months}</label><input id="cu-m" className="input num" inputMode="numeric" maxLength={2} placeholder="0" value={cup.months} onChange={(e) => setCup({ ...cup, months: e.target.value })} /></div>
+              <div className="field"><label htmlFor="cu-a">{m.cup.appliesTo}</label>
+                <select id="cu-a" className="input" value={cup.appliesTo} onChange={(e) => setCup({ ...cup, appliesTo: e.target.value })}>
+                  {COUPON_APPLIES.map((a) => <option key={a} value={a}>{m.cup.applies[a]}</option>)}
+                </select></div>
               <div className="field"><label htmlFor="cu-x">{m.cup.max}</label><input id="cu-x" className="input num" inputMode="numeric" maxLength={6} placeholder={m.cup.maxPh} value={cup.max} onChange={(e) => setCup({ ...cup, max: e.target.value })} /></div>
+              <div className="field"><label htmlFor="cu-v">{m.cup.until}</label><input id="cu-v" className="input" type="date" min={minUntil} aria-describedby="cu-v-h" value={cup.until} onChange={(e) => setCup({ ...cup, until: e.target.value })} />
+                <span id="cu-v-h" className="xs muted">{m.cup.untilHelp}</span></div>
             </div>
             {cupError ? <p role="alert" className={css.err}>{cupError}</p> : null}
             <div className={p.cupFoot}>
@@ -143,23 +150,25 @@ export function PlansView({ m, stripeOn, regions, coupons, trial: trial0, featur
           </Empty>
         ) : (
           <div className="table-scroll">
-            <table className={`${css.table} ${css.plain}`} style={{ minWidth: 640 }}>
-              <thead><tr><th scope="col">{m.cup.colCode}</th><th scope="col">{m.cup.colDiscount}</th><th scope="col">{m.cup.colUses}</th><th scope="col">{m.cup.colState}</th><th scope="col" className="r">{m.cup.colAction}</th></tr></thead>
+            <table className={`${css.table} ${css.plain}`} style={{ minWidth: 880 }}>
+              <thead><tr><th scope="col">{m.cup.colCode}</th><th scope="col">{m.cup.colDiscount}</th><th scope="col">{m.cup.colApplies}</th><th scope="col">{m.cup.colUses}</th><th scope="col">{m.cup.colUntil}</th><th scope="col">{m.cup.colState}</th><th scope="col" className="r">{m.cup.colAction}</th></tr></thead>
               <tbody>
                 {coupons.map((c) => (
                   <tr key={c.id}>
                     <td className={p.code}>{c.code}</td>
                     <td>{c.discount}</td>
+                    <td>{c.applies}</td>
                     <td className="num">{c.uses}</td>
+                    <td>{c.expired ? <span className={css.chips} style={{ gap: 6 }}><Pill tone="warn">{m.cup.expired}</Pill><span className="small muted">{c.until}</span></span> : c.until}</td>
                     <td>
                       <span className={css.chips} style={{ gap: 6 }}>
-                        <Pill tone={c.active ? "ok" : "neutral"}>{c.active ? m.cup.active : m.cup.paused}</Pill>
+                        {c.expired ? null : <Pill tone={c.active ? "ok" : "neutral"}>{c.active ? m.cup.active : m.cup.paused}</Pill>}
                         <Pill tone={c.inStripe ? "neutral" : "warn"}>{c.inStripe ? m.cup.inStripe : m.cup.notInStripe}</Pill>
                       </span>
                     </td>
                     <td className="r">
                       <span className="row" style={{ gap: 6, justifyContent: "flex-end" }}>
-                        {!c.inStripe && stripeOn ? (
+                        {!c.inStripe && stripeOn && !c.expired ? (
                           <button type="button" className={`btn btn-secondary btn-sm ${p.tap}`} disabled={busy} aria-label={fill(m.cup.pushOf, { code: c.code })}
                             onClick={() => act(() => pushCoupon({ id: c.id }), () => m.cup.pushedOk)}>{m.cup.pushStripe}</button>
                         ) : null}

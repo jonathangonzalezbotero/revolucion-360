@@ -6,7 +6,7 @@ import { must } from "@/server/data";
 import type { Json } from "@/lib/supabase/database.types";
 import { adminAction, adminText, audit } from "../_shared/server";
 import { z } from "zod";
-import { AUDIT_ACTION, CONFIG_KEYS, FormSchema, Schemas, diffConfig, formToValues, type ConfigKey } from "./lib";
+import { AUDIT_ACTION, CONFIG_KEYS, FormSchema, Schemas, StudentSchema, checkStudent, diffConfig, formToValues, mergeDiagStudent, studentToForm, type ConfigKey } from "./lib";
 import { M } from "./messages";
 
 const PATHS = ["/admin/menu", "/admin/actividad", "/inicio", "/mas", "/suscripcion"];
@@ -43,5 +43,27 @@ export async function saveMenuConfig(input: unknown) {
     // El menú vive en el layout de la app: se revalida todo lo que cuelga de la raíz.
     revalidatePath("/", "layout");
     return ok({ changed: changes.length });
+  });
+}
+
+/**
+ * Siguiente paso del Diagnóstico para alumnos: lee la fila actual de `diag_cta` y cambia solo
+ * `student.mode` / `student.course` (la clase gratuita, `lead`, la edita /admin/paises).
+ */
+export async function saveDiagStudent(input: unknown) {
+  return adminAction(["/admin/menu", "/admin/actividad", "/diagnostico"], async (s) => {
+    const m = M[s.locale], t = adminText(s);
+    const p = StudentSchema.safeParse(input);
+    if (!p.success) return fail(t.errors.generic);
+    if (p.data.mode === "course") {
+      const slugs = must(await s.supabase.from("courses").select("slug").eq("slug", p.data.course)).map((c) => c.slug);
+      if (checkStudent(p.data, slugs)) return fail(m.errors.studentCourse);
+    }
+    const row = must(await s.supabase.from("app_config").select("value").eq("key", "diag_cta").maybeSingle());
+    const before = studentToForm(row?.value);
+    if (before.mode === p.data.mode && (p.data.mode !== "course" || before.course === p.data.course)) return ok({ changed: 0 });
+    must(await s.supabase.from("app_config").upsert({ key: "diag_cta", value: mergeDiagStudent(row?.value ?? {}, p.data) as NonNullable<Json>, updated_at: new Date().toISOString() }, { onConflict: "key" }).select("key").single());
+    await audit(s, "config_siguiente_paso_alumno", null, { mode: p.data.mode });
+    return ok({ changed: 1 });
   });
 }

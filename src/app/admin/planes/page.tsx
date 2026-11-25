@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { fill } from "@/i18n";
-import { formatMoney } from "@/lib/engine";
+import { addDays, formatDate, formatMoney } from "@/lib/engine";
 import { getStripe } from "@/lib/stripe";
 import { fetchAll, must } from "@/server/data";
 import { requireAdmin } from "@/server/session";
-import { discounted, toStripeAmount, yearlySavingsPct } from "@/app/(app)/suscripcion/lib";
+import { asAppliesTo, discounted, toStripeAmount, yearlySavingsPct } from "@/app/(app)/suscripcion/lib";
 import css from "../_shared/admin.module.css";
 import { A } from "../_shared/messages";
-import { PLAN_FEATURES, centsToInput, currencyFmt, priceSync, regionSync, sortRegions, tierOf } from "./lib";
+import { PLAN_FEATURES, centsToInput, couponExpiry, currencyFmt, priceSync, regionSync, sortRegions, tierOf } from "./lib";
 import { M } from "./messages";
 import { PlansView, type CouponView, type RegionView } from "./PlansView";
 
@@ -68,13 +68,18 @@ export default async function AdminPlanes() {
     };
   });
 
+  const now = new Date();
   const couponRows: CouponView[] = coupons.map((c) => {
     const pct = c.percent_off, n = c.duration_months;
     const used = c.stripe_promo_id ? promos.get(c.stripe_promo_id) : undefined;
+    const exp = couponExpiry(c.expires_at, now);
     return {
       id: c.id, code: c.code, active: c.active, inStripe: !!c.stripe_promo_id,
       discount: !n ? fill(m.cup.forever, { pct }) : n === 1 ? fill(m.cup.forOne, { pct }) : fill(m.cup.forMonths, { pct, n }),
       uses: `${used ?? t.none} / ${c.max_redemptions ?? m.cup.unlimited}`,
+      applies: m.cup.applies[asAppliesTo(c.applies_to)],
+      until: exp.kind === "none" ? m.cup.noDate : formatDate(exp.day, s.locale),
+      expired: exp.kind === "expired",
     };
   });
 
@@ -85,7 +90,7 @@ export default async function AdminPlanes() {
       {/* La clave cambia cuando cambia lo guardado: después de guardar, el formulario arranca de los valores nuevos. */}
       <PlansView key={JSON.stringify([regionRows.map((r) => [r.region, r.monthly, r.yearly, r.student]), s.config.trial, features])} m={m} stripeOn={!!stripe} regions={regionRows} coupons={couponRows}
         trial={{ enabled: s.config.trial.enabled !== false, days: String(s.config.trial.days ?? 14) }}
-        features={features} freeGoals={s.config.limits.free_goals} />
+        features={features} freeGoals={s.config.limits.free_goals} minUntil={addDays(s.today, 1)} />
     </main>
   );
 }

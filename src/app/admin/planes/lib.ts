@@ -1,5 +1,7 @@
 // Planes y precios: cálculos puros (sin red ni base de datos). Probados en tests/admin-planes.test.ts.
-import { parseMoney, type Cents, type FeatureKey, type MoneyFormat, type Tier } from "@/lib/engine";
+import { parseMoney, type Cents, type FeatureKey, type ISODate, type MoneyFormat, type Tier } from "@/lib/engine";
+import { couponExpired, type CouponAppliesTo } from "@/app/(app)/suscripcion/lib";
+import { endOfDay, expiryDay, expiryFrom } from "../_shared/lib";
 
 // ───────── Regiones ─────────
 /** Orden del mockup; las regiones nuevas van al final, por código. */
@@ -99,10 +101,11 @@ export function changedFeatures(initial: Partial<Record<string, Tier>>, current:
 // ───────── Cupones ─────────
 /** Igual que el mockup: solo letras y números, en mayúsculas. */
 export const cleanCouponCode = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, "");
-export type CouponInput = { code: string; pct: string; months: string; max: string };
-export type CouponData = { code: string; percent_off: number; duration_months: number | null; max_redemptions: number | null };
-export type CouponCheck = { ok: true; coupon: CouponData } | { ok: false; error: "code" | "pct" | "months" | "max" };
-export function checkCoupon(input: CouponInput): CouponCheck {
+export type CouponInput = { code: string; pct: string; months: string; max: string; appliesTo: string; until: string };
+export type CouponData = { code: string; percent_off: number; duration_months: number | null; max_redemptions: number | null; applies_to: CouponAppliesTo; expires_at: string | null };
+export type CouponCheck = { ok: true; coupon: CouponData } | { ok: false; error: "code" | "pct" | "months" | "max" | "applies" | "until" | "untilPast" };
+/** Valida el cupón. `today` es hoy en la zona del admin: la fecha de vencimiento tiene que ser después de hoy y se guarda el final de ese día. */
+export function checkCoupon(input: CouponInput, today: ISODate): CouponCheck {
   const code = cleanCouponCode(input.code);
   if (code.length < 3 || code.length > 40 || code !== input.code.trim().toUpperCase()) return { ok: false, error: "code" };
   const pct = parseIntIn(input.pct, 1, 100);
@@ -111,5 +114,24 @@ export function checkCoupon(input: CouponInput): CouponCheck {
   if (months === null) return { ok: false, error: "months" };
   const max = input.max.trim() === "" ? null : parseIntIn(input.max, 1, 100_000);
   if (max === null && input.max.trim() !== "") return { ok: false, error: "max" };
-  return { ok: true, coupon: { code, percent_off: pct, duration_months: months === 0 ? null : months, max_redemptions: max } };
+  const applies = input.appliesTo.trim();
+  if (applies !== "month" && applies !== "year" && applies !== "both") return { ok: false, error: "applies" };
+  let expires: string | null = null;
+  if (input.until.trim()) {
+    const e = expiryFrom("fecha", { until: input.until }, today);
+    if (!e.ok) return { ok: false, error: e.error === "past" ? "untilPast" : "until" };
+    expires = endOfDay(e.until);
+  }
+  return { ok: true, coupon: { code, percent_off: pct, duration_months: months === 0 ? null : months, max_redemptions: max, applies_to: applies, expires_at: expires } };
+}
+
+/** Vencimiento para Stripe (`promotionCodes.create`): segundos Unix, o nada si no vence. */
+export const stripeExpiry = (expiresAt: string | null): { expires_at: number } | Record<string, never> =>
+  (expiresAt ? { expires_at: Math.floor(Date.parse(expiresAt) / 1000) } : {});
+
+/** Columna "Vence" de la tabla: sin fecha, vencido, o el día que eligió el admin. */
+export type CouponExpiry = { kind: "none" } | { kind: "expired"; day: ISODate } | { kind: "date"; day: ISODate };
+export function couponExpiry(expiresAt: string | null, now: Date = new Date()): CouponExpiry {
+  if (!expiresAt) return { kind: "none" };
+  return { kind: couponExpired(expiresAt, now) ? "expired" : "date", day: expiryDay(expiresAt) };
 }

@@ -2,7 +2,7 @@ import type Stripe from "stripe";
 import { z } from "zod";
 import { appUrl, ensureCustomer, getStripe } from "@/lib/stripe";
 import { getSession } from "@/server/session";
-import { isPaying, isStudent, pickRegion, stripePriceFor, studentCouponId, type Grant, type PriceRegion } from "@/app/(app)/suscripcion/lib";
+import { couponUsable, isPaying, isStudent, pickRegion, stripePriceFor, studentCouponId, type Grant, type PriceRegion } from "@/app/(app)/suscripcion/lib";
 import { M } from "@/app/(app)/suscripcion/messages";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +42,17 @@ export async function POST(request: Request) {
 
     let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
     if (coupon) {
+      // La regla de frecuencia solo la conoce la tabla `coupons` (Stripe no la sabe). La función `coupon_rule`
+      // devuelve solo `applies_to` y `expires_at` de ese código, con la sesión del usuario (sin clave de servicio).
+      // Un código que existe en Stripe pero no en la tabla no tiene regla de frecuencia: lo valida solo Stripe.
+      const rule = await s.supabase.rpc("coupon_rule" as never, { p_code: coupon } as never) as { data: { applies_to: string; expires_at: string | null }[] | null; error: unknown };
+      if (rule.error) throw new Error("lectura cupón");
+      const row = rule.data?.[0];
+      if (row) {
+        const use = couponUsable(row, interval);
+        if (use === "expired") return json({ error: m.couponExpired }, 400);
+        if (use === "interval") return json({ error: interval === "year" ? m.couponMonthly : m.couponYearly }, 400);
+      }
       const promo = await stripe.promotionCodes.list({ code: coupon, active: true, limit: 1 });
       if (!promo.data[0]) return json({ error: m.badCoupon }, 400);
       discounts = [{ promotion_code: promo.data[0].id }];
@@ -56,8 +67,8 @@ export async function POST(request: Request) {
       customer,
       client_reference_id: s.userId,
       line_items: [{ price, quantity: 1 }],
-      // Stripe acepta un descuento fijo o el campo de códigos, no los dos.
-      ...(discounts ? { discounts } : { allow_promotion_codes: true }),
+      // Sin campo de códigos en Stripe: el cupón se escribe en la app, donde se revisa su frecuencia y vencimiento.
+      ...(discounts ? { discounts } : {}),
       subscription_data: { metadata: { user_id: s.userId } },
       metadata: { user_id: s.userId },
       locale: s.locale === "en" ? "en" : "es",

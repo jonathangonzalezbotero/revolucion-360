@@ -1,4 +1,5 @@
 "use server";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { Json } from "@/lib/supabase/database.types";
@@ -6,7 +7,7 @@ import { fail, ok, run } from "@/server/action";
 import { must } from "@/server/data";
 import { createDefaultCategories } from "@/server/plan-write";
 import { track } from "@/server/rewards";
-import { GOAL_KEYS, isCurrency, safeTimezone, type GoalKey } from "./lib";
+import { GOAL_KEYS, isCurrency, localeForNewUser, safeTimezone, type GoalKey } from "./lib";
 import { M } from "./messages";
 
 const Space = z.object({
@@ -27,16 +28,21 @@ export async function createSpace(input: unknown) {
     if (s.profile.onboardingStep === "done") return ok(null); // ya terminó: no se toca su perfil desde aquí
     const p = Space.safeParse(input);
     if (!p.success) return fail(p.error.issues[0]?.path[0] === "name" ? m.errors.name : m.errors.country);
-    const country = must(await s.supabase.from("countries").select("code, currency, timezone, pay_frequency, terms").eq("code", p.data.country).eq("enabled", true).maybeSingle());
+    const country = must(await s.supabase.from("countries").select("code, currency, timezone, pay_frequency, terms, default_locale").eq("code", p.data.country).eq("enabled", true).maybeSingle());
     if (!country) return fail(m.errors.country);
     // "Otro país" elige su moneda; un país con ficha propia usa la suya
     const currency = country.code === "OTHER" && isCurrency(p.data.currency) ? p.data.currency : country.currency;
     const payFrequency = ["weekly", "fortnightly", "monthly"].includes(country.pay_frequency) ? country.pay_frequency : "monthly";
     const goals = [...new Set(p.data.goals)];
+    // Primer guardado: el usuario nuevo empieza en el idioma de su país (si no lo cambió él; ver localeForNewUser).
+    const locale = localeForNewUser({ step: s.profile.onboardingStep, current: s.profile.locale, countryDefault: country.default_locale });
     must(await s.supabase.from("profiles").update({
+      ...(locale ? { locale } : {}),
       name: p.data.name, country: country.code, currency, timezone: safeTimezone(p.data.timezone, country.timezone), pay_frequency: payFrequency,
       terms: (country.terms ?? {}) as NonNullable<Json>, wizard: { seed: { goals } }, onboarding_step: "wizard",
     }).eq("id", s.userId).select("id"));
+    // Igual que Perfil: la cookie hace que las pantallas sin sesión (entrar, legal) salgan en el mismo idioma.
+    if (locale) (await cookies()).set("r360_locale", locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
     await createDefaultCategories(s, country.code);
     await track(s, "onboarding_done");
     return ok(null);

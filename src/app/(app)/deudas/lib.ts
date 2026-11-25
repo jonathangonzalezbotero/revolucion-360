@@ -185,3 +185,14 @@ export function companySummary(entries: CompanyEntry[], year: number) {
   const unclassifiedCents = entries.filter((e) => e.kind === "retiro" && e.class === "sin_clasificar").reduce((a, e) => a + e.amountCents, 0);
   return { inCents, outCents, netCents: outCents - inCents, byClass, unclassifiedCents };
 }
+
+// ───────── Apartado para impuestos según el país ─────────
+/**
+ * Qué hace el país con el apartado de impuestos de independientes (`countries.tax_reserve_*`).
+ * Sin fila del país: se muestra, sin aviso propio (comportamiento de siempre). Apagado: no se muestra,
+ * pero los datos del usuario (tax_settings, tax_entries) quedan intactos.
+ */
+export function taxReserveOf(row: { tax_reserve_enabled?: boolean | null; tax_reserve_note?: string | null } | null | undefined): { show: boolean; note: string } {
+  if (!row) return { show: true, note: "" };
+  return { show: row.tax_reserve_enabled !== false, note: typeof row.tax_reserve_note === "string" ? row.tax_reserve_note.trim() : "" };
+}

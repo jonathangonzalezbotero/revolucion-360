@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Empty } from "@/components/ui/basics";
 import { monthName } from "@/lib/engine";
-import { loadCategories } from "@/server/data";
+import { loadCategories, must } from "@/server/data";
 import { requireUser } from "@/server/session";
 import { wizardContext } from "./context";
 import { defaultAnswers, pickCategory, readAnswers } from "./lib";
@@ -25,7 +25,10 @@ export default async function AsistentePage() {
     );
   }
   const { ctx, freelance } = wizardContext(s);
-  const cats = await loadCategories(s);
+  const [cats, ctry] = await Promise.all([
+    loadCategories(s),
+    s.supabase.from("countries").select("tax_reserve_enabled").eq("code", s.profile.country).maybeSingle().then(must),
+  ]);
   const familyId = pickCategory(cats, "family");
   // Las metas que eligió en la bienvenida llegan como punto de partida (aquí les pone nombre, monto y fecha)
   const seeds: Record<string, string> = m.goals.seeds;
@@ -45,6 +48,7 @@ export default async function AsistentePage() {
       currencyName={currencies[s.profile.currency] ?? s.profile.currency}
       familyCategory={cats.find((c) => c.id === familyId)?.name ?? m.family.category}
       taxSection={s.t.nav.deudas}
+      taxReserve={ctry?.tax_reserve_enabled !== false}
       yes={s.t.yes}
       no={s.t.no}
     />

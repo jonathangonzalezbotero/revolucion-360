@@ -2,9 +2,9 @@
 import { describe, expect, it } from "vitest";
 import {
   allowsApp, allowsEmail, canGetCloseReminder, closeReminderPeriod, closureStreakBefore, currentWeekOf, escapeHtml, expiryBucket, expiryRef,
-  expiryTransition, isClosed, mayEmail, paymentRef, periodRef, readPrefs, safeToday, streakToSave,
+  expiryTransition, grantRef, isClosed, mayEmail, paymentRef, periodRef, readPrefs, safeToday, streakToSave,
 } from "@/lib/email/lib";
-import { accessEmail, closeEmail, paymentEmail, renderEmail, welcomeEmail, type AnyEmail } from "@/lib/email/templates";
+import { accessEmail, closeEmail, grantEmail, paymentEmail, renderEmail, welcomeEmail, type AnyEmail } from "@/lib/email/templates";
 import { nextStateOnExpiry, type ISODate } from "@/lib/engine";
 
 const APP = "https://app.revoluciondeldinero.com";
@@ -137,6 +137,8 @@ describe("plantillas", () => {
     { kind: "close_reminder", data: { locale: "es", appUrl: APP, period: { year: 2026, month: 11 }, streak: 3, points: 30, showStreak: true } },
     { kind: "access_expiring", data: { locale: "es", appUrl: APP, until: "2027-03-01", daysLeft: 7, discountPct: 30 } },
     { kind: "payment_failed", data: { locale: "es", appUrl: APP, failedOn: "2026-11-24" } },
+    { kind: "access_granted", data: { locale: "es", appUrl: APP, name: "Ana María", kind: "alumno", until: "2027-11-30" } },
+    { kind: "access_granted", data: { locale: "es", appUrl: APP, name: "", kind: "fundador", until: null } },
   ];
   const withEn = [...all, ...all.map((e) => ({ ...e, data: { ...e.data, locale: "en" as const } }) as AnyEmail)];
   /** Texto visible del HTML (sin etiquetas ni estilos). */
@@ -214,5 +216,33 @@ describe("envío seguro e idempotente", () => {
     expect(paymentRef("2026-11-24T05:06:07Z")).not.toBe(paymentRef("2026-12-24T05:06:07Z"));
     // El cierre de un mes tiene un solo ref, lo mande la ventana "last" o "first".
     expect(periodRef(closeReminderPeriod("2026-11-25", "last")!)).toBe(periodRef(closeReminderPeriod("2026-12-02", "first")!));
+  });
+});
+
+describe("aviso de acceso gratis dado desde el panel", () => {
+  it("dice qué acceso tiene y hasta cuándo, sin montos", () => {
+    const r = grantEmail({ locale: "es", appUrl: APP, name: "Ana María", kind: "alumno", until: "2027-11-30" });
+    expect(r.subject).toBe("Tienes acceso completo a Revolución 360");
+    expect(r.html).toContain("Hola, Ana. Tienes acceso completo.");
+    expect(r.html).toContain("acceso de alumno a todo Revolución 360 hasta el 30 de noviembre de 2027.");
+    expect(r.text).toContain("Te avisamos antes de que venza.");
+    expect(r.html).toContain(`${APP}/inicio`);
+  });
+  it("de por vida, fundador y en inglés", () => {
+    expect(grantEmail({ locale: "es", appUrl: APP, name: "", kind: "fundador", until: null }).html).toContain("acceso de fundador a todo Revolución 360, de por vida.");
+    const en = grantEmail({ locale: "en", appUrl: APP, name: "Ana", kind: "alumno", until: "2027-03-01" });
+    expect(en.subject).toBe("You have full access to Revolución 360");
+    expect(en.html).toContain("student access to all of Revolución 360 until March 1, 2027.");
+    expect(en.html).toContain('lang="en"');
+  });
+  it("escapa el nombre", () => {
+    expect(grantEmail({ locale: "es", appUrl: APP, name: "<b>x</b>", kind: "alumno", until: null }).html).not.toContain("<b>x</b>");
+  });
+  it("ref: el mismo acceso el mismo día no se repite; otra fecha u otro día, sí", () => {
+    expect(grantRef("2026-11-25", "alumno", "2027-11-25")).toBe("2026-11-25-alumno-2027-11-25");
+    expect(grantRef("2026-11-25", "alumno", null)).toBe("2026-11-25-alumno-vida");
+    expect(grantRef("2026-11-25", "alumno", "2027-11-25")).not.toBe(grantRef("2026-11-25", "alumno", "2028-02-25"));
+    expect(grantRef("2026-11-25", "alumno", null)).not.toBe(grantRef("2026-11-26", "alumno", null));
+    expect(grantRef("2026-11-25", "alumno", null)).not.toBe(grantRef("2026-11-25", "fundador", null));
   });
 });

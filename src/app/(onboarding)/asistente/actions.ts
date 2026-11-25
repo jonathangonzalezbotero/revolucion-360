@@ -93,7 +93,11 @@ export async function commitPlan(input: unknown) {
     }
 
     // Quien cobra como independiente: se enciende el apartado de impuestos (el % lo pone después, con su contador)
-    if (drafts.freelance) await s.supabase.from("tax_settings").upsert({ user_id: s.userId, enabled: true }, { onConflict: "user_id" });
+    // salvo que su país tenga apagado ese apartado (countries.tax_reserve_enabled).
+    if (drafts.freelance) {
+      const ctry = await s.supabase.from("countries").select("tax_reserve_enabled").eq("code", s.profile.country).maybeSingle();
+      if (ctry.data?.tax_reserve_enabled !== false) await s.supabase.from("tax_settings").upsert({ user_id: s.userId, enabled: true }, { onConflict: "user_id" });
+    }
     await tryBadge(s, "grid"); // la base exige onboarding terminado y al menos una línea: va después
     const points = await firstStep(s, "plan");
     await track(s, "wizard_done");

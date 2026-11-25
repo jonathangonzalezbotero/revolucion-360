@@ -5,11 +5,11 @@
 // 2. Por cada región de price_regions con monto, crea (o reutiliza) los precios mensual y anual y guarda sus ids.
 //    Los precios se identifican con lookup_key r360_pro_<región>_<month|year>; si cambió el monto, crea uno nuevo y le pasa la clave.
 // 3. Crea los cupones de alumno (id alumno-<pct>) para cada student_discount_pct > 0.
-// 4. Crea en Stripe los cupones de la tabla coupons que aún no tienen stripe_promo_id (cupón + código de promoción).
+// 4. Crea en Stripe los cupones de la tabla coupons que aún no tienen stripe_promo_id (cupón + código de promoción, con su vencimiento; los vencidos se omiten).
 // Se puede correr varias veces: no duplica nada.
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
-import { studentCouponId, toStripeAmount, type Interval } from "../src/app/(app)/suscripcion/lib";
+import { couponExpired, studentCouponId, toStripeAmount, type Interval } from "../src/app/(app)/suscripcion/lib";
 
 process.loadEnvFile(".env");
 const KEY = (process.env.STRIPE_SECRET_KEY ?? "").trim();
@@ -73,15 +73,20 @@ async function main() {
 
   for (const pct of new Set(regions.map((r) => r.student_discount_pct).filter((p) => p > 0))) await studentCoupon(pct);
 
-  const coupons = must(await db.from("coupons").select("*").is("stripe_promo_id", null).eq("active", true)) as { id: string; code: string; percent_off: number; duration_months: number | null; max_redemptions: number | null; stripe_coupon_id: string | null }[];
+  const coupons = must(await db.from("coupons").select("*").is("stripe_promo_id", null).eq("active", true)) as { id: string; code: string; percent_off: number; duration_months: number | null; max_redemptions: number | null; stripe_coupon_id: string | null; expires_at: string | null }[];
   for (const c of coupons) {
+    // Stripe no acepta un código que ya venció: se omite (en la app ya no se puede usar).
+    if (couponExpired(c.expires_at)) { console.log(`Cupón ${c.code}: ya venció, se omite.`); continue; }
     const couponId = c.stripe_coupon_id ?? (await stripe.coupons.create({
       percent_off: c.percent_off, name: c.code,
       ...(c.duration_months ? { duration: "repeating" as const, duration_in_months: c.duration_months } : { duration: "forever" as const }),
       ...(c.max_redemptions ? { max_redemptions: c.max_redemptions } : {}),
       metadata: { app: PRODUCT_TAG, coupon_row: c.id },
     })).id;
-    const promo = await stripe.promotionCodes.create({ promotion: { type: "coupon", coupon: couponId }, code: c.code, metadata: { app: PRODUCT_TAG } });
+    const promo = await stripe.promotionCodes.create({
+      promotion: { type: "coupon", coupon: couponId }, code: c.code, metadata: { app: PRODUCT_TAG },
+      ...(c.expires_at ? { expires_at: Math.floor(Date.parse(c.expires_at) / 1000) } : {}),
+    });
     must(await db.from("coupons").update({ stripe_coupon_id: couponId, stripe_promo_id: promo.id }).eq("id", c.id).select("id"));
     console.log(`Cupón ${c.code}:`, promo.id);
   }

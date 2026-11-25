@@ -19,3 +19,13 @@ export function safeTimezone(tz: string | null | undefined, fallback: string): s
     return fallback;
   }
 }
+
+/**
+ * Idioma del país para un usuario nuevo. Solo en el primer guardado de la bienvenida (paso 'welcome')
+ * y si su idioma sigue siendo el de fábrica ('es'): antes de ese paso no puede elegir idioma (Perfil
+ * exige terminar la bienvenida), así que no se pisa una elección suya. null = no se cambia.
+ */
+export function localeForNewUser(p: { step: string; current: string; countryDefault: unknown }): "es" | "en" | null {
+  if (p.step !== "welcome" || p.current !== "es") return null;
+  return p.countryDefault === "en" ? "en" : null;
+}

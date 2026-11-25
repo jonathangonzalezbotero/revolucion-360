@@ -8,7 +8,7 @@ import { Switch, useToast } from "@/components/ui/client";
 import { createGroup, grantGroup, grantUsers } from "../_shared/actions";
 import css from "../_shared/admin.module.css";
 import { GRANT_DEFAULT, GrantFields, type GrantValue } from "../_shared/GrantFields";
-import { USER_FILTERS } from "../_shared/lib";
+import { USER_FILTERS, USER_ROLES } from "../_shared/lib";
 import type { AdminText } from "../_shared/messages";
 import { AdminHeader, StatePill } from "../_shared/ui";
 import { createInvite, exportUsers, setInviteActive } from "./actions";
@@ -19,8 +19,9 @@ export type CodeRow = { code: string; kind: string; active: boolean; uses: numbe
 type Group = { id: string; name: string; members: number };
 type Who = "uno" | "grupo" | "codigo";
 
-export function UsersView({ t, m, locale, today, q, filter, rows, codes, groups, countText, pager }: {
-  t: AdminText; m: UsersText; locale: string; today: string; q: string; filter: string; rows: UserRow[]; codes: CodeRow[]; groups: Group[]; countText: string; pager: React.ReactNode;
+export function UsersView({ t, m, locale, today, q, filter, role, country, countries, rows, codes, groups, countText, pager }: {
+  t: AdminText; m: UsersText; locale: string; today: string; q: string; filter: string; role: string; country: string; countries: { code: string; name: string }[];
+  rows: UserRow[]; codes: CodeRow[]; groups: Group[]; countText: string; pager: React.ReactNode;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -39,6 +40,7 @@ export function UsersView({ t, m, locale, today, q, filter, rows, codes, groups,
   const allPicked = rows.length > 0 && rows.every((r) => picked.has(r.id));
   const pickAll = () => setPicked((p) => { const n = new Set(p); rows.forEach((r) => (allPicked ? n.delete(r.id) : n.add(r.id))); return n; });
 
+  const mailText = (mail: { sent: number; of: number } | null) => (mail ? ` ${fill(t.grant.mailed, { n: mail.sent, total: mail.of })}` : "");
   const done = (text: string) => { setMsg({ ok: true, text }); toast(text); router.refresh(); };
   const submit = () => start(async () => {
     setMsg(null);
@@ -46,7 +48,7 @@ export function UsersView({ t, m, locale, today, q, filter, rows, codes, groups,
       if (picked.size === 0 && !emails.trim()) return setMsg({ ok: false, text: m.errPick });
       const r = await grantUsers({ ...grant, ids: [...picked], emails });
       if (!r.ok) return setMsg({ ok: false, text: r.error });
-      const base = r.data.granted === 1 ? m.grantedOne : fill(m.granted, { n: r.data.granted });
+      const base = (r.data.granted === 1 ? m.grantedOne : fill(m.granted, { n: r.data.granted })) + mailText(r.data.mail);
       setPicked(new Set()); setEmails("");
       return done(r.data.notFound.length ? `${base} ${fill(m.notFound, { list: r.data.notFound.join(", ") })}` : base);
     }
@@ -54,7 +56,7 @@ export function UsersView({ t, m, locale, today, q, filter, rows, codes, groups,
       if (!groupId) return setMsg({ ok: false, text: m.errGroup });
       const r = await grantGroup({ ...grant, groupId });
       if (!r.ok) return setMsg({ ok: false, text: r.error });
-      return done(r.data.granted === 1 ? m.grantedOne : fill(m.granted, { n: r.data.granted }));
+      return done((r.data.granted === 1 ? m.grantedOne : fill(m.granted, { n: r.data.granted })) + mailText(r.data.mail));
     }
     const r = await createInvite({ ...grant, code: code.code, maxUses: code.maxUses, groupId: code.groupId || null });
     if (!r.ok) return setMsg({ ok: false, text: r.error });
@@ -69,7 +71,7 @@ export function UsersView({ t, m, locale, today, q, filter, rows, codes, groups,
     done(fill(m.groupCreated, { name: r.data.name }));
   });
   const doExport = () => start(async () => {
-    const r = await exportUsers({ q, filtro: filter });
+    const r = await exportUsers({ q, filtro: filter, rol: role, pais: country });
     if (!r.ok) return toast(r.error);
     const url = URL.createObjectURL(new Blob(["﻿" + r.data], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
@@ -152,7 +154,7 @@ export function UsersView({ t, m, locale, today, q, filter, rows, codes, groups,
             ) : null}
           </div>
 
-          <GrantFields t={t} locale={locale} today={today} value={grant} onChange={setGrant} idPrefix="g" />
+          <GrantFields t={t} locale={locale} today={today} value={grant} onChange={setGrant} idPrefix="g" showNotify={who !== "codigo"} />
           <span className="small muted">{t.grant.note} {who !== "codigo" ? t.grant.notify : ""}</span>
           {msg ? <p role="status" className={msg.ok ? css.ok : css.err}>{msg.text}</p> : null}
           <div className="row" style={{ justifyContent: "flex-end", gap: 10 }}>
@@ -168,6 +170,16 @@ export function UsersView({ t, m, locale, today, q, filter, rows, codes, groups,
         <label htmlFor="u-p" className="sr-only">{m.plan}</label>
         <select id="u-p" name="filtro" className="input" defaultValue={filter} onChange={(e) => e.currentTarget.form?.requestSubmit()}>
           {USER_FILTERS.map((f) => <option key={f} value={f}>{m.filters[f]}</option>)}
+        </select>
+        <label htmlFor="u-c" className="sr-only">{m.country}</label>
+        <select id="u-c" name="pais" className="input" defaultValue={country} onChange={(e) => e.currentTarget.form?.requestSubmit()}>
+          <option value="all">{m.countryAll}</option>
+          {countries.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
+          <option value="otro">{m.countryOther}</option>
+        </select>
+        <label htmlFor="u-r" className="sr-only">{m.role}</label>
+        <select id="u-r" name="rol" className="input" defaultValue={role} onChange={(e) => e.currentTarget.form?.requestSubmit()}>
+          {USER_ROLES.map((r) => <option key={r} value={r}>{m.roles[r]}</option>)}
         </select>
         <button type="submit" className="btn btn-secondary">{m.searchBtn}</button>
         <button type="button" className="btn btn-secondary" disabled={busy} onClick={doExport}>{m.export}</button>

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { bnplSchedule, debtPayoff } from "@/lib/engine";
 import {
   balanceAfter, companySummary, debtState, debtSummary, monthlyPayment, nextUnpaid, parsePercent, parseSchedule, payoffOf, paymentAmount,
-  planMonths, progressOf, scheduleAfter, scheduleJson, scheduleMonths, simulate, startBalanceFor, taxStatus, type DebtLite,
+  planMonths, progressOf, scheduleAfter, scheduleJson, scheduleMonths, simulate, startBalanceFor, taxReserveOf, taxStatus, type DebtLite,
 } from "@/app/(app)/deudas/lib";
 import { applyEntry, chartPoints, distribution, invTotals, niceMax, typeOf, valueSeries } from "@/app/(app)/inversiones/lib";
 
@@ -247,5 +247,17 @@ describe("inversiones", () => {
     expect(g.points).toEqual([{ x: 0, y: 50 }, { x: 500, y: 0 }, { x: 1000, y: 25 }]);
     expect(chartPoints([]).points).toEqual([]);
     expect(niceMax(130_000)).toBe(200_000);
+  });
+});
+
+describe("impuestos: apartado según el país", () => {
+  it("sin fila del país: se muestra sin aviso propio", () => {
+    expect(taxReserveOf(null)).toEqual({ show: true, note: "" });
+  });
+  it("apagado en el país: no se muestra", () => {
+    expect(taxReserveOf({ tax_reserve_enabled: false, tax_reserve_note: "x" }).show).toBe(false);
+  });
+  it("con aviso: se muestra recortado", () => {
+    expect(taxReserveOf({ tax_reserve_enabled: true, tax_reserve_note: "  Pregúntale a tu contador.  " })).toEqual({ show: true, note: "Pregúntale a tu contador." });
   });
 });

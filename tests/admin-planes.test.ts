@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseMoney } from "@/lib/engine";
 import {
-  centsToInput, changedFeatures, checkCoupon, checkTrial, cleanCouponCode, parsePrice, priceSync, regionPatch, regionSync, sortRegions,
+  centsToInput, changedFeatures, checkCoupon, checkTrial, couponExpiry, stripeExpiry, cleanCouponCode, parsePrice, priceSync, regionPatch, regionSync, sortRegions,
 } from "@/app/admin/planes/lib";
 
 describe("precio en el campo y de vuelta", () => {
@@ -76,17 +76,40 @@ describe("qué incluye cada plan", () => {
 });
 
 describe("cupones", () => {
+  const TODAY = "2026-11-25";
+  const base = { code: "WEBINAR", pct: "50", months: "0", max: "", appliesTo: "both", until: "" };
+  const cup = (o: Partial<typeof base>) => checkCoupon({ ...base, ...o }, TODAY);
   it("código en mayúsculas, solo letras y números", () => expect(cleanCouponCode("webinar-50 ñ")).toBe("WEBINAR50"));
-  it("0 meses = para siempre; vacío = sin límite de usos", () =>
-    expect(checkCoupon({ code: "WEBINAR", pct: "50", months: "0", max: "" })).toEqual({ ok: true, coupon: { code: "WEBINAR", percent_off: 50, duration_months: null, max_redemptions: null } }));
-  it("meses y usos", () =>
-    expect(checkCoupon({ code: "alumnos50", pct: "50", months: "3", max: "100" })).toEqual({ ok: true, coupon: { code: "ALUMNOS50", percent_off: 50, duration_months: 3, max_redemptions: 100 } }));
+  it("0 meses = para siempre; vacío = sin límite de usos; ambos planes y sin vencimiento", () =>
+    expect(cup({})).toEqual({ ok: true, coupon: { code: "WEBINAR", percent_off: 50, duration_months: null, max_redemptions: null, applies_to: "both", expires_at: null } }));
+  it("meses, usos, plan y vencimiento (fin del día elegido)", () =>
+    expect(cup({ code: "alumnos50", months: "3", max: "100", appliesTo: "month", until: "2026-12-31" })).toEqual({
+      ok: true, coupon: { code: "ALUMNOS50", percent_off: 50, duration_months: 3, max_redemptions: 100, applies_to: "month", expires_at: "2026-12-31T23:59:59Z" },
+    }));
+  it("vence mañana sí; hoy o antes no", () => {
+    expect(cup({ until: "2026-11-26" })).toMatchObject({ ok: true, coupon: { expires_at: "2026-11-26T23:59:59Z" } });
+    expect(cup({ until: "2026-11-25" })).toEqual({ ok: false, error: "untilPast" });
+    expect(cup({ until: "2026-01-01" })).toEqual({ ok: false, error: "untilPast" });
+  });
   it("errores", () => {
-    expect(checkCoupon({ code: "AB", pct: "50", months: "0", max: "" })).toEqual({ ok: false, error: "code" });
-    expect(checkCoupon({ code: "AB-12", pct: "50", months: "0", max: "" })).toEqual({ ok: false, error: "code" });
-    expect(checkCoupon({ code: "WEB", pct: "0", months: "0", max: "" })).toEqual({ ok: false, error: "pct" });
-    expect(checkCoupon({ code: "WEB", pct: "101", months: "0", max: "" })).toEqual({ ok: false, error: "pct" });
-    expect(checkCoupon({ code: "WEB", pct: "10", months: "37", max: "" })).toEqual({ ok: false, error: "months" });
-    expect(checkCoupon({ code: "WEB", pct: "10", months: "1", max: "0" })).toEqual({ ok: false, error: "max" });
+    expect(cup({ code: "AB" })).toEqual({ ok: false, error: "code" });
+    expect(cup({ code: "AB-12" })).toEqual({ ok: false, error: "code" });
+    expect(cup({ code: "WEB", pct: "0" })).toEqual({ ok: false, error: "pct" });
+    expect(cup({ code: "WEB", pct: "101" })).toEqual({ ok: false, error: "pct" });
+    expect(cup({ code: "WEB", pct: "10", months: "37" })).toEqual({ ok: false, error: "months" });
+    expect(cup({ code: "WEB", pct: "10", months: "1", max: "0" })).toEqual({ ok: false, error: "max" });
+    expect(cup({ appliesTo: "week" })).toEqual({ ok: false, error: "applies" });
+    expect(cup({ until: "2026-02-30" })).toEqual({ ok: false, error: "until" });
+    expect(cup({ until: "31/12/2026" })).toEqual({ ok: false, error: "until" });
+  });
+  it("vencimiento para Stripe en segundos Unix", () => {
+    expect(stripeExpiry(null)).toEqual({});
+    expect(stripeExpiry("2026-12-31T23:59:59Z")).toEqual({ expires_at: Date.UTC(2026, 11, 31, 23, 59, 59) / 1000 });
+  });
+  it("columna Vence: sin fecha, fecha o vencido", () => {
+    const now = new Date("2026-11-25T10:00:00Z");
+    expect(couponExpiry(null, now)).toEqual({ kind: "none" });
+    expect(couponExpiry("2026-12-31T23:59:59Z", now)).toEqual({ kind: "date", day: "2026-12-31" });
+    expect(couponExpiry("2026-11-24T23:59:59Z", now)).toEqual({ kind: "expired", day: "2026-11-24" });
   });
 });

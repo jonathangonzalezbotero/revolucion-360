@@ -204,3 +204,36 @@ export function menuPreview(menu: Record<MenuKey, MenuState>, features: Partial<
   }
   return items;
 }
+
+// ───────── Siguiente paso del Diagnóstico para alumnos (app_config.diag_cta.student) ─────────
+/** 'auto' = el curso que ataca su prioridad · 'course' = un curso fijo · 'none' = nada. */
+export const STUDENT_MODES = ["auto", "course", "none"] as const;
+export type StudentMode = (typeof STUDENT_MODES)[number];
+export type StudentForm = { mode: StudentMode; course: string };
+export const StudentSchema = z.object({ mode: z.enum(STUDENT_MODES), course: z.string().trim().max(120) }).strict();
+
+const asObj = (x: unknown): Record<string, unknown> => (x && typeof x === "object" && !Array.isArray(x) ? (x as Record<string, unknown>) : {});
+
+/** `diag_cta` guardado → formulario. Sin mode (o uno desconocido) = 'auto'. */
+export function studentToForm(diagCta: unknown): StudentForm {
+  const st = asObj(asObj(diagCta).student);
+  const mode: StudentMode = st.mode === "course" || st.mode === "none" ? st.mode : "auto";
+  return { mode, course: typeof st.course === "string" ? st.course : "" };
+}
+
+/** Un curso fijo necesita un curso que exista. null = está bien. */
+export function checkStudent(f: StudentForm, slugs: readonly string[]): "course" | null {
+  return f.mode === "course" && !slugs.includes(f.course.trim()) ? "course" : null;
+}
+
+/**
+ * Mezcla solo `student.mode` y `student.course` sobre lo guardado: `lead` (lo edita /admin/paises),
+ * `student.title/text/button` y cualquier otra clave quedan como estaban.
+ * Con otro modo se conserva el curso fijo anterior (así volver a "Un curso fijo" lo recuerda).
+ */
+export function mergeDiagStudent(raw: unknown, f: StudentForm): Record<string, unknown> {
+  const cur = asObj(raw);
+  const st = asObj(cur.student);
+  const course = f.mode === "course" ? f.course.trim() : typeof st.course === "string" ? st.course : "";
+  return { ...cur, student: { ...st, mode: f.mode, course } };
+}

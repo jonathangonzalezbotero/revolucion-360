@@ -14,7 +14,8 @@ export type AppConfig = {
   trial: { enabled: boolean; days: number };
   matching: MatchConfig;
   gamification: boolean;
-  diagCta: { lead: { title: string; text: string; url: string; button: string }; student: { title: string; text: string; button: string } };
+  // student.mode: 'auto' = el curso que ataca la prioridad · 'course' = el curso fijo `course` (slug) · 'none' = nada. Sin mode = 'auto'.
+  diagCta: { lead: { title: string; text: string; url: string; button: string }; student: { title: string; text: string; button: string; mode: DiagStudentMode; course: string } };
   legal: { company: string; abn: string; contact: string; updated: string };
 };
 
@@ -28,9 +29,22 @@ const DEFAULTS: AppConfig = {
   trial: { enabled: true, days: 14 },
   matching: DEFAULT_MATCH,
   gamification: true,
-  diagCta: { lead: { title: "", text: "", url: "", button: "" }, student: { title: "", text: "", button: "" } },
+  diagCta: { lead: { title: "", text: "", url: "", button: "" }, student: { title: "", text: "", button: "", mode: "auto", course: "" } },
   legal: { company: "[RAZÓN SOCIAL]", abn: "[ABN]", contact: "[CORREO DE CONTACTO]", updated: "[FECHA]" },
 };
+
+export type DiagStudentMode = "auto" | "course" | "none";
+/** `diag_cta` guardado → forma completa: mezcla `lead` y `student` por separado (un `student: { mode }` no borra sus textos). */
+function diagCtaFrom(raw: unknown): AppConfig["diagCta"] {
+  const o = (x: unknown): Record<string, unknown> => (x && typeof x === "object" && !Array.isArray(x) ? (x as Record<string, unknown>) : {});
+  const str = (x: unknown) => (typeof x === "string" ? x : "");
+  const lead = o(o(raw).lead), stu = o(o(raw).student);
+  const mode: DiagStudentMode = stu.mode === "course" || stu.mode === "none" ? stu.mode : "auto";
+  return {
+    lead: { title: str(lead.title), text: str(lead.text), url: str(lead.url), button: str(lead.button) },
+    student: { title: str(stu.title), text: str(stu.text), button: str(stu.button), mode, course: str(stu.course) },
+  };
+}
 
 /** Configuración que el admin edita en /admin. Se lee una vez por petición. */
 export const getConfig = cache(async (): Promise<AppConfig> => {
@@ -49,7 +63,7 @@ export const getConfig = cache(async (): Promise<AppConfig> => {
     trial: { ...DEFAULTS.trial, ...(v.trial ?? {}) },
     matching: { amountPct: m?.amount_pct ?? 5, days: m?.days ?? 5, duplicateDays: m?.duplicate_days ?? 2 },
     gamification: v.gamification_enabled !== false,
-    diagCta: { ...DEFAULTS.diagCta, ...(v.diag_cta ?? {}) },
+    diagCta: diagCtaFrom(v.diag_cta),
     legal: { ...DEFAULTS.legal, ...(v.legal ?? {}) },
   };
 });

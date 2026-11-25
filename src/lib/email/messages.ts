@@ -10,6 +10,8 @@ export type EmailTexts = {
   close: { subject: string; label: string; title: string; titleLate: string; p1: string; streak: string; streakOne: string; streakN: string; points: string; pointsN: string; cta: string };
   access: { subject: string; subjectOne: string; label: string; title: string; p1: string; p2: string; p2Discount: string; cta: string };
   payment: { subject: string; label: string; title: string; p1: string; p2: string; cta: string };
+  /** Acceso gratis dado desde el panel (casilla "Avisarles por correo"). */
+  grant: { subject: string; label: string; titleName: string; titleNoName: string; kinds: Record<"alumno" | "fundador", string>; p1Until: string; p1Life: string; p2Until: string; p2Life: string; cta: string };
   notif: {
     closeTitle: string; closeBody: string;
     accessTitle: string; accessBody: string;
@@ -65,6 +67,18 @@ export const M = {
       p1: "Tu tarjeta fue rechazada el {date}. Lo intentamos de nuevo en unos días.",
       p2: "No pierdes nada mientras tanto. Si quieres, actualiza tu tarjeta ahora y listo.",
       cta: "Actualizar mi tarjeta",
+    },
+    grant: {
+      subject: "Tienes acceso completo a Revolución 360",
+      label: "Tu acceso",
+      titleName: "Hola, {name}. Tienes acceso completo.",
+      titleNoName: "Hola. Tienes acceso completo.",
+      kinds: { alumno: "alumno", fundador: "fundador" },
+      p1Until: "Revolución del Dinero te dio acceso de {kind} a todo Revolución 360 hasta el {date}.",
+      p1Life: "Revolución del Dinero te dio acceso de {kind} a todo Revolución 360, de por vida.",
+      p2Until: "Tus datos nunca se borran. Te avisamos antes de que venza.",
+      p2Life: "Tus datos son tuyos y siempre los puedes exportar.",
+      cta: "Entrar a la app",
     },
     notif: {
       closeTitle: "5 minutos para cerrar {month}",
@@ -123,6 +137,18 @@ export const M = {
       p1: "Your card was declined on {date}. We'll try again in a few days.",
       p2: "You don't lose anything in the meantime. If you want, update your card now and you're done.",
       cta: "Update my card",
+    },
+    grant: {
+      subject: "You have full access to Revolución 360",
+      label: "Your access",
+      titleName: "Hi, {name}. You have full access.",
+      titleNoName: "Hi. You have full access.",
+      kinds: { alumno: "student", fundador: "founder" },
+      p1Until: "Revolución del Dinero gave you {kind} access to all of Revolución 360 until {date}.",
+      p1Life: "Revolución del Dinero gave you lifetime {kind} access to all of Revolución 360.",
+      p2Until: "Your data is never deleted. We'll let you know before it ends.",
+      p2Life: "Your data is yours and you can always export it.",
+      cta: "Open the app",
     },
     notif: {
       closeTitle: "5 minutes to close {month}",

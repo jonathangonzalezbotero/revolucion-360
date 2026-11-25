@@ -9,7 +9,7 @@ import { cellMap, cellOf, diagnose, formatMoney, monthName, priority, type Indic
 import { loadDiagnosticInput, loadPlan, must } from "@/server/data";
 import { requireUser } from "@/server/session";
 import css from "./diagnostico.module.css";
-import { benchmarksFrom, canDiagnose, joinNames, levelCounts, levelTone, pctText, referenceVars, valueText, withFundState } from "./lib";
+import { benchmarksFrom, canDiagnose, joinNames, levelCounts, levelTone, pctText, referenceVars, studentStep, valueText, withFundState } from "./lib";
 import { M } from "./messages";
 
 export const metadata: Metadata = { title: "Diagnóstico" };
@@ -103,12 +103,19 @@ export default async function DiagnosticoPage() {
     : focusKey === "none" ? (s.config.menu.cierre === "on" ? "/cierre" : "/plan") : "/plan";
   const summary = m.summary[focusKey];
 
-  // Imán de clientes: alumno → su curso; si no, la clase gratuita.
+  // Imán de clientes: alumno → su curso (según /admin/menu: automático, fijo o nada); si no, la clase gratuita.
   const student = s.entitlement.state === "alumno" || s.entitlement.state === "fundador";
-  const course = student && pr
-    ? must(await s.supabase.from("courses").select("slug, number, title, description, cover_url").eq("status", "published").eq("priority", pr).order("sort").limit(1))[0] ?? null
-    : null;
   const lead = s.config.diagCta.lead, stu = s.config.diagCta.student;
+  const step = studentStep({ student, mode: stu.mode, course: stu.course });
+  const COURSE_COLS = "slug, number, title, description, cover_url";
+  // Curso fijo: solo si sigue publicado; si no, se cae al automático.
+  const fixedCourse = step.fixedSlug
+    ? must(await s.supabase.from("courses").select(COURSE_COLS).eq("status", "published").eq("slug", step.fixedSlug).limit(1))[0] ?? null
+    : null;
+  const course = fixedCourse ?? (step.show && pr
+    ? must(await s.supabase.from("courses").select(COURSE_COLS).eq("status", "published").eq("priority", pr).order("sort").limit(1))[0] ?? null
+    : null);
+  const showLead = !student && !!lead.title;
   const focusName = pr ? m.name[pr].toLowerCase() : "";
 
   return (
@@ -162,8 +169,8 @@ export default async function DiagnosticoPage() {
         </div>
       </article>
 
-      <section aria-label={m.nextStep} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {!student && lead.title ? (
+      {showLead || step.show ? <section aria-label={m.nextStep} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {showLead ? (
           <div className={css.lead}>
             <div className={css.brand}><Image src="/brand/sello.png" alt="" width={44} height={44} /><span>{m.brand}</span></div>
             <h2 className={css.leadTitle}>{lead.title}</h2>
@@ -171,18 +178,19 @@ export default async function DiagnosticoPage() {
             {lead.url && lead.button ? <a href={lead.url} className={css.leadBtn} target="_blank" rel="noopener noreferrer">{lead.button}</a> : null}
           </div>
         ) : null}
-        {student ? (
+        {step.show ? (
           <Link href={course ? `/academia/${encodeURIComponent(course.slug)}` : "/academia"} className={css.student}>
             {course?.cover_url ? <Image src={course.cover_url} alt="" width={160} height={90} unoptimized className={css.cover} /> : null}
             <span className={css.studentBody}>
-              {pr ? <span className={css.eyebrow2}>{course ? fill(m.studentEyebrow, { focus: focusName, n: String(course.number).padStart(2, "0") }) : fill(m.studentEyebrowNoCourse, { focus: focusName })}</span> : null}
+              {fixedCourse ? <span className={css.eyebrow2}>{fill(m.studentEyebrowFixed, { n: String(fixedCourse.number).padStart(2, "0") })}</span>
+                : pr ? <span className={css.eyebrow2}>{course ? fill(m.studentEyebrow, { focus: focusName, n: String(course.number).padStart(2, "0") }) : fill(m.studentEyebrowNoCourse, { focus: focusName })}</span> : null}
               <strong>{course?.title || stu.title || m.studentTitle}</strong>
               <span className={css.txt}>{course?.description || stu.text || m.studentText}</span>
               <span className={css.go}>{course ? `${stu.button || m.studentCta.replace(" ›", "")} ›` : m.studentCta}</span>
             </span>
           </Link>
         ) : null}
-      </section>
+      </section> : null}
 
       <Disclaimer text={`${s.t.disclaimer} ${m.footer}`} />
     </main>

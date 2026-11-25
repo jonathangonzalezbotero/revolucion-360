@@ -8,6 +8,7 @@ import { requireAdmin } from "@/server/session";
 import css from "./_shared/admin.module.css";
 import { pct } from "./_shared/lib";
 import { A } from "./_shared/messages";
+import { loadDropoff } from "./_shared/server";
 import { AdminHeader } from "./_shared/ui";
 
 export const metadata: Metadata = { title: "Resumen" };
@@ -24,9 +25,10 @@ export default async function AdminResumen({ searchParams }: { searchParams: Pro
   const s = await requireAdmin();
   const t = A[s.locale], m = t.resumen;
   const days = (await searchParams).dias === "90" ? 90 : 30;
-  const [sumRes, priceRes] = await Promise.all([
+  const [sumRes, priceRes, drop] = await Promise.all([
     s.supabase.rpc("admin_summary", { p_days: days }),
     s.supabase.from("price_regions").select("currency, monthly_cents").eq("region", "DEFAULT").maybeSingle(),
+    loadDropoff(s, days),
   ]);
   const sum = must(sumRes) as unknown as Summary;
   const price = priceRes.error ? null : priceRes.data;
@@ -41,7 +43,7 @@ export default async function AdminResumen({ searchParams }: { searchParams: Pro
   ];
   const alerts = [
     { n: sum.failed_payments, text: m.failed, href: "/admin/usuarios?filtro=failed", bad: true },
-    { n: sum.expiring, text: m.expiring, href: "/admin/usuarios?filtro=expiring" },
+    { n: sum.expiring, text: m.expiring, href: "/admin/usuarios?filtro=expiring7" },
     { n: sum.privacy_pending, text: m.privacy, href: "/admin/soporte?tab=privacidad" },
     { n: sum.tickets_open, text: m.tickets, href: "/admin/soporte?estado=open" },
   ].filter((a) => a.n > 0);
@@ -103,7 +105,7 @@ export default async function AdminResumen({ searchParams }: { searchParams: Pro
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, fontSize: 14 }}>
           <span style={{ background: "var(--papel)", borderRadius: 12, padding: 14 }}>{m.seen}: <strong className="num">{nf.format(ac.lessons_seen)}</strong></span>
           <span style={{ background: "var(--papel)", borderRadius: 12, padding: 14 }}>{m.top}: <strong>{ac.top_lesson ?? m.noData}</strong></span>
-          <span style={{ background: "var(--papel)", borderRadius: 12, padding: 14 }}>{m.drop}: <strong>{m.noData}</strong></span>
+          <span style={{ background: "var(--papel)", borderRadius: 12, padding: 14 }}>{m.drop}: <strong>{drop ? drop.lesson : m.noData}</strong></span>
           <span style={{ background: "var(--papel)", borderRadius: 12, padding: 14 }}>{m.rating}: <strong className="num">{ac.avg_rating != null ? fill(m.ratingVal, { n: ac.avg_rating }) : m.noData}</strong></span>
         </div>
       </section>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_BENCHMARKS } from "@/lib/engine";
 import {
-  benchToForm, categoriesToForm, colorFor, isCountryCode, isCurrencyCode, isHttpUrl, isTimezone, leadToForm, legalToForm,
+  asCountryLocale, cleanTaxNote, benchToForm, categoriesToForm, colorFor, isCountryCode, isCurrencyCode, isHttpUrl, isTimezone, leadToForm, legalToForm,
   mergeBenchmarks, mergeCategories, mergeDiagCta, mergeLegalConfig, mergeTerms, missingFromCatalog, nextSort, revOf, statusOf, termsToForm,
 } from "@/app/admin/paises/lib";
 
@@ -173,5 +173,18 @@ describe("app_config", () => {
     const f = legalToForm(raw);
     expect(f).toEqual({ company: "", abn: "12 345", contact: "a@b.co", address: "", updated: "", version: "" });
     expect(mergeLegalConfig(raw, { ...f, company: "RD Pty Ltd", version: "1.0" })).toEqual({ abn: "12 345", contact: "a@b.co", otra: "x", company: "RD Pty Ltd", version: "1.0" });
+  });
+});
+
+describe("idioma y apartado de impuestos del país", () => {
+  it("idioma: solo es o en; lo demás cae en español", () => {
+    expect(asCountryLocale("en")).toBe("en");
+    expect(asCountryLocale("es")).toBe("es");
+    expect(asCountryLocale("fr")).toBe("es");
+    expect(asCountryLocale(null)).toBe("es");
+  });
+  it("aviso: recorta espacios y saltos de más, conserva un párrafo", () => {
+    expect(cleanTaxNote("  El %   depende\n\n\n\nde tu contador  ")).toBe("El % depende\n\nde tu contador");
+    expect(cleanTaxNote("   ")).toBe("");
   });
 });
