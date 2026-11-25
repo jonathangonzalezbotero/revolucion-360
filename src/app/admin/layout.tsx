@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <ToastProvider ptsLabel={s.t.nav.pts}>
       <div className={css.shell}>
-        <AdminNav t={t.nav} allowed={allowed} showSoon={s.adminRole === "owner"} />
+        <AdminNav t={t.nav} allowed={allowed} />
         <div className={css.main}><SectionGate t={t.nav} allowed={allowed}>{children}</SectionGate></div>
       </div>
     </ToastProvider>

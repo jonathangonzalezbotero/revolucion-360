@@ -88,15 +88,19 @@ export async function createContact(db: Db, input: unknown): Promise<string> {
   return id;
 }
 
-/** Importar CSV (filas ya leídas). Une por correo; nunca marca consentimiento salvo `consentSource` (constancia de dónde lo dieron). */
-export async function importContacts(db: Db, rows: unknown[], opts: { tagIds?: string[]; consentSource?: string } = {}): Promise<{ created: number; updated: number; invalid: number }> {
-  let created = 0, updated = 0, invalid = 0;
+/**
+ * Importar CSV (filas ya leídas). Une por correo; nunca marca consentimiento salvo `consentSource` (constancia de dónde lo
+ * dieron). Un contacto que ya existe y se dio de baja NO vuelve a quedar suscrito por una importación (volver a aceptar
+ * es algo que hace la persona): cuenta en `consentSkipped`.
+ */
+export async function importContacts(db: Db, rows: unknown[], opts: { tagIds?: string[]; consentSource?: string } = {}): Promise<{ created: number; updated: number; invalid: number; consentSkipped: number }> {
+  let created = 0, updated = 0, invalid = 0, consentSkipped = 0;
   for (const raw of rows.slice(0, 5000)) {
     const p = ContactInput.safeParse(raw);
     if (!p.success) { invalid++; continue; }
     const d = p.data;
     const phone = d.phone ? toE164(d.phone, d.country) : null;
-    const existing = must(await db.from("crm_contacts").select("id, name, phone").eq("email", d.email).maybeSingle()) as { id: string; name: string; phone: string | null } | null;
+    const existing = must(await db.from("crm_contacts").select("id, name, phone, email_unsubscribed_at").eq("email", d.email).maybeSingle()) as { id: string; name: string; phone: string | null; email_unsubscribed_at: string | null } | null;
     let id: string;
     if (existing) {
       const patch: Record<string, unknown> = {};
@@ -112,9 +116,10 @@ export async function importContacts(db: Db, rows: unknown[], opts: { tagIds?: s
       created++;
     }
     for (const t of [...d.tagIds, ...(opts.tagIds ?? [])]) await addTag(db, id, t, "import");
-    if (opts.consentSource) must(await db.rpc("crm_set_consent", { p_contact: id, p_channel: "email", p_on: true, p_source: `import:${cleanRef(opts.consentSource)}`.slice(0, 60) }));
+    if (opts.consentSource && existing?.email_unsubscribed_at) consentSkipped++;
+    else if (opts.consentSource) must(await db.rpc("crm_set_consent", { p_contact: id, p_channel: "email", p_on: true, p_source: `import:${cleanRef(opts.consentSource)}`.slice(0, 60) }));
   }
-  return { created, updated, invalid };
+  return { created, updated, invalid, consentSkipped };
 }
 
 export async function addContactTag(db: Db, contactId: string, tagId: string) { await addTag(db, contactId, tagId, "admin"); }
@@ -206,6 +211,18 @@ export async function sendToContact(db: Db, contactId: string, input: unknown): 
   }).select("id").single()) as { id: string };
   must(await db.from("crm_messages").insert({ contact_id: contactId, channel: "email", source_key: `campaign:${c.id}`, campaign_id: c.id, scheduled_for: now }).select("id"));
   return c.id;
+}
+
+export type CampaignListItem = Pick<CampaignRow, "id" | "name" | "subject" | "status" | "send_mode" | "scheduled_local" | "scheduled_at" | "sent_at" | "audience" | "recipients_count" | "sent_count" | "opened_count" | "clicked_count" | "created_at" | "updated_at">;
+/** "Tus campañas": las más recientes primero (máx. 200). Sin los bloques (se leen con getCampaign al abrir una). */
+export async function listCampaigns(db: Db, limit = 100): Promise<CampaignListItem[]> {
+  const cols = "id, name, subject, status, send_mode, scheduled_local, scheduled_at, sent_at, audience, recipients_count, sent_count, opened_count, clicked_count, created_at, updated_at";
+  return must(await db.from("crm_campaigns").select(cols).order("created_at", { ascending: false }).limit(Math.min(200, Math.max(1, limit)))) as CampaignListItem[];
+}
+
+/** Una campaña completa para el editor (null si no existe). */
+export async function getCampaign(db: Db, id: string): Promise<CampaignRow | null> {
+  return must(await db.from("crm_campaigns").select("*").eq("id", id).maybeSingle()) as CampaignRow | null;
 }
 
 /** % que abrió e hizo clic (sobre enviados). null si aún no se envía. */

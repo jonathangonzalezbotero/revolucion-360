@@ -54,6 +54,11 @@ export const A = {
       cupon_crear: "Creó un cupón", cupon_stripe: "Creó un cupón en Stripe", cupon_pausar: "Pausó un cupón", cupon_activar: "Activó un cupón",
       pais_crear: "Agregó un país", pais_editar: "Editó un país", pais_publicar: "Publicó un país", pais_ocultar: "Pasó un país a borrador",
       config_clase_gratuita: "Cambió la clase gratuita del Diagnóstico", config_siguiente_paso_alumno: "Cambió el siguiente paso del Diagnóstico para alumnos", config_legal: "Cambió los datos legales",
+      crm_contacto_crear: "Agregó un contacto al CRM", crm_importar: "Importó contactos desde un CSV", crm_etiqueta_crear: "Creó una etiqueta del CRM",
+      crm_etiqueta_poner: "Le puso una etiqueta a un contacto", crm_etiqueta_quitar: "Le quitó una etiqueta a un contacto", crm_baja: "Dio de baja a un contacto de los correos",
+      crm_inscribir: "Agregó un contacto a una automatización", crm_correo_contacto: "Le envió un correo a un contacto",
+      crm_campana_guardar: "Guardó una campaña de correo", crm_campana_confirmar: "Confirmó el envío de una campaña", crm_campana_cancelar: "Canceló el envío de una campaña", crm_campana_prueba: "Envió una prueba de una campaña",
+      crm_auto_guardar: "Guardó una automatización", crm_auto_activar: "Activó una automatización", crm_auto_pausar: "Pausó una automatización",
     } as Record<string, string>,
     resumen: {
       title: "Resumen", eyebrow: "Cómo va Revolución 360", period: "Periodo", d30: "30 días", d90: "90 días",
@@ -118,6 +123,11 @@ export const A = {
       cupon_crear: "Created a coupon", cupon_stripe: "Created a coupon in Stripe", cupon_pausar: "Paused a coupon", cupon_activar: "Turned a coupon on",
       pais_crear: "Added a country", pais_editar: "Edited a country", pais_publicar: "Published a country", pais_ocultar: "Moved a country to draft",
       config_clase_gratuita: "Changed the Diagnosis free lesson", config_siguiente_paso_alumno: "Changed the Diagnosis next step for students", config_legal: "Changed the legal details",
+      crm_contacto_crear: "Added a contact to the CRM", crm_importar: "Imported contacts from a CSV", crm_etiqueta_crear: "Created a CRM tag",
+      crm_etiqueta_poner: "Tagged a contact", crm_etiqueta_quitar: "Removed a tag from a contact", crm_baja: "Unsubscribed a contact from emails",
+      crm_inscribir: "Added a contact to an automation", crm_correo_contacto: "Emailed a contact",
+      crm_campana_guardar: "Saved an email campaign", crm_campana_confirmar: "Confirmed a campaign send", crm_campana_cancelar: "Cancelled a campaign send", crm_campana_prueba: "Sent a campaign test",
+      crm_auto_guardar: "Saved an automation", crm_auto_activar: "Activated an automation", crm_auto_pausar: "Paused an automation",
     } as Record<string, string>,
     resumen: {
       title: "Overview", eyebrow: "How Revolución 360 is doing", period: "Period", d30: "30 days", d90: "90 days",

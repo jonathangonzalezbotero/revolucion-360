@@ -6,3 +6,4 @@ export { runCrm } from "./engine";
 export { countAudience } from "./audience";
 export { untypedDb, crmDb } from "./db";
 export * from "./admin";
+export type { Db, ContactRow, CampaignRow, AutomationRow } from "./db";

@@ -7,29 +7,28 @@ import { sectionOf, type AdminSection } from "../actividad/roles";
 import css from "./admin.module.css";
 import type { AdminText } from "./messages";
 
-/** Secciones del panel, en el orden del mockup. Cada subrol solo ve las suyas (`allowed`). */
+/**
+ * Enlaces del panel, en el orden del mockup. `section` decide quién lo ve (cada subrol solo ve las suyas: `allowed`);
+ * `label` es la clave del texto. Las tres pantallas del CRM son una sola sección ("crm": solo el Dueño).
+ */
 export const ADMIN_LINKS = [
-  { key: "resumen", href: "/admin" },
-  { key: "usuarios", href: "/admin/usuarios" },
-  { key: "grupos", href: "/admin/grupos" },
-  { key: "menu", href: "/admin/menu" },
-  { key: "academia", href: "/admin/academia" },
-  { key: "planes", href: "/admin/planes" },
-  { key: "paises", href: "/admin/paises" },
-  { key: "soporte", href: "/admin/soporte" },
-  { key: "actividad", href: "/admin/actividad" },
-] as const satisfies readonly { key: AdminSection; href: string }[];
+  { section: "resumen", label: "resumen", href: "/admin" },
+  { section: "usuarios", label: "usuarios", href: "/admin/usuarios" },
+  { section: "grupos", label: "grupos", href: "/admin/grupos" },
+  { section: "menu", label: "menu", href: "/admin/menu" },
+  { section: "academia", label: "academia", href: "/admin/academia" },
+  { section: "planes", label: "planes", href: "/admin/planes" },
+  { section: "paises", label: "paises", href: "/admin/paises" },
+  { section: "crm", label: "contactos", href: "/admin/crm" },
+  { section: "crm", label: "campanas", href: "/admin/campanas" },
+  { section: "crm", label: "automatizaciones", href: "/admin/automatizaciones" },
+  { section: "soporte", label: "soporte", href: "/admin/soporte" },
+  { section: "actividad", label: "actividad", href: "/admin/actividad" },
+] as const satisfies readonly { section: AdminSection; label: keyof AdminText["nav"]; href: string }[];
 
-/** CRM: diseñado, se construye después del cobro y el hábito. Se muestra sin enlace, solo al Dueño. */
-const SOON = ["contactos", "campanas", "automatizaciones"] as const;
-
-export function AdminNav({ t, allowed, showSoon }: { t: AdminText["nav"]; allowed: readonly AdminSection[]; showSoon: boolean }) {
+export function AdminNav({ t, allowed }: { t: AdminText["nav"]; allowed: readonly AdminSection[] }) {
   const path = usePathname() ?? "/admin";
   const active = (href: string) => (href === "/admin" ? path === "/admin" : path === href || path.startsWith(`${href}/`));
-  const links = ADMIN_LINKS.filter((l) => allowed.includes(l.key));
-  const item = (l: (typeof ADMIN_LINKS)[number]) => (
-    <Link key={l.key} href={l.href} className={css.link} aria-current={active(l.href) ? "page" : undefined}>{t[l.key]}</Link>
-  );
   return (
     <nav aria-label={t.label} className={css.nav}>
       <div className={css.brand}>
@@ -38,13 +37,9 @@ export function AdminNav({ t, allowed, showSoon }: { t: AdminText["nav"]; allowe
       </div>
       <Link href="/inicio" className={css.back}>{t.back}</Link>
       <div className={css.links}>
-        {links.filter((l) => l.key !== "soporte" && l.key !== "actividad").map(item)}
-        {showSoon ? SOON.map((k) => (
-          <span key={k} className={css.link} aria-disabled="true" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, color: "var(--oscuro-texto-3)", cursor: "default" }}>
-            {t[k]}<span style={{ fontSize: 11, fontWeight: 600, color: "var(--oscuro-texto-3)" }}>{t.soon}</span>
-          </span>
-        )) : null}
-        {links.filter((l) => l.key === "soporte" || l.key === "actividad").map(item)}
+        {ADMIN_LINKS.filter((l) => allowed.includes(l.section)).map((l) => (
+          <Link key={l.href} href={l.href} className={css.link} aria-current={active(l.href) ? "page" : undefined}>{t[l.label]}</Link>
+        ))}
       </div>
       <p className={css.note}>{t.privacy}</p>
     </nav>

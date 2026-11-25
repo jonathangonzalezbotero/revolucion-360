@@ -233,7 +233,7 @@ getSummary(db): Promise<{ contacts; newWeek; leadsNoAccount; marketingPct; unsub
 listContacts(db, { q?, stage?: Stage | null, tagId?, limit?, offset? }): Promise<{ rows: ContactListItem[]; total }>  // con tagId, rows[].tagIds trae solo esa etiqueta
 getContact(db, id): Promise<{ contact: ContactRow; tagIds; events: { kind; ref; at }[]; enrollments }>   // etapa = contact.stage
 createContact(db, { email, name?, phone?, country?, timezone?, locale?, tagIds? }): Promise<string>     // "+ Contacto"
-importContacts(db, rows[], { tagIds?, consentSource? }): Promise<{ created; updated; invalid }>          // "Importar CSV" (filas ya leídas)
+importContacts(db, rows[], { tagIds?, consentSource? }): Promise<{ created; updated; invalid; consentSkipped }>  // "Importar CSV" (filas ya leídas); nunca vuelve a suscribir a quien se dio de baja
 listTags(db) · createTag(db, name) · addContactTag(db, contactId, tagId) · removeContactTag(db, contactId, tagId)
 setContactConsent(db, contactId, "email" | "sms", on)
 enrollContact(db, contactId, automationId): Promise<boolean>                                             // "Agregar a automatización"
@@ -241,6 +241,8 @@ sendToContact(db, contactId, { subject, preheader, blocks }): Promise<string>   
 ```
 **Campañas (AdminCampanas)**
 ```ts
+listCampaigns(db, limit?): Promise<CampaignListItem[]>               // "Tus campañas" (sin bloques, las más nuevas primero)
+getCampaign(db, id): Promise<CampaignRow | null>                     // la campaña abierta en el editor
 countAudience(db, audience): Promise<number>                         // "612 personas · solo quienes aceptaron recibir correos"
 saveCampaign(db, { id?, name?, subject, preheader, audience, blocks, sendMode: "now" | "local", scheduledLocal: "2026-12-01T07:00" | null }): Promise<string>
 confirmCampaign(db, id)                                              // "Confirmar envío"
@@ -258,4 +260,11 @@ setAutomationStatus(db, id, "active" | "paused" | "draft")           // "Pausar"
 Formas en `@/lib/crm`: `AudienceSchema`, `BlocksSchema` (heading, text, image, button, lesson, divider, signature),
 `TriggerSchema`, `StepsSchema` (wait, email, sms, condition {check, yes, no}, tag, exit), `ExitRulesSchema`.
 
-Pendiente del panel: agregar la sección CRM a `src/app/admin/actividad/roles.ts` (solo Dueño) y al menú del panel.
+## Pantallas del panel
+
+`/admin/crm` (Contactos), `/admin/campanas` (Campañas de correo) y `/admin/automatizaciones` son una sola sección `crm` en
+`src/app/admin/actividad/roles.ts` (solo el Dueño; `sectionOf` une las tres rutas). Cada acción pasa por
+`adminAction(…, "crm")` y deja su línea en el registro (`crm_*`, solo ids y conteos: nunca asuntos, textos ni correos).
+Si la migración 036 no está aplicada, las tres pantallas muestran "El CRM aún no está listo" en vez de fallar.
+Importar CSV lee el archivo en el navegador y lo manda en tandas de 100 (máximo 1,000 filas); el consentimiento solo
+entra en las filas con "sí" y con la constancia escrita.
