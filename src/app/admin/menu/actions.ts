@@ -18,9 +18,10 @@ const PATHS = ["/admin/menu", "/admin/actividad", "/inicio", "/mas", "/suscripci
 export async function saveMenuConfig(input: unknown) {
   return adminAction(PATHS, async (s) => {
     const m = M[s.locale], t = adminText(s);
-    const p = z.object({ form: FormSchema, keys: z.array(z.enum(CONFIG_KEYS)).max(CONFIG_KEYS.length) }).safeParse(input);
+    const p = z.object({ form: FormSchema, initial: FormSchema, keys: z.array(z.enum(CONFIG_KEYS)).max(CONFIG_KEYS.length) }).safeParse(input);
     if (!p.success) return fail(t.errors.generic);
     const r = formToValues(p.data.form);
+    const before = formToValues(p.data.initial);
     if (!r.ok) return fail(r.error === "points" ? fill(m.errors.points, { name: m.pointItems[r.field as keyof typeof m.pointItems] ?? "" }) : m.errors[r.error]);
     for (const k of CONFIG_KEYS) if (!Schemas[k].safeParse(r.values[k]).success) return fail(t.errors.generic);
 
@@ -31,7 +32,7 @@ export async function saveMenuConfig(input: unknown) {
     const mfaWasOff = stored.admin_mfa_required === false;
     if (touched.has("admin_mfa_required") && r.values.admin_mfa_required && mfaWasOff && s.aal !== "aal2") return fail(m.errors.mfa);
 
-    const changes = diffConfig(stored, r.values).filter((c) => touched.has(c.key));
+    const changes = diffConfig(stored, r.values, before.ok ? before.values : undefined).filter((c) => touched.has(c.key));
     if (changes.length === 0) return ok({ changed: 0 });
     const now = new Date().toISOString();
     must(await s.supabase.from("app_config").upsert(changes.map((c) => ({ key: c.key, value: c.value as NonNullable<Json>, updated_at: now })), { onConflict: "key" }).select("key"));

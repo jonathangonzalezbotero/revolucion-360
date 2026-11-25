@@ -246,7 +246,7 @@ export function AcademiaAdminView({ t, m, tz, items, course, groups, lesson, com
 }
 
 // ───────── Puntos y niveles ─────────
-function PointsBox({ m, points, levels, busy, onSave }: { m: AcadAdminText; points: Points; levels: string; busy: boolean; onSave: (p: Record<keyof Points, string>) => void }) {
+function PointsBox({ m, points, levels, busy, onSave }: { m: AcadAdminText; points: Points; levels: string; busy: boolean; onSave: (p: Partial<Record<keyof Points, string>>) => void }) {
   const init = { lesson: String(points.lesson), course: String(points.course), closure: String(points.closure), week_active: String(points.week_active) };
   const [v, setV] = useState(init);
   const dirty = (Object.keys(init) as (keyof Points)[]).some((k) => v[k] !== init[k]);
@@ -264,7 +264,7 @@ function PointsBox({ m, points, levels, busy, onSave }: { m: AcadAdminText; poin
       </div>
       <span style={{ fontSize: 12, color: "var(--gris)" }}>{fill(m.levels, { list: levels })} <Link href="/admin/menu">{m.levelsEdit}</Link></span>
       <span className="xs muted">{m.ptsHelp}</span>
-      {dirty ? <button type="button" className="btn btn-secondary btn-sm" style={{ alignSelf: "flex-start" }} disabled={busy || (Object.keys(v) as (keyof Points)[]).some((k) => !v[k])} onClick={() => onSave(v)}>{m.savePts}</button> : null}
+      {dirty ? <button type="button" className="btn btn-secondary btn-sm" style={{ alignSelf: "flex-start" }} disabled={busy || (Object.keys(v) as (keyof Points)[]).some((k) => !v[k])} onClick={() => onSave(Object.fromEntries((Object.keys(v) as (keyof Points)[]).filter((k) => v[k] !== init[k]).map((k) => [k, v[k]])))}>{m.savePts}</button> : null}
     </section>
   );
 }

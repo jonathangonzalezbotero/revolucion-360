@@ -152,7 +152,7 @@ export type Change = { key: ConfigKey; value: unknown; changed: string[] };
  * existía en la base y esta pantalla no conoce (p. ej. un punto o un límite nuevo).
  * `changed` lista las subclaves que cambiaron (para el registro; nunca valores).
  */
-export function diffConfig(stored: Partial<Record<ConfigKey, unknown>>, next: MenuValues): Change[] {
+export function diffConfig(stored: Partial<Record<ConfigKey, unknown>>, next: MenuValues, prev?: MenuValues): Change[] {
   const out: Change[] = [];
   for (const key of CONFIG_KEYS) {
     const before = stored[key];
@@ -162,8 +162,14 @@ export function diffConfig(stored: Partial<Record<ConfigKey, unknown>>, next: Me
       continue;
     }
     const base = before && typeof before === "object" && !Array.isArray(before) ? (before as Record<string, unknown>) : {};
-    const changed = Object.keys(want).filter((k) => !sameJson(base[k], (want as Record<string, unknown>)[k]));
-    if (changed.length) out.push({ key, value: { ...base, ...(want as Record<string, unknown>) }, changed });
+    const wantObj = want as Record<string, unknown>;
+    // Con `prev` (lo que el admin vio al abrir), solo se aplican las subclaves que él cambió:
+    // así no se pisa lo que otra pantalla (Planes, Academia) guardó después en la misma clave.
+    const prevObj = prev ? (prev[key] as unknown as Record<string, unknown>) : null;
+    const edited = Object.keys(wantObj).filter((k) => !prevObj || !sameJson(prevObj[k], wantObj[k]));
+    const patch = Object.fromEntries(edited.map((k) => [k, wantObj[k]]));
+    const changed = edited.filter((k) => !sameJson(base[k], wantObj[k]));
+    if (changed.length) out.push({ key, value: { ...base, ...patch }, changed });
   }
   return out;
 }

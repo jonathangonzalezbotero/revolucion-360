@@ -47,7 +47,7 @@ export function MenuView({ m, names, initial, aal2 }: { m: MenuText; names: Reco
     }
     start(async () => {
       setError(null);
-      const res = await saveMenuConfig({ form: f, keys: touchedKeys(initial, f) });
+      const res = await saveMenuConfig({ form: f, initial, keys: touchedKeys(initial, f) });
       if (!res.ok) { setError(res.error); toast(res.error); return; }
       if (!res.data.changed) { setF(initial); toast(m.nothing); return; }
       toast(m.saved);

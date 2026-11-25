@@ -232,8 +232,9 @@ export async function setCommentHidden(input: unknown) {
 const Pts = digits(1000);
 export async function savePoints(input: unknown) {
   return adminAction([...PATHS, "/admin/menu"], async (s) => {
-    const p = z.object({ lesson: Pts, course: Pts, closure: Pts, week_active: Pts }).safeParse(input);
-    if (!p.success) return fail(m(s).errors.points);
+    // Solo llegan las claves que el admin cambió: así no se pisa lo que /admin/menu guardó en las otras.
+    const p = z.object({ lesson: Pts, course: Pts, closure: Pts, week_active: Pts }).partial().safeParse(input);
+    if (!p.success || Object.keys(p.data).length === 0) return fail(m(s).errors.points);
     const cur = await s.supabase.from("app_config").select("value").eq("key", "points").maybeSingle();
     if (cur.error) throw new Error(`db: ${cur.error.message}`);
     const base = cur.data?.value && typeof cur.data.value === "object" && !Array.isArray(cur.data.value) ? cur.data.value : {};

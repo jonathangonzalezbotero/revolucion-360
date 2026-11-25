@@ -11,8 +11,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "db:status": "supabase migration list --remote",
-    "db:migrate:check": "supabase db push --remote --dry-run",
-    "db:migrate": "supabase db push --remote",
+    "db:migrate:check": "tsx scripts/check-migrations.ts && supabase db push --remote --dry-run",
+    "db:migrate": "tsx scripts/check-migrations.ts && supabase db push --remote",
     "seed:demo": "tsx scripts/seed-demo.ts",
     "db:types": "supabase gen types typescript --remote > /tmp/r360-types.ts && mv /tmp/r360-types.ts src/lib/supabase/database.types.ts"
   },

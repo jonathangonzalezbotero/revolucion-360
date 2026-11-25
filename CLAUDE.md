@@ -16,7 +16,9 @@ Antes de usar una API de Next, lee su guía en `node_modules/next/dist/docs/` (v
 ## Innegociables
 0. **La base de datos nunca se resetea ni se borra. Por ningún motivo: ni en desarrollo, ni al correr pruebas, ni en un deploy.** Desarrollamos contra la base de producción (`.env`), así que todo cambio cae sobre datos reales.
    - Prohibido: `supabase db reset`, `supabase start/stop`, correr `supabase/seed.sql`, `DROP` / `TRUNCATE`, `DELETE` o `UPDATE` sin `WHERE`, borrar el proyecto. El hook `.claude/hooks/proteger-base.sh` los bloquea; no se desactiva ni se esquiva.
-   - Las migraciones solo agregan (tablas, columnas, funciones, políticas). Quitar o renombrar algo que tiene datos se consulta con Jonathan antes, con respaldo previo.
+   - Las migraciones solo agregan (tablas, columnas, funciones, políticas). `npm run db:migrate` corre antes `scripts/check-migrations.ts`, que se niega si una migración nueva borra tablas, columnas o filas, o renombra algo. Quitar o renombrar algo con datos lo decide Jonathan y lo aplica a mano, con respaldo previo.
+   - Scripts nuevos (`scripts/`): solo crean o leen. Ninguno llama `.delete()`, `deleteUser` ni actualiza sin filtro; si un script necesita borrar algo, se consulta antes. Esto es regla escrita: ningún bloqueo automático lo revisa.
+   - El hook se carga al abrir una sesión nueva de Claude Code en esta carpeta (comprobar con `/hooks`).
    - Las pruebas no escriben en la base: las de `tests/permissions.test.ts` solo corren contra un Supabase local y con la base remota se saltan. Una prueba nueva que necesite la base se consulta antes.
    - Datos de prueba: solo crear (usuarios `@revolucion360.test`), nunca borrar usuarios ni filas existentes. `seed:demo` se detiene si los usuarios ya existen.
    - Un deploy (Vercel) nunca toca la base; las migraciones se aplican aparte con `npm run db:migrate` y solo después de revisarlas.
