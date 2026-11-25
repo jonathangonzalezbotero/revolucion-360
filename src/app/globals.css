@@ -215,6 +215,11 @@ dialog.modal::backdrop { background: var(--velo); }
 }
 .toast { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 60; background: var(--tinta); color: var(--blanco); padding: 12px 18px; border-radius: var(--r-lg); font-size: 14px; font-weight: 600; display: flex; gap: 10px; align-items: center; max-width: calc(100vw - 32px); }
 .toast .pts { color: var(--amarillo); }
+.toast-img { width: 48px; height: 48px; border-radius: 12px; background: var(--papel); overflow: hidden; flex: none; display: block; }
+.toast-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .banner { border-radius: var(--r-lg); padding: 14px 16px; font-size: 14px; background: var(--ambar-fondo); color: var(--ambar-texto); display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .banner-info { background: var(--amarillo-suave); color: var(--tinta); border: 1px solid var(--amarillo-borde); }
 .empty { border: 1.5px dashed var(--linea-punteada); border-radius: var(--r-xl); padding: 28px 24px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; background: transparent; }
+/* Ilustración de un estado vacío (mockup Vacio): 112 px en escritorio, 96 px en móvil. */
+.empty-img { width: 112px; height: 112px; object-fit: contain; flex: none; display: block; margin: -6px 0 -4px -8px; }
+@media (max-width: 899px) { .empty-img { width: 96px; height: 96px; } }

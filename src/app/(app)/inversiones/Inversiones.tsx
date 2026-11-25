@@ -10,6 +10,7 @@ import { addOperation, createAsset, removeOperation, setAssetArchived, setAssetP
 import { resultText, resultTone } from "./lib";
 import type { InversionesMessages } from "./messages";
 import css from "./inversiones.module.css";
+import { ILLU } from "@/lib/images";
 
 export type AssetView = {
   id: string; name: string; ticker: string; kind: AssetKind; kindLabel: string; color: string; ink: string; platform: string | null; byUnits: boolean; archived: boolean;
@@ -82,7 +83,7 @@ export function Inversiones(p: Props) {
       ) : null}
 
       {active.length === 0 ? (
-        <Empty icon="sprout" title={m.emptyTitle} text={fill(m.emptyText, { retirement: p.retirement })}>
+        <Empty icon="sprout" image={ILLU.vacioInversiones} title={m.emptyTitle} text={fill(m.emptyText, { retirement: p.retirement })}>
           {canEdit && !showNew ? <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowNew(true)}>{m.emptyCta}</button> : null}
         </Empty>
       ) : (

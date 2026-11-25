@@ -4,6 +4,7 @@ import type { BadgeKey, LevelDef } from "@/lib/engine";
 import type { PerfilMessages } from "./messages";
 import { WildcardButton } from "./Forms";
 import css from "./perfil.module.css";
+import { badgeSrc } from "@/lib/images";
 
 export type BadgeView = { key: BadgeKey; earned: string | null; progress: number | null; hint: string };
 export type LevelView = { index: number; total: number; name: string; next: string | null; toNext: number; progress: number };
@@ -64,7 +65,7 @@ export function Achievements({ m, points, level, levels, streak, badges, pointVa
               const t = m.badge[b.key];
               return (
                 <li key={b.key} className={css.badge}>
-                  <Image src={`/insignias/${b.key}.jpg`} alt="" width={76} height={76} className={css.badgeImg} style={b.earned ? undefined : { filter: "grayscale(1)", opacity: 0.45 }} />
+                  <Image src={badgeSrc(b.key)} alt="" width={76} height={76} className={css.badgeImg} style={b.earned ? undefined : { filter: "grayscale(1)", opacity: 0.45 }} />
                   <strong style={{ fontSize: 13, color: b.earned ? "var(--tinta)" : "var(--gris-3)" }}>{t.t}</strong>
                   <span className={css.badgeDesc}>{t.d}</span>
                   {b.earned ? <span className="pill pill-yellow">{fill(m.earned, { date: b.earned })}</span> : (

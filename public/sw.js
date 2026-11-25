@@ -1,16 +1,16 @@
 /* Revolución 360 · service worker.
  * - Precache mínimo: la página sin conexión y su cascarón (íconos, logo, manifiesto).
  * - Red primero para todo. Solo se guardan en caché archivos estáticos que no tienen datos del usuario
- *   (/_next/static, /brand, /icons, /cursos, /insignias). NUNCA /api/* ni páginas (HTML), que llevan datos del usuario.
+ *   (/_next/static, /brand, /icons, /cursos, /insignias, /ilustraciones). NUNCA /api/* ni páginas (HTML), que llevan datos del usuario.
  * - Sin red, una navegación muestra /sin-conexion.
  * - Push: muestra la notificación; al tocarla abre su enlace (solo enlaces internos).
  */
-const VERSION = "r360-v1";
+const VERSION = "r360-v2";
 const SHELL = `${VERSION}-shell`;
 const STATIC = `${VERSION}-static`;
 const OFFLINE = "/sin-conexion";
-const PRECACHE = [OFFLINE, "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/brand/sello.png", "/brand/logo-360.png"];
-const STATIC_PREFIXES = ["/_next/static/", "/brand/", "/icons/", "/cursos/", "/insignias/"];
+const PRECACHE = [OFFLINE, "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/brand/sello.png", "/brand/logo-360.webp"];
+const STATIC_PREFIXES = ["/_next/static/", "/brand/", "/icons/", "/cursos/", "/insignias/", "/ilustraciones/"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(SHELL).then((c) => c.addAll(PRECACHE.map((u) => new Request(u, { cache: "reload", credentials: "omit" })))).then(() => self.skipWaiting()));

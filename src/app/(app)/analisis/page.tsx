@@ -12,6 +12,7 @@ import {
 import { M } from "./messages";
 import { Watched } from "./Watched";
 import css from "./analisis.module.css";
+import { ILLU } from "@/lib/images";
 
 export const metadata: Metadata = { title: "Análisis" };
 type Search = Promise<{ anio?: string; mes?: string }>;
@@ -57,7 +58,7 @@ export default async function AnalisisPage({ searchParams }: { searchParams: Sea
     return (
       <main className="page">
         {header}
-        <Empty icon="mov" title={fill(m.emptyTitle, { year })} text={m.emptyText}><Link href="/movimientos" className="btn btn-secondary btn-sm">{m.emptyCta}</Link></Empty>
+        <Empty icon="mov" image={ILLU.vacioAnalisis} title={fill(m.emptyTitle, { year })} text={m.emptyText}><Link href="/movimientos" className="btn btn-secondary btn-sm">{m.emptyCta}</Link></Empty>
         <p className="xs muted">{s.t.disclaimer}</p>
       </main>
     );

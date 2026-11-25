@@ -29,6 +29,10 @@
 .h2 { margin: 0; font-size: 34px; line-height: 1.12; font-weight: 600; letter-spacing: -0.03em; }
 .h2hero { margin: 0; font-size: 44px; line-height: 1.08; font-weight: 600; letter-spacing: -0.035em; }
 .h2done { margin: 0; font-size: 38px; line-height: 1.1; font-weight: 600; letter-spacing: -0.03em; }
+/* Ilustración de cada paso (mockup Onboarding): cuadro papel. #F5F1ED no tiene token: --papel es el más cercano. */
+.illuTile { width: 240px; height: 240px; border-radius: 40px; background: var(--papel); box-shadow: 0 24px 60px color-mix(in srgb, var(--oscuro-1) 35%, transparent); overflow: hidden; flex: none; }
+.illuTileMobile { width: 150px; height: 150px; border-radius: 40px; background: var(--papel); box-shadow: 0 12px 30px color-mix(in srgb, var(--tinta) 12%, transparent); align-self: center; overflow: hidden; flex: none; }
+.illuTile img, .illuTileMobile img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .goalGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .goalBtn { text-align: left; min-height: 96px; padding: 16px; border-radius: 14px; border: 2px solid var(--linea); background: var(--blanco); color: var(--tinta); display: flex; flex-direction: column; gap: 10px; }
 .goalBtn[aria-checked=true] { border-color: var(--tinta); background: var(--amarillo-suave); }

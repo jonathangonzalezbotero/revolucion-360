@@ -16,6 +16,7 @@ import { M, type AcadMessages } from "./messages";
 import { loadCatalog, totalPoints, type Catalog, type CourseView } from "./server";
 import { CourseCard, Cover } from "./ui";
 import css from "./academia.module.css";
+import { badgeSrc } from "@/lib/images";
 
 export const metadata: Metadata = { title: "Academia" };
 
@@ -292,7 +293,7 @@ function Gamification({ g, m, s }: { g: Gam; m: AcadMessages; s: Session }) {
               <li key={b} className={css.badge} title={m.badgeDesc[b]}>
                 <span className={css.badgeImg} style={at ? undefined : { filter: "grayscale(1)", opacity: 0.45 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- insignia de 256 px servida tal cual desde /public */}
-                  <img src={`/insignias/${b}.jpg`} alt="" width={58} height={58} loading="lazy" />
+                  <img src={badgeSrc(b)} alt="" width={58} height={58} loading="lazy" decoding="async" />
                 </span>
                 <strong style={{ fontSize: 12, lineHeight: 1.25, color: at ? "var(--tinta)" : "var(--gris)" }}>{name}</strong>
                 {at ? <span style={{ fontSize: 11, fontWeight: 600, color: "var(--amarillo-texto)" }}>{fill(m.earnedOn, { date: formatDate(todayIn(s.profile.timezone || "Australia/Sydney", new Date(at)), s.locale, "day") })}</span> : (

@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -10,9 +11,10 @@ import { formatDate, formatMoney, goalPlan, parseMoney, type Cents, type GoalPla
 import { MILESTONES, type Challenge, type GoalOutlook, type Milestone } from "@/lib/engine/metas";
 import type { Result } from "@/server/action";
 import { addEntry, addToPlan, archiveGoal, completeGoal, createGoal, sendLeftover, setChallenge, updateGoal } from "./actions";
-import { GOAL_TYPES, monthOptions, resolveTargetDate, TYPE_COLOR, whenLabel, ymOf, type GoalStatus, type GoalType } from "./lib";
+import { GOAL_TYPES, monthOptions, resolveTargetDate, TYPE_COLOR, TYPE_IMG, whenLabel, ymOf, type GoalStatus, type GoalType } from "./lib";
 import type { MetasMessages } from "./messages";
 import css from "./metas.module.css";
+import { ILLU } from "@/lib/images";
 
 export type GoalView = {
   id: string; name: string; kind: string; why: string; type: GoalType; targetCents: Cents; targetDate: ISODate | null; isEmergencyFund: boolean;
@@ -133,7 +135,7 @@ export function Metas(p: Props) {
     if (celebrated.current || p.crossed.length === 0) return;
     celebrated.current = true;
     const last = p.crossed[p.crossed.length - 1];
-    toast(last.text, p.crossed.reduce((a, c) => a + c.points, 0) || undefined);
+    toast(last.text, p.crossed.reduce((a, c) => a + c.points, 0) || undefined, ILLU.celHito);
   }, [p.crossed, toast]);
 
   const run: Run = (fn, after, onError) => start(async () => {
@@ -182,7 +184,7 @@ export function Metas(p: Props) {
     const lf = p.leftover;
     run(() => sendLeftover({ year: lf.year, month: lf.month, goalId }), (r) => {
       const c = r.data.crossed.at(-1);
-      toast(goalId ? (c ? fill(m.tMilestone, { pct: c.pct, name: c.name }) : fill(m.tLeftover, { amount: money(r.data.amountCents), name: r.data.name })) : m.tNotNow, r.points);
+      toast(goalId ? (c ? fill(m.tMilestone, { pct: c.pct, name: c.name }) : fill(m.tLeftover, { amount: money(r.data.amountCents), name: r.data.name })) : m.tNotNow, r.points, goalId && c ? ILLU.celHito : undefined);
     }, setLeftError);
   };
 
@@ -226,7 +228,7 @@ export function Metas(p: Props) {
 
       {active.length === 0 ? (
         showNew && canEdit ? null : (
-          <Empty icon="target" title={m.emptyTitle} text={m.emptyText}>
+          <Empty icon="target" image={ILLU.vacioMetas} title={m.emptyTitle} text={m.emptyText}>
             {canEdit ? <button type="button" className="btn" onClick={() => setShowNew(true)}>{m.emptyCta}</button> : null}
           </Empty>
         )
@@ -239,7 +241,7 @@ export function Metas(p: Props) {
             return (
               <article key={g.id} className={css.goal} aria-labelledby={`g-${g.id}`}>
                 <div className="row">
-                  <span aria-hidden="true" className={css.icon} style={{ background: color }}><Icon name="target" size={21} /></span>
+                  <Image src={TYPE_IMG[g.type]} alt="" aria-hidden="true" width={64} height={64} sizes="64px" className={css.typeImg} />
                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
                     <h3 id={`g-${g.id}`} style={{ fontSize: 16 }}>{g.name}</h3>
                     <span className="xs muted">{g.kind || m.types.other}{g.isEmergencyFund && g.type !== "fund" ? ` · ${m.in}` : ""}{g.accountName ? ` · ${fill(m.inAccount, { account: g.accountName })}` : ""}</span>
@@ -292,7 +294,7 @@ export function Metas(p: Props) {
                           run(() => addEntry({ goalId: g.id, amount: act.amount, mode }), (r) => {
                             setAct(null);
                             const c = r.data.crossed.at(-1);
-                            toast(c ? fill(m.tMilestone, { pct: c.pct, name: c.name }) : mode === "in" ? fill(m.tContrib, { amount: money(r.data.amountCents) }) : m.tUsed, r.points);
+                            toast(c ? fill(m.tMilestone, { pct: c.pct, name: c.name }) : mode === "in" ? fill(m.tContrib, { amount: money(r.data.amountCents) }) : m.tUsed, r.points, c ? ILLU.celHito : undefined);
                           }, setError);
                         }}>
                           <div className="field" style={{ flex: "1 1 160px" }}>
@@ -359,7 +361,7 @@ export function Metas(p: Props) {
           {done.map((d) => (
             <div key={d.id} className="stack" style={{ gap: 8 }}>
             <div className={css.doneRow}>
-              <span style={{ fontWeight: 600, flex: 1, minWidth: 0 }}>{d.name}</span>
+              <span style={{ fontWeight: 600, flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10 }}><Image src={ILLU.celMeta} alt="" aria-hidden="true" width={56} height={56} sizes="56px" className={css.doneImg} />{d.name}</span>
               <span className={`${css.tag} num`}>{fill(m.doneTag, { amount: money(d.plan.savedCents) })}</span>
               {!canEdit ? null : d.inPlan
                 ? <button type="button" className={css.textBtn} onClick={() => setAsk({ id: d.id, what: "archive" })}>{m.archiveShort}</button>

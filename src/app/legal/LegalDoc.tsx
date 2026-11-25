@@ -16,7 +16,7 @@ export async function LegalDoc({ doc }: { doc: "terms" | "privacy" }) {
       <div className={css.wrap}>
         <div className="row-between">
           <Link href={signedIn ? "/inicio" : "/entrar"} style={{ display: "flex" }}>
-            <Image src="/brand/logo-360.png" alt={m.logoAlt} width={900} height={333} priority style={{ height: 40, width: "auto", maxWidth: "100%" }} />
+            <Image src="/brand/logo-360.webp" alt={m.logoAlt} width={900} height={219} priority style={{ height: 40, width: "auto", maxWidth: "100%" }} />
           </Link>
           <Link href={signedIn ? "/perfil#privacidad" : "/entrar"} className={css.back}>{m.back}</Link>
         </div>

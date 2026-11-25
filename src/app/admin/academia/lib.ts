@@ -87,7 +87,7 @@ export function moveItem<T>(list: T[], index: number, dir: -1 | 1): T[] {
 }
 
 // ───────── Portada ─────────
-/** Portada válida: vacía, una ruta del sitio ("/cursos/curso-01.jpg") o un enlace https. */
+/** Portada válida: vacía, una ruta del sitio ("/cursos/curso-01.webp") o un enlace https. */
 export function checkCover(url: string): string | null {
   const u = url.trim();
   if (!u) return "";

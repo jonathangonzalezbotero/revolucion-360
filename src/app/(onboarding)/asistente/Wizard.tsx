@@ -88,7 +88,7 @@ export function Wizard({ m, fmt, ctx, monthLabel, redo: redoNow, initial, freela
 
   return (
     <div className={css.wz}>
-      <Image className={css.wzLogo} src="/brand/logo-360.png" alt={m.logoAlt} width={900} height={333} priority style={{ height: 36, width: "auto", alignSelf: "flex-start" }} />
+      <Image className={css.wzLogo} src="/brand/logo-360.webp" alt={m.logoAlt} width={900} height={219} priority style={{ height: 36, width: "auto", alignSelf: "flex-start" }} />
       <div className={css.wzTop}>
         <span style={{ fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}><span className="only-desktop">{m.titleLong}</span><span className="only-mobile">{m.title}</span></span>
         <ol aria-label={m.stepsLabel} style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", gap: 5, flex: 1 }}>

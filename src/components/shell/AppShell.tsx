@@ -46,7 +46,7 @@ export async function AppShell({ s, children }: { s: Session; children: React.Re
         <nav aria-label={t.nav.principal} className="sidenav">
           <div style={{ padding: "0 4px 10px 8px" }}>
             <Link href="/inicio" style={{ display: "flex", alignItems: "center" }}>
-              <Image src="/brand/logo-360.png" alt="Revolución 360 · Revolución del Dinero" width={900} height={333} priority style={{ height: 38, width: "auto", maxWidth: "100%", objectFit: "contain", objectPosition: "left center" }} />
+              <Image src="/brand/logo-360.webp" alt="Revolución 360 · Revolución del Dinero" width={900} height={219} priority style={{ height: 38, width: "auto", maxWidth: "100%", objectFit: "contain", objectPosition: "left center" }} />
             </Link>
           </div>
           {[0, 1, 2].map((g) => {

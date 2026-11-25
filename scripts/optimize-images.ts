@@ -4,7 +4,7 @@
 // No toca la base de datos.
 import fs from "node:fs";
 import path from "node:path";
-import sharp from "sharp";
+import sharp, { type Sharp } from "sharp";
 
 const SRC = process.argv[2];
 if (!SRC || !fs.existsSync(SRC)) throw new Error('Uso: npx tsx scripts/optimize-images.ts "<carpeta archive>" [--solo <nombre>] [--salida <carpeta>]');
@@ -27,7 +27,7 @@ const BADGES: Record<string, string> = {
  * Quita el fondo liso de una ilustración: inunda desde los bordes todo lo que se parece al color del fondo
  * (así nunca abre huecos dentro de la pieza) y suaviza el borde con un alfa gradual.
  */
-async function removeBackground(file: string): Promise<sharp.Sharp> {
+async function removeBackground(file: string): Promise<Sharp> {
   const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h } = info;
   const at = (x: number, y: number) => (y * w + x) * 4;
@@ -58,7 +58,7 @@ async function removeBackground(file: string): Promise<sharp.Sharp> {
 }
 
 const kb = (f: string) => `${Math.round(fs.statSync(f).size / 1024)} KB`;
-async function save(img: sharp.Sharp, dir: string, name: string, opts: { width: number; height?: number; alpha?: boolean }) {
+async function save(img: Sharp, dir: string, name: string, opts: { width: number; height?: number; alpha?: boolean }) {
   fs.mkdirSync(path.join(OUT, dir), { recursive: true });
   const out = path.join(OUT, dir, `${name}.webp`);
   await img.resize(opts.width, opts.height, { fit: opts.height ? "cover" : "inside", withoutEnlargement: true })
@@ -73,6 +73,10 @@ async function main() {
     // Mismo recorte que las JPG anteriores: la insignia llena el cuadro.
     const trimmed = await sharp(path.join(SRC, f)).trim({ threshold: 25 }).toBuffer();
     await save(sharp(trimmed), "insignias", name, { width: 256, height: 256 });
+  }
+  // Logo: el original reemplazó a 0.png. En la app va en WebP; los correos siguen usando el PNG (Outlook no muestra WebP).
+  if (want("logo-360.png") && fs.existsSync(path.join(SRC, "logo-360.png"))) {
+    await save(sharp(await sharp(path.join(SRC, "logo-360.png")).trim({ threshold: 10 }).toBuffer()), "brand", "logo-360", { width: 900 });
   }
   for (const f of fs.readdirSync(SRC).filter((x) => /^ilustracion-\d\d-.+\.png$/.test(x)).sort()) if (want(f)) {
     const name = f.replace(/\.png$/, "").replace(/^ilustracion-\d\d-/, "");

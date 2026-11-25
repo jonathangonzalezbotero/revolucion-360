@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
@@ -12,6 +13,7 @@ import { EditPanel } from "./EditPanel";
 import { filterTotals, matchRow, movHref, STATES, type Filter, type MovRow, type Query, type StateFilter } from "./lib";
 import css from "./mov.module.css";
 import type { Acc, AddPayload, Cat, Ctx, GoalOpt, LineOpt } from "./types";
+import { ILLU } from "@/lib/images";
 
 export type Period = { kind: "month" | "year" | "any"; year: number; month: number | null; label: string };
 type Props = {
@@ -251,6 +253,7 @@ export function Detail({ header, months, children, rows, categories, accounts, l
           </div>
           {visible.length === 0 ? (
             <div className={css.emptyList}>
+              {rows.length === 0 ? <Image src={ILLU.vacioMovimientos} alt="" aria-hidden="true" width={112} height={112} sizes="112px" className="empty-img" style={{ margin: "-6px 0 -4px" }} /> : null}
               <span style={{ fontSize: 15, fontWeight: 600 }}>{t.list.emptyTitle}</span>
               <span className="small muted">{flags.csv ? t.list.emptyText : t.list.emptyTextNoCsv}</span>
               {flags.csv && canWrite ? <Link href="/movimientos/importar" className="btn btn-secondary btn-sm">{t.panel.csvCta}</Link> : null}

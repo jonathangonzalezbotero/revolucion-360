@@ -62,6 +62,7 @@
 @keyframes bounce { 0% { transform: scale(.6); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
 .success { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
 .check { width: 84px; height: 84px; border-radius: 50%; background: var(--exito-anillo); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 12px var(--verde-fondo); animation: bounce .45s cubic-bezier(.2,.7,.2,1) both; margin: 12px; }
+.celImg { width: 120px; height: 120px; object-fit: contain; flex: none; margin: -12px 0 -8px -14px; }
 .successText { font-size: 15px; color: var(--tinta-2); line-height: 1.6; }
 .successText .pts { color: var(--amarillo-texto); background: var(--amarillo-pastel); border-radius: var(--r-pill); padding: 2px 8px; font-weight: 600; white-space: nowrap; }
 .ctas { display: flex; gap: 10px; flex-wrap: wrap; width: 100%; }

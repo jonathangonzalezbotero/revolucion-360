@@ -1,5 +1,6 @@
 "use client";
 // Piezas con estado: ventana, aviso de éxito, interruptor, botón de envío.
+import Image from "next/image";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Icon } from "./Icon";
@@ -29,13 +30,14 @@ export function Modal({ open, onClose, title, children, labelClose = "Cerrar" }:
 }
 
 // ───────── Aviso de éxito con rebote. Los puntos siempre en amarillo. ─────────
-type Toast = { id: number; text: string; points?: number };
-const ToastCtx = createContext<(text: string, points?: number) => void>(() => {});
+type Toast = { id: number; text: string; points?: number; image?: string };
+/** `image`: ilustración opcional (p. ej. `ILLU.celHito`) en un cuadro papel de 48 px, como en el mockup de Metas. */
+const ToastCtx = createContext<(text: string, points?: number, image?: string) => void>(() => {});
 export const useToast = () => useContext(ToastCtx);
 
 export function ToastProvider({ children, ptsLabel = "pts" }: { children: React.ReactNode; ptsLabel?: string }) {
   const [toast, setToast] = useState<Toast | null>(null);
-  const show = useCallback((text: string, points?: number) => setToast({ id: Date.now(), text, points }), []);
+  const show = useCallback((text: string, points?: number, image?: string) => setToast({ id: Date.now(), text, points, image }), []);
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 4200);
@@ -46,6 +48,7 @@ export function ToastProvider({ children, ptsLabel = "pts" }: { children: React.
       {children}
       {toast ? (
         <div key={toast.id} role="status" className="toast">
+          {toast.image ? <span aria-hidden="true" className="toast-img"><Image src={toast.image} alt="" width={48} height={48} sizes="48px" /></span> : null}
           <span>{toast.text}</span>
           {toast.points ? <span className="pts num">+{toast.points} {ptsLabel}</span> : null}
         </div>

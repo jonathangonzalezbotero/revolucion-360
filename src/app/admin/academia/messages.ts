@@ -43,7 +43,7 @@ export const M = {
 
     // Formulario del curso
     newCourseTitle: "Nuevo curso", courseTitle: "Título", courseTitlePh: "Ej. Sal de deudas con método", stage: "Etapa", number: "Número",
-    description: "Descripción", cover: "Portada", coverPh: "/cursos/curso-01.jpg", coverHelp: "Una imagen de /cursos/ o un enlace https.",
+    description: "Descripción", cover: "Portada", coverPh: "/cursos/curso-01.webp", coverHelp: "Una imagen de /cursos/ o un enlace https.",
     visibleFor: "Visible para", visibleAll: "Todos", visibleGroup: "Solo un grupo de alumnos", pickGroup: "Grupo", noGroups: "Aún no hay grupos.", createGroup: "Crear uno en Grupos",
     visibleHelp: "Un curso de grupo solo lo ven sus miembros (y los administradores). Los demás no lo ven en la Academia.", onlyGroup: "Solo {name}",
     priority: "Prioridad del diagnóstico", priorityHelp: "Se recomienda a quien tenga este indicador como prioridad.", priorityNone: "Ninguna",
@@ -62,7 +62,7 @@ export const M = {
 
     errors: {
       title: "Falta el título.", group: "Elige el grupo que puede ver el curso.", groupPending: "Para limitar un curso a un grupo falta aplicar la migración 20261125000029_un_plan.sql.", duration: "Escribe la duración como 8:30.", video: "Ese enlace no se puede mostrar. Usa YouTube no listado, Vimeo, Mux o un archivo .mp4.",
-      cover: "La portada tiene que ser una ruta como /cursos/curso-01.jpg o un enlace https.", points: "Escribe puntos entre 0 y 1,000.", number: "Escribe un número entre 1 y 999.",
+      cover: "La portada tiene que ser una ruta como /cursos/curso-01.webp o un enlace https.", points: "Escribe puntos entre 0 y 1,000.", number: "Escribe un número entre 1 y 999.",
       date: "Elige un día y una hora después de ahora.", slug: "Ya hay un curso con ese nombre. Cambia el título.", cta: "Elige una pantalla de la lista.",
       module: "Falta el nombre del módulo.", missing: "Ese curso o clase ya no existe.",
     },
@@ -104,7 +104,7 @@ export const M = {
     commentHidden: "Comment hidden.", commentShown: "Comment visible again.", anon: "Student",
 
     newCourseTitle: "New course", courseTitle: "Title", courseTitlePh: "E.g. Get out of debt with a method", stage: "Stage", number: "Number",
-    description: "Description", cover: "Cover", coverPh: "/cursos/curso-01.jpg", coverHelp: "An image from /cursos/ or an https link.",
+    description: "Description", cover: "Cover", coverPh: "/cursos/curso-01.webp", coverHelp: "An image from /cursos/ or an https link.",
     visibleFor: "Visible to", visibleAll: "Everyone", visibleGroup: "Only one student group", pickGroup: "Group", noGroups: "There are no groups yet.", createGroup: "Create one in Groups",
     visibleHelp: "A group course is only seen by its members (and administrators). Everyone else doesn't see it in the Academy.", onlyGroup: "Only {name}",
     priority: "Check-up priority", priorityHelp: "Recommended to whoever has this indicator as their priority.", priorityNone: "None",
@@ -121,7 +121,7 @@ export const M = {
 
     errors: {
       title: "The title is missing.", group: "Pick the group that can see the course.", groupPending: "To limit a course to a group, migration 20261125000029_un_plan.sql still has to be applied.", duration: "Write the length like 8:30.", video: "That link can't be shown. Use unlisted YouTube, Vimeo, Mux or an .mp4 file.",
-      cover: "The cover has to be a path like /cursos/curso-01.jpg or an https link.", points: "Enter points between 0 and 1,000.", number: "Enter a number between 1 and 999.",
+      cover: "The cover has to be a path like /cursos/curso-01.webp or an https link.", points: "Enter points between 0 and 1,000.", number: "Enter a number between 1 and 999.",
       date: "Pick a day and time after now.", slug: "There's already a course with that name. Change the title.", cta: "Pick a screen from the list.",
       module: "The module name is missing.", missing: "That course or lesson no longer exists.",
     },

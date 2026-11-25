@@ -1,4 +1,5 @@
 // Cálculos propios de Metas (puros, con pruebas en tests/cuentas-metas.test.ts).
+import { ILLU } from "@/lib/images";
 import { daysInMonth, iso, monthShort, parts, type Cents, type GoalPlan, type ISODate, type Tier } from "@/lib/engine";
 
 export const GOAL_TYPES = ["trip", "fund", "buy", "debt", "invest", "other"] as const;
@@ -7,6 +8,11 @@ export type GoalType = (typeof GOAL_TYPES)[number];
 /** Color de cada tipo sugerido (solo tokens). Un tipo escrito a mano usa el de "otra". */
 export const TYPE_COLOR: Record<GoalType, string> = {
   trip: "var(--amarillo-oscuro)", fund: "var(--teal)", buy: "var(--azul-oscuro)", debt: "var(--naranja)", invest: "var(--tinta)", other: "var(--gris-verde)",
+};
+
+/** Ilustración de cada tipo (mockup Metas, mapa IMG). Un tipo escrito a mano usa la de "otra". */
+export const TYPE_IMG: Record<GoalType, string> = {
+  trip: ILLU.metaViaje, fund: ILLU.metaEmergencia, buy: ILLU.metaComprar, debt: ILLU.metaDeuda, invest: ILLU.metaInversion, other: ILLU.metaOtra,
 };
 
 /** El tipo es texto libre: se reconoce si coincide con una de las sugerencias (en cualquier idioma). */

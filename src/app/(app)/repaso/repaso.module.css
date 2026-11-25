@@ -1,6 +1,7 @@
 /* Repaso semanal (mockup Repaso.dc.html y Repaso-movil.dc.html). Corte en 900 px. */
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.stat { background: var(--blanco); border: 1px solid var(--linea); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.stat { background: var(--blanco); border: 1px solid var(--linea); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; position: relative; }
+.statImg { position: absolute; right: 8px; top: 8px; width: 76px; height: 76px; object-fit: contain; }
 .statNum { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
 .cols { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; align-items: start; }
 .col { display: flex; flex-direction: column; gap: 18px; }

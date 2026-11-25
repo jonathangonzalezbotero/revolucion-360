@@ -6,12 +6,13 @@ import { durationLabel } from "./lib";
 import type { AcadMessages } from "./messages";
 import type { CourseView, Lesson } from "./server";
 import css from "./academia.module.css";
+import { coverSrc } from "@/lib/images";
 
-/** Portada: la URL la escribe Admin (local en /cursos o externa), por eso es <img> y no next/image. */
+/** Portada: la URL la escribe Admin (local en /cursos o externa), por eso es <img> y no next/image. Las de fábrica (.jpg) se pintan en .webp. */
 export function Cover({ src, dim }: { src: string; dim?: boolean }) {
   if (!src) return null;
   // eslint-disable-next-line @next/next/no-img-element -- la portada puede venir de una URL externa escrita en Admin
-  return <img src={src} alt="" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: dim ? 0.55 : 1 }} />;
+  return <img src={coverSrc(src)} alt="" loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: dim ? 0.55 : 1 }} />;
 }
 
 const coverPill: React.CSSProperties = { position: "absolute", top: 12, left: 12, fontSize: 12, fontWeight: 600, padding: "5px 10px", borderRadius: 999, display: "inline-flex", alignItems: "center", gap: 5 };

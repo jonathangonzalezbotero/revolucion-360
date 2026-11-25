@@ -13,6 +13,7 @@ import {
 } from "./lib";
 import type { DeudasMessages } from "./messages";
 import css from "./deudas.module.css";
+import { ILLU } from "@/lib/images";
 
 export type DebtView = {
   id: string; name: string; kind: DebtKind; balanceCents: Cents; startBalanceCents: Cents; rateBps: number; paymentCents: Cents; paymentFrequency: PayFreq;
@@ -86,7 +87,7 @@ export function Deudas(p: Props) {
       </section>
 
       {active.length === 0 && settled.length === 0 ? (
-        <Empty icon="receipt" title={m.emptyTitle} text={m.emptyText}>{canEdit && !showNew ? <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowNew(true)}>{m.emptyCta}</button> : null}</Empty>
+        <Empty icon="receipt" image={ILLU.vacioDeudas} title={m.emptyTitle} text={m.emptyText}>{canEdit && !showNew ? <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowNew(true)}>{m.emptyCta}</button> : null}</Empty>
       ) : null}
 
       {active.length ? (

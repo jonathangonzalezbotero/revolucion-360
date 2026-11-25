@@ -37,7 +37,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
       </aside>
       <main className={css.main}>
         <div className={css.mobileLogo}>
-          <Image src="/brand/logo-360.png" alt="Revolución 360 · Revolución del Dinero" width={900} height={333} priority style={{ height: 36, width: "auto" }} />
+          <Image src="/brand/logo-360.webp" alt="Revolución 360 · Revolución del Dinero" width={900} height={219} priority style={{ height: 36, width: "auto" }} />
         </div>
         <div className={css.box}>{children}</div>
         <p className={css.footDesktop}>app.revoluciondeldinero.com · <Link href="/legal/terminos">{m.terms}</Link> · <Link href="/legal/privacidad">{m.privacy}</Link></p>

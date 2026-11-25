@@ -10,6 +10,7 @@ import { addAccount, archiveAccount, setAccountFlags, setBalance, transfer, upda
 import { balanceCheck, cardBalance, initialOf, KIND_COLOR, KINDS } from "./lib";
 import type { CuentasMessages } from "./messages";
 import css from "./cuentas.module.css";
+import { ILLU } from "@/lib/images";
 
 export type AccountView = {
   id: string; name: string; institution: string; kind: AccountKind; balanceCents: Cents; balanceDate: ISODate;
@@ -202,7 +203,7 @@ export function Cuentas(p: Props) {
 
       {accounts.length === 0 ? (
         mode === "new" ? null : (
-          <Empty icon="wallet" title={m.emptyTitle} text={m.emptyText}>
+          <Empty icon="wallet" image={ILLU.vacioCuentas} title={m.emptyTitle} text={m.emptyText}>
             {canEdit ? <button type="button" className="btn" onClick={() => open("new")}>{m.emptyCta}</button> : null}
           </Empty>
         )

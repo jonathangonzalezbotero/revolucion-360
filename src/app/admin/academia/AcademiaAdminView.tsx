@@ -15,6 +15,7 @@ import {
 import { CTA_SCREENS, moveItem, PRIORITIES, type CourseState } from "./lib";
 import type { AcadAdminText } from "./messages";
 import css from "./academia.module.css";
+import { coverSrc } from "@/lib/images";
 
 export type CourseItem = { id: string; label: string; title: string; cover: string; state: CourseState; stateLabel: string; count: string; selected: boolean };
 export type CourseFull = {
@@ -75,7 +76,7 @@ export function AcademiaAdminView({ t, m, tz, items, course, groups, lesson, com
             {items.map((c) => (
               <Link key={c.id} href={href(c.id)} className={css.course} aria-current={c.selected ? "page" : undefined} scroll={false}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- la portada es una URL escrita en Admin (local o externa) */}
-                {c.cover ? <img src={c.cover} alt="" loading="lazy" className={css.cover} /> : <span aria-hidden="true" className={css.cover} />}
+                {c.cover ? <img src={coverSrc(c.cover)} alt="" loading="lazy" className={css.cover} /> : <span aria-hidden="true" className={css.cover} />}
                 <span className={css.eyebrow}>{c.label}</span>
                 <strong style={{ fontSize: 15 }}>{c.title}</strong>
                 <span className="row" style={{ gap: 8, alignItems: "center" }}><Pill tone={TONE[c.state]}>{c.stateLabel}</Pill><span style={{ fontSize: 12, color: "var(--gris)" }}>{c.count}</span></span>
@@ -360,7 +361,7 @@ function CourseForm({ m, t, course, stages, covers, nextNumber, audiences, busy,
         <datalist id="c-cov-list">{covers.map((x) => <option key={x} value={x} />)}</datalist>
         <span className="xs muted">{m.coverHelp}</span></div>
       {/* eslint-disable-next-line @next/next/no-img-element -- vista previa de la URL escrita */}
-      {v.cover.trim() ? <img src={v.cover.trim()} alt="" className={css.cover} style={{ maxWidth: 280 }} /> : null}
+      {v.cover.trim() ? <img src={coverSrc(v.cover.trim())} alt="" className={css.cover} style={{ maxWidth: 280 }} /> : null}
       <div className="field"><label htmlFor="c-d">{m.description}</label><textarea id="c-d" rows={3} className="textarea" value={v.description} maxLength={1000} onChange={(e) => set({ description: e.target.value })} /></div>
       <span className="xs muted">{course ? fill(m.slug, { slug: course.slug }) : m.slugNew}</span>
       {error ? <p role="alert" className={shared.err}>{error}</p> : null}

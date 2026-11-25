@@ -1,10 +1,10 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { fill, type Locale } from "@/i18n";
 import { ConfirmButton, useToast } from "@/components/ui/client";
 import { Empty } from "@/components/ui/basics";
-import { Icon } from "@/components/ui/Icon";
 import { formatDate, formatMoney, monthName, parseMoney, type Cents, type MoneyFormat } from "@/lib/engine";
 import { parseUnitPrice } from "@/lib/engine/inversiones";
 import { closeMonth, reopenMonth, resolvePending, saveNext, undoPending, type CloseResult, type Undo } from "./actions";
@@ -12,6 +12,7 @@ import css from "./cierre.module.css";
 import { adjustedNet, balanceGap, cardSigned, changedCells, moneyInput, type Deviation, type PendingOpt, type Period, type Snapshot, type Totals } from "./lib";
 import type { CierreText } from "./messages";
 import { Leftover } from "./Leftover";
+import { ILLU } from "@/lib/images";
 
 type Pending = { lineId: string; name: string; status: string; plannedCents: Cents; realCents: Cents; missingCents: Cents; opts: PendingOpt[] };
 export type CierreProps = {
@@ -58,7 +59,7 @@ export function Cierre(p: CierreProps) {
     return (
       <div className={css.wrap}>
         <section className={css.success} aria-live="polite">
-          <span className={css.check} aria-hidden="true"><Icon name="tick" size={40} color="var(--verde-fuerte)" stroke={2.4} /></span>
+          <Image src={ILLU.celCierre} alt="" aria-hidden="true" width={120} height={120} sizes="120px" className={css.celImg} />
           <h2 className={css.h2}>{fill(m.doneTitle, { month: rLower })}</h2>
           <p className={css.successText}>
             {result.points > 0 ? <><span className={css.pts}>{fill(m.points, { n: result.points })}</span>{" "}</> : null}

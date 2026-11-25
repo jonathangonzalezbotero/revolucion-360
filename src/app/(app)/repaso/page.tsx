@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { fill } from "@/i18n";
 import { addDays, diffDays, formatMoney, goalPlan, isoWeekday, monthName, parts, streak, weekStart, type ISODate } from "@/lib/engine";
@@ -10,6 +11,7 @@ import { requireUser } from "@/server/session";
 import { loadCatalog } from "../academia/server";
 import { loadHabit } from "./data";
 import { M } from "./messages";
+import { ILLU } from "@/lib/images";
 import { Visit } from "./Visit";
 import css from "./repaso.module.css";
 
@@ -109,17 +111,20 @@ export default async function RepasoPage() {
 
       <div className={css.stats} style={game ? undefined : { gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
         <div className={css.stat}>
+          <Image src={ILLU.vacioMovimientos} alt="" aria-hidden="true" width={76} height={76} sizes="76px" className={css.statImg} />
           <span className={`num big ${css.statNum}`}>{weekTx}</span>
           <strong style={{ fontSize: 14 }}>{weekTx === 1 ? m.movesOne : m.moves}</strong>
           <span className="xs muted">{weekTx === 0 ? m.movesNone : review > 0 ? (review === 1 ? m.movesReviewOne : fill(m.movesReview, { n: review })) : m.movesOk}</span>
         </div>
         <div className={css.stat}>
+          <Image src={ILLU.celHito} alt="" aria-hidden="true" width={76} height={76} sizes="76px" className={css.statImg} />
           <span className={`num big ${css.statNum}`}>{money(setAside)}</span>
           <strong style={{ fontSize: 14 }}>{m.goals}</strong>
           <span className="xs muted">{best ? fill(m.goalPct, { goal: best.name, pct: best.pct }) : m.goalsNone}</span>
         </div>
         {game ? (
           <div className={css.stat}>
+            <Image src={ILLU.celRacha} alt="" aria-hidden="true" width={76} height={76} sizes="76px" className={css.statImg} />
             <span className={`num big ${css.statNum}`}>{st.weeks}</span>
             <strong style={{ fontSize: 14 }}>{st.weeks === 1 ? m.streakOne : m.streak}</strong>
             <span className="xs muted">{st.weeks > 0 ? m.streakOn : m.streakStart}</span>

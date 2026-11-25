@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { fill } from "@/i18n";
 import { Icon } from "@/components/ui/Icon";
+import { ILLU } from "@/lib/images";
 import { mfaConfirm, mfaStart } from "@/app/(auth)/actions";
 import css from "../onboarding.module.css";
 import { createSpace, startBlank } from "./actions";
@@ -21,7 +22,6 @@ const GOAL_LOOK: Record<GoalKey, { bg: string; fg: string; shape: string }> = {
 };
 const PERK_LOOK = [{ bg: "var(--verde-fondo)", fg: "var(--tinta)" }, { bg: "var(--ambar-fondo)", fg: "var(--amarillo-oscuro)" }, { bg: BLUE_BG, fg: "var(--azul)" }];
 const BARS = [40, 62, 50, 78, 55, 70, 46, 84, 60, 72, 66, 90];
-const TILT = ["-6deg", "4deg", "-2deg", "5deg", "-5deg", "3deg"];
 const DONE = 4;
 const SHADOW = "0 20px 40px color-mix(in srgb, var(--oscuro-1) 45%, transparent)";
 
@@ -133,25 +133,9 @@ export function Welcome({ m, created, canEdit, readOnlyText, countries, mfaOn, .
               <div style={{ position: "absolute", left: 40, bottom: 0, background: "var(--amarillo-oscuro)", color: "var(--tinta)", borderRadius: 999, padding: "12px 18px", fontSize: 14, fontWeight: 600, boxShadow: SHADOW }}>{m.deco.pill}</div>
             </div>
           ) : null}
-          {step === 1 ? (
-            <div aria-hidden="true" style={{ display: "grid", gridTemplateColumns: "repeat(3, 96px)", gap: 14 }}>
-              {GOAL_KEYS.map((g, i) => (
-                <div key={g} style={{ width: 96, height: 96, borderRadius: 26, background: GOAL_LOOK[g].bg, display: "flex", alignItems: "center", justifyContent: "center", transform: `rotate(${TILT[i]})` }}>
-                  <div style={{ width: 30, height: 30, borderRadius: GOAL_LOOK[g].shape, background: GOAL_LOOK[g].fg }} />
-                </div>
-              ))}
-            </div>
-          ) : null}
-          {step === 3 ? (
-            <div aria-hidden="true" style={{ width: 180, height: 210, borderRadius: "90px 90px 100px 100px / 60px 60px 140px 140px", background: "var(--oscuro-3)", border: "3px solid var(--amarillo)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon name="lock" size={72} color="var(--amarillo)" />
-            </div>
-          ) : null}
-          {step === DONE ? (
-            <div aria-hidden="true" style={{ width: 150, height: 150, margin: 36, borderRadius: "50%", background: "var(--amarillo)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 18px var(--oscuro-3), 0 0 0 36px var(--oscuro-3)" }}>
-              <Icon name="tick" size={70} color="var(--oscuro-2)" />
-            </div>
-          ) : null}
+          {step === 1 ? <div aria-hidden="true" className={css.illuTile}><Image src={ILLU.onbMetas} alt="" width={240} height={240} sizes="240px" /></div> : null}
+          {step === 3 ? <div aria-hidden="true" className={css.illuTile}><Image src={ILLU.onbSeguridad} alt="" width={240} height={240} sizes="240px" /></div> : null}
+          {step === DONE ? <div aria-hidden="true" className={css.illuTile}><Image src={ILLU.onbPlan} alt="" width={240} height={240} sizes="240px" /></div> : null}
           <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 460 }}>
             <h1 style={{ fontSize: 40, lineHeight: 1.12 }}>{m.side[step][0]}</h1>
             <p style={{ fontSize: 16, lineHeight: 1.6, color: "var(--oscuro-texto-2)" }}>{m.side[step][1]}</p>
@@ -273,6 +257,7 @@ export function Welcome({ m, created, canEdit, readOnlyText, countries, mfaOn, .
 
           {step === DONE ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              <div aria-hidden="true" className={`${css.illuTileMobile} ${css.mobOnly}`}><Image src={ILLU.onbPlan} alt="" width={150} height={150} sizes="150px" /></div>
               <h2 className={css.h2done}><span className={css.deskOnly}>{nm ? fill(m.done.title, { name: nm }) : m.done.titleNoName}</span><span className={css.mobOnly}>{nm ? fill(m.done.titleMobile, { name: nm }) : m.done.titleMobileNoName}</span></h2>
               <p className={css.deskOnly} style={{ fontSize: 16, color: "var(--oscuro-linea)", lineHeight: 1.6 }}>{goals.length ? m.done.text : m.done.textNoGoals}</p>
               {backup.length ? (

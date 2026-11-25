@@ -11,6 +11,7 @@ import { loadHabit } from "../repaso/data";
 import { HabitToday } from "./HabitToday";
 import { M } from "./messages";
 import { YearChart } from "./YearChart";
+import { ILLU } from "@/lib/images";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -98,7 +99,7 @@ export default async function InicioPage() {
         {s.config.menu.metas === "on" ? (
           <section aria-labelledby="metas" className="stack">
             <div className="row-between"><h2 id="metas">{m.goals}</h2><Link href="/metas?nueva=1" className="link">{m.newGoal}</Link></div>
-            {goals.length === 0 ? <Empty icon="target" title={m.noGoals} text={m.noGoalsSub}><Link href="/metas?nueva=1" className="btn btn-secondary btn-sm">{m.createGoal}</Link></Empty> : goals.map((g) => {
+            {goals.length === 0 ? <Empty icon="target" image={ILLU.vacioMetas} title={m.noGoals} text={m.noGoalsSub}><Link href="/metas?nueva=1" className="btn btn-secondary btn-sm">{m.createGoal}</Link></Empty> : goals.map((g) => {
               const gp = goalPlan(g.target_cents, g.goal_entries.map((e) => e.amount_cents), g.target_date, s.today);
               return (
                 <Link key={g.id} href="/metas" className="card card-tight" style={{ display: "flex", flexDirection: "column", gap: 12, textDecoration: "none" }}>

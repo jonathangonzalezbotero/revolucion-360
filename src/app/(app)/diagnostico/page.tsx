@@ -10,6 +10,7 @@ import { requireUser } from "@/server/session";
 import css from "./diagnostico.module.css";
 import { benchmarksFrom, canDiagnose, joinNames, levelCounts, levelTone, pctText, referenceVars, studentStep, valueText, withFundState } from "./lib";
 import { M } from "./messages";
+import { coverSrc } from "@/lib/images";
 
 export const metadata: Metadata = { title: "Diagnóstico" };
 
@@ -169,7 +170,7 @@ export default async function DiagnosticoPage() {
         ) : null}
         {step.show ? (
           <Link href={course ? `/academia/${encodeURIComponent(course.slug)}` : "/academia"} className={css.student}>
-            {course?.cover_url ? <Image src={course.cover_url} alt="" width={160} height={90} unoptimized className={css.cover} /> : null}
+            {course?.cover_url ? <Image src={coverSrc(course.cover_url)} alt="" width={160} height={90} unoptimized className={css.cover} /> : null}
             <span className={css.studentBody}>
               {fixedCourse ? <span className={css.eyebrow2}>{fill(m.studentEyebrowFixed, { n: String(fixedCourse.number).padStart(2, "0") })}</span>
                 : pr ? <span className={css.eyebrow2}>{course ? fill(m.studentEyebrow, { focus: focusName, n: String(course.number).padStart(2, "0") }) : fill(m.studentEyebrowNoCourse, { focus: focusName })}</span> : null}

@@ -1,4 +1,5 @@
 // Piezas mínimas para construir cualquier pantalla (sin estado: sirven en el servidor y en el cliente).
+import Image from "next/image";
 import Link from "next/link";
 import { formatMoney, type Cents, type MoneyFormat } from "@/lib/engine";
 import { Icon, type IconName } from "./Icon";
@@ -53,10 +54,11 @@ export function Pill({ tone = "neutral", children }: { tone?: PillTone; children
 }
 
 /** Estado vacío: explica qué falta y qué hacer. Nunca un gráfico vacío. */
-export function Empty({ icon, title, text, children }: { icon?: IconName; title: string; text?: string; children?: React.ReactNode }) {
+/** `image`: ruta de una ilustración decorativa (p. ej. `ILLU.vacioMetas`); si viene, reemplaza al ícono. */
+export function Empty({ icon, image, title, text, children }: { icon?: IconName; image?: string; title: string; text?: string; children?: React.ReactNode }) {
   return (
     <div className="empty">
-      {icon ? <span className="icon-box" style={{ background: "var(--amarillo-pastel)" }}><Icon name={icon} size={19} /></span> : null}
+      {image ? <Image src={image} alt="" aria-hidden="true" width={112} height={112} sizes="112px" className="empty-img" /> : icon ? <span className="icon-box" style={{ background: "var(--amarillo-pastel)" }}><Icon name={icon} size={19} /></span> : null}
       <strong style={{ fontSize: 16 }}>{title}</strong>
       {text ? <span className="small muted" style={{ maxWidth: 520 }}>{text}</span> : null}
       {children}
