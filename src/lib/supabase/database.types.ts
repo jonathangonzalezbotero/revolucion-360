@@ -203,6 +203,78 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"challenge_marks": {
+                  Row: {
+                    "created_at": string,"day": string,"key": string,"member_id": string,"state": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"day": string,"key": string,"member_id": string,"state": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"day"?: string,"key"?: string,"member_id"?: string,"state"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "challenge_marks_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "challenge_members"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"challenge_members": {
+                  Row: {
+                    "challenge_id": string,"done_at": string | null,"id": string,"joined_at": string,"left_at": string | null,"show_on_board": boolean,"start_on": string,"status": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "challenge_id": string,"done_at"?: string | null,"id"?: string,"joined_at"?: string,"left_at"?: string | null,"show_on_board"?: boolean,"start_on": string,"status"?: string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "challenge_id"?: string,"done_at"?: string | null,"id"?: string,"joined_at"?: string,"left_at"?: string | null,"show_on_board"?: boolean,"start_on"?: string,"status"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "challenge_members_challenge_id_fkey"
+      columns: ["challenge_id"]
+isOneToOne: false
+      referencedRelation: "challenges"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"challenges": {
+                  Row: {
+                    "action": string | null,"audience": string,"badge_name": string | null,"created_at": string,"created_by": string | null,"days": number,"description": string,"done_automation_id": string | null,"group_id": string | null,"id": string,"image": string,"invite_code": string | null,"legacy_key": string | null,"measure": string,"points": number,"published_at": string | null,"reminder_automation_id": string | null,"show_board": boolean,"starts_on": string | null,"status": string,"target": number | null,"title": string,"updated_at": string,"wildcards": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "action"?: string | null,"audience"?: string,"badge_name"?: string | null,"created_at"?: string,"created_by"?: string | null,"days": number,"description"?: string,"done_automation_id"?: string | null,"group_id"?: string | null,"id"?: string,"image"?: string,"invite_code"?: string | null,"legacy_key"?: string | null,"measure": string,"points"?: number,"published_at"?: string | null,"reminder_automation_id"?: string | null,"show_board"?: boolean,"starts_on"?: string | null,"status"?: string,"target"?: never,"title": string,"updated_at"?: string,"wildcards"?: number
+                  }
+                  Update: {
+                    "action"?: string | null,"audience"?: string,"badge_name"?: string | null,"created_at"?: string,"created_by"?: string | null,"days"?: number,"description"?: string,"done_automation_id"?: string | null,"group_id"?: string | null,"id"?: string,"image"?: string,"invite_code"?: string | null,"legacy_key"?: string | null,"measure"?: string,"points"?: number,"published_at"?: string | null,"reminder_automation_id"?: string | null,"show_board"?: boolean,"starts_on"?: string | null,"status"?: string,"target"?: never,"title"?: string,"updated_at"?: string,"wildcards"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "challenges_done_automation_id_fkey"
+      columns: ["done_automation_id"]
+isOneToOne: false
+      referencedRelation: "crm_automations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "challenges_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "groups"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "challenges_reminder_automation_id_fkey"
+      columns: ["reminder_automation_id"]
+isOneToOne: false
+      referencedRelation: "crm_automations"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"company_entries": {
                   Row: {
                     "amount_cents": number,"class": string,"created_at": string,"date": string,"id": string,"kind": string,"note": string,"user_id": string
@@ -284,6 +356,274 @@ isOneToOne: false
       referencedRelation: "groups"
       referencedColumns: ["id"]
     }
+                  ]
+                },"crm_automations": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"exit_rules": NonNullable<Json>,"id": string,"name": string,"status": string,"steps": NonNullable<Json>,"transactional": boolean,"trigger": NonNullable<Json>,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"exit_rules"?: NonNullable<Json>,"id"?: string,"name"?: string,"status"?: string,"steps"?: NonNullable<Json>,"transactional"?: boolean,"trigger"?: NonNullable<Json>,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"exit_rules"?: NonNullable<Json>,"id"?: string,"name"?: string,"status"?: string,"steps"?: NonNullable<Json>,"transactional"?: boolean,"trigger"?: NonNullable<Json>,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"crm_campaigns": {
+                  Row: {
+                    "audience": NonNullable<Json>,"blocks": NonNullable<Json>,"bounced_count": number,"clicked_count": number,"created_at": string,"created_by": string | null,"enqueue_cursor": string | null,"enqueued_at": string | null,"id": string,"name": string,"opened_count": number,"preheader": string,"recipients_count": number,"scheduled_at": string | null,"scheduled_local": string | null,"send_mode": string,"sent_at": string | null,"sent_count": number,"status": string,"subject": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "audience"?: NonNullable<Json>,"blocks"?: NonNullable<Json>,"bounced_count"?: number,"clicked_count"?: number,"created_at"?: string,"created_by"?: string | null,"enqueue_cursor"?: string | null,"enqueued_at"?: string | null,"id"?: string,"name"?: string,"opened_count"?: number,"preheader"?: string,"recipients_count"?: number,"scheduled_at"?: string | null,"scheduled_local"?: string | null,"send_mode"?: string,"sent_at"?: string | null,"sent_count"?: number,"status"?: string,"subject"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "audience"?: NonNullable<Json>,"blocks"?: NonNullable<Json>,"bounced_count"?: number,"clicked_count"?: number,"created_at"?: string,"created_by"?: string | null,"enqueue_cursor"?: string | null,"enqueued_at"?: string | null,"id"?: string,"name"?: string,"opened_count"?: number,"preheader"?: string,"recipients_count"?: number,"scheduled_at"?: string | null,"scheduled_local"?: string | null,"send_mode"?: string,"sent_at"?: string | null,"sent_count"?: number,"status"?: string,"subject"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"crm_connection_log": {
+                  Row: {
+                    "at": string,"bucket": string | null,"connection_id": string,"contact_id": string | null,"count": number,"id": number,"result": string,"via": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "at"?: string,"bucket"?: string | null,"connection_id": string,"contact_id"?: string | null,"count"?: number,"id"?: never,"result": string,"via": string
+                  }
+                  Update: {
+                    "at"?: string,"bucket"?: string | null,"connection_id"?: string,"contact_id"?: string | null,"count"?: number,"id"?: never,"result"?: string,"via"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "crm_connection_log_connection_id_fkey"
+      columns: ["connection_id"]
+isOneToOne: false
+      referencedRelation: "crm_connections"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "crm_connection_log_contact_id_fkey"
+      columns: ["contact_id"]
+isOneToOne: false
+      referencedRelation: "crm_contacts"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"crm_connections": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"double_opt_in": boolean,"id": string,"name": string,"origins": (string)[],"secret": string,"slug": string,"status": string,"tag_ids": (string)[],"thanks_url": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"double_opt_in"?: boolean,"id"?: string,"name": string,"origins"?: (string)[],"secret"?: string,"slug": string,"status"?: string,"tag_ids"?: (string)[],"thanks_url"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"double_opt_in"?: boolean,"id"?: string,"name"?: string,"origins"?: (string)[],"secret"?: string,"slug"?: string,"status"?: string,"tag_ids"?: (string)[],"thanks_url"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"crm_consent_log": {
+                  Row: {
+                    "action": string,"applied": boolean,"at": string,"channel": string,"contact_id": string | null,"evidence": NonNullable<Json>,"id": number,"source": string,"value_hash": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "action": string,"applied"?: boolean,"at"?: string,"channel": string,"contact_id"?: string | null,"evidence"?: NonNullable<Json>,"id"?: never,"source": string,"value_hash"?: string | null
+                  }
+                  Update: {
+                    "action"?: string,"applied"?: boolean,"at"?: string,"channel"?: string,"contact_id"?: string | null,"evidence"?: NonNullable<Json>,"id"?: never,"source"?: string,"value_hash"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"crm_contact_tags": {
+                  Row: {
+                    "added_at": string,"added_by": string,"contact_id": string,"tag_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "added_at"?: string,"added_by"?: string,"contact_id": string,"tag_id": string
+                  }
+                  Update: {
+                    "added_at"?: string,"added_by"?: string,"contact_id"?: string,"tag_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "crm_contact_tags_contact_id_fkey"
+      columns: ["contact_id"]
+isOneToOne: false
+      referencedRelation: "crm_contacts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "crm_contact_tags_tag_id_fkey"
+      columns: ["tag_id"]
+isOneToOne: false
+      referencedRelation: "crm_tags"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"crm_contacts": {
+                  Row: {
+                    "country": string | null,"created_at": string,"email": string,"email_consent": boolean,"email_consent_at": string | null,"email_consent_source": string | null,"email_unsubscribed_at": string | null,"fields": NonNullable<Json>,"id": string,"last_activity_at": string | null,"locale": string,"name": string,"phone": string | null,"sms_consent": boolean,"sms_consent_at": string | null,"sms_consent_source": string | null,"sms_unsubscribed_at": string | null,"source": string,"source_detail": string,"stage": string,"timezone": string | null,"token": string,"updated_at": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "country"?: string | null,"created_at"?: string,"email": string,"email_consent"?: boolean,"email_consent_at"?: string | null,"email_consent_source"?: string | null,"email_unsubscribed_at"?: string | null,"fields"?: NonNullable<Json>,"id"?: string,"last_activity_at"?: string | null,"locale"?: string,"name"?: string,"phone"?: string | null,"sms_consent"?: boolean,"sms_consent_at"?: string | null,"sms_consent_source"?: string | null,"sms_unsubscribed_at"?: string | null,"source"?: string,"source_detail"?: string,"stage"?: string,"timezone"?: string | null,"token"?: string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "country"?: string | null,"created_at"?: string,"email"?: string,"email_consent"?: boolean,"email_consent_at"?: string | null,"email_consent_source"?: string | null,"email_unsubscribed_at"?: string | null,"fields"?: NonNullable<Json>,"id"?: string,"last_activity_at"?: string | null,"locale"?: string,"name"?: string,"phone"?: string | null,"sms_consent"?: boolean,"sms_consent_at"?: string | null,"sms_consent_source"?: string | null,"sms_unsubscribed_at"?: string | null,"source"?: string,"source_detail"?: string,"stage"?: string,"timezone"?: string | null,"token"?: string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"crm_enrollments": {
+                  Row: {
+                    "automation_id": string,"contact_id": string,"current_step_id": string | null,"enrolled_at": string,"exit_reason": string | null,"finished_at": string | null,"id": string,"next_at": string | null,"status": string,"trigger_event_id": number | null,"trigger_ref": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "automation_id": string,"contact_id": string,"current_step_id"?: string | null,"enrolled_at"?: string,"exit_reason"?: string | null,"finished_at"?: string | null,"id"?: string,"next_at"?: string | null,"status"?: string,"trigger_event_id"?: number | null,"trigger_ref"?: string
+                  }
+                  Update: {
+                    "automation_id"?: string,"contact_id"?: string,"current_step_id"?: string | null,"enrolled_at"?: string,"exit_reason"?: string | null,"finished_at"?: string | null,"id"?: string,"next_at"?: string | null,"status"?: string,"trigger_event_id"?: number | null,"trigger_ref"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "crm_enrollments_automation_id_fkey"
+      columns: ["automation_id"]
+isOneToOne: false
+      referencedRelation: "crm_automations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "crm_enrollments_contact_id_fkey"
+      columns: ["contact_id"]
+isOneToOne: false
+      referencedRelation: "crm_contacts"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"crm_events": {
+                  Row: {
+                    "at": string,"contact_id": string,"id": number,"kind": string,"processed_at": string | null,"ref": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "at"?: string,"contact_id": string,"id"?: never,"kind": string,"processed_at"?: string | null,"ref"?: string
+                  }
+                  Update: {
+                    "at"?: string,"contact_id"?: string,"id"?: never,"kind"?: string,"processed_at"?: string | null,"ref"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "crm_events_contact_id_fkey"
+      columns: ["contact_id"]
+isOneToOne: false
+      referencedRelation: "crm_contacts"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"crm_inbound_sms": {
+                  Row: {
+                    "message_sid": string,"received_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "message_sid": string,"received_at"?: string
+                  }
+                  Update: {
+                    "message_sid"?: string,"received_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"crm_messages": {
+                  Row: {
+                    "attempts": number,"automation_id": string | null,"bounced_at": string | null,"campaign_id": string | null,"channel": string,"clicked_at": string | null,"complained_at": string | null,"contact_id": string,"created_at": string,"delivered_at": string | null,"enrollment_id": string | null,"error": string | null,"id": string,"locked_at": string | null,"opened_at": string | null,"provider_id": string | null,"scheduled_for": string,"sent_at": string | null,"source_key": string,"status": string,"step_id": string | null,"transactional": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempts"?: number,"automation_id"?: string | null,"bounced_at"?: string | null,"campaign_id"?: string | null,"channel": string,"clicked_at"?: string | null,"complained_at"?: string | null,"contact_id": string,"created_at"?: string,"delivered_at"?: string | null,"enrollment_id"?: string | null,"error"?: string | null,"id"?: string,"locked_at"?: string | null,"opened_at"?: string | null,"provider_id"?: string | null,"scheduled_for"?: string,"sent_at"?: string | null,"source_key": string,"status"?: string,"step_id"?: string | null,"transactional"?: boolean
+                  }
+                  Update: {
+                    "attempts"?: number,"automation_id"?: string | null,"bounced_at"?: string | null,"campaign_id"?: string | null,"channel"?: string,"clicked_at"?: string | null,"complained_at"?: string | null,"contact_id"?: string,"created_at"?: string,"delivered_at"?: string | null,"enrollment_id"?: string | null,"error"?: string | null,"id"?: string,"locked_at"?: string | null,"opened_at"?: string | null,"provider_id"?: string | null,"scheduled_for"?: string,"sent_at"?: string | null,"source_key"?: string,"status"?: string,"step_id"?: string | null,"transactional"?: boolean
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "crm_messages_automation_id_fkey"
+      columns: ["automation_id"]
+isOneToOne: false
+      referencedRelation: "crm_automations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "crm_messages_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "crm_campaigns"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "crm_messages_contact_id_fkey"
+      columns: ["contact_id"]
+isOneToOne: false
+      referencedRelation: "crm_contacts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "crm_messages_enrollment_id_fkey"
+      columns: ["enrollment_id"]
+isOneToOne: false
+      referencedRelation: "crm_enrollments"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"crm_pending_confirmations": {
+                  Row: {
+                    "confirmed_at": string | null,"connection_id": string,"created_at": string,"email_hash": string,"expires_at": string,"id": string,"payload": NonNullable<Json>,"token_hash": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "confirmed_at"?: string | null,"connection_id": string,"created_at"?: string,"email_hash": string,"expires_at"?: string,"id"?: string,"payload"?: NonNullable<Json>,"token_hash": string
+                  }
+                  Update: {
+                    "confirmed_at"?: string | null,"connection_id"?: string,"created_at"?: string,"email_hash"?: string,"expires_at"?: string,"id"?: string,"payload"?: NonNullable<Json>,"token_hash"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "crm_pending_confirmations_connection_id_fkey"
+      columns: ["connection_id"]
+isOneToOne: false
+      referencedRelation: "crm_connections"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"crm_suppressions": {
+                  Row: {
+                    "channel": string,"created_at": string,"id": string,"lifted_at": string | null,"reason": string,"value": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "channel": string,"created_at"?: string,"id"?: string,"lifted_at"?: string | null,"reason": string,"value": string
+                  }
+                  Update: {
+                    "channel"?: string,"created_at"?: string,"id"?: string,"lifted_at"?: string | null,"reason"?: string,"value"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"crm_tags": {
+                  Row: {
+                    "created_at": string,"id": string,"name": string,"system_key": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"name": string,"system_key"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"name"?: string,"system_key"?: string | null
+                  }
+                  Relationships: [
+                    
                   ]
                 },"csv_formats": {
                   Row: {
@@ -1149,6 +1489,11 @@ isOneToOne: false
               "admin_role": string,"email": string,"id": string,"mfa": boolean,"name": string
             }[]
                            },
+"admin_challenge_totals":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "challenge_id": string,"done": number,"joined": number,"left_count": number
+            }[]
+                           },
 "admin_emails":
 { Args: { "p_ids": (string)[] }; Returns: {
               "email": string,"id": string,"locale": string,"name": string
@@ -1208,6 +1553,76 @@ isOneToOne: false
 "can_write":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"challenge_account_ok":
+{ Args: { "p_user": string }; Returns: boolean
+                           },
+"challenge_board":
+{ Args: { "p_challenge": string }; Returns: {
+              "days": number,"me": boolean,"name": string
+            }[]
+                           },
+"challenge_can_go":
+{ Args: { "p_challenge": string,"p_user": string }; Returns: boolean
+                           },
+"challenge_can_go_me":
+{ Args: { "p_challenge": string }; Returns: boolean
+                           },
+"challenge_checkin":
+{ Args: { "p_done": boolean,"p_member": string }; Returns: Json
+                           },
+"challenge_count":
+{ Args: { "p_action": string,"p_ref"?: string }; Returns: Json
+                           },
+"challenge_for_me":
+{ Args: { "p_challenge": string }; Returns: boolean
+                           },
+"challenge_idle_members":
+{ Args: { "p_days": number }; Returns: {
+              "challenge_id": string,"last_day": string,"member_id": string,"user_id": string
+            }[]
+                           },
+"challenge_info":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "challenge_id": string,"creator": string,"for_me": boolean,"group_name": string,"people": number
+            }[]
+                           },
+"challenge_join":
+{ Args: { "p_challenge": string }; Returns: string
+                           },
+"challenge_last_mark":
+{ Args: { "p_member": string }; Returns: string
+                           },
+"challenge_list":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "action": string,"audience": string,"badge_name": string,"days": number,"description": string,"id": string,"image": string,"measure": string,"points": number,"published_at": string,"show_board": boolean,"starts_on": string,"status": string,"target": number,"title": string,"wildcards": number
+            }[]
+                           },
+"challenge_local_today":
+{ Args: { "p_tz": string }; Returns: string
+                           },
+"challenge_notice":
+{ Args: { "p_user": string }; Returns: {
+              "day_n": number,"days": number,"member_id": string,"title": string
+            }[]
+                           },
+"challenge_progress":
+{ Args: { "p_member": string }; Returns: number
+                           },
+"challenge_set_board":
+{ Args: { "p_member": string,"p_on": boolean }; Returns: boolean
+                           },
+"challenge_today":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"challenge_today_of":
+{ Args: { "p_user": string }; Returns: string
+                           },
+"challenge_try_finish":
+{ Args: { "p_member": string }; Returns: boolean
+                           },
+"challenge_visible":
+{ Args: { "p_challenge": string,"p_user": string }; Returns: boolean
+                           },
 "coupon_rule":
 { Args: { "p_code": string }; Returns: {
               "applies_to": string,"expires_at": string
@@ -1218,6 +1633,94 @@ isOneToOne: false
                            },
 "course_visible":
 { Args: { "p_course": string }; Returns: boolean
+                           },
+"crm_apply_consent":
+{ Args: { "p_channel": string,"p_contact": string,"p_evidence"?: Json,"p_lift"?: boolean,"p_on": boolean,"p_source": string }; Returns: string
+                           },
+"crm_audience":
+{ Args: { "p_after"?: string,"p_audience": Json,"p_limit"?: number }; Returns: {
+              "country": string,"id": string,"timezone": string
+            }[]
+                           },
+"crm_audience_count":
+{ Args: { "p_audience": Json }; Returns: number
+                           },
+"crm_automation_counts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "active": number,"automation_id": string
+            }[]
+                           },
+"crm_claim_messages":
+{ Args: { "p_channel": string,"p_limit": number }; Returns: {
+              "attempts": number,
+"automation_id": string | null,
+"bounced_at": string | null,
+"campaign_id": string | null,
+"channel": string,
+"clicked_at": string | null,
+"complained_at": string | null,
+"contact_id": string,
+"created_at": string,
+"delivered_at": string | null,
+"enrollment_id": string | null,
+"error": string | null,
+"id": string,
+"locked_at": string | null,
+"opened_at": string | null,
+"provider_id": string | null,
+"scheduled_for": string,
+"sent_at": string | null,
+"source_key": string,
+"status": string,
+"step_id": string | null,
+"transactional": boolean
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "crm_messages"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
+"crm_connection_reject":
+{ Args: { "p_connection": string,"p_result": string,"p_via": string }; Returns: undefined
+                           },
+"crm_connection_stats":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "connection_id": string,"contacts": number,"last_at": string
+            }[]
+                           },
+"crm_hash":
+{ Args: { "p_value": string }; Returns: string
+                           },
+"crm_link_user":
+{ Args: { "p_user": string }; Returns: string
+                           },
+"crm_log_consent":
+{ Args: { "p_action": string,"p_applied": boolean,"p_channel": string,"p_contact": string,"p_evidence"?: Json,"p_source": string,"p_value": string }; Returns: undefined
+                           },
+"crm_message_event":
+{ Args: { "p_at": string,"p_kind": string,"p_provider_id": string }; Returns: string
+                           },
+"crm_my_consent":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"crm_refresh_campaigns":
+{ Args: { "p_ids": (string)[] }; Returns: undefined
+                           },
+"crm_set_consent":
+{ Args: { "p_channel": string,"p_contact": string,"p_evidence"?: Json,"p_on": boolean,"p_source": string }; Returns: string
+                           },
+"crm_set_my_consent":
+{ Args: { "p_email": boolean,"p_phone"?: string,"p_sms": boolean }; Returns: Json
+                           },
+"crm_signup_confirmed":
+{ Args: { "p_user": string }; Returns: undefined
+                           },
+"crm_sms_inbound":
+{ Args: { "p_from": string,"p_kind": string,"p_sid": string }; Returns: string
+                           },
+"crm_summary":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "is_active_account":
 { Args: Record<PropertyKey, never>; Returns: boolean
