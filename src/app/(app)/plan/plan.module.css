@@ -69,7 +69,7 @@ span.cell { min-height: 32px; }
 .addIn:hover, .addIn:focus-visible { color: var(--tinta); border-color: var(--tinta); }
 /* Celda pendiente que se puede marcar: el ✓ aparece al pasar el mouse o al enfocar la celda */
 .line td.markable { position: relative; }
-.reveal { position: absolute; left: 4px; top: 50%; margin-top: -10px; opacity: 0; pointer-events: none; }
+.reveal { position: absolute; left: 4px; top: 50%; margin-top: -10px; opacity: 0; pointer-events: none; display: inline-flex; gap: 3px; }
 .line td.markable:hover .reveal, .line td.markable:focus-within .reveal { opacity: 1; pointer-events: auto; }
 .pastNote { margin: -4px 0 0; }
 
@@ -217,7 +217,35 @@ span.mInput { display: flex; align-items: center; justify-content: flex-end; }
 .unplanned li { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--linea-2); font-size: 14px; }
 .unplanned li > span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* Abonos: cuánto va pagado una celda de gasto ("faltan $600" + barra; "Cerrado", "Pagado", "+$300") */
+.payBtn { font-size: 10px; font-weight: 600; color: var(--ambar-texto); background: transparent; border: 0; padding: 0 2px; border-radius: var(--r-sm); display: inline-flex; flex-direction: column; align-items: flex-end; gap: 2px; min-height: 20px; max-width: 100%; }
+.payBtn:hover, .payBtn:focus-visible { background: var(--blanco); }
+.payDone { color: var(--verde-fuerte); }
+.payTxt { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.payBar { display: block; width: 100%; min-width: 40px; height: 3px; border-radius: var(--r-pill); background: var(--linea); overflow: hidden; }
+.payBar > span { display: block; height: 100%; background: var(--ambar-texto); border-radius: inherit; }
+.payBig { font-size: 12px; min-height: 44px; align-items: flex-start; justify-content: center; padding: 0 4px; text-align: left; }
+.payBig .payTxt { white-space: normal; }
+.payBarBig { height: 6px; }
+.payBarDone > span { background: var(--verde-fuerte); }
+
+/* Ventana de abonos de una celda */
+.abono { display: flex; flex-direction: column; gap: 18px; }
+.abonoSum { display: flex; flex-direction: column; gap: 6px; background: var(--papel-3); border-radius: var(--r-lg); padding: 14px; }
+.abonoList { display: flex; flex-direction: column; gap: 6px; }
+.abonoList h3, .abonoForm h3 { font-size: 14px; }
+.abonoList ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.abonoList li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; min-height: 44px; border-top: 1px solid var(--linea-2); }
+.abonoX { min-height: 36px; padding: 0 8px; border: 1px solid var(--linea); border-radius: var(--r-md); background: var(--blanco); color: var(--gris-2); font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; width: auto; min-width: 36px; }
+.abonoClose { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.abonoReopen { align-self: flex-start; }
+.abonoForm { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--linea); padding-top: 16px; }
+.abonoGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
 @media (max-width: 899px) {
+  .abonoX { min-width: 44px; min-height: 44px; }
+  .abonoGrid { grid-template-columns: 1fr; }
+  .abonoForm > .btn, .abonoClose > .btn { width: 100%; min-height: 46px; }
   button.plus { display: inline-flex !important; }
   .yearNav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; }
   .back { display: inline-flex; align-items: center; min-height: 44px; }

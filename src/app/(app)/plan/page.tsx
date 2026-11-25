@@ -3,9 +3,9 @@ import Link from "next/link";
 import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
 import { fixedReasons, type FixedReason } from "@/lib/engine/habito";
-import { loadPlan, must } from "@/server/data";
+import { fetchAll, loadAccounts, loadPlan, must } from "@/server/data";
 import { requireUser } from "@/server/session";
-import { clampYear, linkedByMonth, marksByLine, monthState, toCellState, type LineLite, type LinkOptions } from "./lib";
+import { abonosByLine, clampYear, linkedByMonth, marksByLine, monthState, toCellState, type LineLite, type LinkOptions } from "./lib";
 import { M } from "./messages";
 import { loadFixedInput } from "../repaso/data";
 import { PlanGrid } from "./PlanGrid";
@@ -50,11 +50,18 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
   const linkedCount: Record<string, number> = {};
   for (const t of rule.linked) linkedCount[t.lineId] = (linkedCount[t.lineId] ?? 0) + 1;
   // "Unir a": metas, deudas y activos del usuario. Los cumplidos, saldados o de jubilación solo se muestran si la línea ya está unida a ellos.
-  const [goals, debts, assets] = await Promise.all([
+  const [goals, debts, assets, abonoRows, accounts] = await Promise.all([
     s.supabase.from("goals").select("id, name, completed_at").is("archived_at", null).order("created_at").then(must),
     s.supabase.from("debts").select("id, name, closed_at").order("created_at").then(must),
     s.supabase.from("assets").select("id, name, kind, plan_line_id").is("archived_at", null).order("created_at").then(must),
+    // Abonos: los movimientos que cuentan unidos a cada línea este año (sin transferencias ni padres divididos), para listarlos en la celda.
+    fetchAll<{ id: string; plan_line_id: string | null; date: string; amount_cents: number; description: string; parent_id: string | null; kind: string; is_split: boolean }>((a, b) =>
+      s.supabase.from("transactions").select("id, plan_line_id, date, amount_cents, description, parent_id, kind, is_split").is("deleted_at", null).not("plan_line_id", "is", null)
+        .gte("date", `${year}-01-01`).lte("date", `${year}-12-31`).order("date").order("id").range(a, b)),
+    loadAccounts(s),
   ]);
+  const abonos = abonosByLine(abonoRows.filter((t) => t.plan_line_id && t.kind === "normal" && !t.is_split)
+    .map((t) => ({ id: t.id, lineId: t.plan_line_id!, date: t.date, amountCents: t.amount_cents, description: t.description, parentId: t.parent_id })), year);
   const links: LinkOptions = {
     goals: goals.map((g) => ({ id: g.id, name: g.name, off: !!g.completed_at })),
     debts: debts.map((d) => ({ id: d.id, name: d.name, off: !!d.closed_at })),
@@ -67,6 +74,7 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
         states={Array.from({ length: 12 }, (_, i) => monthState(year, i + 1, s.year, s.month))}
         categories={plan.categories} lines={lines} auto={auto} cells={toCellState(lines, plan.cells)} fmt={s.fmt} locale={s.locale} m={m}
         linked={linked} marks={marksByLine(lines.map((l) => l.id), plan.marks)} linkedCount={linkedCount} links={links}
+        closes={marksByLine(lines.map((l) => l.id), plan.closes ?? [])} abonos={abonos} today={s.today} accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
         t={{ cancel: s.t.actions.cancel, saving: s.t.actions.saving, close: s.t.actions.close, errName: s.t.errors.name, errAmount: s.t.errors.amount, errDate: s.t.errors.date }} />
     </main>
   );

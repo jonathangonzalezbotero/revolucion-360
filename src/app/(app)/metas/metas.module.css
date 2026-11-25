@@ -43,10 +43,6 @@
 .tip { font-size: 12px; color: var(--gris); background: var(--papel); border-radius: 10px; padding: 8px 10px; }
 
 .rtTitle { font-size: 20px; letter-spacing: -0.02em; }
-.retos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; }
-.reto { background: var(--blanco); border: 1px solid var(--linea); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
-.retoBtn { align-self: flex-start; text-decoration: none; gap: 6px; display: inline-flex; align-items: center; font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 14px; border-radius: var(--r-pill); border: 1.5px solid var(--tinta); background: var(--blanco); color: var(--tinta); }
-.retoBtn[aria-pressed="true"], .retoBtn[data-on="true"] { background: var(--tinta); color: var(--amarillo); }
 
 /* Sugerencias: lo que eligió en la bienvenida, para volverlo meta cuando quiera */
 .suggestions { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 10px; }
@@ -80,7 +76,6 @@
   .leftover { padding: 16px; }
   .lfTitle { font-size: 16px; }
   .rtTitle { font-size: 17px; }
-  .retoBtn { min-height: 44px; }
   .sgActions { width: 100%; }
   .sgActions :global(.btn) { min-height: 44px; }
 }

@@ -11,9 +11,7 @@ import { formatDate, formatMoney, goalPlan, parseMoney, type Cents, type GoalPla
 import { MILESTONES, type Milestone } from "@/lib/engine/metas";
 import type { Result } from "@/server/action";
 import { addEntry, addToPlan, archiveGoal, completeGoal, createGoal, dismissObjective, sendLeftover, updateGoal } from "./actions";
-import { joinChallenge } from "../retos/actions";
 import type { GoalKey } from "@/app/(onboarding)/bienvenida/lib";
-import type { MetasReto } from "../retos/server";
 import { CONTRIB_FREQS, GOAL_TYPES, monthOptions, resolveTargetDate, TYPE_COLOR, TYPE_IMG, whenLabel, ymOf, type ContribFreq, type Contribution, type GoalStatus, type GoalType, type MetaOutlook } from "./lib";
 import type { MetasMessages } from "./messages";
 import css from "./metas.module.css";
@@ -37,8 +35,6 @@ type Props = {
   points: { contrib: number; done: number; milestone: number } | null; planHref: string | null; wall: React.ReactNode;
   monthIn: Cents;
   leftover: { year: number; month: number; monthLabel: string; cents: Cents } | null;
-  /** Retos opcionales (migración 20261125000037_retos.sql): hasta 3, primero los tuyos activos. */
-  challenges: MetasReto[];
   /** Hitos que se cruzaron al poner al día las transferencias automáticas: se celebran una vez al abrir. */
   crossed: { text: string; points: number }[];
   /** Objetivos de la bienvenida que aún no son meta (profiles.prefs.objectives). */
@@ -407,32 +403,6 @@ export function Metas(p: Props) {
           })}
         </div>
       )}
-
-      <section aria-labelledby="rt-h" className="stack" style={{ gap: 10 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <h2 id="rt-h" className={css.rtTitle}>{m.rtTitle}</h2>
-          <span className="small muted">{m.rtSub} <Link href="/retos" style={{ fontWeight: 600 }}>{m.rtAll}</Link></span>
-        </div>
-        {p.challenges.length ? (
-        <div className={css.retos}>
-          {p.challenges.map((c) => (
-            <article key={c.challengeId} className={css.reto}>
-              <strong style={{ fontSize: 15 }}>{c.title}</strong>
-              <span className="small muted" style={{ lineHeight: 1.5 }}>{c.text}</span>
-              {c.memberId ? (
-                // "Estás dentro" abre el reto en /retos (salir de un reto solo se hace allá).
-                <Link href={`/retos?reto=${c.challengeId}`} className={css.retoBtn} data-on="true" aria-label={fill(m.rtInAria, { name: c.title })}>{m.rtIn} <span aria-hidden="true">›</span></Link>
-              ) : canEdit ? (
-                <button type="button" className={css.retoBtn} disabled={pending}
-                  onClick={() => run(() => joinChallenge({ challengeId: c.challengeId }), (r) => toast(fill(m.tJoin, { name: c.title }), r.points), (e) => toast(e))}>
-                  {m.rtJoin}
-                </button>
-              ) : null}
-            </article>
-          ))}
-        </div>
-        ) : null}
-      </section>
 
       {done.length > 0 ? (
         <section aria-labelledby="done-h" className="stack" style={{ gap: 10 }}>

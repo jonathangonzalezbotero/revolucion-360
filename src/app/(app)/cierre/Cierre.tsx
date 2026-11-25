@@ -20,6 +20,10 @@ export type CierreProps = {
   canEdit: boolean; fmt: MoneyFormat; locale: Locale; m: CierreText; actions: { save: string };
   closed: { closedOn: string | null; snapshot: Snapshot | null } | null; reopened: boolean; hasPlan: boolean;
   pending: Pending[]; over: { lineId: string; name: string; overCents: Cents }[]; review: number; unplanned: number;
+  /** Modo Mensual: lo del día a día que se supone gastado según el plan (no tenía movimientos unidos). */
+  assumed: { lineId: string; name: string; cents: Cents }[];
+  /** "Dar por cerrado con $X" en el Plan anual: lo que te ahorraste en cada línea. */
+  saved: { lineId: string; name: string; savedCents: Cents }[];
   compare: { plan: Totals; real: Totals; devs: Deviation[] };
   adjust: { year: number; month: number; income: Cents; lines: { lineId: string; name: string; cents: Cents }[] };
   /** Activos de Inversiones: por unidades se escribe el precio por unidad de hoy; por saldo, el saldo de hoy. `note`: último dato escrito. */
@@ -249,6 +253,13 @@ export function Cierre(p: CierreProps) {
               ) : null}
             </div>
           ))}
+          {p.assumed.length ? (
+            <div className={css.rows}>
+              <h3>{m.assumedTitle}</h3>
+              <p className={css.para} style={{ margin: 0 }}>{m.assumedText}</p>
+              {p.assumed.map((a) => <div key={a.lineId} className={css.row}><span>{a.name}</span><span className="num">{money(a.cents)}</span></div>)}
+            </div>
+          ) : null}
           {p.over.length ? (
             <div className={css.rows}>
               <h3>{m.overTitle}</h3>
@@ -282,6 +293,12 @@ export function Cierre(p: CierreProps) {
               </div>
             ))}
           </div>
+          {p.saved.length ? (
+            <div className={css.rows}>
+              <h3>{fill(m.savedTitle, { amount: money(p.saved.reduce((a, x) => a + x.savedCents, 0)) })}</h3>
+              {p.saved.map((x) => <div key={x.lineId} className={css.row}><span>{fill(m.savedLine, { name: x.name })}</span><strong className={css.underTxt}>{fill(m.under, { amount: money(x.savedCents) })}</strong></div>)}
+            </div>
+          ) : null}
           <p className={css.para}>{fill(m.compareNote, { next: p.nextLower })}</p>
         </section>
       ) : null}

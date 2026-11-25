@@ -144,7 +144,7 @@ export function Detail({ header, months, children, rows, categories, accounts, l
         <span aria-hidden="true" className={css.avatar} style={avatar}>{r.description.trim().charAt(0).toUpperCase()}</span>
         <span className={css.rowMain}>
           <span>{r.description}</span>
-          <span className="xs muted">{catLabel(r)} · {(r.accountId ? accById.get(r.accountId)?.name : null) ?? t.list.noAccount} · {formatDate(r.date, locale, period.kind === "any" ? "long" : "short")}</span>
+          <span className="xs muted">{catLabel(r)} · {(r.accountId ? accById.get(r.accountId)?.name : null) ?? t.list.noAccount} · {formatDate(r.date, locale, period.kind === "any" ? "long" : "short")}{r.tags.length ? <> · {r.tags.map((x) => `#${x}`).join(" ")}</> : null}</span>
         </span>
         <span className={css.right}>
           <span className={`${pill.cls} ${css.rowPill}`} style={pill.style}>{pill.label}</span>

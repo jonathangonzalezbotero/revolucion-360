@@ -1,4 +1,5 @@
 "use server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { fill } from "@/i18n";
 import { parseMoney, type Cents, type Frequency } from "@/lib/engine";
@@ -8,9 +9,13 @@ import { archiveLine, createLine, setCell, setLineFixed, setMark, updateLine, ty
 import { firstStep, touchWeek } from "@/server/rewards";
 import type { Session } from "@/server/session";
 import { lineShape, linkTarget, parseCell, sideOf, type LinkTarget, type SavedLine } from "./lib";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { inMonthOf } from "@/lib/engine/registro";
+import { insertManualTx, lineOfYear } from "../movimientos/server";
+import { countChallenge } from "../retos/server";
 import { M } from "./messages";
 
-// /repaso también: "Hoy puedes gastar" y el día a día salen del plan.
+// /repaso también: "Disponible del mes" y el día a día salen del plan.
 const PLAN = ["/plan", "/inicio", "/repaso"];
 // "Unir a" cambia también Metas, Deudas e Inversiones.
 const LINKED = [...PLAN, "/metas", "/deudas", "/inversiones"];
@@ -215,7 +220,7 @@ export async function editLine(input: z.input<typeof EditLine>): Promise<Result<
 
 /**
  * "Tipo de gasto" de una línea de gasto: Automático (null, lo decide la regla del hábito), Fijo (true) o Del día a día (false).
- * Cambia "Hoy puedes gastar" en Inicio y el Repaso. Los ingresos no tienen tipo.
+ * Cambia "Disponible del mes" (lo que te queda para el día a día) en Inicio y el Repaso. Los ingresos no tienen tipo.
  */
 export async function setLineType(input: { lineId: string; fixed: boolean | null }): Promise<Result> {
   return run({ revalidate: PLAN }, async (s) => {
@@ -259,6 +264,61 @@ export async function toggleMark(input: { lineId: string; month: number; paid: b
     if (!(await ownsLine(s, p.data.lineId))) return fail(s.t.errors.notFound);
     await setMark(s, p.data.lineId, p.data.month, p.data.paid);
     if (p.data.paid) await touchWeek(s);
+    return ok(undefined);
+  });
+}
+
+// ───────── Abonos y "Dar por cerrado" ─────────
+// Un abono es un movimiento REAL unido a la línea: el mismo camino de Movimientos (`lineOfYear` + `insertManualTx`,
+// que quita la marca "Pagado · a mano" de ese mes). Quitar un abono es el borrado suave de Movimientos (`deleteTx`).
+const ABONO = [...MONTH, "/cuentas", "/analisis", "/metas", "/repaso"];
+const DateReq = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((d) => !Number.isNaN(Date.parse(d)) && new Date(d).toISOString().slice(0, 10) === d);
+
+export async function addAbono(input: { lineId: string; month: number; amount: string; date: string; accountId: string | null }): Promise<Result<{ id: string }>> {
+  return run({ revalidate: ABONO }, async (s) => {
+    const m = M[s.locale];
+    const p = z.object({ lineId: Id, month: Month, amount: z.string().max(30), date: DateReq, accountId: Id.nullable() }).safeParse(input);
+    if (!p.success) return fail(p.error.issues.some((i) => i.path[0] === "date") ? s.t.errors.date : s.t.errors.generic);
+    const d = p.data;
+    const abs = parseMoney(d.amount);
+    if (abs === null || abs <= 0) return fail(s.t.errors.amount);
+    const l = must(await s.supabase.from("plan_lines").select("id, year, kind").eq("id", d.lineId).is("archived_at", null).maybeSingle());
+    if (!l) return fail(s.t.errors.notFound);
+    if (l.kind !== "expense") return fail(m.abono.errIncome);
+    // El abono cuenta en el mes de su fecha: tiene que caer en el mes de la celda.
+    if (!inMonthOf(d.date, l.year, d.month)) return fail(m.abono.errMonth);
+    const line = await lineOfYear(s, d.lineId, d.date);
+    if (!line) return fail(s.t.errors.notFound);
+    if (d.accountId && !must(await s.supabase.from("accounts").select("id").eq("id", d.accountId).is("archived_at", null).maybeSingle())) return fail(s.t.errors.notFound);
+    const id = await insertManualTx(s, { accountId: d.accountId, date: d.date, amountCents: -abs, description: line.name, categoryId: line.categoryId, lineId: line.id, kind: "normal", note: "" });
+    await touchWeek(s);
+    await countChallenge(s, "expense", id); // Retos: "registrar un gasto" (nunca lanza)
+    revalidatePath("/(app)/plan/mes/[mes]", "page");
+    return ok({ id });
+  });
+}
+
+/**
+ * "Dar por cerrado con $X": la línea y el mes quedan terminados con lo que se pagó (tabla `plan_closes`, migración
+ * 20261125000042). Reabrir es un UPDATE acotado (`closed_at = null`): nunca se borra la fila. Lo que faltó se ve como
+ * ahorro en el Cierre.
+ */
+export async function setLineClosed(input: { lineId: string; month: number; closed: boolean }): Promise<Result> {
+  return run({ revalidate: ABONO }, async (s) => {
+    const m = M[s.locale];
+    const p = z.object({ lineId: Id, month: Month, closed: z.boolean() }).safeParse(input);
+    if (!p.success) return fail(s.t.errors.generic);
+    if (!(await ownsLine(s, p.data.lineId))) return fail(s.t.errors.notFound);
+    const db = s.supabase as unknown as SupabaseClient;
+    const now = new Date().toISOString();
+    const r = p.data.closed
+      ? await db.from("plan_closes").upsert({ line_id: p.data.lineId, user_id: s.userId, month: p.data.month, closed_at: now, updated_at: now }, { onConflict: "line_id,month" }).select("month")
+      : await db.from("plan_closes").update({ closed_at: null, updated_at: now }).eq("line_id", p.data.lineId).eq("month", p.data.month).select("month");
+    if (r.error) {
+      if (r.error.code === "PGRST205" || r.error.code === "42P01") return fail(m.abono.closeSoon);
+      throw new Error(`db: ${r.error.message}`);
+    }
+    revalidatePath("/(app)/plan/mes/[mes]", "page");
     return ok(undefined);
   });
 }

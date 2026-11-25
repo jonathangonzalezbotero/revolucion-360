@@ -8,7 +8,10 @@ import { closureTarget } from "@/server/closure";
 import { loadAccounts, loadMonthView, loadPlan, must } from "@/server/data";
 import { requireUser } from "@/server/session";
 import { loadHabit } from "../repaso/data";
+import { M as RM } from "../retos/messages";
+import { loadRetoSignal, loadRetos } from "../retos/server";
 import { HabitToday } from "./HabitToday";
+import { RetoToday } from "./RetoToday";
 import { M } from "./messages";
 import { YearChart } from "./YearChart";
 import { ILLU } from "@/lib/images";
@@ -38,7 +41,11 @@ export default async function InicioPage() {
   const cat = new Map(plan.categories.map((c) => [c.id, c]));
   const year = yearTotals(plan.lines, plan.cells);
   const hasPlan = plan.lines.length > 0;
-  const habit = hasPlan ? await loadHabit(s) : null;
+  const [habit, retoSignal] = await Promise.all([hasPlan ? loadHabit(s) : null, loadRetoSignal(s)]);
+  // Opción B (Jonathan, 25 nov 2026): con un reto activo, "Reto de hoy" va arriba y "Disponible del mes" baja a una franja.
+  // Primero el que pide marcar hoy. Solo se cargan los retos si el menú ya sabe que hay uno activo (misma consulta, cache).
+  const retos = retoSignal.active > 0 ? await loadRetos(s, { board: false }) : null;
+  const reto = retos ? (retos.active.find((a) => a.mode === "ask") ?? retos.active[0] ?? null) : null;
 
   const todo: React.ReactNode[] = [];
   if (review > 0 && s.config.menu.movimientos === "on") todo.push(<ListLink key="rev" href="/movimientos?ver=revisar" icon="mov" iconColor="var(--naranja)" title={review === 1 ? m.reviewOne : fill(m.review, { n: review })} text={m.reviewSub} />);
@@ -89,7 +96,8 @@ export default async function InicioPage() {
         </section>
       ) : null}
 
-      {habit ? <HabitToday s={s} a={habit.allowance} t={m.habit} /> : null}
+      {reto ? <RetoToday r={reto} t={m.reto} rm={RM[s.locale]} canEdit={s.canEdit} /> : null}
+      {habit ? <HabitToday s={s} a={habit.available} t={m.habit} compact={!!reto} /> : null}
 
       <div className="grid-auto">
         <section aria-labelledby="hoy" className="stack">

@@ -42,13 +42,15 @@ export type MovRow = {
   recurringId: string | null;
   /** Si el movimiento está dividido: sus partes (la primera hereda categoría y línea del original). */
   parts: Part[];
+  /** Etiquetas a mano (#café), sin "#". Solo para "Vigilar un gasto". */
+  tags: string[];
 };
 
 type TxLike = {
   id: string; date: ISODate; amountCents: Cents; description: string; rawDescription: string; note: string;
   categoryId: string | null; accountId: string | null; planLineId: string | null;
   kind: "normal" | "transfer"; status: "ok" | "review"; source: "manual" | "csv" | "recurring"; edited: boolean;
-  parentId: string | null; isSplit: boolean; recurringId: string | null; createdAt: string;
+  parentId: string | null; isSplit: boolean; recurringId: string | null; createdAt: string; tags?: string[];
 };
 
 /**
@@ -64,7 +66,7 @@ export function buildRows(txs: TxLike[]): MovRow[] {
     return {
       id: t.id, date: t.date, amountCents: t.amountCents, description: t.description, raw: t.rawDescription, note: t.note,
       categoryId: parts[0]?.categoryId ?? t.categoryId, accountId: t.accountId, lineId: parts[0]?.lineId ?? t.planLineId,
-      kind: t.kind, status: t.status, source: t.source, edited: t.edited, recurringId: t.recurringId, parts,
+      kind: t.kind, status: t.status, source: t.source, edited: t.edited, recurringId: t.recurringId, parts, tags: t.tags ?? [],
     };
   });
 }
@@ -87,7 +89,7 @@ export function matchRow(r: MovRow, f: Filter): boolean {
   if (f.state === "manual" && r.source !== "manual") return false;
   if (f.q.trim()) {
     const q = normalize(f.q);
-    if (q && !normalize(`${r.description} ${r.raw} ${r.note}`).includes(q)) return false;
+    if (q && !normalize(`${r.description} ${r.raw} ${r.note} ${r.tags.join(" ")}`).includes(q)) return false;
   }
   return true;
 }

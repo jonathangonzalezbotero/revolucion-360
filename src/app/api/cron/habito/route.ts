@@ -13,7 +13,7 @@ export const maxDuration = 300;
  * GET /api/cron/habito — avisos del hábito (en la app + push). Protegida con CRON_SECRET (`runCron`).
  * Vercel Hobby solo corre tareas una vez al día, así que la tarea NO apunta a una hora exacta: en cada corrida mira la
  * hora local de cada persona, se salta a quien está de noche (21:00 a 8:00) y le manda como máximo UN aviso del día:
- *   cierre (último día del mes) → "mañana se paga X" → repaso (domingo) → "hoy puedes gastar".
+ *   cierre (último día del mes) → "mañana se paga X" → repaso (domingo) → "este mes te quedan $X para el día a día".
  * Está programada tres veces al día (vercel.json: 02:00, 14:00 y 22:00 UTC; cada entrada es una tarea diaria, con `?run=`
  * para que sean distintas). 02:00 y 14:00 están a 12 horas: toda zona horaria cae de día (8:00 a 21:00) en al menos una;
  * 22:00 es la mañana de Sydney (9:00 en verano) y 14:00 la de Bogotá/Lima (9:00). El aviso sale en la primera corrida de día;
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
         // Se evalúan en orden de prioridad y se detiene en el primero que aplica (solo carga lo necesario).
         let sent: HabitSendResult | null = null, kind: HabitKind | null = null;
         for (const k of HABIT_PRIORITY) {
-          // Retos (20261125000037): "Reto: día N de M · ¿Lo cumpliste hoy?" va antes de "hoy puedes gastar", con la
+          // Retos (20261125000037): "Reto: día N de M · ¿Lo cumpliste hoy?" va antes de "disponible del mes", con la
           // preferencia "Metas y retos". Se cuenta en byKind.goal (en habit_sends también queda como 'goal').
           if (k === "daily" && wants("goal")) {
             const ch = await challengeNoticeFor(db, p.id);
@@ -98,7 +98,7 @@ export async function GET(request: Request) {
           } else {
             const pl = await getPlan();
             const a = pl ? allowanceOf(pl, today) : null;
-            if (!a || a.state !== "ok" || a.perDayCents <= 0) continue; // si ya se pasó, no se avisa: nada de castigo
+            if (!a || a.state !== "ok" || a.remainingCents <= 0) continue; // si ya se pasó (o quedó en $0), no se avisa: nada de castigo
             sent = await notifyHabit(p.id, "daily", { perDayCents: a.perDayCents, remainingCents: a.remainingCents, lastDay: a.daysLeft === 1 }, { db, profile, now });
           }
           kind = k;

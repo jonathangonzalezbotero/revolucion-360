@@ -5,6 +5,7 @@ import {
   type AccountKind, type AccountLite, type Cents, type Frequency, type ISODate, type LineMonth, type PlanCell, type PlanLine,
 } from "@/lib/engine";
 import { recomputeCells, parts, addDays, diffDays } from "@/lib/engine";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Session } from "./session";
 
 /** Una consulta que falla NUNCA se pinta como "sin datos" o "$0": se lanza y la atrapa `run()` o la página de error. */
@@ -28,7 +29,11 @@ export async function fetchAll<T>(page: (from: number, to: number) => PromiseLik
 export type CategoryKind = "income" | "expense" | "debt" | "saving" | "goal";
 export type Category = { id: string; name: string; kind: CategoryKind; color: string; isBasic: boolean; sort: number };
 export type Line = PlanLine & { sort: number };
-export type PlanData = { year: number; categories: Category[]; lines: Line[]; cells: PlanCell[]; marks: Set<string> };
+export type PlanData = {
+  year: number; categories: Category[]; lines: Line[]; cells: PlanCell[]; marks: Set<string>;
+  /** "Dar por cerrado con $X" (tabla `plan_closes`, migración 20261125000042), como "lineId:mes". Vacío si la migración aún no está aplicada. */
+  closes?: Set<string>;
+};
 
 export const loadCategories = cache(async (s: Session): Promise<Category[]> => {
   const data = must(await s.supabase.from("categories").select("id, name, kind, color, is_basic, sort").order("sort").order("created_at"));
@@ -108,18 +113,38 @@ export const loadPlan = cache(async (s: Session, year: number): Promise<PlanData
   let lines = await loadLines(s, year);
   if (lines.length === 0 && (year === s.year || year === s.year + 1) && (await ensurePlanYear(s, year))) lines = await loadLines(s, year);
   const ids = lines.map((l) => l.id);
-  const [cells, marks] = ids.length
+  const [cells, marks, closes] = ids.length
     ? await Promise.all([
         fetchAll<{ line_id: string; month: number; amount_cents: number; manual: boolean }>((a, b) => s.supabase.from("plan_cells").select("line_id, month, amount_cents, manual").in("line_id", ids).order("line_id").order("month").range(a, b)),
         fetchAll<{ line_id: string; month: number }>((a, b) => s.supabase.from("plan_marks").select("line_id, month").in("line_id", ids).order("line_id").order("month").range(a, b)),
+        loadCloses(s, ids),
       ])
-    : [[], []];
+    : [[], [], new Set<string>()];
   return {
     year, categories, lines: lines.map(toLine),
     cells: cells.map((c) => ({ lineId: c.line_id, month: c.month, amountCents: c.amount_cents, manual: c.manual })),
     marks: new Set(marks.map((m) => `${m.line_id}:${m.month}`)),
+    closes,
   };
 });
+
+/**
+ * Líneas y meses "dados por cerrados" (tabla `plan_closes`, migración 20261125000042, sin tipos generados todavía).
+ * Si la tabla aún no existe, no hay ninguno: nunca rompe una pantalla por eso.
+ */
+async function loadCloses(s: Session, ids: string[]): Promise<Set<string>> {
+  const db = s.supabase as unknown as SupabaseClient;
+  const out = new Set<string>();
+  for (let from = 0; ; from += 1000) {
+    const r = await db.from("plan_closes").select("line_id, month").in("line_id", ids).not("closed_at", "is", null).order("line_id").order("month").range(from, from + 999);
+    if (r.error) {
+      if (r.error.code === "PGRST205" || r.error.code === "42P01") return out;
+      throw new Error(`db: ${r.error.message}`);
+    }
+    for (const c of (r.data ?? []) as { line_id: string; month: number }[]) out.add(`${c.line_id}:${c.month}`);
+    if ((r.data ?? []).length < 1000) return out;
+  }
+}
 
 export type Account = AccountLite & { name: string; institution: string; isEmergencyFund: boolean; sort: number };
 export const loadAccounts = cache(async (s: Session): Promise<Account[]> => {
@@ -134,11 +159,14 @@ export type Tx = {
   id: string; accountId: string | null; date: ISODate; amountCents: Cents; description: string; rawDescription: string;
   categoryId: string | null; planLineId: string | null; kind: "normal" | "transfer"; status: "ok" | "review";
   source: "manual" | "csv" | "recurring"; parentId: string | null; isSplit: boolean; note: string; edited: boolean; recurringId: string | null; createdAt: string;
+  /** Etiquetas a mano (#café). `transactions.tags`, migración 20261125000042: antes de aplicarla no llega y queda []. */
+  tags: string[];
 };
-type TxRow = { id: string; account_id: string | null; date: string; amount_cents: number; description: string; raw_description: string; category_id: string | null; plan_line_id: string | null; kind: "normal" | "transfer"; status: "ok" | "review"; source: "manual" | "csv" | "recurring"; parent_id: string | null; is_split: boolean; note: string; edited_at: string | null; recurring_id: string | null; created_at: string };
+type TxRow = { id: string; account_id: string | null; date: string; amount_cents: number; description: string; raw_description: string; category_id: string | null; plan_line_id: string | null; kind: "normal" | "transfer"; status: "ok" | "review"; source: "manual" | "csv" | "recurring"; parent_id: string | null; is_split: boolean; note: string; edited_at: string | null; recurring_id: string | null; created_at: string; tags?: string[] | null };
 export const toTx = (r: TxRow): Tx => ({
   id: r.id, accountId: r.account_id, date: r.date, amountCents: r.amount_cents, description: r.description, rawDescription: r.raw_description,
   categoryId: r.category_id, planLineId: r.plan_line_id, kind: r.kind, status: r.status, source: r.source, parentId: r.parent_id, isSplit: r.is_split, note: r.note, edited: !!r.edited_at, recurringId: r.recurring_id, createdAt: r.created_at,
+  tags: Array.isArray(r.tags) ? r.tags : [],
 });
 
 /** Movimientos vivos entre dos fechas (sin eliminados). Los padres divididos vienen con isSplit = true y NO cuentan en sumas. */
@@ -174,7 +202,7 @@ export const loadMonthView = cache(async (s: Session, year: number, month: numbe
   const groups: MonthGroup[] = plan.categories.map((category) => {
     const lines = plan.lines.filter((l) => l.categoryId === category.id).map((line): MonthLine => {
       const linked = byLine.get(line.id) ?? [];
-      const st = lineMonthStatus(cellOf(map, line.id, month), linked.map((t) => t.amountCents), plan.marks.has(`${line.id}:${month}`));
+      const st = lineMonthStatus(cellOf(map, line.id, month), linked.map((t) => t.amountCents), plan.marks.has(`${line.id}:${month}`), !!plan.closes?.has(`${line.id}:${month}`));
       return { ...st, line, txIds: linked.map((t) => t.id) };
     });
     return { category, lines, plannedCents: lines.reduce((a, l) => a + l.plannedCents, 0), realCents: lines.reduce((a, l) => a + l.realCents, 0) };

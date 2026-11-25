@@ -36,7 +36,8 @@ export function Retos({ data, m, canEdit, focus = "" }: { data: RetosData; m: Re
           <span className={css.eyebrow}><span className="only-desktop">{m.eyebrow}</span><span className="only-mobile">{m.eyebrowShort}</span></span>
           <h1 className={css.title}>{m.title}</h1>
         </div>
-        <Link href="/metas" className={css.back}><span className="only-desktop">{m.back}</span><span className="only-mobile">{m.backShort}</span></Link>
+        {/* Retos ya no vive dentro de Metas: en escritorio está en el menú; en el celular se vuelve a "Más". */}
+        <Link href="/mas" className={`only-mobile-flex ${css.back}`}>{m.backShort}</Link>
       </header>
 
       <div role="radiogroup" aria-label={m.tabsLabel} className={css.tabs}>
@@ -130,7 +131,7 @@ function ActiveCard({ r, m, canEdit, pending, focused, onYes, onNo, onLeave }: {
   r: ActiveView; m: RetosMessages; canEdit: boolean; pending: boolean; focused: boolean; onYes: () => void; onNo: () => void; onLeave: () => void;
 }) {
   const ref = useRef<HTMLElement>(null);
-  // Abierto desde Metas: la vista llega hasta el reto y el foco queda en él (para el lector de pantalla y el teclado).
+  // Abierto desde Inicio ("Ver reto ›"): la vista llega hasta el reto y el foco queda en él (para el lector de pantalla y el teclado).
   useEffect(() => {
     if (!focused || !ref.current) return;
     ref.current.scrollIntoView({ block: "center", behavior: "smooth" });

@@ -3,7 +3,7 @@ import type { Messages } from "@/i18n";
 export const M = {
   es: {
     title: "Retos", eyebrow: "Pequeños desafíos para crear hábito, cuando tengas ganas", eyebrowShort: "Cuando tengas ganas",
-    back: "‹ Volver a Metas", backShort: "Metas",
+    backShort: "‹ Más",
     tabsLabel: "Ver retos", tabs: { act: "Activos", av: "Disponibles", fin: "Terminados" },
     forAll: "Para todos", byCode: "Con tu código", createdBy: "{who} · creado por {name}",
     peopleGroup: "{n} alumnos están en este reto", people: "{n} personas están en este reto",
@@ -42,7 +42,7 @@ export const M = {
   },
   en: {
     title: "Challenges", eyebrow: "Small challenges to build a habit, whenever you feel like it", eyebrowShort: "Whenever you feel like it",
-    back: "‹ Back to Goals", backShort: "Goals",
+    backShort: "‹ More",
     tabsLabel: "View challenges", tabs: { act: "Active", av: "Available", fin: "Finished" },
     forAll: "For everyone", byCode: "With your code", createdBy: "{who} · created by {name}",
     peopleGroup: "{n} students are in this challenge", people: "{n} people are in this challenge",

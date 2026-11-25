@@ -2,7 +2,7 @@
 .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
 .eyebrow { font-size: 14px; color: var(--gris); }
 .title { margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em; }
-.back { font-size: 14px; font-weight: 600; }
+.back { font-size: 14px; font-weight: 600; min-height: 44px; align-items: center; }
 
 .tabs { display: inline-flex; gap: 4px; padding: 4px; background: var(--seleccion); border-radius: var(--r-pill); align-self: flex-start; }
 .tab { font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 16px; border: 0; border-radius: var(--r-pill); background: transparent; color: var(--tinta-2); cursor: pointer; }

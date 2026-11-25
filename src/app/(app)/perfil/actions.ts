@@ -7,6 +7,7 @@ import { fail, ok, run } from "@/server/action";
 import type { Json } from "@/lib/supabase/database.types";
 import { must } from "@/server/data";
 import { HABIT_PREF_KEYS, mergeHabitPrefs, type HabitPrefKey } from "@/lib/engine/habito";
+import { movLevelFor } from "@/lib/engine/registro";
 import { toE164 } from "@/lib/crm/phone";
 import { isPhone, CHANNELS, CLOSE_DAYS, confirmsWord, CURRENCIES, isValidTimezone, mergeNotifyPrefs, mergeTerms, NOTIFY_KEYS, PAY_FREQUENCIES, TERM_KEYS } from "./lib";
 import { M } from "./messages";
@@ -221,6 +222,21 @@ export async function cancelDeletion(input: unknown) {
     const p = z.string().uuid().safeParse(input);
     if (!p.success) return fail(s.t.errors.notFound);
     must(await s.supabase.from("privacy_requests").update({ status: "cancelled" }).eq("id", p.data).eq("user_id", s.userId).eq("kind", "delete").eq("status", "pending").select("id"));
+    return ok(undefined);
+  });
+}
+
+// ───────── Cómo llevas tu plata: Mensual o Día a día (profiles.mov_level) ─────────
+/**
+ * Mensual = 'plan', Día a día = 'detail' ('totals', de antes, cuenta como Mensual y no se reescribe). Solo se escribe si
+ * de verdad cambia. Cambiar de modo no borra ni mueve nada: solo cambia cómo el cierre lee el mes.
+ */
+export async function saveMovMode(input: unknown) {
+  return run({ write: false, revalidate: [...PATHS, "/cierre", "/cuentas", "/movimientos"] }, async (s) => {
+    const p = z.object({ mode: z.enum(["mensual", "diario"]) }).safeParse(input);
+    if (!p.success) return fail(s.t.errors.generic);
+    const level = movLevelFor(p.data.mode, s.profile.movLevel);
+    if (level) must(await s.supabase.from("profiles").update({ mov_level: level }).eq("id", s.userId).select("id"));
     return ok(undefined);
   });
 }

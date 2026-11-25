@@ -7,6 +7,7 @@ import { requireUser } from "@/server/session";
 import { term } from "@/server/terms";
 import { Cuentas, type AccountView } from "./Cuentas";
 import { M } from "./messages";
+import { movMode } from "@/lib/engine/registro";
 
 export const metadata: Metadata = { title: "Cuentas" };
 
@@ -38,7 +39,7 @@ export default async function CuentasPage() {
     inNetworth: a.inNetworth, inForecast: a.inForecast, isEmergencyFund: a.isEmergencyFund,
     expectedCents: expectedBalance(a, moving),
     // Sin movimientos por cuenta no hay con qué comparar: el aviso solo sale si el usuario los registra.
-    reconcile: s.profile.movLevel === "detail" || lasts[i].length > 0,
+    reconcile: movMode(s.profile.movLevel) === "diario" || lasts[i].length > 0,
     last: lasts[i].map((t) => ({ id: t.id, title: t.description || m.noCategory, sub: t.kind === "transfer" ? m.between : (t.category_id && cat.get(t.category_id)) || m.noCategory, amountCents: t.amount_cents })),
   }));
 

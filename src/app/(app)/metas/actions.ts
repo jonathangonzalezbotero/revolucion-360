@@ -260,7 +260,7 @@ export async function sendLeftover(input: unknown): Promise<Result<{ amountCents
   });
 }
 
-// Retos opcionales: entrar y salir pasan por src/app/(app)/retos/actions.ts (modelo de la migración 20261125000037_retos.sql).
+// Retos: entrar y salir solo desde /retos (src/app/(app)/retos/actions.ts, migración 20261125000037_retos.sql). Metas ya no los muestra.
 
 /** "Ahora no" en una sugerencia: el objetivo deja de sugerirse (no crea ni borra metas). */
 export async function dismissObjective(input: unknown) {

@@ -12,7 +12,6 @@ import { asContribFreq, customKind, goalStatus, kindLabel, objectiveSuggestions,
 import { M } from "./messages";
 import { Metas, type GoalView } from "./Metas";
 import { leftoverFor, raw, syncGoalLinks } from "./server";
-import { loadMetasRetos } from "../retos/server";
 
 export const metadata: Metadata = { title: "Metas" };
 type Search = Promise<{ nueva?: string }>;
@@ -40,7 +39,7 @@ export default async function MetasPage({ searchParams }: { searchParams: Search
   const crossed = await syncGoalLinks(s);
 
   const db = raw(s);
-  const [goalsRes, entries, linesRes, accountsRes, closuresRes, decidedRes, retos] = await Promise.all([
+  const [goalsRes, entries, linesRes, accountsRes, closuresRes, decidedRes] = await Promise.all([
     db.from("goals").select("id, name, kind, why, target_cents, target_date, is_emergency_fund, completed_at, account_id, account_linked_on").is("archived_at", null).order("created_at"),
     fetchAll<EntryRow>((a, b) =>
       db.from("goal_entries").select("id, goal_id, date, amount_cents, note, kind").order("date", { ascending: false }).order("created_at", { ascending: false }).order("id").range(a, b)),
@@ -48,7 +47,6 @@ export default async function MetasPage({ searchParams }: { searchParams: Search
     s.supabase.from("accounts").select("id, name, archived_at").order("sort").order("created_at"),
     s.supabase.from("month_closures").select("year, month, reopened_at, snapshot").is("reopened_at", null).order("year", { ascending: false }).order("month", { ascending: false }).limit(1),
     db.from("goal_leftovers").select("year, month"),
-    loadMetasRetos(s), // Retos (20261125000037_retos.sql): los tuyos activos y los disponibles; null si la migración no está aplicada
   ]);
   const accounts = must(accountsRes);
   const accountName = new Map(accounts.map((a) => [a.id, a.name]));
@@ -106,8 +104,6 @@ export default async function MetasPage({ searchParams }: { searchParams: Search
   const leftover = last && leftCents > 0
     ? { year: last.year, month: last.month, monthLabel: monthName(last.month, s.locale).toLowerCase(), cents: leftCents } : null;
 
-  const challenges = retos ?? [];
-
   const pts = s.config.points;
   return (
     <Metas
@@ -115,7 +111,7 @@ export default async function MetasPage({ searchParams }: { searchParams: Search
       points={s.config.gamification ? { contrib: pts.goal_contrib ?? 0, done: pts.goal_done ?? 0, milestone: pts.goal_milestone ?? 20 } : null}
       planHref={s.config.menu.plan === "on" ? "/plan" : null}
       wall={null}
-      monthIn={monthIn} leftover={leftover} challenges={challenges}
+      monthIn={monthIn} leftover={leftover}
       suggestions={s.canEdit ? objectiveSuggestions(s.profile.prefs) : []}
       crossed={crossed.map((c) => ({ text: fill(m.tMilestone, { pct: c.pct, name: c.name }), points: c.points }))}
     />

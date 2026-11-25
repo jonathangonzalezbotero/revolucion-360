@@ -8,6 +8,7 @@ import { ConfirmButton, Segmented, Switch, useToast } from "@/components/ui/clie
 import { formatMoney, monthName, parseMoney } from "@/lib/engine";
 import { deleteTx, linkLine, setTxGoal, suggestFor, updateTx } from "./actions";
 import { moneyInput, rulePattern, type MovRow, type RecFrequency } from "./lib";
+import { MAX_TAGS, mergeTags, parseTags, tagsChanged } from "@/lib/engine/registro";
 import css from "./mov.module.css";
 import type { Acc, Cat, Ctx, GoalOpt, LineOpt } from "./types";
 
@@ -28,7 +29,7 @@ export function EditPanel({ row, categories, accounts, linesByYear, recurring, c
     desc: row.description, amount: moneyInput(row.amountCents), dir: row.amountCents > 0 ? ("in" as const) : ("out" as const), date: row.date,
     cat: row.categoryId ?? "", acc: row.accountId ?? "", line: row.lineId ?? "", note: row.note, transfer: row.kind === "transfer",
     split: row.parts.length > 0, cat2: second?.categoryId ?? "", amount2: second ? moneyInput(second.amountCents) : "", rule: true, repeat: "" as "" | RecFrequency,
-    goal,
+    goal, tags: row.tags, tagText: "",
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -56,10 +57,15 @@ export function EditPanel({ row, categories, accounts, linesByYear, recurring, c
   const total = parseMoney(d.amount), part2 = parseMoney(d.amount2);
   const rest = total !== null && part2 !== null ? Math.abs(total) - Math.abs(part2) : null;
 
+  // Etiquetas: lo escrito sin tocar "Agregar" también se guarda. Solo se mandan si cambiaron.
+  const allTags = mergeTags(d.tags, parseTags(d.tagText));
+  const addTag = () => { if (d.tagText.trim()) up({ tags: allTags, tagText: "" }); };
+
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     const r = await updateTx({
+      ...(tagsChanged(row.tags, allTags) ? { tags: allTags } : {}),
       id: row.id, amount: d.amount, direction: d.dir, date: d.date, description: d.desc, categoryId: d.cat || null, accountId: d.acc || null, lineId: d.line || null,
       note: d.note, transfer: d.transfer, rule: offerRule && d.rule, repeat: d.repeat, split: d.split && !d.transfer ? { categoryId: d.cat2 || null, amount: d.amount2 } : null,
     });
@@ -220,6 +226,25 @@ export function EditPanel({ row, categories, accounts, linesByYear, recurring, c
             </select>
           </div>
         ) : null}
+
+        <div className={css.fld}>
+          <label htmlFor="e-tag">{t.edit.tags}</label>
+          {d.tags.length ? (
+            <ul className={css.tagList}>
+              {d.tags.map((x) => (
+                <li key={x} className={css.tag}>#{x}
+                  <button type="button" className={css.tagX} aria-label={fill(t.edit.tagRemove, { tag: x })} onClick={() => up({ tags: d.tags.filter((y) => y !== x) })}><Icon name="x" size={12} /></button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <div className={css.tagAdd}>
+            <input id="e-tag" type="text" className={css.in} maxLength={60} placeholder={t.edit.tagsPh} value={d.tagText} aria-describedby="e-tag-h"
+              onChange={(e) => up({ tagText: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }} />
+            <button type="button" className={`btn btn-secondary ${css.secBtn}`} disabled={!d.tagText.trim() || d.tags.length >= MAX_TAGS} onClick={addTag}>{t.edit.tagAdd}</button>
+          </div>
+          <span id="e-tag-h" className="xs muted">{d.tags.length >= MAX_TAGS ? t.edit.tagsMax : t.edit.tagsHint}</span>
+        </div>
 
         <div className={css.fld}><label htmlFor="e-note">{t.edit.note}</label><input id="e-note" type="text" className={css.in} maxLength={300} placeholder={t.edit.notePh} value={d.note} onChange={(e) => up({ note: e.target.value })} /></div>
         {error ? <p role="alert" className="error">{error}</p> : null}

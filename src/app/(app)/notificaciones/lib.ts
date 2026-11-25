@@ -6,7 +6,7 @@ export const KINDS = ["cierre", "pago", "habito", "logro", "reto", "academia", "
 export type Kind = (typeof KINDS)[number];
 
 /**
- * Filtros del mockup (Notificaciones): Recordatorios (cierre, pagos, Hoy puedes gastar, Repaso semanal), Logros
+ * Filtros del mockup (Notificaciones): Recordatorios (cierre, pagos, Disponible del mes, Repaso semanal), Logros
  * (insignias, rachas, hitos de metas, días de reto), Academia y Cuenta (acceso y sistema). Ya no hay "Alertas":
  * esos avisos dejaron de mandarse.
  */

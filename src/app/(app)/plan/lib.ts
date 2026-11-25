@@ -161,9 +161,31 @@ export function patchMark(state: MarkState, lineId: string, month: number, on: b
   row[month - 1] = on;
   return { ...state, [lineId]: row };
 }
-/** Estado de una celda del año: la misma regla del Detalle del mes (un movimiento unido reemplaza la marca a mano). */
-export const cellStatus = (plannedCents: Cents, linkedCents: Cents | null, marked: boolean): LineStatus =>
-  lineMonthStatus(plannedCents, linkedCents === null ? [] : [linkedCents], marked).status;
+/**
+ * Estado de una celda del año: la misma regla del Detalle del mes (un movimiento unido reemplaza la marca a mano).
+ * `closed` = "Dar por cerrado con $X": un parcial cuenta como pagado.
+ */
+export const cellStatus = (plannedCents: Cents, linkedCents: Cents | null, marked: boolean, closed = false): LineStatus =>
+  lineMonthStatus(plannedCents, linkedCents === null ? [] : [linkedCents], marked, closed).status;
+/** ¿La celda está "dada por cerrada"? Solo cuenta si hay abonos y no cubren lo planeado (la misma regla de `lineMonthStatus`). */
+export const isClosedCell = (plannedCents: Cents, linkedCents: Cents | null, closed: boolean): boolean =>
+  !!lineMonthStatus(plannedCents, linkedCents === null ? [] : [linkedCents], false, closed).closed;
+
+// ───────── Abonos ─────────
+/** Un movimiento unido a una línea en un mes. `removable`: las partes de un dividido se quitan desde Movimientos. */
+export type Abono = { id: string; date: ISODate; amountCents: Cents; description: string; removable: boolean };
+/** Por línea: los abonos de cada mes (índice 0 = enero), del más viejo al más nuevo. */
+export type AbonoState = Record<string, Abono[][]>;
+export function abonosByLine(rows: { id: string; lineId: string; date: ISODate; amountCents: Cents; description: string; parentId: string | null }[], year: number): AbonoState {
+  const out: AbonoState = {};
+  const sorted = [...rows].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.id < b.id ? -1 : 1));
+  for (const t of sorted) {
+    if (!t.date.startsWith(`${year}-`)) continue;
+    const row = (out[t.lineId] ??= Array.from({ length: 12 }, () => [] as Abono[]));
+    row[Number(t.date.slice(5, 7)) - 1].push({ id: t.id, date: t.date, amountCents: t.amountCents, description: t.description, removable: !t.parentId });
+  }
+  return out;
+}
 /** Se puede marcar o desmarcar a mano: hay algo planeado y no lo pagó un movimiento. */
 export const canToggle = (plannedCents: Cents, status: LineStatus): boolean => plannedCents > 0 && (status === "pending" || status === "paid_manual");
 export const isPaid = (status: LineStatus): boolean => status === "paid" || status === "paid_manual" || status === "over";

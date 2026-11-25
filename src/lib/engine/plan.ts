@@ -107,19 +107,26 @@ export function categoryTotals(lines: PlanLine[], cells: PlanCell[], month: numb
 
 // ───────── Estado de una línea en un mes ─────────
 export type LineStatus = "pending" | "paid" | "paid_manual" | "partial" | "over" | "none";
-export type LineMonth = { status: LineStatus; plannedCents: Cents; realCents: Cents; missingCents: Cents };
+export type LineMonth = {
+  status: LineStatus; plannedCents: Cents; realCents: Cents; missingCents: Cents;
+  /** "Dar por cerrado": pagó menos de lo planeado y la dio por terminada (cuenta como pagada, sin faltante). */
+  closed?: boolean;
+};
 
 /**
  * - Sin plan en el mes y sin movimientos → none
  * - Con movimientos unidos: paid si cubre ≥ 99.5% del plan; partial si es menos; over si pasa del plan en más de 0.5%
  * - Sin movimientos y marcada a mano → paid_manual (cuenta el monto del plan)
  * - Un movimiento unido reemplaza la marca a mano: nunca se cuenta dos veces.
+ * - `closed` ("Dar por cerrado con $X", tabla `plan_closes`): un parcial cuenta como pagado con lo que de verdad se pagó y
+ *   sin faltante. Solo con movimientos unidos: si se quitan todos los abonos, vuelve a pendiente.
  */
-export function lineMonthStatus(plannedCents: Cents, linkedTxCents: Cents[], markedManual: boolean): LineMonth {
+export function lineMonthStatus(plannedCents: Cents, linkedTxCents: Cents[], markedManual: boolean, closed = false): LineMonth {
   const real = Math.abs(linkedTxCents.reduce((a, b) => a + b, 0));
   if (linkedTxCents.length > 0) {
     const tol = Math.max(100, Math.round(plannedCents * 0.005));
     const status: LineStatus = real > plannedCents + tol ? "over" : real >= plannedCents - tol ? "paid" : "partial";
+    if (status === "partial" && closed) return { status: "paid", plannedCents, realCents: real, missingCents: 0, closed: true };
     return { status, plannedCents, realCents: real, missingCents: Math.max(0, plannedCents - real) };
   }
   if (markedManual) return { status: "paid_manual", plannedCents, realCents: plannedCents, missingCents: 0 };

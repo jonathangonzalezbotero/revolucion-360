@@ -4,6 +4,7 @@ import {
   dailyAllowance, fixedLineIds, fixedOverrides, fixedSlots, flexibleBudget, flexibleSpend, upcomingPayments,
   type Allowance, type DuePayment, type HabitCategory, type HabitLine, type HabitTx, type LinkedTx,
 } from "@/lib/engine/habito";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Admin } from "@/lib/email/cron";
 import type { PlanCell } from "@/lib/engine";
 
@@ -47,6 +48,11 @@ export async function loadHabitPlan(db: Admin, userId: string, today: ISODate): 
       db.from("transactions").select("date, amount_cents, category_id, plan_line_id, kind, is_split").eq("user_id", userId).is("deleted_at", null)
         .gte("date", `${y}-01-01`).lte("date", `${y}-12-31`).order("date").order("id").range(a, b)),
   ]);
+  // "Dar por cerrado" (tabla `plan_closes`, migración 20261125000042): un parcial cerrado ya no se avisa como pendiente.
+  // Si la tabla aún no existe, no hay ninguno.
+  const closesRes = await (db as unknown as SupabaseClient).from("plan_closes").select("line_id, month").eq("user_id", userId).in("line_id", ids).not("closed_at", "is", null);
+  if (closesRes.error && closesRes.error.code !== "PGRST205" && closesRes.error.code !== "42P01") throw new Error(`db: ${closesRes.error.message}`);
+  const closeSet = new Set(((closesRes.error ? [] : closesRes.data) ?? []).map((c: { line_id: string; month: number }) => `${c.line_id}:${c.month}`));
   const categories: HabitCategory[] = cats.map((c) => ({ id: c.id, kind: c.kind as HabitCategory["kind"] }));
   const planCells: PlanCell[] = cells.map((c) => ({ lineId: c.line_id, month: c.month, amountCents: c.amount_cents, manual: c.manual }));
   const allTx: HabitTx[] = txs.map((t) => ({ date: t.date, amountCents: t.amount_cents, categoryId: t.category_id, planLineId: t.plan_line_id, kind: t.kind === "transfer" ? "transfer" : "normal", isSplit: t.is_split }));
@@ -64,7 +70,7 @@ export async function loadHabitPlan(db: Admin, userId: string, today: ISODate): 
   for (const l of lines) {
     for (const mm of [m, m === 12 ? 12 : m + 1]) {
       const k = `${l.id}:${mm}`;
-      const st = lineMonthStatus(cellBy.get(k) ?? 0, linkedBy.get(k) ?? [], markSet.has(k));
+      const st = lineMonthStatus(cellBy.get(k) ?? 0, linkedBy.get(k) ?? [], markSet.has(k), closeSet.has(k));
       if (st.status === "paid" || st.status === "paid_manual" || st.status === "over") paid.add(k);
     }
     const v = cellBy.get(`${l.id}:${m}`) ?? 0;
@@ -75,7 +81,7 @@ export async function loadHabitPlan(db: Admin, userId: string, today: ISODate): 
   return { lines, cells: planCells, fixed, paid, categories, monthTx, linkedMonth, planNet: income - expense };
 }
 
-/** "Hoy puedes gastar" de la persona (misma regla que Inicio). */
+/** Lo que le queda del día a día (misma regla que "Disponible del mes" en Inicio; el aviso diario usa `remainingCents`). */
 export function allowanceOf(p: HabitPlan, today: ISODate): Allowance {
   const { m } = parts(today);
   const budget = flexibleBudget(p.lines, p.cells, m, p.fixed);

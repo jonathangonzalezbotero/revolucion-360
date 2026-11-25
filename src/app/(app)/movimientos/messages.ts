@@ -22,6 +22,8 @@ export const M = {
       st: { plan: "Coincide con tu plan", manual: "Manual", split: "Dividido", csv: "CSV", recurring: "Recurrente" },
     },
     edit: {
+      tags: "Etiquetas", tagsHint: "Solo para vigilar un gasto: el movimiento sigue en su categoría.", tagsPh: "#café", tagAdd: "Agregar", tagRemove: "Quitar #{tag}",
+      tagsMax: "Hasta 10 etiquetas por movimiento.",
       title: "Editar movimiento", origin: "Origen: {src}", bank: "texto del banco:", src: { manual: "A mano", csv: "CSV", recurring: "Recurrente" },
       desc: "Descripción", amount: "Monto", date: "Fecha", category: "Categoría", account: "Cuenta", dir: "Entra o sale", out: "Sale", in: "Entra",
       line: "Cuenta como pago de esta línea de tu plan", lineShort: "Pago de esta línea de tu plan", lineHint: "Así la línea queda como pagada en el detalle del mes.", none: "Ninguna",
@@ -66,6 +68,17 @@ export const M = {
     errors: {
       desc: "Falta la descripción.", line: "Esa línea es del plan de otro año. Elige una del año del movimiento.", split: "Las dos partes deben sumar el total del movimiento.",
       splitCat: "Elige la segunda categoría.", sameAccount: "Elige una cuenta distinta para la transferencia.", recExists: "Ya tienes ese recurrente.", future: "La primera fecha no es válida.",
+      tagsSoon: "Las etiquetas llegan muy pronto. Por ahora guarda sin ellas o vigila una palabra.",
+    },
+    watch: {
+      title: "Gastos que vigilas", note: "Es solo una vista: tus movimientos siguen en su categoría y tu plan no cambia.",
+      line: "{month} este mes · {year} en el año", times: "{n} veces este año", timesOne: "1 vez este año",
+      add: "Vigilar un gasto", addTitle: "Vigilar un gasto", cancel: "Cancelar", save: "Vigilar",
+      name: "Nombre", namePh: "Cafés", word: "Palabra en la descripción", wordPh: "McDonald's, café…", tag: "O una etiqueta que pones tú", tagPh: "#helado",
+      help: "Escribe una palabra, una etiqueta o las dos. No importan las tildes ni las mayúsculas.",
+      need: "Escribe una palabra o una etiqueta.", max: "Puedes vigilar hasta {max} gastos. Quita uno para agregar otro.",
+      added: "Listo, ahora vigilas \"{name}\".", remove: "Dejar de vigilar {name}", removed: "Ya no vigilas \"{name}\".",
+      empty: "¿Quieres saber cuánto se te va en café o en salidas? Vigila un gasto y lo ves aquí.",
     },
   },
   en: {
@@ -89,6 +102,8 @@ export const M = {
       st: { plan: "Matches your plan", manual: "By hand", split: "Split", csv: "CSV", recurring: "Recurring" },
     },
     edit: {
+      tags: "Tags", tagsHint: "Only for watching a spend: the transaction stays in its category.", tagsPh: "#coffee", tagAdd: "Add", tagRemove: "Remove #{tag}",
+      tagsMax: "Up to 10 tags per transaction.",
       title: "Edit transaction", origin: "Source: {src}", bank: "bank text:", src: { manual: "By hand", csv: "CSV", recurring: "Recurring" },
       desc: "Description", amount: "Amount", date: "Date", category: "Category", account: "Account", dir: "In or out", out: "Out", in: "In",
       line: "Counts as payment for this line of your plan", lineShort: "Payment for this plan line", lineHint: "The line then shows as paid in the month detail.", none: "None",
@@ -133,6 +148,17 @@ export const M = {
     errors: {
       desc: "The description is missing.", line: "That line belongs to another year's plan. Pick one from the transaction's year.", split: "Both parts must add up to the transaction total.",
       splitCat: "Pick the second category.", sameAccount: "Pick a different account for the transfer.", recExists: "You already have that recurring item.", future: "The first date isn't valid.",
+      tagsSoon: "Tags are coming very soon. For now, save without them or watch a word.",
+    },
+    watch: {
+      title: "Spending you watch", note: "It's just a view: your transactions stay in their category and your plan doesn't change.",
+      line: "{month} this month · {year} this year", times: "{n} times this year", timesOne: "Once this year",
+      add: "Watch a spend", addTitle: "Watch a spend", cancel: "Cancel", save: "Watch",
+      name: "Name", namePh: "Coffees", word: "Word in the description", wordPh: "McDonald's, coffee…", tag: "Or a tag you add yourself", tagPh: "#icecream",
+      help: "Type a word, a tag or both. Accents and capitals don't matter.",
+      need: "Type a word or a tag.", max: "You can watch up to {max} spends. Remove one to add another.",
+      added: "Done, you're now watching \"{name}\".", remove: "Stop watching {name}", removed: "You're no longer watching \"{name}\".",
+      empty: "Want to know how much goes on coffee or eating out? Watch a spend and see it here.",
     },
   },
 } satisfies Messages<unknown>;

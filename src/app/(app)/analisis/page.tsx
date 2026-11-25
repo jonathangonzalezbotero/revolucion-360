@@ -42,7 +42,7 @@ export default async function AnalisisPage({ searchParams }: { searchParams: Sea
   const month = Number.isInteger(askedMonth) && askedMonth >= 1 && askedMonth <= 12 ? askedMonth : null;
 
   const all = (await loadTx(s, `${year}-01-01`, `${year}-12-31`)).filter(counts);
-  const txs: TxA[] = all.map((t) => ({ date: t.date, amountCents: t.amountCents, description: t.description, rawDescription: t.rawDescription, categoryId: t.categoryId, planLineId: t.planLineId }));
+  const txs: TxA[] = all.map((t) => ({ date: t.date, amountCents: t.amountCents, description: t.description, rawDescription: t.rawDescription, categoryId: t.categoryId, planLineId: t.planLineId, tags: t.tags }));
   const period = inMonth(txs, month);
   const periodName = month ? `${monthName(month, s.locale).toLowerCase()} ${year}` : String(year);
   const eyebrow = month ? fill(m.eyebrowMonth, { month: monthName(month, s.locale).toLowerCase(), year }) : fill(m.eyebrowYear, { year });
@@ -67,9 +67,10 @@ export default async function AnalisisPage({ searchParams }: { searchParams: Sea
   const comercios = s.config.flags.comercios;
   const [plan, watchedRows] = await Promise.all([
     loadPlan(s, year),
-    comercios ? s.supabase.from("watched_merchants").select("id, name, pattern, limit_cents").order("created_at") : Promise.resolve({ data: [], error: null }),
+    comercios ? s.supabase.from("watched_merchants").select("*").order("created_at") : Promise.resolve({ data: [], error: null }),
   ]);
-  const watched = must(watchedRows) as { id: string; name: string; pattern: string; limit_cents: number | null }[];
+  // select("*"): `tag` es de la migración 20261125000042 (sin aplicar); mientras no exista, no llega y la vigilancia es solo por palabra.
+  const watched = must(watchedRows) as { id: string; name: string; pattern: string; limit_cents: number | null; tag?: string | null }[];
   const cat = new Map(plan.categories.map((c) => [c.id, c]));
   const catName = new Map(plan.categories.map((c) => [c.id, c.name]));
   const lineName = new Map(plan.lines.map((l) => [l.id, l.name]));
@@ -239,7 +240,7 @@ export default async function AnalisisPage({ searchParams }: { searchParams: Sea
               )}
             </div>
             <Watched
-              items={watched.map((w) => ({ id: w.id, name: w.name, pattern: w.pattern, limitCents: w.limit_cents, stats: watchedStats(txs, w.pattern, statMonth) }))}
+              items={watched.map((w) => ({ id: w.id, name: w.name, pattern: w.pattern, limitCents: w.limit_cents, stats: watchedStats(txs, { pattern: w.pattern, tag: w.tag ?? null }, statMonth) }))}
               max={MAX_WATCHED} monthLabel={monthLabel} yearLabel={fill(m.inYear, { year })} canEdit={s.canEdit} fmt={s.fmt} m={m}
             />
           </div>

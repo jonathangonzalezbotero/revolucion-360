@@ -5,7 +5,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   adminStatus, ChallengeInput, challengeProblem, dayNumber, dotsFor, goalShown, isDaily, joinable, lastDay, normalizeChallenge,
-  pctOf, phaseOf, POINT_CAP, rangeLabel, targetOf, unitsOf, wildcardsLeft,
+  pctOf, phaseOf, POINT_CAP, rangeLabel, retoSignal, targetOf, unitsOf, wildcardsLeft,
 } from "@/app/(app)/retos/lib";
 import { CHALLENGE_IDLE_DAYS, challengeIdleRef, matchesTrigger } from "@/lib/crm/flow";
 import { TriggerSchema, TRIGGER_KINDS } from "@/lib/crm/schema";
@@ -244,5 +244,45 @@ describe("migración 037: seguridad de los retos (revisión del 25 nov 2026)", (
     for (const n of ["challenge_set_board(uuid, boolean)", "challenge_list()", "challenge_join(uuid)", "challenge_checkin(uuid, boolean)", "challenge_count(text, text)"]) {
       expect(sql).toContain(`grant execute on function public.${n} to authenticated;`);
     }
+  });
+});
+
+describe("señal del menú (Retos amarillo y punto en Más)", () => {
+  const challenges = new Map([
+    ["mano", { measure: "checkin" as const, days: 30 }],
+    ["auto", { measure: "app" as const, days: 7 }],
+  ]);
+  const base = { today: "2026-11-25", canEdit: true, challenges };
+
+  it("sin intentos: nada", () => {
+    expect(retoSignal({ ...base, members: [] })).toEqual({ active: 0, pending: false });
+  });
+
+  it("reto a mano sin marcar hoy: activo y falta marcar", () => {
+    expect(retoSignal({ ...base, members: [{ challengeId: "mano", startOn: "2026-11-20", markedToday: false }] })).toEqual({ active: 1, pending: true });
+  });
+
+  it("ya marcó hoy (sí o no): activo, sin punto", () => {
+    expect(retoSignal({ ...base, members: [{ challengeId: "mano", startOn: "2026-11-20", markedToday: true }] })).toEqual({ active: 1, pending: false });
+  });
+
+  it("lo cuenta la app: activo, nunca pide marcar", () => {
+    expect(retoSignal({ ...base, members: [{ challengeId: "auto", startOn: "2026-11-24", markedToday: false }] })).toEqual({ active: 1, pending: false });
+  });
+
+  it("aún no empieza: activo, sin punto", () => {
+    expect(retoSignal({ ...base, members: [{ challengeId: "mano", startOn: "2026-12-01", markedToday: false }] })).toEqual({ active: 1, pending: false });
+  });
+
+  it("con los días vencidos (status sigue 'active' en la base): no cuenta", () => {
+    expect(retoSignal({ ...base, members: [{ challengeId: "mano", startOn: "2026-10-01", markedToday: false }] })).toEqual({ active: 0, pending: false });
+  });
+
+  it("reto que ya no aparece en la lista: no cuenta", () => {
+    expect(retoSignal({ ...base, members: [{ challengeId: "otro", startOn: "2026-11-20", markedToday: false }] })).toEqual({ active: 0, pending: false });
+  });
+
+  it("solo lectura: activo, pero sin punto (no puede marcar)", () => {
+    expect(retoSignal({ ...base, canEdit: false, members: [{ challengeId: "mano", startOn: "2026-11-20", markedToday: false }] })).toEqual({ active: 1, pending: false });
   });
 });

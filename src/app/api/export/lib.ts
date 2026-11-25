@@ -7,7 +7,7 @@
  */
 export const EXPORT_TABLES = [
   ["categories", ["sort", "id"]], ["accounts", ["sort", "id"]],
-  ["plan_years", ["year"]], ["plan_lines", ["year", "id"]], ["plan_cells", ["line_id", "month"]], ["plan_marks", ["line_id", "month"]],
+  ["plan_years", ["year"]], ["plan_lines", ["year", "id"]], ["plan_cells", ["line_id", "month"]], ["plan_marks", ["line_id", "month"]], ["plan_closes", ["line_id", "month"]],
   ["transactions", ["date", "id"]], ["transaction_history", ["at", "id"]], ["category_rules", ["id"]], ["month_totals", ["year", "month", "category_id"]],
   ["recurring", ["id"]], ["csv_imports", ["created_at", "id"]], ["csv_formats", ["id"]],
   ["goals", ["created_at", "id"]], ["goal_entries", ["date", "id"]], ["goal_leftovers", ["year", "month"]], ["user_challenges", ["challenge"]], ["challenge_members", ["joined_at", "id"]], ["challenge_marks", ["day", "member_id", "key"]], ["debts", ["created_at", "id"]], ["debt_payments", ["date", "id"]],
@@ -22,11 +22,11 @@ export type ExportTable = (typeof EXPORT_TABLES)[number][0];
 
 /**
  * Tablas de migraciones que pueden no estar aplicadas todavía (20261125000030: avisos del hábito; 20261125000031: metas
- * amables; 20261125000032: inversiones por activo).
+ * amables; 20261125000032: inversiones por activo; 20261125000042: "Dar por cerrado").
  * Si la base aún no las tiene, el archivo sale sin ellas en vez de fallar entero (regla 9: siempre se puede exportar).
  * Cualquier otro error sí detiene la exportación.
  */
-export const OPTIONAL_TABLES: readonly string[] = ["assets", "asset_operations", "goal_leftovers", "user_challenges", "habit_sends", "challenge_members", "challenge_marks"];
+export const OPTIONAL_TABLES: readonly string[] = ["plan_closes", "assets", "asset_operations", "goal_leftovers", "user_challenges", "habit_sends", "challenge_members", "challenge_marks"];
 /** Columnas numeric con decimales (cantidades, precios por unidad): como texto, para no perder precisión en JSON. */
 export const SELECT_OVERRIDE: Partial<Record<string, string>> = {
   assets: "id, user_id, name, kind, platform, by_units, unit_price_cents::text, balance_cents, price_date, price_at, plan_line_id, recurring_from, legacy_investment_id, archived_at, created_at",

@@ -79,6 +79,30 @@ export function dotsFor(o: { daily: boolean; start: ISODate; days: number; today
   });
 }
 
+/**
+ * Señal del menú (Retos amarillo en escritorio, punto en "Más" en el celular). Un intento con `status = 'active'` puede
+ * tener ya los días vencidos (la base solo lo pasa a 'ended' al volver a entrar), así que "activo" = dentro de sus días o
+ * aún por empezar. `pending` = falta el check-in de hoy en un reto que se marca a mano, ya empezado; solo si puede escribir.
+ * Los retos que cuenta la app ("abrir la app", gastos…) nunca piden marcar.
+ */
+export type RetoSignal = { active: number; pending: boolean };
+export function retoSignal(o: {
+  today: ISODate; canEdit: boolean;
+  members: { challengeId: string; startOn: ISODate; markedToday: boolean }[];
+  challenges: ReadonlyMap<string, { measure: Measure; days: number }>;
+}): RetoSignal {
+  let active = 0, pending = false;
+  for (const x of o.members) {
+    const c = o.challenges.get(x.challengeId);
+    if (!c) continue;
+    const phase = phaseOf(o.today, x.startOn, c.days);
+    if (phase === "ended") continue;
+    active++;
+    if (o.canEdit && c.measure === "checkin" && phase === "running" && !x.markedToday) pending = true;
+  }
+  return { active, pending };
+}
+
 /** Estado del reto en el panel. */
 export type AdminStatus = "draft" | "open" | "scheduled" | "active" | "ended";
 export function adminStatus(c: { status: "draft" | "published"; startsOn: ISODate | null; days: number }, today: ISODate): AdminStatus {

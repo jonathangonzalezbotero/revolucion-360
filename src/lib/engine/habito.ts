@@ -213,6 +213,38 @@ export function dailyAllowance(o: { budgetCents: Cents; spentCents: Cents; today
   return { state: "ok", perDayCents: Math.floor(remaining / daysLeft), remainingCents: remaining, daysLeft, budgetCents: o.budgetCents, spentCents: spent };
 }
 
+// ───────── "Disponible del mes" (Inicio, desde el 25 nov 2026) ─────────
+export type MonthAvailable =
+  /** No hay nada planeado ni gastado en el día a día: no hay cifra que mostrar. */
+  | { state: "none" }
+  /** Te quedan `remainingCents` (0 o más) para el día a día hasta fin de mes. */
+  | { state: "ok"; remainingCents: Cents; daysLeft: number; budgetCents: Cents; spentCents: Cents }
+  /** Ya se usó más de lo planeado: lo que te sobra del mes baja en `overCents`. La cifra nunca se muestra negativa. */
+  | { state: "over"; overCents: Cents; daysLeft: number; budgetCents: Cents; spentCents: Cents; netBeforeCents: Cents; netAfterCents: Cents };
+
+/**
+ * Disponible del mes = planeado para el día a día este mes − gastado en el día a día este mes (Jonathan, 25 nov 2026:
+ * reemplaza "Hoy puedes gastar" en Inicio). Misma regla que `dailyAllowance`, sin repartir por días.
+ * Si te pasaste, no hay cifra negativa: `over` dice cuánto y cuánto baja lo que te sobra del mes (`planNetCents`).
+ * Una devolución que deja el gasto en negativo suma a lo que queda (igual que en `dailyAllowance`).
+ */
+export function monthAvailable(o: { budgetCents: Cents; spentCents: Cents; today: ISODate; planNetCents: Cents }): MonthAvailable {
+  const daysLeft = daysLeftInMonth(o.today);
+  const spent = o.spentCents;
+  if (o.budgetCents <= 0 && spent <= 0) return { state: "none" };
+  const remaining = o.budgetCents - spent;
+  if (remaining < 0) {
+    return { state: "over", overCents: -remaining, daysLeft, budgetCents: o.budgetCents, spentCents: spent, netBeforeCents: o.planNetCents, netAfterCents: o.planNetCents + remaining };
+  }
+  return { state: "ok", remainingCents: remaining, daysLeft, budgetCents: o.budgetCents, spentCents: spent };
+}
+
+/**
+ * Si te pasaste: ¿se puede decir "lo que te sobra baja de $A a $B" sin mostrar una cifra negativa? Solo si el plan del mes
+ * sobraba (A > 0) y aún sobra o queda en cero (B ≥ 0). Si no, el texto dice solo cuánto se pasó (nunca "-$35").
+ */
+export const overShowsLeftover = (a: { netBeforeCents: Cents; netAfterCents: Cents }): boolean => a.netBeforeCents > 0 && a.netAfterCents >= 0;
+
 // ───────── Repaso semanal ─────────
 /** La semana que repasa (lunes a domingo): el domingo, la que termina hoy; los demás días, la semana pasada completa. */
 export function repasoWeek(today: ISODate): { from: ISODate; to: ISODate; current: boolean } {

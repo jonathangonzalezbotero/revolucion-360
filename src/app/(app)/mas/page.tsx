@@ -8,22 +8,24 @@ import { closureTarget } from "@/server/closure";
 import type { MenuKey } from "@/server/config";
 import { requireUser } from "@/server/session";
 import { signOut } from "@/app/(auth)/actions";
+import { loadRetoSignal } from "../retos/server";
 import { M as PM } from "../perfil/messages";
 import { M } from "./messages";
 import css from "./mas.module.css";
 
 export const metadata: Metadata = { title: "Más" };
 
-type Row = { key: string; href: string; icon: IconName; label: string; sub: string; soon?: boolean };
+type Row = { key: string; href: string; icon: IconName; label: string; sub: string; soon?: boolean; yellow?: boolean; dot?: string };
 
 /** Menú "Más" del celular: todo lo que no cabe en la barra inferior. En escritorio se ve como una lista simple. */
 export default async function MasPage() {
   const s = await requireUser();
   const m = M[s.locale];
   const nav = s.t.nav;
-  const [target, unreadRes] = await Promise.all([
+  const [target, unreadRes, retos] = await Promise.all([
     closureTarget(s),
     s.supabase.from("notifications").select("id", { count: "exact", head: true }).is("read_at", null),
+    loadRetoSignal(s), // la misma consulta que el menú (cache): no se repite
   ]);
   if (unreadRes.error) throw new Error(`db: ${unreadRes.error.message}`);
   const unread = unreadRes.count ?? 0;
@@ -33,7 +35,14 @@ export default async function MasPage() {
   const section = (key: MenuKey, href: string, icon: IconName, sub: string): Row[] =>
     menu[key] === "off" ? [] : [{ key, href, icon, label: nav[key], sub, soon: menu[key] === "soon" }];
 
+  // Retos va primero (desde el 25 nov 2026). Sin interruptor propio: sigue al de Metas, como en el menú de escritorio.
+  const retosRow: Row[] = menu.metas === "off" ? [] : [{
+    key: "retos", href: "/retos", icon: "flag", label: nav.retos, soon: menu.metas === "soon",
+    sub: retos.pending ? m.sub.retosPending : retos.active === 1 ? m.sub.retosOne : retos.active > 1 ? fill(m.sub.retosMany, { n: retos.active }) : m.sub.retos,
+    yellow: retos.active > 0, dot: retos.pending ? nav.retosPending : undefined,
+  }];
   const money: Row[] = [
+    ...retosRow,
     // Plan y Movimientos van en la barra inferior; solo aparecen aquí si están "Pronto" (la barra no los distingue).
     ...(menu.plan === "soon" ? section("plan", "/plan", "plan", m.sub.plan) : []),
     ...(menu.movimientos === "soon" ? section("movimientos", "/movimientos", "mov", m.sub.movimientos) : []),
@@ -87,7 +96,11 @@ export default async function MasPage() {
               return r.soon ? (
                 <span key={r.key} aria-disabled="true" className={`${css.row} ${css.soon}`}>{inner}<span className="pill">{nav.soon}</span></span>
               ) : (
-                <Link key={r.key} href={r.href} className={css.row}>{inner}<span aria-hidden="true" className={css.chev}>›</span></Link>
+                <Link key={r.key} href={r.href} className={css.row} data-yellow={r.yellow || undefined}>
+                  {inner}
+                  {r.dot ? <span aria-hidden="true" className={css.dot} /> : null}
+                  <span aria-hidden="true" className={css.chev}>›</span>
+                </Link>
               );
             })}
             {g.title === m.groupAccount ? (

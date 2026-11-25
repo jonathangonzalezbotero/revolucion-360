@@ -6,6 +6,12 @@ export const M = {
     tabsLabel: "Secciones del perfil",
     tabs: { logros: "Mis logros", datos: "Datos personales", region: "Región y moneda", nombres: "Nombres", notificaciones: "Notificaciones", seguridad: "Seguridad", privacidad: "Privacidad" },
     saved: "Cambios guardados.", save: "Guardar cambios", saving: "Guardando…",
+    mode: {
+      title: "Cómo llevas tu plata", text: "Elige la manera que te acomode. Puedes cambiarla cuando quieras y no se pierde nada.",
+      mensual: { t: "Mensual", d: "Marcas tus pagos fijos y el cierre supone que el gasto del día a día salió como lo planeaste, salvo lo que registres." },
+      diario: { t: "Día a día", d: "Registras cada gasto en Movimientos (a mano o con CSV) y el cierre compara con lo que de verdad registraste." },
+      note: "Movimientos sigue en tu menú en los dos modos.", saved: "Listo, ahora llevas tu plata {mode}.", savedMensual: "mes a mes", savedDiario: "día a día",
+    },
     // Logros
     level: { label: "Tu nivel", of: "DE {n}", aria: "Nivel {n} de {total}, {pct}% hacia el nivel {next}", ariaMax: "Nivel {n} de {total}, el más alto", points: "puntos", toNextA: "Te faltan", toNextB: "para", max: "Llegaste al nivel más alto." },
     streak: {
@@ -78,11 +84,11 @@ export const M = {
     // Avisos del hábito (prefs.habit): van en la misma lista que los demás, en el orden del mockup.
     habit: {
       items: {
-        daily: { t: "Hoy puedes gastar", d: "Cada mañana, cuánto puedes gastar hoy en lo del día a día" },
+        daily: { t: "Disponible del mes", d: "Cada mañana, cuánto te queda este mes para el día a día" },
         weekly: { t: "Repaso semanal", d: "El domingo: lo que lograste y lo que se paga esta semana" },
         goal: { t: "Metas y retos", d: "Cuando llegas a un hito de una meta o avanzas en un reto" },
       },
-      note: "Hoy puedes gastar, Repaso semanal y Metas y retos llegan en la app y al celular: máximo uno al día y nunca de noche (de 21:00 a 8:00, en tu hora). \"Mañana se paga…\" sale con Pagos por vencer y \"5 minutos para cerrar el mes\" con el recordatorio de cierre (si elegiste los últimos días del mes). Con \"Solo correo\" no te llega ninguno de estos.",
+      note: "Disponible del mes, Repaso semanal y Metas y retos llegan en la app y al celular: máximo uno al día y nunca de noche (de 21:00 a 8:00, en tu hora). \"Mañana se paga…\" sale con Pagos por vencer y \"5 minutos para cerrar el mes\" con el recordatorio de cierre (si elegiste los últimos días del mes). Con \"Solo correo\" no te llega ninguno de estos.",
     },
     // Seguridad
     password: "Contraseña", passwordSub: "Usa una frase larga que no uses en otro lado.", passwordChanged: "Cambiada por última vez el {date}", passwordNever: "Cambiada por última vez: Nunca", changePassword: "Cambiar contraseña", newPassword: "Contraseña nueva",
@@ -115,6 +121,12 @@ export const M = {
     tabsLabel: "Profile sections",
     tabs: { logros: "My badges", datos: "Personal details", region: "Region and currency", nombres: "Names", notificaciones: "Notifications", seguridad: "Security", privacidad: "Privacy" },
     saved: "Changes saved.", save: "Save changes", saving: "Saving…",
+    mode: {
+      title: "How you track your money", text: "Pick the way that suits you. You can change it any time and nothing is lost.",
+      mensual: { t: "Monthly", d: "You tick off your fixed payments and the month close assumes your day-to-day spending went as planned, except what you record." },
+      diario: { t: "Day to day", d: "You record every spend in Transactions (by hand or with a CSV) and the month close compares against what you actually recorded." },
+      note: "Transactions stays in your menu in both modes.", saved: "Done, you now track your money {mode}.", savedMensual: "month by month", savedDiario: "day to day",
+    },
     level: { label: "Your level", of: "OF {n}", aria: "Level {n} of {total}, {pct}% toward level {next}", ariaMax: "Level {n} of {total}, the highest", points: "points", toNextA: "You need", toNextB: "more to reach", max: "You reached the highest level." },
     streak: {
       title: "{n}-week streak", titleOne: "1-week streak", titleZero: "No streak yet",
@@ -180,11 +192,11 @@ export const M = {
     },
     habit: {
       items: {
-        daily: { t: "You can spend today", d: "Each morning, how much you can spend today on day-to-day things" },
+        daily: { t: "Available this month", d: "Each morning, how much you have left this month for day-to-day things" },
         weekly: { t: "Weekly review", d: "On Sunday: what you achieved and what's due this week" },
         goal: { t: "Goals and challenges", d: "When you hit a goal milestone or move forward in a challenge" },
       },
-      note: "You can spend today, Weekly review and Goals and challenges arrive in the app and on your phone: at most one a day and never at night (9 pm to 8 am, your time). \"Due tomorrow…\" comes with Payments due, and \"5 minutes to close the month\" with the month close reminder (if you chose the last days of the month). With \"Email only\" you won't get any of these.",
+      note: "Available this month, Weekly review and Goals and challenges arrive in the app and on your phone: at most one a day and never at night (9 pm to 8 am, your time). \"Due tomorrow…\" comes with Payments due, and \"5 minutes to close the month\" with the month close reminder (if you chose the last days of the month). With \"Email only\" you won't get any of these.",
     },
     password: "Password", passwordSub: "Use a long phrase you don't use anywhere else.", passwordChanged: "Last changed on {date}", passwordNever: "Last changed: Never", changePassword: "Change password", newPassword: "New password",
     show: "Show", hide: "Hide", pwHint: "At least 8 characters. A long phrase is better, e.g. \"my-trip-to-cali-2027\".",

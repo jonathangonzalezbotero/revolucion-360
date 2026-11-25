@@ -1,16 +1,19 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addDays, applyRules, findDuplicate, parseMoney, type ISODate } from "@/lib/engine";
+import { addDays, applyRules, findDuplicate, normalize, parseMoney, type ISODate } from "@/lib/engine";
+import { fill } from "@/i18n";
 import { fail, ok, run } from "@/server/action";
 import { must } from "@/server/data";
 import { award, firstStep, touchWeek } from "@/server/rewards";
 import type { Session } from "@/server/session";
 import { legFor, parseGoalChoice } from "@/lib/engine/metas";
+import { cleanTag, MAX_TAGS, mergeTags, tagsChanged } from "@/lib/engine/registro";
+import { MAX_WATCHED } from "../analisis/lib";
 import { awardGoal, raw, syncGoalLinks, type Crossed } from "../metas/server";
 import { anchorDayOf, nextRecurringDate, rulePattern, signed, splitInTwo, type RecFrequency } from "./lib";
 import { M } from "./messages";
-import { clearMark, lineForDate, lineOfYear, suggestionFor, txBetween } from "./server";
+import { clearMark, insertManualTx, lineForDate, lineOfYear, suggestionFor, txBetween } from "./server";
 import { countChallenge } from "../retos/server";
 
 // Rutas que leen movimientos: Inicio, Plan, Detalle del mes, Cuentas, Cierre, Análisis y Metas.
@@ -201,11 +204,7 @@ export async function addTx(input: unknown) {
       if (dup) return ok({ id: null, duplicate: { description: dup.description, date: dup.date, amountCents: dup.amountCents }, suggestion: null, repeated: false });
     }
 
-    const row = must(await s.supabase.from("transactions").insert({
-      user_id: s.userId, account_id: d.accountId, date: d.date, amount_cents: amountCents, description, category_id: categoryId, plan_line_id: lineId,
-      kind: transfer ? "transfer" : "normal", status: "ok", source: "manual", note: d.note,
-    }).select("id").single());
-    await clearMark(s, lineId, d.date);
+    const row = { id: await insertManualTx(s, { accountId: d.accountId, date: d.date, amountCents, description, categoryId, lineId, kind: transfer ? "transfer" : "normal", note: d.note }) };
 
     if (transfer && d.toAccountId) {
       // la otra punta de la transferencia: entra a la cuenta destino. Ninguna de las dos cuenta como ingreso ni gasto.
@@ -246,6 +245,8 @@ export async function updateTx(input: unknown) {
       id, amount: z.string().max(40), direction: z.enum(["in", "out"]), date, description: text(160), categoryId: optId, accountId: optId, lineId: optId,
       note: text(300), transfer: z.boolean(), rule: z.boolean().catch(false), repeat,
       split: z.object({ categoryId: optId, amount: z.string().max(40) }).nullable().catch(null),
+      // Etiquetas a mano (#café): solo para "Vigilar un gasto". undefined = no se tocaron.
+      tags: z.array(z.string().max(60)).max(MAX_TAGS * 2).optional(),
     }).safeParse(input);
     if (!p.success) return fail(p.error.issues.some((i) => i.path[0] === "date") ? s.t.errors.date : s.t.errors.generic);
     const d = p.data;
@@ -267,6 +268,17 @@ export async function updateTx(input: unknown) {
       const cents = second === null ? null : splitInTwo(amountCents, second);
       if (!cents) return fail(m.errors.split);
       split = { cents, categoryId: d.split.categoryId };
+    }
+
+    // Etiquetas primero: es lo único que puede faltar en la base (migración 20261125000042). Solo se nombran si cambiaron,
+    // así editar un movimiento funciona igual antes de aplicarla.
+    if (d.tags) {
+      const next = mergeTags([], d.tags);
+      const before = (must(await raw(s).from("transactions").select("*").eq("id", d.id).is("deleted_at", null)) as { tags?: string[] | null }[])[0]?.tags ?? [];
+      if (tagsChanged(before, next)) {
+        const r = await raw(s).from("transactions").update({ tags: next }).eq("id", d.id).is("deleted_at", null).select("id");
+        if (r.error) return fail(r.error.code === "42703" || r.error.code === "PGRST204" ? m.errors.tagsSoon : s.t.errors.generic);
+      }
     }
 
     const now = new Date().toISOString();
@@ -302,6 +314,8 @@ export async function updateTx(input: unknown) {
     } else if (kids.length) {
       must(await s.supabase.from("transactions").update({ deleted_at: now }).in("id", kids.map((k) => k.id)).select("id"));
     }
+
+    // (Las partes de un dividido heredan las etiquetas del original al leerlas: `inheritTags`. No se copian.)
 
     // unido a una línea "Pagada · a mano": el movimiento la reemplaza, la marca de ese mes se quita
     await clearMark(s, lineId, d.date);
@@ -415,5 +429,40 @@ export async function setTxGoal(input: unknown) {
       points += await awardGoal(s, "goal_used", goal.id);
     }
     return ok({ role: choice?.role ?? null, name: goal?.name ?? "", crossed }, { points: points || undefined });
+  });
+}
+
+// ───────── Vigilar un gasto ─────────
+// La misma lista que Análisis › Comercios (`watched_merchants`): una palabra y/o una etiqueta (`tag`, migración 20261125000042).
+// Es solo una vista: nada del plan ni del cierre cambia.
+const WatchFields = z.object({ name: text(60), pattern: text(60), tag: text(60) });
+
+export async function addWatch(input: unknown) {
+  return run<{ id: string }>({ feature: "mov", revalidate: ["/movimientos", "/analisis"] }, async (s) => {
+    const m = M[s.locale];
+    const p = WatchFields.safeParse(input);
+    if (!p.success) return fail(s.t.errors.generic);
+    const pattern = normalize(p.data.pattern) ? p.data.pattern : "";
+    const tag = cleanTag(p.data.tag);
+    if (!pattern && !tag) return fail(m.watch.need);
+    const { count, error } = await s.supabase.from("watched_merchants").select("id", { count: "exact", head: true });
+    if (error) throw new Error(`db: ${error.message}`);
+    if ((count ?? 0) >= MAX_WATCHED) return fail(fill(m.watch.max, { max: MAX_WATCHED }));
+    const name = p.data.name || pattern || `#${tag}`;
+    // `tag` solo se nombra si hay etiqueta: una vigilancia por palabra funciona antes de aplicar la migración.
+    const r = await raw(s).from("watched_merchants").insert({ user_id: s.userId, name, pattern, ...(tag ? { tag } : {}) }).select("id").single();
+    if (r.error) return fail(r.error.code === "42703" || r.error.code === "PGRST204" ? m.errors.tagsSoon : s.t.errors.generic);
+    return ok({ id: (r.data as { id: string }).id });
+  });
+}
+
+/** Dejar de vigilar: quita la vigilancia (igual que en Análisis). Los movimientos no cambian. */
+export async function removeWatch(input: unknown) {
+  return run({ feature: "mov", revalidate: ["/movimientos", "/analisis"] }, async (s) => {
+    const p = z.object({ id }).safeParse(input);
+    if (!p.success) return fail(s.t.errors.generic);
+    const rows = must(await s.supabase.from("watched_merchants").delete().eq("id", p.data.id).select("id"));
+    if (rows.length === 0) return fail(s.t.errors.notFound);
+    return ok(true);
   });
 }

@@ -1,8 +1,9 @@
 // Cálculos propios de Análisis (puros, con pruebas en tests/proyeccion-analisis.test.ts).
 // Reciben movimientos que YA cuentan (sin transferencias ni padres divididos: `counts` en data.ts).
 import { cellMap, cellOf, categoryTotals, normalize, parts, type Cents, type ISODate, type PlanCell, type PlanLine } from "@/lib/engine";
+import { matchesText, matchesWatch, type Watch } from "@/lib/engine/registro";
 
-export type TxA = { date: ISODate; amountCents: Cents; description: string; rawDescription?: string; categoryId: string | null; planLineId: string | null };
+export type TxA = { date: ISODate; amountCents: Cents; description: string; rawDescription?: string; categoryId: string | null; planLineId: string | null; tags?: string[] };
 export type Totals = { income: Cents; expense: Cents; net: Cents };
 export const MAX_WATCHED = 5;
 
@@ -87,20 +88,18 @@ export function merchantRanking(txs: TxA[], limit = 5): Merchant[] {
 }
 
 /** ¿El movimiento es de este comercio vigilado? El patrón aparece en la descripción (o en la original del banco). */
-export function matchesPattern(t: Pick<TxA, "description" | "rawDescription">, pattern: string): boolean {
-  const p = normalize(pattern), tight = p.replace(/ /g, "");
-  if (!p) return false;
-  // "McDonald's" → "mcdonald s"; el banco escribe "MCDONALDS 1234": también se compara sin espacios.
-  const hit = (d: string) => { const n = normalize(d); return n.includes(p) || n.replace(/ /g, "").includes(tight); };
-  return hit(t.description) || (!!t.rawDescription && hit(t.rawDescription));
-}
+export const matchesPattern = (t: Pick<TxA, "description" | "rawDescription">, pattern: string): boolean => matchesText(t, pattern);
 
 export type WatchStats = { monthCents: Cents; yearCents: Cents; monthCount: number; yearCount: number };
-/** Cuánto gastaste en un comercio vigilado: en el mes elegido y en el año, y cuántas veces. */
-export function watchedStats(txs: TxA[], pattern: string, month: number): WatchStats {
+/**
+ * Cuánto gastaste en un comercio vigilado: en el mes elegido y en el año, y cuántas veces.
+ * La vigilancia puede ser solo la palabra (como antes) o palabra y/o etiqueta (`watched_merchants.tag`, migración 042).
+ */
+export function watchedStats(txs: TxA[], watch: string | Watch, month: number): WatchStats {
+  const w: Watch = typeof watch === "string" ? { pattern: watch, tag: null } : watch;
   const out: WatchStats = { monthCents: 0, yearCents: 0, monthCount: 0, yearCount: 0 };
   for (const t of txs) {
-    if (t.amountCents >= 0 || !matchesPattern(t, pattern)) continue;
+    if (t.amountCents >= 0 || !matchesWatch(t, w)) continue;
     out.yearCents -= t.amountCents; out.yearCount++;
     if (monthOf(t.date) === month) { out.monthCents -= t.amountCents; out.monthCount++; }
   }

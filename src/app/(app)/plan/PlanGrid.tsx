@@ -9,12 +9,14 @@ import { Modal, useToast } from "@/components/ui/client";
 import type { Category } from "@/server/data";
 import { saveCell, toggleMark } from "./actions";
 import {
-  buildGroups, canToggle, cellStatus, cellText, compactNet, extraPays, isPaid, monthHref, negativeMonths, NORMAL_PAYS, parseCell, patchCell, patchMark, planHref, toPlanCells,
+  buildGroups, canToggle, cellStatus, cellText, isClosedCell, type Abono, type AbonoState, compactNet, extraPays, isPaid, monthHref, negativeMonths, NORMAL_PAYS, parseCell, patchCell, patchMark, planHref, toPlanCells,
   type CellState, type GridGroup, type LineLite, type LinkedState, type LinkOptions, type MarkState, type MonthState, type SavedLine,
 } from "./lib";
 import { AddForm, EditForm, type FormText } from "./LineForms";
+import { AbonoPanel, type AbonoTarget } from "./Abonos";
+import { cellPay, type CellPay } from "@/lib/engine/registro";
 import type { FixedReason } from "@/lib/engine/habito";
-import type { LineStatus } from "@/lib/engine";
+import type { ISODate, LineStatus } from "@/lib/engine";
 import type { PlanText } from "./messages";
 import css from "./plan.module.css";
 
@@ -32,9 +34,16 @@ type Props = {
   linkedCount: Record<string, number>;
   /** Metas, deudas y activos para "Unir a". Se leen de las props: se refrescan al guardar. */
   links: LinkOptions;
+  /** "Dar por cerrado con $X" por línea y mes (tabla `plan_closes`). */
+  closes: MarkState;
+  /** Abonos (movimientos unidos) por línea y mes. Se leen de las props: se refrescan después de cada abono. */
+  abonos: AbonoState;
+  today: ISODate;
+  accounts: { id: string; name: string }[];
 };
 type Commit = (e: React.FocusEvent<HTMLInputElement>) => void;
 type Mark = (lineId: string, name: string, month: number, paid: boolean) => void;
+type OpenAbono = (lineId: string, month: number) => void;
 type Adding = { where: "inline" | "sheet"; cat?: string } | null;
 const NO_TX: (number | null)[] = Array<null>(12).fill(null);
 const NO_MARKS: boolean[] = Array<boolean>(12).fill(false);
@@ -55,6 +64,8 @@ export function PlanGrid(props: Props) {
   const [cells, setCells] = useState(props.cells);
   const [fresh, setFresh] = useState<string[]>([]);
   const [marks, setMarks] = useState(props.marks);
+  const [closes, setCloses] = useState(props.closes);
+  const [abonoAt, setAbonoAt] = useState<AbonoTarget | null>(null);
   const [adding, setAdding] = useState<Adding>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const inlineRef = useRef<HTMLElement>(null);
@@ -91,6 +102,10 @@ export function PlanGrid(props: Props) {
   }, [toast, m]);
   /** Toda línea de gasto puede marcarse pagada desde su celda del mes (aprobado por Jonathan el 25 nov 2026). */
   const markable = useCallback((l: LineLite) => canEdit && l.kind === "expense", [canEdit]);
+  const openAbono = useCallback<OpenAbono>((lineId, month) => setAbonoAt({ lineId, month }), []);
+  // Un abono es un movimiento unido: quita la marca "Pagado · a mano" de ese mes (en el servidor y aquí).
+  const onAbonoAdded = useCallback((lineId: string, month: number) => setMarks((x) => patchMark(x, lineId, month, false)), []);
+  const onClosed = useCallback((lineId: string, month: number, on: boolean) => setCloses((x) => patchMark(x, lineId, month, on)), []);
 
   function onKey(e: React.KeyboardEvent<HTMLTableElement>) {
     const el = e.target;
@@ -146,7 +161,8 @@ export function PlanGrid(props: Props) {
   const editLine = editing ? lines.find((l) => l.id === editing) : undefined;
   const addProps = { year, defaultMonth, categories, links: props.links, fmt, locale, m, t, onCancel: () => setAdding(null), onAdded, onCategory, initialCat: adding?.cat };
   const showPast = canEdit && (year < curYear || (year === curYear && defaultMonth > 1));
-  const rowProps = { states, fresh, canEdit, fmt, locale, m, onCommit: commit, onEdit: openEdit, onMark: mark, markable, linked, marks, onAddIn: addIn, toast };
+  const rowProps = { states, fresh, canEdit, fmt, locale, m, onCommit: commit, onEdit: openEdit, onMark: mark, markable, linked, marks, closes, abonos: props.abonos, onAbono: openAbono, onAddIn: addIn, toast };
+  const abonoLine = abonoAt ? lines.find((l) => l.id === abonoAt.lineId) : undefined;
   const money = (v: number) => formatMoney(v, fmt);
 
   return (
@@ -228,6 +244,16 @@ export function PlanGrid(props: Props) {
         <MobileViews groups={groups} nets={months.map((x) => x.net)} yearNet={annual.net} year={year} curYear={curYear} defaultMonth={defaultMonth} {...rowProps} />
       </div>
 
+      <Modal open={!!abonoLine} onClose={() => setAbonoAt(null)} title={abonoLine && abonoAt ? fill(m.abono.title, { line: abonoLine.name, month: monthName(abonoAt.month, locale) }) : ""} labelClose={t.close}>
+        {abonoLine && abonoAt ? (
+          <AbonoPanel key={`${abonoAt.lineId}:${abonoAt.month}`} line={abonoLine} month={abonoAt.month} year={year}
+            plannedCents={cells[abonoLine.id]?.a[abonoAt.month - 1] ?? 0} linkedCents={linked[abonoLine.id]?.[abonoAt.month - 1] ?? null}
+            abonos={props.abonos[abonoLine.id]?.[abonoAt.month - 1] ?? []} closed={closes[abonoLine.id]?.[abonoAt.month - 1] ?? false}
+            canEdit={canEdit && abonoLine.kind === "expense"} accounts={props.accounts} today={props.today} fmt={fmt} locale={locale} m={m} saving={t.saving}
+            onAdded={onAbonoAdded} onClosed={onClosed} />
+        ) : null}
+      </Modal>
+
       <Modal open={!!editLine} onClose={() => setEditing(null)} title={m.edit.title} labelClose={t.close}>
         {editLine ? (
           <EditForm key={editLine.id} line={editLine} row={cells[editLine.id]} auto={props.auto[editLine.id]} onType={onType} categories={categories} defaultFrom={defaultMonth} locale={locale} m={m} t={t}
@@ -242,6 +268,7 @@ export function PlanGrid(props: Props) {
 type RowsProps = {
   states: MonthState[]; fresh: string[]; canEdit: boolean; fmt: MoneyFormat; locale: Locale; m: PlanText; onCommit: Commit; onEdit: (id: string) => void;
   onMark: Mark; markable: (l: LineLite) => boolean; linked: LinkedState; marks: MarkState; onAddIn: (cat: string) => void; toast: (text: string) => void;
+  closes: MarkState; abonos: AbonoState; onAbono: OpenAbono;
 };
 
 function GroupRows({ g, rowIndex, ...p }: RowsProps & { g: GridGroup; rowIndex: Map<string, number> }) {
@@ -260,7 +287,8 @@ function GroupRows({ g, rowIndex, ...p }: RowsProps & { g: GridGroup; rowIndex: 
       {g.rows.map((r) => (
         <LineRow key={r.line.id} line={r.line} amounts={r.amounts} manual={r.manual} total={r.total} r={rowIndex.get(r.line.id) ?? 0} isNew={p.fresh.includes(r.line.id)}
           states={p.states} canEdit={p.canEdit} fmt={p.fmt} locale={p.locale} m={p.m} onCommit={p.onCommit} onEdit={p.onEdit}
-          tx={p.linked[r.line.id] ?? NO_TX} marked={p.marks[r.line.id] ?? NO_MARKS} markable={p.markable(r.line)} onMark={p.onMark} toast={p.toast} />
+          tx={p.linked[r.line.id] ?? NO_TX} marked={p.marks[r.line.id] ?? NO_MARKS} closed={p.closes[r.line.id] ?? NO_MARKS} counts={countsOf(p.abonos[r.line.id])} onAbono={p.onAbono}
+          markable={p.markable(r.line)} onMark={p.onMark} toast={p.toast} />
       ))}
     </>
   );
@@ -275,15 +303,50 @@ function AddInButton({ name, m, onClick }: { name: string; m: PlanText; onClick:
   );
 }
 
-type CellInfo = { status: LineStatus; toggle: boolean; extra: number | null };
-/** Estado de cada mes de una línea: pagado, parcial, si se puede marcar a mano y si cae un pago de más. */
-function cellInfo(line: LineLite, amounts: number[], manual: boolean[], tx: (number | null)[], marked: boolean[], markable: boolean): CellInfo[] {
+type CellInfo = { status: LineStatus; toggle: boolean; extra: number | null; pay: CellPay; closed: boolean; count: number };
+const NO_COUNTS: number[] = Array<number>(12).fill(0);
+const countsOf = (rows: Abono[][] | undefined): number[] => (rows ? rows.map((r) => r.length) : NO_COUNTS);
+/** Estado de cada mes de una línea: pagado, parcial (cuánto lleva), cerrado, si se puede marcar a mano y si cae un pago de más. */
+function cellInfo(line: LineLite, amounts: number[], manual: boolean[], tx: (number | null)[], marked: boolean[], markable: boolean, closed: boolean[] = NO_MARKS, counts: number[] = NO_COUNTS): CellInfo[] {
   const extra = extraPays(line, { a: amounts, m: manual });
   return amounts.map((v, i) => {
-    const status = cellStatus(v, tx[i], marked[i]);
-    return { status, toggle: markable && canToggle(v, status), extra: extra[i] };
+    const status = cellStatus(v, tx[i], marked[i], closed[i]);
+    return { status, toggle: markable && canToggle(v, status), extra: extra[i], pay: cellPay(v, tx[i]), closed: isClosedCell(v, tx[i], closed[i]), count: counts[i] ?? 0 };
   });
 }
+
+/**
+ * Cuánto va pagado una celda de gasto con abonos: "faltan $600" con una barra (parcial), "Cerrado", "Pagado" o "+$300".
+ * El texto completo ("$1,400 de $2,000 · faltan $600") va en el título y en el lector de pantalla; en el teléfono se ve entero.
+ * Al tocarlo se abren los abonos (lista, quitar, registrar, dar por cerrado).
+ */
+function PayStatus({ line, month, info, m, fmt, locale, onAbono, big }: { line: LineLite; month: number; info: CellInfo; m: PlanText; fmt: MoneyFormat; locale: Locale; onAbono: OpenAbono; big?: boolean }) {
+  const a = m.abono, money = (c: number) => formatMoney(c, fmt), p = info.pay;
+  const full = info.closed ? fill(a.closedWith, { amount: money(p.paidCents) })
+    : info.status === "over" ? fill(a.overBy, { amount: money(p.overCents) })
+    : info.status === "partial" ? `${fill(a.of, { paid: money(p.paidCents), planned: money(p.plannedCents) })} · ${fill(a.missing, { amount: money(p.missingCents) })}`
+    : m.grid.paid;
+  const short = info.closed ? a.closedShort : info.status === "over" ? `+${money(p.overCents)}` : info.status === "partial" ? fill(a.short, { amount: money(p.missingCents) }) : m.grid.paid;
+  const done = info.status !== "partial";
+  return (
+    <button type="button" className={`${css.payBtn} ${big ? css.payBig : ""} ${done ? css.payDone : ""}`} title={full}
+      aria-label={`${full}. ${fill(a.open, { line: line.name, month: monthName(month, locale) })}`} onClick={() => onAbono(line.id, month)}>
+      <span className={css.payTxt}>{done ? <Icon name="tick" size={big ? 13 : 10} /> : null}{big ? full : short}</span>
+      {info.status === "partial" ? <span aria-hidden="true" className={css.payBar}><span style={{ width: `${Math.round(p.pct * 100)}%` }} /></span> : null}
+    </button>
+  );
+}
+/** "+ Abono": registrar un pago parcial (o el pago completo) de una línea de gasto ese mes. */
+function AbonoBtn({ line, month, m, locale, onAbono, big, className = "" }: { line: LineLite; month: number; m: PlanText; locale: Locale; onAbono: OpenAbono; big?: boolean; className?: string }) {
+  return (
+    <button type="button" className={big ? `${css.tap} ${css.tapAct} ${className}` : `${css.markBtn} ${className}`} aria-label={fill(m.abono.addAria, { line: line.name, month: monthName(month, locale) })} title={m.abono.form}
+      onClick={() => onAbono(line.id, month)}>
+      <Icon name="plus" size={big ? 13 : 10} />{big ? m.abono.add : null}
+    </button>
+  );
+}
+/** ¿La celda muestra su avance de abonos? Solo gastos con movimientos unidos ese mes. */
+const showsPay = (line: LineLite, c: CellInfo) => line.kind === "expense" && c.count > 0 && c.status !== "none";
 const cellTone = (st: LineStatus) => (isPaid(st) ? css.paidCell : st === "partial" ? css.partialCell : "");
 
 /** "5 pagos": se explica al pasar el mouse (title) y al tocarlo (aviso), y el lector de pantalla lo lee completo. */
@@ -315,11 +378,11 @@ function PaidControl({ line, month, info, m, locale, onMark, big, className = ""
 }
 
 /** Una fila de 12 celdas. Solo se repinta la fila que cambió (las demás conservan sus arreglos). */
-const LineRow = memo(function LineRow({ line, amounts, manual, total, r, isNew, states, canEdit, fmt, locale, m, onCommit, onEdit, tx, marked, markable, onMark, toast }: Omit<RowsProps, "fresh" | "linked" | "marks" | "markable" | "onAddIn"> & {
-  line: LineLite; amounts: number[]; manual: boolean[]; total: number; r: number; isNew: boolean; tx: (number | null)[]; marked: boolean[]; markable: boolean;
+const LineRow = memo(function LineRow({ line, amounts, manual, total, r, isNew, states, canEdit, fmt, locale, m, onCommit, onEdit, tx, marked, closed, counts, onAbono, markable, onMark, toast }: Omit<RowsProps, "fresh" | "linked" | "marks" | "markable" | "onAddIn" | "closes" | "abonos"> & {
+  line: LineLite; amounts: number[]; manual: boolean[]; total: number; r: number; isNew: boolean; tx: (number | null)[]; marked: boolean[]; markable: boolean; closed: boolean[]; counts: number[];
 }) {
   const tag = isNew ? <span className={css.newTag}>{m.grid.newTag}</span> : null;
-  const info = cellInfo(line, amounts, manual, tx, marked, markable);
+  const info = cellInfo(line, amounts, manual, tx, marked, markable, closed, counts);
   return (
     <tr className={`${css.line} ${isNew ? css.fresh : ""}`}>
       <th scope="row">
@@ -328,8 +391,8 @@ const LineRow = memo(function LineRow({ line, amounts, manual, total, r, isNew, 
           : <>{line.name}{tag}</>}
       </th>
       {amounts.map((v, i) => {
-        const c = info[i], paidish = isPaid(c.status) || c.status === "partial";
-        // Pendiente y marcable: el ✓ aparece al pasar el mouse o al enfocar la celda (no llena la tabla de botones).
+        const c = info[i], paidish = isPaid(c.status) || c.status === "partial", pay = showsPay(line, c);
+        // Pendiente y marcable: el ✓ y "+ Abono" aparecen al pasar el mouse o al enfocar la celda (no llenan la tabla de botones).
         const reveal = c.toggle && c.status !== "paid_manual";
         return (
           <td key={i} className={`${css[states[i]]} ${cellTone(c.status)} ${reveal ? css.markable : ""}`}>
@@ -337,10 +400,16 @@ const LineRow = memo(function LineRow({ line, amounts, manual, total, r, isNew, 
               <input key={v} className={`${css.cell} num`} type="text" inputMode="decimal" autoComplete="off" aria-label={fill(m.grid.cellAria, { line: line.name, month: monthName(i + 1, locale) })}
                 defaultValue={cellText(v)} data-line={line.id} data-month={i + 1} data-r={r} data-v={v} data-m={manual[i] ? 1 : 0} onBlur={onCommit} onFocus={selectAll} />
             ) : <span className={`${css.cell} num`}>{cellText(v) || "—"}</span>}
-            {reveal ? <PaidControl line={line} month={i + 1} info={c} m={m} locale={locale} onMark={onMark} className={css.reveal} /> : null}
+            {reveal ? (
+              <span className={css.reveal}>
+                <PaidControl line={line} month={i + 1} info={c} m={m} locale={locale} onMark={onMark} />
+                <AbonoBtn line={line} month={i + 1} m={m} locale={locale} onAbono={onAbono} />
+              </span>
+            ) : null}
             {(c.toggle && !reveal) || paidish || c.extra ? (
               <div className={css.foot}>
-                {reveal ? null : <PaidControl line={line} month={i + 1} info={c} m={m} locale={locale} onMark={onMark} />}
+                {reveal ? null : pay ? <PayStatus line={line} month={i + 1} info={c} m={m} fmt={fmt} locale={locale} onAbono={onAbono} /> : <PaidControl line={line} month={i + 1} info={c} m={m} locale={locale} onMark={onMark} />}
+                {c.toggle && !reveal ? <AbonoBtn line={line} month={i + 1} m={m} locale={locale} onAbono={onAbono} /> : null}
                 {c.extra ? <ExtraTag line={line} n={c.extra} month={i + 1} m={m} locale={locale} toast={toast} /> : null}
               </div>
             ) : null}
@@ -353,7 +422,7 @@ const LineRow = memo(function LineRow({ line, amounts, manual, total, r, isNew, 
 });
 
 /** Móvil: "Por mes" (todas las líneas de un mes) y "Por línea" (los 12 meses de una línea). */
-function MobileViews({ groups, nets, yearNet, year, curYear, defaultMonth, states, fresh, canEdit, fmt, locale, m, onCommit, onEdit, onMark, markable, linked, marks, onAddIn, toast }: RowsProps & {
+function MobileViews({ groups, nets, yearNet, year, curYear, defaultMonth, states, fresh, canEdit, fmt, locale, m, onCommit, onEdit, onMark, markable, linked, marks, closes, abonos, onAbono, onAddIn, toast }: RowsProps & {
   groups: GridGroup[]; nets: number[]; yearNet: number; year: number; curYear: number; defaultMonth: number;
 }) {
   const [mode, setMode] = useState<"month" | "line">("month");
@@ -364,7 +433,7 @@ function MobileViews({ groups, nets, yearNet, year, curYear, defaultMonth, state
   /** Fila o celda tocada: solo ahí aparece "Marcar pagado" (se queda hasta tocar otra). */
   const [active, setActive] = useState<string | null>(null);
   const row = all.find((r) => r.line.id === lineId) ?? all[0];
-  const infoOf = (r: (typeof all)[number]) => cellInfo(r.line, r.amounts, r.manual, linked[r.line.id] ?? NO_TX, marks[r.line.id] ?? NO_MARKS, markable(r.line));
+  const infoOf = (r: (typeof all)[number]) => cellInfo(r.line, r.amounts, r.manual, linked[r.line.id] ?? NO_TX, marks[r.line.id] ?? NO_MARKS, markable(r.line), closes[r.line.id] ?? NO_MARKS, countsOf(abonos[r.line.id]));
   const field = (id: string, lineKey: string, month: number, v: number, isManual: boolean, extra = "") => canEdit
     ? <input key={v} id={id} className={`${css.mInput} ${extra} num`} type="text" inputMode="decimal" autoComplete="off" defaultValue={cellText(v)} data-line={lineKey} data-month={month} data-v={v} data-m={isManual ? 1 : 0} onBlur={onCommit} onFocus={selectAll} />
     : <span id={id} className={`${css.mInput} ${extra} num`}>{cellText(v) || "—"}</span>;
@@ -414,13 +483,14 @@ function MobileViews({ groups, nets, yearNet, year, curYear, defaultMonth, state
                       <label htmlFor={`m-${r.line.id}`}>{r.line.name}{fresh.includes(r.line.id) ? <> <span className={css.mTag}>{m.mobile.newTag}</span></> : null}</label>
                       {isPaid(c.status) || c.status === "partial" || c.extra ? (
                         <span className={css.mSub}>
-                          {c.toggle ? null : <PaidControl line={r.line} month={sel} info={c} m={m} locale={locale} onMark={onMark} />}
+                          {c.toggle ? null : showsPay(r.line, c) ? <PayStatus line={r.line} month={sel} info={c} m={m} fmt={fmt} locale={locale} onAbono={onAbono} big /> : <PaidControl line={r.line} month={sel} info={c} m={m} locale={locale} onMark={onMark} />}
                           {c.toggle && c.status === "paid_manual" ? <span className={css.paidTag}><Icon name="tick" size={11} />{m.grid.paid}</span> : null}
                           {c.extra ? <ExtraTag line={r.line} n={c.extra} month={sel} m={m} locale={locale} toast={toast} big /> : null}
                         </span>
                       ) : null}
                     </div>
                     {field(`m-${r.line.id}`, r.line.id, sel, r.amounts[sel - 1], r.manual[sel - 1])}
+                    {markable(r.line) && active === `m-${r.line.id}` && c.status !== "none" ? <AbonoBtn line={r.line} month={sel} m={m} locale={locale} onAbono={onAbono} big /> : null}
                     {c.toggle && (c.status === "paid_manual" || active === `m-${r.line.id}`) ? (
                       <button type="button" className={`${css.tap} ${css.tapAct}`} aria-pressed={c.status === "paid_manual"}
                         aria-label={fill(c.status === "paid_manual" ? m.grid.undo : m.grid.mark, { line: r.line.name, month: monthName(sel, locale) })}
@@ -450,7 +520,9 @@ function MobileViews({ groups, nets, yearNet, year, curYear, defaultMonth, state
                 <div key={i} className={`field ${css.byLineCell} ${cellTone(c.status)}`} style={{ gap: 4 }} onFocus={() => setActive(`l-${i}`)} onClick={() => setActive(`l-${i}`)}>
                   <label htmlFor={`l-${i}`}>{monthShort(i + 1, locale)}</label>
                   {field(`l-${i}`, row.line.id, i + 1, v, row.manual[i], states[i] === "past" ? "" : css.future)}
-                  {(c.toggle && (c.status === "paid_manual" || active === `l-${i}`)) || isPaid(c.status) || c.status === "partial" ? <PaidControl line={row.line} month={i + 1} info={c} m={m} locale={locale} onMark={onMark} big /> : null}
+                  {showsPay(row.line, c) ? <PayStatus line={row.line} month={i + 1} info={c} m={m} fmt={fmt} locale={locale} onAbono={onAbono} big />
+                    : (c.toggle && (c.status === "paid_manual" || active === `l-${i}`)) || isPaid(c.status) || c.status === "partial" ? <PaidControl line={row.line} month={i + 1} info={c} m={m} locale={locale} onMark={onMark} big /> : null}
+                  {markable(row.line) && active === `l-${i}` && c.status !== "none" ? <AbonoBtn line={row.line} month={i + 1} m={m} locale={locale} onAbono={onAbono} big /> : null}
                   {c.extra ? <ExtraTag line={row.line} n={c.extra} month={i + 1} m={m} locale={locale} toast={toast} big /> : null}
                 </div>
               );

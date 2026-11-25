@@ -82,6 +82,23 @@ export async function clearMark(s: Session, lineId: string | null, date: ISODate
 }
 
 /**
+ * Registra un movimiento a mano y, si va unido a una línea del plan, quita la marca "Pagado · a mano" de ese mes
+ * (el movimiento la reemplaza). Es el mismo camino para "Registrar" en Movimientos y para "Registrar abono" en el
+ * Plan anual. Quien llama ya revisó la línea con `lineOfYear`. Devuelve el id.
+ */
+export async function insertManualTx(s: Session, t: {
+  accountId: string | null; date: ISODate; amountCents: number; description: string; categoryId: string | null; lineId: string | null;
+  kind: "normal" | "transfer"; note: string;
+}): Promise<string> {
+  const row = must(await s.supabase.from("transactions").insert({
+    user_id: s.userId, account_id: t.accountId, date: t.date, amount_cents: t.amountCents, description: t.description, category_id: t.categoryId, plan_line_id: t.lineId,
+    kind: t.kind, status: "ok", source: "manual", note: t.note,
+  }).select("id").single());
+  await clearMark(s, t.lineId, t.date);
+  return row.id;
+}
+
+/**
  * Genera los recurrentes que ya vencieron (next_date <= hoy) como movimientos `source = 'recurring'` y avanza su fecha.
  * - Primero "reclama" la fecha (update con la fecha anterior como condición): dos pestañas abiertas no lo generan dos veces.
  * - Si ya existe un movimiento parecido (por ejemplo, llegó por CSV), no lo duplica, pero igual avanza la fecha.

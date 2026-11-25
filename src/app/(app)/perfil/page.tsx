@@ -12,6 +12,8 @@ import { Achievements, type BadgeView } from "./Achievements";
 import { NamesForm, PersonalForm, PrefsForm, RegionForm } from "./Forms";
 import { readHabitPrefs } from "@/lib/engine/habito";
 import { SmsPrefsForm } from "./SmsPrefs";
+import { MovModeForm } from "./MovMode";
+import { movMode } from "@/lib/engine/registro";
 import { PAY_FREQUENCIES, readNotifyPrefs, TERM_KEYS, timezoneOptions, visibleTabs, type PayFrequency, type Tab, type TermKey } from "./lib";
 import { M, type PerfilMessages } from "./messages";
 import { Privacy } from "./Privacy";
@@ -56,9 +58,13 @@ export default async function PerfilPage() {
       </div>
     ),
     region: (
-      <RegionForm m={m} timezones={timezoneOptions(tz)}
-        countries={countries.map((c) => ({ code: c.code, name: c.name, currency: c.currency, timezone: c.timezone, payFrequency: c.pay_frequency }))}
-        initial={{ country: s.profile.country, currency: s.profile.currency, timezone: tz, locale: s.locale, payFrequency: (PAY_FREQUENCIES as readonly string[]).includes(s.profile.payFrequency) ? s.profile.payFrequency as PayFrequency : "monthly" }} />
+      <div className="stack" style={{ gap: 16 }}>
+        <RegionForm m={m} timezones={timezoneOptions(tz)}
+          countries={countries.map((c) => ({ code: c.code, name: c.name, currency: c.currency, timezone: c.timezone, payFrequency: c.pay_frequency }))}
+          initial={{ country: s.profile.country, currency: s.profile.currency, timezone: tz, locale: s.locale, payFrequency: (PAY_FREQUENCIES as readonly string[]).includes(s.profile.payFrequency) ? s.profile.payFrequency as PayFrequency : "monthly" }} />
+        {/* Mensual o Día a día: solo con la cuenta activa (sin activar no hay plan ni movimientos que leer) */}
+        {s.plan !== "free" ? <MovModeForm m={m} initial={movMode(s.profile.movLevel)} /> : null}
+      </div>
     ),
     nombres: <NamesForm m={m} countryTerms={countryTerms} terms={s.profile.terms} categories={categories.map((c) => ({ id: c.id, name: c.name, original: c.original_name, isBasic: c.is_basic }))} canEdit={s.canEdit} />,
     notificaciones: (

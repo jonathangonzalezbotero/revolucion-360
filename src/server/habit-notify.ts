@@ -96,7 +96,8 @@ export function renderHabit<K extends NotifyKind>(kind: K, data: HabitData[K], l
     }
     case "daily": {
       const d = data as HabitData["daily"];
-      return { title: fill(t.daily.title, { amount: money(d.perDayCents) }), body: fill(d.lastDay ? t.daily.bodyLast : t.daily.body, { remaining: money(d.remainingCents) }), href: "/inicio" };
+      // "Disponible del mes" (25 nov 2026): el aviso diario dice lo que queda del mes, ya no la cifra por día.
+      return { title: fill(t.daily.title, { remaining: money(d.remainingCents) }), body: d.lastDay ? t.daily.bodyLast : t.daily.body, href: "/inicio" };
     }
     case "weekly": {
       const w = data as HabitData["weekly"];

@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import {
   dailyAllowance, daysLeftInMonth, fixedLineIds, fixedOverrides, fixedReasons, fixedSlots, flexibleBudget, flexibleSpend, isLastDayOfMonth, isQuietHour, isSunday,
-  localClock, mergeHabitPrefs, pickHabit, pickOneThing, readHabitPrefs, repasoWeek, upcomingPayments, wantsHabit,
+  localClock, mergeHabitPrefs, monthAvailable, overShowsLeftover, pickHabit, pickOneThing, readHabitPrefs, repasoWeek, upcomingPayments, wantsHabit,
   type FixedInput, type HabitCategory, type HabitLine, type HabitTx,
 } from "@/lib/engine/habito";
 import { monthAmounts, type PlanCell } from "@/lib/engine";
@@ -181,6 +181,53 @@ describe("un pago fijo que llegó sin unir a su línea no es gasto del día a d�
   it("los pagos ya unidos ocupan su lugar", () => {
     const slots = fixedSlots(lines, cells, 11, fixed, [{ lineId: "arriendo" }, { lineId: "bici" }, { lineId: "bici" }]);
     expect(slots.map((x) => [x.lineId, x.slots])).toEqual([["bici", 2]]);
+  });
+});
+
+describe("disponible del mes (Inicio)", () => {
+  it("planeado − gastado en el día a día: te quedan $252 este mes", () => {
+    const a = monthAvailable({ budgetCents: 43_000, spentCents: 17_800, today: "2026-11-25", planNetCents: 63_200 });
+    expect(a).toEqual({ state: "ok", remainingCents: 25_200, daysLeft: 6, budgetCents: 43_000, spentCents: 17_800 });
+  });
+
+  it("no reparte por días: el primero del mes queda todo lo planeado", () => {
+    expect(monthAvailable({ budgetCents: 10_000, spentCents: 0, today: "2026-11-01", planNetCents: 0 })).toMatchObject({ state: "ok", remainingCents: 10_000, daysLeft: 30 });
+  });
+
+  it("justo en cero: te quedan $0 (no es 'te pasaste')", () => {
+    expect(monthAvailable({ budgetCents: 37_000, spentCents: 37_000, today: "2026-11-25", planNetCents: 0 })).toMatchObject({ state: "ok", remainingCents: 0 });
+  });
+
+  it("si te pasaste: nunca una cifra negativa; dice cuánto y cuánto baja lo que te sobra", () => {
+    const a = monthAvailable({ budgetCents: 37_000, spentCents: 41_500, today: "2026-11-25", planNetCents: 50_000 });
+    expect(a).toEqual({ state: "over", overCents: 4_500, daysLeft: 6, budgetCents: 37_000, spentCents: 41_500, netBeforeCents: 50_000, netAfterCents: 45_500 });
+    expect("remainingCents" in a).toBe(false);
+  });
+
+  it("sin nada planeado ni gastado: no hay cifra", () => {
+    expect(monthAvailable({ budgetCents: 0, spentCents: 0, today: "2026-11-25", planNetCents: 0 })).toEqual({ state: "none" });
+  });
+
+  it("gastó sin haber planeado: todo lo gastado es lo que se pasó", () => {
+    expect(monthAvailable({ budgetCents: 0, spentCents: 2_000, today: "2026-11-25", planNetCents: 10_000 })).toMatchObject({ state: "over", overCents: 2_000, netAfterCents: 8_000 });
+  });
+
+  it("una devolución que deja el gasto en negativo suma a lo que queda", () => {
+    expect(monthAvailable({ budgetCents: 10_000, spentCents: -1_500, today: "2026-11-25", planNetCents: 0 })).toMatchObject({ state: "ok", remainingCents: 11_500 });
+  });
+
+  it("el texto 'baja de $A a $B' solo si ninguna cifra queda negativa", () => {
+    expect(overShowsLeftover({ netBeforeCents: 50_000, netAfterCents: 45_500 })).toBe(true);
+    expect(overShowsLeftover({ netBeforeCents: 4_500, netAfterCents: 0 })).toBe(true);
+    expect(overShowsLeftover({ netBeforeCents: 1_000, netAfterCents: -3_500 })).toBe(false); // sería "baja de $10 a -$35"
+    expect(overShowsLeftover({ netBeforeCents: -2_000, netAfterCents: -6_500 })).toBe(false); // el mes ya faltaba
+    expect(overShowsLeftover({ netBeforeCents: 0, netAfterCents: -100 })).toBe(false);
+  });
+
+  it("coincide con 'hoy puedes gastar' en lo que queda", () => {
+    const o = { budgetCents: 43_000, spentCents: 17_800, today: "2026-11-25", planNetCents: 0 };
+    const d = dailyAllowance(o), m = monthAvailable(o);
+    expect(d.state === "ok" && m.state === "ok" && d.remainingCents === m.remainingCents).toBe(true);
   });
 });
 

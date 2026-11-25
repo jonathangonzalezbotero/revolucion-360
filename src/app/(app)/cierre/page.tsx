@@ -15,6 +15,7 @@ import { assetName, closeAssets, closeData } from "./server";
 import { formatUnitPrice } from "../inversiones/lib";
 import { decFromDb } from "@/lib/engine/inversiones";
 import { leftoverFor, raw } from "../metas/server";
+import { movMode } from "@/lib/engine/registro";
 
 export const metadata: Metadata = { title: "Cierre de mes" };
 
@@ -82,7 +83,8 @@ export default async function CierrePage({ searchParams }: { searchParams: Promi
   const nextIds = new Set(nextPlan.lines.map((l) => l.id));
   const canMove = (l: { id: string; name: string; categoryId: string }) =>
     next.year === period.year ? nextIds.has(l.id) : nextPlan.lines.some((x) => x.name === l.name && x.categoryId === l.categoryId);
-  const pending: CierreProps["pending"] = view.pending.map((l) => ({
+  // En modo Mensual, lo del día a día sin movimientos ya cuenta como gastado según el plan: no queda pendiente.
+  const pending: CierreProps["pending"] = data.pending.map((l) => ({
     lineId: l.line.id, name: l.line.name, status: l.status, plannedCents: l.plannedCents, realCents: l.realCents, missingCents: l.missingCents,
     opts: pendingOptions(l.status, canMove(l.line)),
   }));
@@ -101,7 +103,7 @@ export default async function CierrePage({ searchParams }: { searchParams: Promi
   const since = accounts.reduce((min, a) => (a.balanceDate < min ? a.balanceDate : min), s.today);
   const txs = accounts.length ? (await loadTx(s, since, s.today)).filter((t) => !t.isSplit) : [];
   const balances: CierreProps["balances"] = accounts.map((a) => {
-    const moved = s.profile.movLevel === "detail" || txs.some((t) => t.accountId === a.id && t.date > a.balanceDate);
+    const moved = movMode(s.profile.movLevel) === "diario" || txs.some((t) => t.accountId === a.id && t.date > a.balanceDate);
     return {
       id: a.id, name: a.name, kind: a.kind, card: a.kind === "card", balanceCents: a.balanceCents, shownCents: cardShown(a.kind, a.balanceCents),
       expectedCents: expectedBalance(a, txs), reconcile: moved, dateLabel: formatDate(a.balanceDate, s.locale, "short"),
@@ -118,7 +120,7 @@ export default async function CierrePage({ searchParams }: { searchParams: Promi
     closed: row && !row.reopened_at ? { closedOn: closedSnap?.closedOn ? formatDate(closedSnap.closedOn, s.locale) : null, snapshot: closedSnap } : null,
     reopened: !!row?.reopened_at,
     hasPlan: thisPlan.lines.length > 0,
-    pending, over, review: reviewRes.count ?? 0, unplanned: view.unplanned.length,
+    pending, over, review: reviewRes.count ?? 0, unplanned: view.unplanned.length, assumed: data.assumed, saved: data.saved,
     compare: { plan: data.plan, real, devs: deviations(data.cats) },
     adjust: { year: next.year, month: next.month, income: nextIncome, lines: nextLines },
     balances, investments, list, leftover,

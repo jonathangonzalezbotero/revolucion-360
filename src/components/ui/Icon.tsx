@@ -41,6 +41,7 @@ const PATHS = {
   sprout: <><path d="M12 21v-9" /><path d="M12 12c0-4 3-6 7-6 0 4-3 6-7 6z" /><path d="M12 14c0-3-2.5-5-6-5 0 3 2.5 5 6 5z" /></>,
   chat: <path d="M4 5h16v11H9l-5 4z" />,
   building: <><path d="M4 21V5l8-2v18" /><path d="M12 9h8v12" /><path d="M3 21h18M7.5 8h1M7.5 12h1M7.5 16h1M15.5 13h1M15.5 17h1" /></>,
+  flag: <><path d="M5 21V4" /><path d="M5 4h12l-2.5 4 2.5 4H5" /></>, // Retos (mockup InicioRetoB)
 } as const;
 
 export type IconName = keyof typeof PATHS;

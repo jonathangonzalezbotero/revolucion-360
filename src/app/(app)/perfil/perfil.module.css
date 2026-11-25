@@ -70,3 +70,14 @@ select.input { padding: 0 10px; }
   .codes { grid-template-columns: 1fr 1fr; }
   .textBtn { min-height: 44px; }
 }
+
+/* Cómo llevas tu plata: Mensual o Día a día */
+.modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; border: 0; margin: 0; padding: 0; min-width: 0; }
+.mode { display: flex; gap: 12px; align-items: flex-start; border: 1.5px dashed var(--linea-punteada); border-radius: var(--r-xl); padding: 14px 16px; min-height: 44px; cursor: pointer; background: var(--blanco); }
+.mode:has(input:checked) { border-style: solid; border-color: var(--tinta); background: var(--amarillo-suave); }
+.mode:has(input:focus-visible) { box-shadow: var(--sombra-foco); }
+.mode input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--tinta); flex: none; }
+.mode > span { display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 899px) {
+  .modes { grid-template-columns: 1fr; }
+}

@@ -14,9 +14,15 @@ import { Tour } from "./Tour";
 import { tourSeen, tourStops } from "./tour-lib";
 import type { IconName } from "@/components/ui/Icon";
 import { freeMonths, usdShort } from "@/app/(app)/suscripcion/lib";
+import { loadRetoSignal } from "@/app/(app)/retos/server";
 
-const ITEMS: { key: MenuKey | "inicio"; href: string; icon: IconName; group: 0 | 1 | 2 }[] = [
+/**
+ * Retos (desde el 25 nov 2026) va arriba, junto a Inicio. No tiene interruptor propio en `app_config.menu`: sigue al de
+ * Metas (la página, las acciones y el conteo de retos ya dependen de Metas), así que se ve, sale "Pronto" o se oculta con él.
+ */
+const ITEMS: { key: MenuKey | "inicio" | "retos"; href: string; icon: IconName; group: 0 | 1 | 2 }[] = [
   { key: "inicio", href: "/inicio", icon: "home", group: 0 },
+  { key: "retos", href: "/retos", icon: "flag", group: 0 },
   { key: "plan", href: "/plan", icon: "plan", group: 0 },
   { key: "movimientos", href: "/movimientos", icon: "mov", group: 0 },
   { key: "cuentas", href: "/cuentas", icon: "wallet", group: 0 },
@@ -31,13 +37,15 @@ const ITEMS: { key: MenuKey | "inicio"; href: string; icon: IconName; group: 0 |
 /** Marco de la app: menú lateral en escritorio, barra inferior en móvil. Admin decide qué secciones se ven. */
 export async function AppShell({ s, children }: { s: Session; children: React.ReactNode }) {
   const t = s.t;
-  const [{ data: pts }, { count: unread }, target] = await Promise.all([
+  const [{ data: pts }, { count: unread }, target, retos] = await Promise.all([
     s.supabase.from("point_events").select("points"),
     s.supabase.from("notifications").select("id", { count: "exact", head: true }).is("read_at", null),
     closureTarget(s),
+    loadRetoSignal(s), // retos activos y si falta el check-in de hoy (1 consulta, 2 si tiene retos; nunca lanza)
   ]);
   const points = (pts ?? []).reduce((a, r) => a + r.points, 0);
-  const visible = ITEMS.filter((i) => i.key === "inicio" || s.config.menu[i.key] !== "off");
+  const menuOf = (k: MenuKey | "retos") => s.config.menu[k === "retos" ? "metas" : k];
+  const visible = ITEMS.filter((i) => i.key === "inicio" || menuOf(i.key) !== "off");
   const groups = [t.nav.groupMoney, t.nav.groupNumbers, t.nav.groupLearn];
   const initial = (s.profile.name || s.profile.email).trim().charAt(0).toUpperCase();
   const closeMonth = target ? monthName(target.month, s.locale).toLowerCase() : "";
@@ -62,8 +70,11 @@ export async function AppShell({ s, children }: { s: Session; children: React.Re
                 <span className="eyebrow" style={{ padding: "18px 12px 6px" }}>{groups[g]}</span>
                 {items.map((i) => (
                   <SideLink key={i.key} href={i.href} icon={i.icon} label={t.nav[i.key]} tour={i.key}
-                    soon={i.key !== "inicio" && s.config.menu[i.key] === "soon"} soonLabel={t.nav.soon}
-                    badge={i.key === "academia" && s.config.gamification ? <span className="pill pill-yellow num">{points} {t.nav.pts}</span> : undefined} />
+                    soon={i.key !== "inicio" && menuOf(i.key) === "soon"} soonLabel={t.nav.soon}
+                    yellow={i.key === "retos" && retos.active > 0}
+                    badge={i.key === "academia" && s.config.gamification ? <span className="pill pill-yellow num">{points} {t.nav.pts}</span>
+                      : i.key === "retos" && retos.pending ? <RetoDot label={t.nav.retosPending} />
+                      : i.key === "retos" && retos.active > 0 ? <span className="sr-only">{t.nav.retosActive}</span> : undefined} />
                 ))}
               </div>
             );
@@ -130,10 +141,20 @@ export async function AppShell({ s, children }: { s: Session; children: React.Re
           {s.config.menu.plan !== "off" ? <TabLink href="/plan" icon="plan" label={t.nav.planShort} tour="plan" /> : null}
           {s.config.menu.movimientos !== "off" ? <TabLink href="/movimientos" icon="mov" label={t.nav.movimientos} tour="movimientos" /> : null}
           {s.config.menu.academia === "on" ? <TabLink href="/academia" icon="cap" label={t.nav.academia} /> : null}
-          <TabLink href="/mas" icon="dots" label={t.nav.mas} tour="mas" match={["/cuentas", "/metas", "/proyeccion", "/analisis", "/deudas", "/inversiones", "/cierre", "/diagnostico", "/suscripcion", "/perfil", "/notificaciones", "/ayuda"]} />
+          <TabLink href="/mas" icon="dots" label={t.nav.mas} tour="mas" dot={retos.pending} dotLabel={t.nav.masPending} match={["/retos", "/cuentas", "/metas", "/proyeccion", "/analisis", "/deudas", "/inversiones", "/cierre", "/diagnostico", "/suscripcion", "/perfil", "/notificaciones", "/ayuda"]} />
         </nav>
         {tourOn ? <Tour m={TOUR_M[s.locale]} stops={tourStops(s.config.menu)} autoStart={!tourSeen(s.profile.prefs)} /> : null}
       </div>
     </ToastProvider>
+  );
+}
+
+/** Punto amarillo "Falta marcar hoy" (mockup InicioRetoB): el texto va oculto para el lector de pantalla y en el `title`. */
+function RetoDot({ label }: { label: string }) {
+  return (
+    <span title={label} style={{ display: "flex", alignItems: "center" }}>
+      <span aria-hidden="true" style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--amarillo)", boxShadow: "0 0 0 1.5px var(--amarillo-oscuro)" }} />
+      <span className="sr-only">{label}</span>
+    </span>
   );
 }

@@ -311,7 +311,7 @@ const fromType = (v: LineType): boolean | null => (v === "auto" ? null : v === "
 
 /**
  * "Tipo de gasto" de una línea de gasto. Se guarda al tocarlo (no espera "Guardar cambios"): solo decide si la línea
- * cuenta en "Hoy puedes gastar". En Automático explica cómo la clasifica hoy la regla (`auto`, calculado en el servidor);
+ * cuenta en "Disponible del mes". En Automático explica cómo la clasifica hoy la regla (`auto`, calculado en el servidor);
  * si aún no hay dato (línea recién creada), solo dice que lo decidimos por ti.
  */
 function TypeField({ line, auto, m, onType, onError }: {

@@ -1,10 +1,10 @@
 import "server-only";
 import { cache } from "react";
-import { dailyAllowance, fixedLineIds, fixedOverrides, fixedSlots, flexibleBudget, flexibleSpend, type Allowance, type ByCategory, type FixedInput, type HabitLine, type LinkedTx } from "@/lib/engine/habito";
+import { dailyAllowance, fixedLineIds, monthAvailable, fixedOverrides, fixedSlots, flexibleBudget, flexibleSpend, type Allowance, type ByCategory, type MonthAvailable, type FixedInput, type HabitLine, type LinkedTx } from "@/lib/engine/habito";
 import { fetchAll, loadMonthView, loadPlan, loadTx, monthRange, must, type MonthView, type PlanData } from "@/server/data";
 import type { Session } from "@/server/session";
 
-// "Hoy puedes gastar" y el día a día del mes, con la sesión del usuario (RLS). Lo usan Inicio y el Repaso.
+// "Disponible del mes" (Inicio) y el día a día del mes, con la sesión del usuario (RLS). Lo usan Inicio y el Repaso.
 // Mismas reglas que la tarea de avisos (src/app/api/cron/habito/data.ts): todo sale de src/lib/engine/habito.ts.
 
 export type HabitView = {
@@ -15,11 +15,13 @@ export type HabitView = {
   budget: { totalCents: number; byCategory: ByCategory };
   spent: { totalCents: number; byCategory: ByCategory };
   allowance: Allowance;
+  /** "Disponible del mes" de Inicio: lo que queda para el día a día hasta fin de mes. */
+  available: MonthAvailable;
 };
 
 /**
  * Todo lo que la regla de "fijo / del día a día" necesita para un año del plan, con la elección del usuario (`overrides`).
- * Lo usan "Hoy puedes gastar" (Inicio y Repaso) y el interruptor "Tipo de gasto" de Plan (que muestra la regla sin `overrides`).
+ * Lo usan "Disponible del mes" (Inicio), el Repaso y el interruptor "Tipo de gasto" de Plan (que muestra la regla sin `overrides`).
  */
 export const loadFixedInput = cache(async (s: Session, plan: PlanData): Promise<FixedInput> => {
   const y = plan.year;
@@ -54,6 +56,7 @@ export const loadHabit = cache(async (s: Session): Promise<HabitView> => {
   const slots = fixedSlots(lines, plan.cells, s.month, fixed, linked.filter((t) => t.date.startsWith(thisMonth)));
   const spent = flexibleSpend(monthTx, lines, plan.categories, fixed, slots);
   const allowance = dailyAllowance({ budgetCents: budget.totalCents, spentCents: spent.totalCents, today: s.today, planNetCents: view.plan.net });
+  const available = monthAvailable({ budgetCents: budget.totalCents, spentCents: spent.totalCents, today: s.today, planNetCents: view.plan.net });
   const paid = new Set(view.groups.flatMap((g) => g.lines).filter((l) => l.status === "paid" || l.status === "paid_manual" || l.status === "over").map((l) => `${l.line.id}:${s.month}`));
-  return { plan, view, lines, fixed, paid, budget, spent, allowance };
+  return { plan, view, lines, fixed, paid, budget, spent, allowance, available };
 });

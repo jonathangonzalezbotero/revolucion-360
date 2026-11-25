@@ -4,7 +4,10 @@ import { redirect } from "next/navigation";
 import { fill } from "@/i18n";
 import { Empty, PageHeader } from "@/components/ui/basics";
 import { monthName, monthShort, parts } from "@/lib/engine";
-import { loadAccounts, loadCategories, loadPlan, loadTx, monthRange, must } from "@/server/data";
+import { counts, loadAccounts, loadCategories, loadPlan, loadTx, monthRange, must } from "@/server/data";
+import { inheritTags, watchTotals } from "@/lib/engine/registro";
+import { MAX_WATCHED } from "../analisis/lib";
+import { Watches, type WatchItem } from "./Watches";
 import { requireUser } from "@/server/session";
 import { Detail, type Period } from "./Detail";
 import { buildRows, movHref, STATES, type Filter, type Query, type RecFrequency, type StateFilter } from "./lib";
@@ -135,6 +138,17 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
   }));
   const recLines = linesByYear[String(s.year)] ?? await linesOf(s.year);
 
+  // ───── Vigilar un gasto ─────
+  // Misma lista que Análisis › Comercios. select("*"): `tag` es de la migración 20261125000042 (sin aplicar); si aún no existe, no llega.
+  // "Este mes" y "en el año" son del mes y el año de hoy (en la zona del usuario), sin importar el periodo que se mira abajo.
+  const watchRows = must(await s.supabase.from("watched_merchants").select("*").order("created_at")) as { id: string; name: string; pattern: string; tag?: string | null }[];
+  const yearTx = watchRows.length ? inheritTags(await loadTx(s, `${s.year}-01-01`, `${s.year}-12-31`)).filter(counts) : [];
+  const watches: WatchItem[] = watchRows.map((w) => {
+    const watch = { pattern: w.pattern, tag: w.tag ?? null };
+    const st = watchTotals(yearTx, watch, s.year, s.month);
+    return { id: w.id, name: w.name, pattern: w.pattern, tag: watch.tag, monthCents: st.monthCents, yearCents: st.yearCents, yearCount: st.yearCount };
+  });
+
   return (
     <main className="page">
       <Detail header={{ title: m.title, eyebrow }} months={months} rows={rows} categories={cats} accounts={accs} linesByYear={linesByYear} period={period} years={years}
@@ -145,6 +159,7 @@ export default async function MovimientosPage({ searchParams }: { searchParams: 
           merchantsHref: s.config.menu.analisis === "on" ? "/analisis" : null,
         }}>
         {banners}
+        <Watches items={watches} max={MAX_WATCHED} ctx={ctx} />
       </Detail>
     </main>
   );

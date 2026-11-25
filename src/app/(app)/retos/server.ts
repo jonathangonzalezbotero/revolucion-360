@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fill } from "@/i18n";
 import { formatDate, type ISODate } from "@/lib/engine";
@@ -7,8 +8,8 @@ import { fetchAll, must } from "@/server/data";
 import { award, notify, tryChallengeBadge } from "@/server/rewards";
 import type { Session } from "@/server/session";
 import {
-  dayNumber, dotsFor, goalShown, imageSrc, isDaily, joinable, phaseOf, rangeLabel, wildcardsLeft,
-  type Action, type Audience, type Dot, type Measure,
+  dayNumber, dotsFor, goalShown, imageSrc, isDaily, joinable, phaseOf, rangeLabel, retoSignal, wildcardsLeft,
+  type Action, type Audience, type Dot, type Measure, type RetoSignal,
 } from "./lib";
 import { M, type RetosMessages } from "./messages";
 
@@ -40,6 +41,8 @@ export type ActiveView = {
   dots: Dot[]; dotsLabel: string; daily: boolean;
   mode: "ask" | "yes" | "no" | "auto" | "before";
   startsText: string; prize: string; wildText: string; peopleText: string;
+  /** Comodines que le quedan (0 en los que cuenta la app). */
+  wildLeft: number;
 };
 export type AvailableView = { challengeId: string; title: string; who: string; how: string; img: string; start: string; prize: string };
 export type FinishedView = { memberId: string; title: string; detail: string; points: number };
@@ -70,8 +73,11 @@ const progressText = (m: RetosMessages, c: ChallengeRow, count: number) =>
   fill(c.action === "lesson" ? m.progress.lesson : c.action === "closure" ? m.progress.closure : m.progress.day,
     { n: count, total: goalShown(c.measure, c.action, c.days, c.target) });
 
-/** Todo lo que pinta /retos. `null` si la migración aún no está aplicada. */
-export async function loadRetos(s: Session): Promise<RetosData | null> {
+/**
+ * Todo lo que pinta /retos. `null` si la migración aún no está aplicada.
+ * `board: false` (Inicio) no consulta la tabla del grupo.
+ */
+export async function loadRetos(s: Session, opts: { board?: boolean } = {}): Promise<RetosData | null> {
   const m = M[s.locale];
   const db = raw(s);
   const [chRes, memRes, infoRes] = await Promise.all([
@@ -127,6 +133,7 @@ export async function loadRetos(s: Session): Promise<RetosData | null> {
         prize: prizeText(m, c.points, c.badge_name, s.config.gamification),
         wildText: left > 0 ? (left === 1 ? m.wildOne : fill(m.wildMany, { n: left })) : "",
         peopleText: people > 1 ? fill(c.audience === "group" ? m.peopleGroup : m.people, { n: people }) : "",
+        wildLeft: left,
       });
       continue;
     }
@@ -156,7 +163,7 @@ export async function loadRetos(s: Session): Promise<RetosData | null> {
   let board: BoardView | null = null;
   const onBoard = (x: MemberRow) => (x.status === "active" || x.status === "done") && !!byId.get(x.challenge_id)?.show_board;
   const withBoard = members.find((x) => onBoard(x) && stillForMe.has(x.challenge_id)) ?? members.find((x) => onBoard(x) && x.show_on_board);
-  if (withBoard) {
+  if (withBoard && opts.board !== false) {
     const c = byId.get(withBoard.challenge_id)!;
     const rows = must(await db.rpc("challenge_board", { p_challenge: c.id })) as { name: string; days: number; me: boolean }[];
     board = {
@@ -167,16 +174,35 @@ export async function loadRetos(s: Session): Promise<RetosData | null> {
   return { active, available, finished, board };
 }
 
-/** Las 3 tarjetas de "Retos opcionales" en Metas: primero los tuyos activos, luego los disponibles. */
-export type MetasReto = { challengeId: string; memberId: string | null; title: string; text: string };
-export async function loadMetasRetos(s: Session): Promise<MetasReto[] | null> {
-  const data = await loadRetos(s);
-  if (!data) return null;
-  return [
-    ...data.active.map((a) => ({ challengeId: a.challengeId, memberId: a.memberId, title: a.title, text: a.how })),
-    ...data.available.map((a) => ({ challengeId: a.challengeId, memberId: null, title: a.title, text: a.how })),
-  ].slice(0, 3);
-}
+/**
+ * Señal del menú: cuántos retos activos tiene y si falta el check-in de hoy (`retoSignal` en lib.ts). La piden el menú
+ * (AppShell), Inicio y Más en el mismo pedido: `cache` hace que se consulte una sola vez.
+ * Consultas: 1 si no tiene intentos activos (la gran mayoría); 2 si los tiene (los días y el tipo de cada reto solo salen
+ * de `challenge_list`: la tabla `challenges` no la lee el usuario). Nunca lanza: si la migración no está aplicada o algo
+ * falla, el menú se pinta sin señal. Sin Metas en el menú (Retos va con Metas) no consulta nada.
+ */
+export const loadRetoSignal = cache(async (s: Session): Promise<RetoSignal> => {
+  const none: RetoSignal = { active: 0, pending: false };
+  if (s.config.menu.metas !== "on" || !s.active) return none;
+  try {
+    const db = raw(s);
+    const mem = await db.from("challenge_members").select("id, challenge_id, start_on, challenge_marks(key)")
+      .eq("user_id", s.userId).eq("status", "active").eq("challenge_marks.key", s.today);
+    if (mem.error) { if (!notReady(mem.error)) console.error("[retos] señal del menú", mem.error.code ?? ""); return none; } // sin datos personales
+    const members = (mem.data ?? []) as { challenge_id: string; start_on: ISODate; challenge_marks: { key: string }[] | null }[];
+    if (!members.length) return none;
+    const list = await db.rpc("challenge_list").select("id, measure, days").in("id", [...new Set(members.map((x) => x.challenge_id))]);
+    if (list.error) { if (!notReady(list.error)) console.error("[retos] señal del menú", list.error.code ?? ""); return none; }
+    const challenges = new Map(((list.data ?? []) as { id: string; measure: Measure; days: number }[]).map((c) => [c.id, { measure: c.measure, days: c.days }]));
+    return retoSignal({
+      today: s.today, canEdit: s.canEdit, challenges,
+      members: members.map((x) => ({ challengeId: x.challenge_id, startOn: x.start_on, markedToday: (x.challenge_marks ?? []).length > 0 })),
+    });
+  } catch (e) {
+    console.error("[retos] señal del menú", e instanceof Error ? e.message.slice(0, 60) : "error");
+    return none;
+  }
+});
 
 /** Día de hoy de un intento ("Día 3 de 30") para el aviso del check-in. */
 export const dayOf = (today: ISODate, start: ISODate) => dayNumber(today, start);

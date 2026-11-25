@@ -153,7 +153,7 @@ export function NamesForm({ m, countryTerms, terms, categories, canEdit }: { m: 
 // ───────── Preferencias de notificaciones (se guardan al tocar) ─────────
 /**
  * Una sola lista en el orden del mockup (Perfil › Notificaciones). Cada interruptor guarda donde siempre: los de
- * `prefs.notify` con `savePrefs` y los del hábito (Hoy puedes gastar, Repaso semanal, Metas y retos = `prefs.habit`
+ * `prefs.notify` con `savePrefs` y los del hábito (Disponible del mes, Repaso semanal, Metas y retos = `prefs.habit`
  * daily / weekly / goal) con `saveHabitPrefs`. "Logros" no está en el mockup: se conserva porque ya existía.
  */
 type PrefRow = { from: "notify"; k: NotifyKey } | { from: "habit"; k: HabitPrefKey };

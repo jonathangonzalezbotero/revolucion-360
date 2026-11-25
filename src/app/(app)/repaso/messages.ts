@@ -39,7 +39,7 @@ export const M = {
     habitText: "Eliges cuáles recibes. Máximo uno al día, nunca de noche, y siempre en tono amable.",
     habitOn: "Activado", habitOff: "Apagado", habitChoose: "Elegir mis avisos ›",
     habit: {
-      daily: { t: "Hoy puedes gastar", d: "Lo que te queda para el día a día, repartido en los días del mes.", when: "Diario · 9:00" },
+      daily: { t: "Disponible del mes", d: "Lo que te queda este mes para el día a día.", when: "Diario · 9:00" },
       weekly: { t: "Tu repaso de la semana está listo", d: "Cómo te fue y lo que viene, en 2 minutos.", when: "Domingo · 18:00" },
       goal: { t: "Hitos de tus metas", d: "Al llegar al 25, 50, 75 y 100% de una meta.", when: "Al pasar un hito" },
       due: { t: "Mañana se paga…", d: "Los pagos fijos de tu plan, un día antes.", when: "Un día antes" },
@@ -85,7 +85,7 @@ export const M = {
     habitText: "You choose which ones you get. At most one a day, never at night, and always friendly.",
     habitOn: "On", habitOff: "Off", habitChoose: "Choose my reminders ›",
     habit: {
-      daily: { t: "You can spend today", d: "What you have left for day-to-day spending, spread over the days of the month.", when: "Daily · 9:00" },
+      daily: { t: "Left this month", d: "What you have left this month for day-to-day spending.", when: "Daily · 9:00" },
       weekly: { t: "Your weekly review is ready", d: "How it went and what's coming, in 2 minutes.", when: "Sunday · 18:00" },
       goal: { t: "Goal milestones", d: "When a goal reaches 25, 50, 75 and 100%.", when: "On each milestone" },
       due: { t: "Due tomorrow…", d: "Your plan's fixed payments, one day before.", when: "One day before" },

@@ -11,3 +11,8 @@ a.row:hover, button.row:hover { background: var(--papel-3); }
 .soon .label { font-weight: 500; }
 .sub { font-size: 12px; color: var(--gris); }
 .chev { font-size: 18px; color: var(--oscuro-texto-3); }
+/* Retos con un reto activo: fondo amarillo suave (el texto sigue en tinta). Punto: falta marcar hoy (el texto ya va en el subtítulo). */
+.row[data-yellow] { background: var(--amarillo-suave); }
+a.row[data-yellow]:hover { background: var(--amarillo-pastel); }
+.row[data-yellow] .icon { background: var(--amarillo-pastel); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--amarillo); box-shadow: 0 0 0 1.5px var(--amarillo-oscuro); flex: none; }

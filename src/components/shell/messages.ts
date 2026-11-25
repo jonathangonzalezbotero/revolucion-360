@@ -9,7 +9,7 @@ export const TOUR_M = {
     done: "Listo",
     skip: "Saltar",
     stops: {
-      inicio: "Aquí ves cuánto te sobra este mes y cuánto puedes gastar hoy.",
+      inicio: "Aquí ves cuánto te sobra este mes y cuánto te queda para el día a día.",
       plan: "Tu año completo. Marca aquí lo que ya pagaste. Llenar los meses que pasaron es opcional.",
       movimientos: "Anota tus gastos del día a día con + Gasto, o importa el archivo de tu banco.",
       metas: "Agrega tus deudas y tus metas: así el plan te dice cuánto apartar.",
@@ -23,7 +23,7 @@ export const TOUR_M = {
     done: "Done",
     skip: "Skip",
     stops: {
-      inicio: "Here you see how much you have left this month and how much you can spend today.",
+      inicio: "Here you see how much you have left this month and what's left for day-to-day spending.",
       plan: "Your whole year. Tick off what you've already paid here. Filling in past months is optional.",
       movimientos: "Log your day-to-day spending with + Expense, or import your bank's file.",
       metas: "Add your debts and your goals: that way the plan tells you how much to set aside.",

@@ -8,7 +8,8 @@ import { award } from "@/server/rewards";
 import { M } from "./messages";
 import { countChallenge, finishRewards, OPEN_APP_COOKIE, openAppStamp, raw } from "./server";
 
-const PATHS = ["/retos", "/metas"];
+// Inicio pinta "Reto de hoy" y el menú la señal de Retos (desde el 25 nov 2026 Metas ya no muestra retos).
+const PATHS = ["/retos", "/inicio"];
 const Id = z.string().uuid();
 
 /** Errores de las funciones de la base → texto para la persona. */

@@ -27,6 +27,20 @@ export const M = {
     totals: { aria: "Totales del año", income: "Entra en el año", expense: "Sale en el año", net: "Te sobra en el año", netNeg: "Te falta en el año", negMonths: "Meses en negativo", ofTwelve: "{n} de 12" },
     legend: { past: "Mes pasado", current: "Mes actual", planned: "Planeado", hint: "Edita cualquier celda: los totales se recalculan al instante.", readOnly: "Solo lectura: puedes ver tu plan, no editarlo." },
     pastOptional: "Llenar los meses que ya pasaron es opcional. Sirve para ver tus números del año completo; tu plan cuenta desde hoy igual.",
+    abono: {
+      open: "Abonos: {line}, {month}", add: "Abono", addAria: "Registrar abono: {line}, {month}",
+      title: "{line} · {month}", of: "{paid} de {planned}", missing: "faltan {amount}", short: "faltan {amount}", overBy: "+{amount} sobre lo planeado",
+      closedWith: "Cerrado con {amount}", closedShort: "Cerrado", savedNote: "Te ahorraste {amount}: se ve como ahorro en el cierre.",
+      planned: "Planeado", list: "Abonos de {month}", none: "Aún no hay abonos este mes.",
+      remove: "Quitar abono de {amount} del {date}", removeConfirm: "¿Quitar?", removeHint: "Quitarlo lo borra de Movimientos (queda en el historial).", removed: "Abono quitado.",
+      partHint: "Es parte de un movimiento dividido: se cambia desde Movimientos.",
+      form: "Registrar abono", amount: "Monto", date: "Fecha", account: "Cuenta (opcional)", noAccount: "Sin cuenta", save: "Registrar abono", saving: "Registrando…",
+      dateHint: "Cuenta en {month}: la fecha tiene que ser de ese mes.", added: "Abono de {amount} a {line}. Ya está en Movimientos.",
+      close: "Dar por cerrado con {amount}", closeHint: "Si ya no vas a pagar lo que falta ({missing}), ciérralo: queda como ahorro en el cierre del mes.",
+      closed: "{line} quedó cerrado con {amount}.", reopen: "Reabrir", reopened: "{line} volvió a quedar abierto.",
+      errIncome: "Los abonos son para líneas de gasto.", errMonth: "La fecha del abono tiene que ser del mismo mes de la celda.",
+      closeSoon: "\"Dar por cerrado\" llega muy pronto. Por ahora puedes registrar abonos.",
+    },
     grid: {
       aria: "Plan de {year}, mes a mes", concept: "Concepto", total: "Total", in: "Entra", out: "Sale", net: "Te sobra / falta", seeMonth: "Ver plan vs. real de {month}",
       cellAria: "{line} {month}", newTag: "NUEVA", editLine: "Editar {name}", invalid: "Eso no es un monto.",
@@ -71,7 +85,7 @@ export const M = {
     type: {
       label: "Tipo de gasto", auto: "Automático", fixed: "Fijo", flex: "Del día a día",
       autoHint: "Lo decidimos por ti.", autoFixed: "Lo decidimos por ti: hoy cuenta como fijo porque {reason}.", autoFlex: "Lo decidimos por ti: hoy cuenta como del día a día.",
-      fixedHint: "Pago fijo: no entra en \"Hoy puedes gastar\".", flexHint: "Del día a día: entra en \"Hoy puedes gastar\".",
+      fixedHint: "Pago fijo: no entra en lo disponible del mes para el día a día.", flexHint: "Del día a día: entra en lo disponible del mes.",
       reasons: {
         override: "lo elegiste tú", category: "su categoría es de deudas, ahorro o metas", linked: "está unida a una deuda, una meta o una inversión",
         one_off: "se paga una vez al año o una sola vez", dated: "tiene día de pago", recurring: "tiene un recurrente activo", paid_as_bill: "este año ya la pagaste como cuenta",
@@ -126,6 +140,20 @@ export const M = {
     totals: { aria: "Year totals", income: "In this year", expense: "Out this year", net: "Left over this year", netNeg: "Short this year", negMonths: "Months in the red", ofTwelve: "{n} of 12" },
     legend: { past: "Past month", current: "Current month", planned: "Planned", hint: "Edit any cell: totals update instantly.", readOnly: "Read-only: you can view your plan, not edit it." },
     pastOptional: "Filling in the months that already passed is optional. It lets you see your numbers for the whole year; your plan counts from today either way.",
+    abono: {
+      open: "Partial payments: {line}, {month}", add: "Payment", addAria: "Record a payment: {line}, {month}",
+      title: "{line} · {month}", of: "{paid} of {planned}", missing: "{amount} to go", short: "{amount} to go", overBy: "+{amount} over plan",
+      closedWith: "Closed at {amount}", closedShort: "Closed", savedNote: "You saved {amount}: it shows as savings in the month close.",
+      planned: "Planned", list: "Payments in {month}", none: "No payments this month yet.",
+      remove: "Remove the {amount} payment from {date}", removeConfirm: "Remove?", removeHint: "Removing it deletes it from Transactions (it stays in the history).", removed: "Payment removed.",
+      partHint: "It's part of a split transaction: change it from Transactions.",
+      form: "Record a payment", amount: "Amount", date: "Date", account: "Account (optional)", noAccount: "No account", save: "Record payment", saving: "Recording…",
+      dateHint: "It counts in {month}: the date has to be in that month.", added: "{amount} payment to {line}. It's now in Transactions.",
+      close: "Close it at {amount}", closeHint: "If you won't pay what's left ({missing}), close it: it shows as savings in the month close.",
+      closed: "{line} is closed at {amount}.", reopen: "Reopen", reopened: "{line} is open again.",
+      errIncome: "Payments are for expense lines.", errMonth: "The payment date has to be in the same month as the cell.",
+      closeSoon: "\"Close it\" is coming very soon. For now you can record payments.",
+    },
     grid: {
       aria: "{year} plan, month by month", concept: "Item", total: "Total", in: "In", out: "Out", net: "Left over / short", seeMonth: "See plan vs. actual for {month}",
       cellAria: "{line} {month}", newTag: "NEW", editLine: "Edit {name}", invalid: "That's not an amount.",
@@ -170,7 +198,7 @@ export const M = {
     type: {
       label: "Expense type", auto: "Automatic", fixed: "Fixed", flex: "Day to day",
       autoHint: "We decide for you.", autoFixed: "We decide for you: today it counts as fixed because {reason}.", autoFlex: "We decide for you: today it counts as day to day.",
-      fixedHint: "Fixed payment: not part of \"You can spend today\".", flexHint: "Day to day: part of \"You can spend today\".",
+      fixedHint: "Fixed payment: not part of what's available this month for day to day.", flexHint: "Day to day: part of what's available this month.",
       reasons: {
         override: "you chose it", category: "its category is debts, savings or goals", linked: "it's linked to a debt, a goal or an investment",
         one_off: "it's paid once a year or just once", dated: "it has a payment day", recurring: "it has an active recurring transaction", paid_as_bill: "you already paid it as a bill this year",

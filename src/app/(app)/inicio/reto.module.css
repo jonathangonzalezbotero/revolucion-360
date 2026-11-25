@@ -1,0 +1,48 @@
+/* "Reto de hoy · ¿Lo cumpliste?" en Inicio (mockup InicioRetoB.dc.html, opción B). Corte en 900 px. */
+.card { background: var(--blanco); border: 1px solid var(--linea); border-radius: var(--r-2xl); padding: 26px 30px; display: flex; flex-wrap: wrap; gap: 24px 36px; align-items: stretch; }
+.left { flex: 1 1 400px; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.top { display: flex; gap: 18px; align-items: center; }
+.img { width: 104px; height: 104px; object-fit: contain; flex: none; margin: -10px -4px -10px -10px; }
+.head { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.eyebrow { font-size: 14px; font-weight: 600; color: var(--gris); }
+.title { margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
+.how { font-size: 14px; color: var(--tinta-2); }
+
+.progRow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.progLabel { font-size: 13px; color: var(--gris); }
+.prog { font-size: 16px; font-weight: 600; }
+.dots { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 4px; }
+.dot { height: 12px; border-radius: 3px; background: var(--linea); }
+.dot[data-s="done"] { background: var(--tinta); }
+.dot[data-s="today"] { background: var(--amarillo); }
+
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 13px; color: var(--gris); }
+.meta strong { color: var(--tinta); }
+.meta :global(.pill) { white-space: normal; }
+.see { margin-left: auto; font-size: 14px; font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; }
+
+.right { flex: 1 1 280px; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+.ask { display: flex; flex-direction: column; gap: 12px; background: var(--papel-3); border-radius: var(--r-xl); padding: 18px 20px; }
+.askText { display: flex; flex-direction: column; gap: 2px; font-size: 16px; }
+.askSub { font-size: 13px; color: var(--gris); }
+.buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+.yes, .no { font: inherit; font-size: 14px; font-weight: 600; min-height: 48px; padding: 0 22px; flex: 1 1 140px; border-radius: var(--r-lg); cursor: pointer; }
+.yes { border: 0; background: var(--tinta); color: var(--blanco); }
+.no { border: 1px solid var(--linea); background: var(--blanco); color: var(--tinta-2); }
+.yes:disabled, .no:disabled { opacity: .6; cursor: default; }
+.note { font-size: 14px; color: var(--tinta-2); background: var(--papel-3); border-radius: var(--r-lg); padding: 12px 14px; line-height: 1.5; }
+
+@media (max-width: 899px) {
+  .card { padding: 16px; gap: 14px; }
+  .left { flex-basis: 100%; gap: 12px; }
+  .top { gap: 12px; }
+  .img { width: 72px; height: 72px; margin: -6px -2px -6px -6px; }
+  .eyebrow { font-size: 13px; }
+  .title { font-size: 19px; }
+  .how { font-size: 13px; }
+  .dots { grid-template-columns: repeat(var(--cols-m), minmax(0, 1fr)); }
+  .dot { height: 10px; }
+  .right { flex-basis: 100%; }
+  .ask { padding: 14px 16px; }
+  .askText { font-size: 15px; }
+}
