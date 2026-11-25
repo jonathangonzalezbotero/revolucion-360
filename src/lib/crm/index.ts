@@ -8,3 +8,4 @@ export * from "./phone";
 export * from "./flow";
 export * from "./render";
 export * from "./labels";
+export * from "./rate";

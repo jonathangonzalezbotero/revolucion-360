@@ -25,9 +25,9 @@ export const M = {
     ],
     privacySections: [
       { h: "1. Qué datos guardamos", p: "Los que tú escribes o importas: tu plan, movimientos, cuentas, deudas, metas y progreso en la Academia. Además tu nombre, correo, país y datos de pago (estos los guarda Stripe, no nosotros)." },
-      { h: "2. Para qué los usamos", p: "Solo para que la app funcione para ti. No vendemos tus datos ni los usamos para publicidad. Los administradores ven tu nombre, plan y acceso, pero no tus montos ni movimientos." },
+      { h: "2. Para qué los usamos", p: "Solo para que la app funcione para ti. No vendemos tus datos ni los usamos para publicidad. Los administradores ven tu nombre, plan y acceso, pero no tus montos ni movimientos. Si aceptas recibir novedades por correo o SMS, guardamos una constancia mínima: cuándo aceptaste o te diste de baja, desde dónde (registro, formulario, Perfil) y, si vienen, el texto que aceptaste, la página, la IP y el navegador. Tu correo o teléfono queda ahí como una huella (hash), no en claro. Esa constancia se conserva aunque borres tu cuenta, solo para demostrar que nos diste permiso o que te diste de baja." },
       { h: "3. Dónde se guardan", p: "En servidores en Sydney, Australia, cifrados en tránsito y en reposo. Cumplimos la Privacy Act 1988 y los Australian Privacy Principles; si vives en la Unión Europea, también el RGPD." },
-      { h: "4. Tus derechos", p: "Puedes ver, corregir, exportar y borrar tus datos desde Mi perfil › Privacidad. El borrado es total en 30 días, salvo lo que la ley nos obligue a conservar (facturas)." },
+      { h: "4. Tus derechos", p: "Puedes ver, corregir, exportar y borrar tus datos desde Mi perfil › Privacidad. El borrado es total en 30 días, salvo lo que la ley nos obligue a conservar (facturas) y la constancia mínima de tu consentimiento de marketing." },
       { h: "5. Si algo sale mal", p: "Si hay una filtración que te afecte, te avisamos a ti y a la OAIC como exige el Notifiable Data Breaches scheme." },
       { h: "6. Contacto", p: "{contact} · {address}" },
     ],
@@ -48,9 +48,9 @@ export const M = {
     ],
     privacySections: [
       { h: "1. What data we keep", p: "What you type or import: your plan, transactions, accounts, debts, goals and Academy progress. Also your name, email, country and payment details (Stripe keeps those, not us)." },
-      { h: "2. What we use it for", p: "Only so the app works for you. We don't sell your data or use it for advertising. Admins see your name, plan and access, but not your amounts or transactions." },
+      { h: "2. What we use it for", p: "Only so the app works for you. We don't sell your data or use it for advertising. Admins see your name, plan and access, but not your amounts or transactions. If you agree to get news by email or SMS, we keep a minimal record: when you agreed or unsubscribed, where from (sign-up, a form, your profile) and, if provided, the text you agreed to, the page, the IP address and the browser. Your email or phone is stored there as a fingerprint (hash), not in plain text. We keep that record even if you delete your account, only to show that you gave us permission or unsubscribed." },
       { h: "3. Where it's stored", p: "On servers in Sydney, Australia, encrypted in transit and at rest. We follow the Privacy Act 1988 and the Australian Privacy Principles; if you live in the European Union, the GDPR too." },
-      { h: "4. Your rights", p: "You can see, correct, export and delete your data from My profile › Privacy. Deletion is complete within 30 days, except what the law requires us to keep (invoices)." },
+      { h: "4. Your rights", p: "You can see, correct, export and delete your data from My profile › Privacy. Deletion is complete within 30 days, except what the law requires us to keep (invoices) and the minimal record of your marketing consent." },
       { h: "5. If something goes wrong", p: "If there's a breach that affects you, we'll tell you and the OAIC as the Notifiable Data Breaches scheme requires." },
       { h: "6. Contact", p: "{contact} · {address}" },
     ],

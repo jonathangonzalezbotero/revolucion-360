@@ -170,5 +170,12 @@ export const IngestSchema = z.object({
   form: z.string().trim().max(60).optional(),
   tags: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
   consent: z.object({ email: z.boolean().default(false), sms: z.boolean().default(false) }).default({ email: false, sms: false }),
+  /** Constancia del consentimiento (opcional): texto exacto de la casilla, URL del formulario, IP y navegador de quien lo llenó. */
+  evidence: z.object({
+    text: z.string().trim().max(500).optional(),
+    url: z.string().trim().max(500).optional(),
+    ip: z.string().trim().max(64).optional(),
+    userAgent: z.string().trim().max(300).optional(),
+  }).strict().optional(),
 }).strict();
 export type Ingest = z.infer<typeof IngestSchema>;

@@ -16,7 +16,7 @@ export function PrefsSwitches({ m, token, email, sms, phone }: { m: PrefMessages
     start(async () => {
       const r = await savePreferences({ t: token, channel, on });
       if (!r.ok) setV(before);
-      setMsg({ ok: r.ok, text: r.ok ? m.saved : m.error });
+      setMsg({ ok: r.ok, text: r.ok ? m.saved : r.suppressed ? (channel === "sms" ? m.smsStopped : m.emailBlocked) : m.error });
     });
   };
   return (

@@ -1,3 +1,4 @@
+import { readBodyLimited, WEBHOOK_MAX_BYTES } from "@/lib/crm/rate";
 import { verifySvix } from "@/lib/crm/sign";
 import { crmDb } from "@/server/crm";
 
@@ -15,7 +16,8 @@ const KINDS: Record<string, string> = {
 export async function POST(request: Request) {
   const secret = (process.env.RESEND_WEBHOOK_SECRET ?? "").trim();
   if (!secret) return new Response("No configurado", { status: 503 });
-  const body = await request.text();
+  const body = await readBodyLimited(request, WEBHOOK_MAX_BYTES).catch(() => null); // tope de 64 KB antes de verificar
+  if (body === null) return new Response("Muy grande", { status: 413 });
   const ok = verifySvix({ id: request.headers.get("svix-id"), timestamp: request.headers.get("svix-timestamp"), signature: request.headers.get("svix-signature"), body, secret });
   if (!ok) return new Response("Firma inválida", { status: 400 });
   let event: { type?: string; created_at?: string; data?: { email_id?: string; created_at?: string } };

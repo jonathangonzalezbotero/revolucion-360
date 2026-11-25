@@ -10,8 +10,11 @@ const C = { tinta: "#141612", tinta2: "#3A3D36", gris: "#5F6359", papel: "#F6F5F
 const SANS = "Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 export type Legal = { company: string; abn: string; address: string };
-/** Sin razón social, ABN y dirección reales (siguen los marcadores "[…]" o vacíos) no sale marketing de verdad. */
-export const legalReady = (l: Legal) => [l.company, l.abn, l.address].every((v) => !!v && v.trim().length > 1 && !v.trim().startsWith("["));
+/** ABN: 11 dígitos (se ignoran espacios). */
+export const isAbn = (abn: string | null | undefined) => /^\d{11}$/.test((abn ?? "").replace(/\s+/g, ""));
+/** Sin razón social, ABN (11 dígitos) y dirección reales (siguen los marcadores "[…]" o vacíos) no sale marketing de verdad. */
+export const legalReady = (l: Legal) =>
+  [l.company, l.address].every((v) => !!v && v.trim().length > 1 && !v.trim().startsWith("[")) && isAbn(l.abn);
 
 export const TEXTS = {
   es: {

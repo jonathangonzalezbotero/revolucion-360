@@ -1,11 +1,11 @@
 import "server-only";
 import { z } from "zod";
 import {
-  AudienceSchema, BlocksSchema, campaignStartsAt, cleanRef, ExitRulesSchema, legalReady, renderMarketingEmail, StepsSchema, tagRefs, toE164, TriggerSchema,
+  AudienceSchema, BlocksSchema, campaignStartsAt, cleanRef, ExitRulesSchema, findTagByName, legalReady, renderMarketingEmail, StepsSchema, tagRefs, toE164, TriggerSchema,
   type Audience, type Block, type ExitRules, type Stage, type Step, type Trigger,
 } from "@/lib/crm";
 import { sendEmailDetailed } from "@/lib/email/send";
-import { appUrl, CONTACT_COLS, crmFrom, crmReplyTo, fromLabel, loadLegal, must, type AutomationRow, type CampaignRow, type ContactRow, type Db } from "./db";
+import { appUrl, CONTACT_ADMIN_COLS, crmFrom, crmReplyTo, fromLabel, loadLegal, must, type AutomationRow, type CampaignRow, type ContactRow, type Db } from "./db";
 import { addTag, recordEvent, removeTag } from "./events";
 
 // Funciones de servidor para las pantallas del panel (Contactos, Campañas de correo, Automatizaciones).
@@ -32,7 +32,8 @@ export async function createTag(db: Db, name: string): Promise<string> {
   const r = await db.from("crm_tags").insert({ name: n.data }).select("id").maybeSingle();
   if (r.data) return (r.data as { id: string }).id;
   if (r.error && r.error.code !== "23505") throw new Error(`db: ${r.error.message}`); // 23505: ya existe (sin importar mayúsculas)
-  const found = must(await db.from("crm_tags").select("id").ilike("name", n.data!).maybeSingle()) as { id: string } | null;
+  // Sin ilike: un nombre con "%", "_" o "*" no debe coincidir con otra etiqueta.
+  const found = findTagByName(must(await db.from("crm_tags").select("id, name")) as { id: string; name: string }[], n.data!);
   return found?.id ?? fail("invalid");
 }
 
@@ -52,10 +53,12 @@ export async function listContacts(db: Db, f: { q?: string; stage?: Stage | null
   return { rows, total: r.count ?? rows.length };
 }
 
-export type ContactDetail = { contact: ContactRow; tagIds: string[]; events: { kind: string; ref: string; at: string }[]; enrollments: { id: string; automation_id: string; status: string; enrolled_at: string }[] };
+/** El contacto como lo ve el panel: SIN `token` (el enlace de baja y preferencias nunca viaja al navegador). */
+export type ContactAdminRow = Omit<ContactRow, "token">;
+export type ContactDetail = { contact: ContactAdminRow; tagIds: string[]; events: { kind: string; ref: string; at: string }[]; enrollments: { id: string; automation_id: string; status: string; enrolled_at: string }[] };
 /** Ficha del contacto: datos, etiquetas propias (la de sistema es `contact.stage`), actividad (últimos 50) e inscripciones. */
 export async function getContact(db: Db, id: string): Promise<ContactDetail> {
-  const contact = must(await db.from("crm_contacts").select(CONTACT_COLS).eq("id", id).maybeSingle()) as ContactRow | null;
+  const contact = must(await db.from("crm_contacts").select(CONTACT_ADMIN_COLS).eq("id", id).maybeSingle()) as ContactAdminRow | null;
   if (!contact) fail("not_found");
   const [tags, events, enrollments] = await Promise.all([
     db.from("crm_contact_tags").select("tag_id").eq("contact_id", id),
@@ -90,8 +93,9 @@ export async function createContact(db: Db, input: unknown): Promise<string> {
 
 /**
  * Importar CSV (filas ya leídas). Une por correo; nunca marca consentimiento salvo `consentSource` (constancia de dónde lo
- * dieron). Un contacto que ya existe y se dio de baja NO vuelve a quedar suscrito por una importación (volver a aceptar
- * es algo que hace la persona): cuenta en `consentSkipped`.
+ * dieron). Una dirección dada de baja, que rebotó o se quejó (supresión activa, exista o no el contacto) o un contacto que
+ * se dio de baja NO vuelve a quedar suscrito por una importación (volver a aceptar es algo que hace la persona): la base
+ * devuelve 'suppressed' y cuenta en `consentSkipped`.
  */
 export async function importContacts(db: Db, rows: unknown[], opts: { tagIds?: string[]; consentSource?: string } = {}): Promise<{ created: number; updated: number; invalid: number; consentSkipped: number }> {
   let created = 0, updated = 0, invalid = 0, consentSkipped = 0;
@@ -100,7 +104,7 @@ export async function importContacts(db: Db, rows: unknown[], opts: { tagIds?: s
     if (!p.success) { invalid++; continue; }
     const d = p.data;
     const phone = d.phone ? toE164(d.phone, d.country) : null;
-    const existing = must(await db.from("crm_contacts").select("id, name, phone, email_unsubscribed_at").eq("email", d.email).maybeSingle()) as { id: string; name: string; phone: string | null; email_unsubscribed_at: string | null } | null;
+    const existing = must(await db.from("crm_contacts").select("id, name, phone").eq("email", d.email).maybeSingle()) as { id: string; name: string; phone: string | null } | null;
     let id: string;
     if (existing) {
       const patch: Record<string, unknown> = {};
@@ -116,8 +120,12 @@ export async function importContacts(db: Db, rows: unknown[], opts: { tagIds?: s
       created++;
     }
     for (const t of [...d.tagIds, ...(opts.tagIds ?? [])]) await addTag(db, id, t, "import");
-    if (opts.consentSource && existing?.email_unsubscribed_at) consentSkipped++;
-    else if (opts.consentSource) must(await db.rpc("crm_set_consent", { p_contact: id, p_channel: "email", p_on: true, p_source: `import:${cleanRef(opts.consentSource)}`.slice(0, 60) }));
+    if (opts.consentSource) {
+      const res = must(await db.rpc("crm_set_consent", {
+        p_contact: id, p_channel: "email", p_on: true, p_source: `import:${cleanRef(opts.consentSource)}`.slice(0, 60), p_evidence: { text: opts.consentSource.slice(0, 500), form: "import" },
+      })) as string;
+      if (res === "suppressed") consentSkipped++;
+    }
   }
   return { created, updated, invalid, consentSkipped };
 }
@@ -125,9 +133,13 @@ export async function importContacts(db: Db, rows: unknown[], opts: { tagIds?: s
 export async function addContactTag(db: Db, contactId: string, tagId: string) { await addTag(db, contactId, tagId, "admin"); }
 export async function removeContactTag(db: Db, contactId: string, tagId: string) { await removeTag(db, contactId, tagId); }
 
-/** Consentimiento desde el panel (queda con fuente 'admin' y su evento). Dar de baja siempre se puede; dar de alta exige constancia aparte. */
+/**
+ * Consentimiento desde el panel (queda con fuente 'admin', su evento y su constancia). Dar de baja siempre se puede; un
+ * alta desde aquí nunca levanta una baja ni una supresión (lanza "suppressed").
+ */
 export async function setContactConsent(db: Db, contactId: string, channel: "email" | "sms", on: boolean): Promise<void> {
-  must(await db.rpc("crm_set_consent", { p_contact: contactId, p_channel: channel, p_on: on, p_source: "admin" }));
+  const res = must(await db.rpc("crm_set_consent", { p_contact: contactId, p_channel: channel, p_on: on, p_source: "admin" })) as string;
+  if (res === "suppressed") fail("suppressed");
 }
 
 /** "Agregar a automatización": inscribe a mano (empieza en el primer paso en la próxima corrida del motor). */
@@ -284,7 +296,10 @@ export async function saveAutomation(db: Db, input: unknown): Promise<string> {
   return (must(await db.from("crm_automations").insert(row).select("id").single()) as { id: string }).id;
 }
 
-/** Activar / Pausar. Pausada: no inscribe a nadie ni avanza pasos; al reactivarla, cada quien sigue donde estaba. */
+/**
+ * Activar / Pausar. Pausada: no inscribe a nadie ni avanza pasos, y lo que ya estaba en la cola se omite para siempre
+ * (`automation_inactive`). Al reactivarla, cada quien sigue desde el paso donde estaba; los mensajes omitidos no se reenvían.
+ */
 export async function setAutomationStatus(db: Db, id: string, status: "active" | "paused" | "draft"): Promise<void> {
   if (status === "active") {
     const a = must(await db.from("crm_automations").select("*").eq("id", id).maybeSingle()) as AutomationRow | null;

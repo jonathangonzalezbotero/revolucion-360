@@ -1,12 +1,14 @@
 // CRM: a quién, cuándo y cuántas veces se envía (src/lib/crm). Sin base de datos ni red.
 import { createHmac } from "node:crypto";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  advance, AUDIENCE_PRESETS, AudienceSchema, BlocksSchema, campaignSendAt, campaignStartsAt, chargeRef, chargeWindow, compile, enrollmentRef, evaluate,
-  exitFor, ExitRulesSchema, formKey, inactiveRef, inactiveWindow, IngestSchema, isUpcomingCharge, legalReady, matchesTrigger, MAX_ATTEMPTS, mayMarket,
-  maySms, parseTestNumbers, personalize, renderMarketingEmail, renderSms, resolveTz, retryAt, smsSendAt, stageFor, StepsSchema, tagRefs,
-  toE164, TriggerSchema, unsubscribeHeaders, unsubscribeUrl, waitUntil, zonedToUtc,
-  type ConsentFacts, type Facts, type Step,
+  advance, AUDIENCE_PRESETS, AudienceSchema, BlocksSchema, campaignSendAt, campaignStartsAt, chargeRef, chargeWindow, clientIp, compile, enrollmentRef, evaluate,
+  exitFor, ExitRulesSchema, findTagByName, formKey, inactiveRef, inactiveWindow, IngestSchema, ingestSmsDecision, isAbn, isLimited, isUpcomingCharge, legalReady, matchesTrigger,
+  MAX_ATTEMPTS, mayMarket, maySms, parseTestNumbers, personalize, rateLimit, readBodyLimited, renderMarketingEmail, renderSms, resolveTz, retryAt, smsSendAt, smsTz,
+  sourceBlocked, stageFor, StepsSchema, tagRefs, toE164, TriggerSchema, unsubscribeHeaders, unsubscribeUrl, waitUntil, WEBHOOK_MAX_BYTES, zonedToUtc,
+  type ConsentFacts, type Facts, type RateStore, type Step,
 } from "@/lib/crm";
 import { smsKeyword, twilioSignature, verifySvix, verifyTwilio } from "@/lib/crm/sign";
 
@@ -103,6 +105,12 @@ describe("hora de cada persona", () => {
     expect(campaignSendAt("local", "2026-12-01T07:00", "America/Bogota", now).toISOString()).toBe("2026-12-01T12:00:00.000Z");
     expect(campaignSendAt("local", "2026-12-01T07:00", "Pacific/Kiritimati", now)).toEqual(now); // ya pasó: sale ya
     expect(campaignSendAt("now", null, "Australia/Sydney", now)).toEqual(now);
+  });
+  it("SMS: zona del contacto o de su país; si no se sabe, no se manda (sin Sydney por defecto)", () => {
+    expect(smsTz("America/Bogota", "Australia/Sydney")).toBe("America/Bogota");
+    expect(smsTz(null, "America/Bogota")).toBe("America/Bogota");
+    expect(smsTz("Marte/Base", null)).toBeNull();
+    expect(smsTz(null, null)).toBeNull();
   });
   it("zona del contacto, si no la de su país, si no Sydney", () => {
     expect(resolveTz("America/Bogota", "Australia/Sydney")).toBe("America/Bogota");
@@ -262,6 +270,84 @@ describe("formas validadas (zod)", () => {
     expect(IngestSchema.safeParse({ email: "no-es-correo" }).success).toBe(false);
     expect(formKey("Ruta 2026 · Diagnóstico")).toBe("ruta-2026-diagnostico");
   });
+  it("ingreso de leads: constancia opcional del consentimiento, solo con sus campos y con tope", () => {
+    const e = { text: "Quiero recibir novedades por correo", url: "https://revoluciondeldinero.com/webinar", ip: "203.0.113.7", userAgent: "Mozilla/5.0" };
+    expect(IngestSchema.parse({ email: "a@b.co", consent: { email: true }, evidence: e }).evidence).toEqual(e);
+    expect(IngestSchema.parse({ email: "a@b.co" }).evidence).toBeUndefined();
+    expect(IngestSchema.safeParse({ email: "a@b.co", evidence: { text: "x", amount: 1 } }).success).toBe(false);
+    expect(IngestSchema.safeParse({ email: "a@b.co", evidence: { text: "x".repeat(501) } }).success).toBe(false);
+  });
+});
+
+describe("ingreso de leads: SMS solo para el número que llegó y queda en el contacto", () => {
+  it("sin número no hay SMS", () => {
+    expect(ingestSmsDecision(null, null)).toEqual({ setPhone: null, sms: false, reason: "no_phone" });
+    expect(ingestSmsDecision(null, "+61412345678")).toEqual({ setPhone: null, sms: false, reason: "no_phone" });
+  });
+  it("contacto sin número: se le pone el que llegó y sí", () => {
+    expect(ingestSmsDecision("+61412345678", null)).toEqual({ setPhone: "+61412345678", sms: true, reason: "ok" });
+  });
+  it("el mismo número: sí, sin cambiar nada", () => {
+    expect(ingestSmsDecision("+61412345678", "+61412345678")).toEqual({ setPhone: null, sms: true, reason: "ok" });
+  });
+  it("otro número: no se pisa y no se marca SMS (podría ser un número ajeno)", () => {
+    expect(ingestSmsDecision("+61499999999", "+61412345678")).toEqual({ setPhone: null, sms: false, reason: "phone_conflict" });
+  });
+});
+
+describe("campaña cancelada o automatización que ya no está activa: no sale", () => {
+  const camp = { campaignId: U1, automationId: null }, auto = { campaignId: null, automationId: U2 };
+  it("campaña", () => {
+    expect(sourceBlocked(camp, { campaign: "cancelled" })).toBe("campaign_cancelled");
+    expect(sourceBlocked(camp, { campaign: "sending" })).toBeNull();
+    expect(sourceBlocked(camp, { campaign: "sent" })).toBeNull();
+  });
+  it("automatización pausada, en borrador o borrada", () => {
+    expect(sourceBlocked(auto, { automation: "active" })).toBeNull();
+    expect(sourceBlocked(auto, { automation: "paused" })).toBe("automation_inactive");
+    expect(sourceBlocked(auto, { automation: "draft" })).toBe("automation_inactive");
+    expect(sourceBlocked(auto, { automation: null })).toBe("automation_inactive");
+  });
+});
+
+describe("etiquetas por nombre exacto (sin comodines)", () => {
+  const tags = [{ id: "1", name: "Webinar" }, { id: "2", name: "Ruta_2026" }, { id: "3", name: "VIP" }];
+  it("sin importar mayúsculas ni espacios de los lados", () => {
+    expect(findTagByName(tags, " webinar ")?.id).toBe("1");
+    expect(findTagByName(tags, "vip")?.id).toBe("3");
+  });
+  it("%, _ y * no son comodines", () => {
+    expect(findTagByName(tags, "%")).toBeNull();
+    expect(findTagByName(tags, "Web%")).toBeNull();
+    expect(findTagByName(tags, "Ruta-2026")).toBeNull();
+    expect(findTagByName(tags, "Ruta_2026")?.id).toBe("2");
+    expect(findTagByName(tags, "*")).toBeNull();
+  });
+});
+
+describe("límite de frecuencia del ingreso de leads", () => {
+  it("cuenta por clave dentro de la ventana y se reinicia al pasar", () => {
+    const store: RateStore = new Map();
+    for (let i = 0; i < 3; i++) expect(rateLimit(store, "ip:1", 1_000, 3, 60_000)).toBe(true);
+    expect(rateLimit(store, "ip:1", 1_500, 3, 60_000)).toBe(false);
+    expect(rateLimit(store, "ip:2", 1_500, 3, 60_000)).toBe(true); // otra IP no se ve afectada
+    expect(rateLimit(store, "ip:1", 61_000, 3, 60_000)).toBe(true); // ventana nueva
+  });
+  it("mirar sin contar (intentos fallidos por IP)", () => {
+    const store: RateStore = new Map();
+    expect(isLimited(store, "fail:1", 0, 2)).toBe(false);
+    rateLimit(store, "fail:1", 0, 2, 60_000);
+    expect(isLimited(store, "fail:1", 10, 2)).toBe(false);
+    rateLimit(store, "fail:1", 20, 2, 60_000);
+    expect(isLimited(store, "fail:1", 30, 2)).toBe(true);
+    expect(isLimited(store, "fail:1", 60_001, 2)).toBe(false);
+  });
+  it("IP detrás de Vercel", () => {
+    const h = (o: Record<string, string>) => new Headers(o);
+    expect(clientIp(h({ "x-forwarded-for": "203.0.113.7, 10.0.0.1" }))).toBe("203.0.113.7");
+    expect(clientIp(h({ "x-real-ip": "198.51.100.2" }))).toBe("198.51.100.2");
+    expect(clientIp(h({}))).toBe("unknown");
+  });
 });
 
 describe("correo de marketing (Spam Act)", () => {
@@ -301,6 +387,15 @@ describe("correo de marketing (Spam Act)", () => {
     expect(legalReady({ company: "[RAZÓN SOCIAL]", abn: "[ABN]", address: "[DIRECCIÓN]" })).toBe(false);
     expect(legalReady({ ...legal, address: "" })).toBe(false);
   });
+  it("el ABN tiene 11 dígitos (los espacios no cuentan)", () => {
+    expect(isAbn("12 345 678 901")).toBe(true);
+    expect(isAbn("12345678901")).toBe(true);
+    expect(isAbn("1234567890")).toBe(false);
+    expect(isAbn("123456789012")).toBe(false);
+    expect(isAbn("12-345-678-901")).toBe(false);
+    expect(isAbn("ABN pendiente")).toBe(false);
+    expect(legalReady({ ...legal, abn: "123" })).toBe(false);
+  });
   it("SMS con remitente y STOP", () => {
     expect(renderSms("Hola [nombre], tu plan te espera.", "es", "Ana")).toBe("Revolución 360: Hola Ana, tu plan te espera. Responde STOP para no recibir más.");
     expect(renderSms("Your plan is waiting.", "en", null)).toContain("Reply STOP to opt out.");
@@ -337,6 +432,59 @@ describe("firmas de los webhooks", () => {
     expect(smsKeyword(" stop ")).toBe("stop");
     expect(smsKeyword("Baja")).toBe("stop");
     expect(smsKeyword("START")).toBe("start");
+    expect(smsKeyword(" unstop ")).toBe("start");
     expect(smsKeyword("hola, stop por favor")).toBeNull();
+  });
+  it("YES o ALTA no vuelven a suscribir a nadie (solo START y UNSTOP)", () => {
+    expect(smsKeyword("YES")).toBeNull();
+    expect(smsKeyword("Alta")).toBeNull();
+    expect(smsKeyword("sí")).toBeNull();
+  });
+  it("tope de 64 KB al cuerpo de los webhooks antes de verificar", async () => {
+    expect(WEBHOOK_MAX_BYTES).toBe(65_536);
+    const req = (body: string, len?: string) => new Request("https://x/api", { method: "POST", body, headers: len ? { "content-length": len } : {} });
+    expect(await readBodyLimited(req("Body=STOP&From=%2B61"), WEBHOOK_MAX_BYTES)).toBe("Body=STOP&From=%2B61");
+    expect(await readBodyLimited(req("x".repeat(WEBHOOK_MAX_BYTES + 1)), WEBHOOK_MAX_BYTES)).toBeNull();
+    expect(await readBodyLimited(req("corto", String(WEBHOOK_MAX_BYTES + 1)), WEBHOOK_MAX_BYTES)).toBeNull();
+    expect(await readBodyLimited(req("ñ".repeat(10)), 15)).toBeNull(); // cuenta bytes, no letras
+  });
+});
+
+describe("migración del CRM: permisos y reglas que no se pueden olvidar", () => {
+  const sql = readFileSync(path.join(import.meta.dirname, "..", "supabase", "migrations", "20261125000036_crm.sql"), "utf8").replace(/--[^\n]*/g, "");
+  const created = new Set([...sql.matchAll(/create or replace function public\.(crm_\w+)\(([^)]*)\)/g)].map(([, name, args]) =>
+    `${name}(${args.split(",").map((a) => a.trim()).filter(Boolean).map((a) => a.split(/\s+/)[1]).join(", ")})`));
+  it("cada revoke/grant nombra una firma que existe (si no, la migración falla al aplicarse)", () => {
+    const named = [...sql.matchAll(/(?:revoke|grant) execute on function ([^;]+?) (?:from|to) /g)]
+      .flatMap(([, list]) => list.split(/,\s*(?=public\.)/).map((x) => x.trim().replace(/^public\./, "").replace(/\s+/g, " ")));
+    expect(named.length).toBeGreaterThan(25);
+    expect(named.filter((sig) => !created.has(sig))).toEqual([]);
+    // Y cada función nueva tiene su revoke.
+    const revoked = new Set([...sql.matchAll(/revoke execute on function public\.(crm_\w+)\(/g)].map(([, n]) => n));
+    expect([...created].map((sig) => sig.split("(")[0]).filter((n) => !revoked.has(n))).toEqual([]);
+  });
+  it("una alta solo levanta supresiones si se pide (p_lift) y nunca un rebote o una queja", () => {
+    expect(sql).toMatch(/p_lift boolean default false/);
+    expect(sql).toMatch(/v_reason in \('bounce', 'complaint'\) or \(v_reason = 'stop' and p_source <> 'sms_start'\) or not p_lift/);
+    expect(sql).toMatch(/reason in \('unsubscribe', 'manual'\) or \(reason = 'stop' and p_source = 'sms_start'\)/);
+    expect(sql).not.toMatch(/reason in \('unsubscribe', 'stop', 'complaint'\)/);
+  });
+  it("las supresiones por rebote o queja no cambian de motivo", () => {
+    const upserts = sql.match(/on conflict \(channel, value\) do update[\s\S]*?;/g) ?? [];
+    expect(upserts.length).toBeGreaterThanOrEqual(3);
+    for (const u of upserts) expect(u).toMatch(/when x\.reason in \('bounce', 'complaint'\) then x\.reason/);
+  });
+  it("la constancia no tiene llave foránea ni se puede cambiar", () => {
+    const table = /create table if not exists public\.crm_consent_log \(([\s\S]*?)\n\);/.exec(sql)?.[1] ?? "";
+    expect(table).not.toMatch(/references/);
+    expect(sql).toMatch(/before update or delete on public\.crm_consent_log/);
+    expect(sql).not.toMatch(/grant[^;]*(update|delete)[^;]*crm_consent_log/);
+  });
+  it("el contacto de un usuario solo se crea o une con el correo confirmado", () => {
+    expect(sql).toMatch(/u\.email_confirmed_at is not null\) then return null/);
+    expect(sql).toMatch(/after update of email_confirmed_at on auth\.users[\s\S]*old\.email_confirmed_at is null and new\.email_confirmed_at is not null/);
+  });
+  it("nada del CRM para anon", () => {
+    expect(sql).toMatch(/revoke all on table public\.crm_contacts[\s\S]*?public\.crm_inbound_sms from anon;/);
   });
 });

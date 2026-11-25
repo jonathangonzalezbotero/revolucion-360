@@ -50,8 +50,9 @@ export const M = {
     errors: {
       generic: "No se pudo guardar. Intenta de nuevo.", invalid: "Revisa los datos: falta algo o tiene un formato que no sirve.", not_found: "No lo encontramos. Recarga la página.",
       exists: "Ya hay un contacto con ese correo.", phone: "El teléfono no se entiende. Escríbelo con el código de país, por ejemplo +61 412 345 678.",
-      not_editable: "Esto ya no se puede cambiar.", legal_incomplete: "Faltan la razón social, el ABN o la dirección en Contenido por país: sin eso no sale ningún correo de marketing.",
+      not_editable: "Esto ya no se puede cambiar.", legal_incomplete: "Faltan la razón social, el ABN (11 dígitos) o la dirección en Contenido por país: sin eso no sale ningún correo de marketing.",
       in_the_past: "Esa hora ya pasó.", invalid_tag: "Esa etiqueta no se puede usar aquí.",
+      suppressed: "Esta persona se dio de baja, rebotó o se quejó: solo ella puede volver a aceptar.",
     } as Record<string, string>,
     notReady: "El CRM aún no está listo", notReadySub: "Falta aplicar la migración del CRM en la base de datos. Cuando se aplique, aquí aparecen todos los contactos.",
   },
@@ -98,8 +99,9 @@ export const M = {
     errors: {
       generic: "Couldn't save. Try again.", invalid: "Check the details: something is missing or in a format that doesn't work.", not_found: "We couldn't find it. Reload the page.",
       exists: "There's already a contact with that email.", phone: "We can't read that phone number. Write it with the country code, e.g. +61 412 345 678.",
-      not_editable: "This can't be changed anymore.", legal_incomplete: "The company name, ABN or address is missing in Content by country: no marketing email goes out without them.",
+      not_editable: "This can't be changed anymore.", legal_incomplete: "The company name, ABN (11 digits) or address is missing in Content by country: no marketing email goes out without them.",
       in_the_past: "That time has already passed.", invalid_tag: "That tag can't be used here.",
+      suppressed: "This person unsubscribed, bounced or complained: only they can opt back in.",
     } as Record<string, string>,
     notReady: "The CRM isn't ready yet", notReadySub: "The CRM database migration hasn't been applied. Once it is, every contact shows up here.",
   },

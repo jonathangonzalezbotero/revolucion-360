@@ -142,6 +142,8 @@ const Marketing = z.object({ email: z.boolean().optional(), sms: z.boolean().opt
  * Cambia el consentimiento de marketing de la persona (lo guarda el CRM con fecha y fuente "perfil", vía la función
  * `crm_set_my_consent`: el usuario no tiene acceso directo a crm_*). `allowInactive` y `write: false`: también sin activar
  * o en solo lectura, porque darse de baja siempre debe poder hacerse. El SMS exige un teléfono con código de país.
+ * Volver a activar un canal levanta una baja anterior hecha aquí o en preferencias (no un rebote ni una queja); un STOP
+ * solo se levanta respondiendo START al número. En esos casos la base devuelve 'suppressed' y se le explica.
  */
 export async function saveMarketing(input: unknown) {
   return run({ allowInactive: true, write: false, revalidate: ["/perfil"] }, async (s) => {
@@ -153,8 +155,11 @@ export async function saveMarketing(input: unknown) {
       phone = toE164(p.data.phone, s.profile.country);
       if (!phone) return fail(m.marketing.phoneBad);
     }
-    const { error } = await s.supabase.rpc("crm_set_my_consent" as never, { p_email: p.data.email ?? null, p_sms: p.data.sms ?? null, p_phone: phone } as never);
+    const { data, error } = await s.supabase.rpc("crm_set_my_consent" as never, { p_email: p.data.email ?? null, p_sms: p.data.sms ?? null, p_phone: phone } as never);
     if (error) return fail(/phone/.test(error.message) ? m.marketing.phoneBad : s.t.errors.generic);
+    const res = (data ?? {}) as { email?: string | null; sms?: string | null };
+    if (res.sms === "suppressed") return fail(m.marketing.smsStopped);
+    if (res.email === "suppressed") return fail(m.marketing.emailBlocked);
     return ok(undefined);
   });
 }

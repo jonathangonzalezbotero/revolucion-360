@@ -45,7 +45,7 @@ export const M = {
     },
     errors: {
       generic: "No se pudo guardar. Intenta de nuevo.", invalid: "Revisa la campaña: falta algo o un enlace no sirve (usa https:// o una pantalla de la app).",
-      not_found: "No la encontramos. Recarga la página.", not_editable: "Esta campaña ya no se puede cambiar.", legal_incomplete: "Faltan la razón social, el ABN o la dirección en Contenido por país.",
+      not_found: "No la encontramos. Recarga la página.", not_editable: "Esta campaña ya no se puede cambiar.", legal_incomplete: "Faltan la razón social, el ABN (11 dígitos) o la dirección en Contenido por país.",
       in_the_past: "Esa hora ya pasó en todas las zonas. Elige una fecha futura.",
     } as Record<string, string>,
     notReady: "El CRM aún no está listo", notReadySub: "Falta aplicar la migración del CRM en la base de datos. Cuando se aplique, aquí armas tus campañas.",
@@ -90,7 +90,7 @@ export const M = {
     },
     errors: {
       generic: "Couldn't save. Try again.", invalid: "Check the campaign: something is missing or a link doesn't work (use https:// or an app screen).",
-      not_found: "We couldn't find it. Reload the page.", not_editable: "This campaign can't be changed anymore.", legal_incomplete: "The company name, ABN or address is missing in Content by country.",
+      not_found: "We couldn't find it. Reload the page.", not_editable: "This campaign can't be changed anymore.", legal_incomplete: "The company name, ABN (11 digits) or address is missing in Content by country.",
       in_the_past: "That time has already passed in every time zone. Pick a future date.",
     } as Record<string, string>,
     notReady: "The CRM isn't ready yet", notReadySub: "The CRM database migration hasn't been applied. Once it is, you build your campaigns here.",

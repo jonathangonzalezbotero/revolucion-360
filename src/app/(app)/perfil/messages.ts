@@ -72,6 +72,8 @@ export const M = {
       smsT: "Avisos por SMS", smsD: "Recordatorios cortos de Revolución del Dinero. Responde STOP para no recibir más.",
       phone: "Teléfono para SMS", phonePh: "+61 412 345 678", phoneHint: "Con el código de tu país (por ejemplo +61 o +57).",
       phoneSave: "Activar SMS", phoneBad: "Escribe el teléfono con el código de tu país, por ejemplo +61 412 345 678.", saved: "Listo, guardado.",
+      smsStopped: "Respondiste STOP a nuestros SMS. Para volver a recibirlos, responde START a ese mismo número.",
+      emailBlocked: "No podemos enviarte novedades a este correo: rebotó o se marcó como spam. Escríbenos para revisarlo.",
     },
     habit: {
       title: "Avisos del hábito", text: "En la app y al celular. Máximo uno al día y nunca de noche (de 21:00 a 8:00, en tu hora).",
@@ -173,6 +175,8 @@ export const M = {
       smsT: "SMS reminders", smsD: "Short reminders from Revolución del Dinero. Reply STOP to opt out.",
       phone: "Phone for SMS", phonePh: "+61 412 345 678", phoneHint: "With your country code (for example +61 or +57).",
       phoneSave: "Turn on SMS", phoneBad: "Type your phone with your country code, for example +61 412 345 678.", saved: "Done, saved.",
+      smsStopped: "You replied STOP to our texts. To get them again, reply START to that same number.",
+      emailBlocked: "We can't send news to this email: it bounced or was marked as spam. Write to us so we can check.",
     },
     habit: {
       title: "Habit reminders", text: "In the app and on your phone. At most one a day and never at night (9 pm to 8 am, your time).",

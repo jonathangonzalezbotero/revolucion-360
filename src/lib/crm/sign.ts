@@ -36,9 +36,12 @@ export function verifyTwilio(a: { url: string; params: Record<string, string>; s
   return same(a.signature, twilioSignature(a.url, a.params, a.authToken));
 }
 
-/** STOP / START de Twilio (palabras estándar de baja y alta, en inglés y español). */
+/**
+ * STOP / START de Twilio. Baja: palabras estándar en inglés y español. Alta: SOLO "START" y "UNSTOP" (las de Twilio
+ * Advanced Opt-Out); "YES" o "ALTA" son respuestas comunes que no deben volver a suscribir a nadie.
+ */
 const STOP = new Set(["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "PARAR", "BAJA", "ALTO"]);
-const START = new Set(["START", "YES", "UNSTOP", "ALTA"]);
+const START = new Set(["START", "UNSTOP"]);
 export function smsKeyword(body: string | null | undefined): "stop" | "start" | null {
   const w = (body ?? "").trim().toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
   if (STOP.has(w)) return "stop";

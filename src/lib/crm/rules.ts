@@ -83,3 +83,41 @@ export function chargeWindow(now: Date, days: number): { from: string; to: strin
 export const chargeRef = (days: number, chargeAt: string, first: boolean) => `${days}:${ymd(new Date(chargeAt))}:${first ? "first" : "renew"}`;
 export const isUpcomingCharge = (e: { state: string | null; stripeStatus: string | null; cancelAtPeriodEnd: boolean; proUntil: string | null }) =>
   e.state === "pro" && !e.cancelAtPeriodEnd && !!e.proUntil && (e.stripeStatus === "trialing" || e.stripeStatus === "active");
+
+// ───────── Ingreso de leads: ¿el SMS se puede marcar para este número? ─────────
+/**
+ * El consentimiento de SMS es para UN número: el que llegó en la petición (decisión de Jonathan: lo verifica su
+ * formulario). Solo se marca si ese número es el que queda en el contacto:
+ * - sin número en la petición → no;
+ * - el contacto no tenía número → se le pone este y sí;
+ * - tenía este mismo → sí;
+ * - tenía OTRO → no se pisa en silencio (podría ser un número ajeno escrito en el formulario) y no se marca SMS
+ *   (`phone_conflict`); el número del contacto lo cambia la persona en Perfil o el Dueño a mano.
+ */
+export function ingestSmsDecision(requestPhone: string | null, existingPhone: string | null):
+  { setPhone: string | null; sms: boolean; reason: "ok" | "no_phone" | "phone_conflict" } {
+  if (!requestPhone) return { setPhone: null, sms: false, reason: "no_phone" };
+  if (!existingPhone) return { setPhone: requestPhone, sms: true, reason: "ok" };
+  if (existingPhone === requestPhone) return { setPhone: null, sms: true, reason: "ok" };
+  return { setPhone: null, sms: false, reason: "phone_conflict" };
+}
+
+// ───────── Envío: ¿la campaña o la automatización siguen en pie? ─────────
+/**
+ * Se revisa al encolar (por lote) y justo antes de enviar: lo que quedó en la cola de una campaña cancelada o de una
+ * automatización que ya no está activa (pausada, en borrador o borrada) no sale. Queda "omitido" con el motivo; no se
+ * vuelve a encolar solo (la cola es única por origen y contacto).
+ */
+export function sourceBlocked(m: { campaignId: string | null; automationId: string | null }, status: { campaign?: string | null; automation?: string | null }):
+  "campaign_cancelled" | "automation_inactive" | null {
+  if (m.campaignId && status.campaign === "cancelled") return "campaign_cancelled";
+  if (m.automationId && status.automation !== "active") return "automation_inactive";
+  return null;
+}
+
+// ───────── Etiquetas por nombre (sin comodines) ─────────
+/** La etiqueta con ese nombre exacto, sin importar mayúsculas (como el índice único lower(name)). Sin `%`, `_` ni `*`. */
+export function findTagByName<T extends { name: string }>(tags: readonly T[], name: string): T | null {
+  const k = name.trim().toLowerCase();
+  return tags.find((t) => t.name.trim().toLowerCase() === k) ?? null;
+}

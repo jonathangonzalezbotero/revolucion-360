@@ -25,7 +25,10 @@ export type ContactRow = {
   sms_consent: boolean; sms_consent_at: string | null; sms_consent_source: string | null; sms_unsubscribed_at: string | null;
   token: string; last_activity_at: string | null; created_at: string; updated_at: string;
 };
+/** Columnas para el motor (con `token`: hace falta para el enlace de baja de cada correo). Nunca para el panel. */
 export const CONTACT_COLS = "id, email, name, phone, country, timezone, locale, user_id, source, source_detail, stage, email_consent, email_consent_at, email_consent_source, email_unsubscribed_at, sms_consent, sms_consent_at, sms_consent_source, sms_unsubscribed_at, token, last_activity_at, created_at, updated_at";
+/** Columnas para el panel: las mismas SIN `token` (no viaja al navegador del Dueño). */
+export const CONTACT_ADMIN_COLS = CONTACT_COLS.replace(", token,", ",");
 
 export type MessageRow = {
   id: string; contact_id: string; channel: "email" | "sms"; source_key: string; campaign_id: string | null; automation_id: string | null;

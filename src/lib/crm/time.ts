@@ -15,6 +15,12 @@ export function isValidTz(tz: unknown): tz is string {
 /** Zona del contacto; si no tiene (un lead), la de su país; si tampoco, Sydney. */
 export const resolveTz = (contactTz: string | null | undefined, countryTz?: string | null) =>
   isValidTz(contactTz) ? contactTz : isValidTz(countryTz) ? countryTz : DEFAULT_TZ;
+/**
+ * Zona para un SMS: la del contacto o, si no, la de su país. SIN la de Sydney por defecto: si no se sabe la hora de la
+ * persona no se le manda un SMS (podría llegarle de noche). null = no se envía.
+ */
+export const smsTz = (contactTz: string | null | undefined, countryTz?: string | null): string | null =>
+  isValidTz(contactTz) ? contactTz : isValidTz(countryTz) ? countryTz : null;
 
 /** Reloj de pared en una zona: { y, m, d, h, min }. */
 export function wallClock(at: Date, tz: string): { y: number; m: number; d: number; h: number; min: number } {
