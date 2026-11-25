@@ -173,28 +173,28 @@ isOneToOne: false
                   ]
                 },"countries": {
                   Row: {
-                    "benchmarks": NonNullable<Json>,"categories": NonNullable<Json>,"code": string,"currency": string,"enabled": boolean,"examples": NonNullable<Json>,"locale_number": string,"name": string,"pay_frequency": string,"sort": number,"terms": NonNullable<Json>,"timezone": string
+                    "benchmarks": NonNullable<Json>,"categories": NonNullable<Json>,"code": string,"currency": string,"default_locale": string,"enabled": boolean,"examples": NonNullable<Json>,"locale_number": string,"name": string,"pay_frequency": string,"sort": number,"tax_reserve_enabled": boolean,"tax_reserve_note": string,"terms": NonNullable<Json>,"timezone": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "benchmarks"?: NonNullable<Json>,"categories"?: NonNullable<Json>,"code": string,"currency": string,"enabled"?: boolean,"examples"?: NonNullable<Json>,"locale_number"?: string,"name": string,"pay_frequency"?: string,"sort"?: number,"terms"?: NonNullable<Json>,"timezone": string
+                    "benchmarks"?: NonNullable<Json>,"categories"?: NonNullable<Json>,"code": string,"currency": string,"default_locale"?: string,"enabled"?: boolean,"examples"?: NonNullable<Json>,"locale_number"?: string,"name": string,"pay_frequency"?: string,"sort"?: number,"tax_reserve_enabled"?: boolean,"tax_reserve_note"?: string,"terms"?: NonNullable<Json>,"timezone": string
                   }
                   Update: {
-                    "benchmarks"?: NonNullable<Json>,"categories"?: NonNullable<Json>,"code"?: string,"currency"?: string,"enabled"?: boolean,"examples"?: NonNullable<Json>,"locale_number"?: string,"name"?: string,"pay_frequency"?: string,"sort"?: number,"terms"?: NonNullable<Json>,"timezone"?: string
+                    "benchmarks"?: NonNullable<Json>,"categories"?: NonNullable<Json>,"code"?: string,"currency"?: string,"default_locale"?: string,"enabled"?: boolean,"examples"?: NonNullable<Json>,"locale_number"?: string,"name"?: string,"pay_frequency"?: string,"sort"?: number,"tax_reserve_enabled"?: boolean,"tax_reserve_note"?: string,"terms"?: NonNullable<Json>,"timezone"?: string
                   }
                   Relationships: [
                     
                   ]
                 },"coupons": {
                   Row: {
-                    "active": boolean,"code": string,"created_at": string,"duration_months": number | null,"id": string,"max_redemptions": number | null,"percent_off": number,"redemptions": number,"stripe_coupon_id": string | null,"stripe_promo_id": string | null
+                    "active": boolean,"applies_to": string,"code": string,"created_at": string,"duration_months": number | null,"expires_at": string | null,"id": string,"max_redemptions": number | null,"percent_off": number,"redemptions": number,"stripe_coupon_id": string | null,"stripe_promo_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"code": string,"created_at"?: string,"duration_months"?: number | null,"id"?: string,"max_redemptions"?: number | null,"percent_off": number,"redemptions"?: number,"stripe_coupon_id"?: string | null,"stripe_promo_id"?: string | null
+                    "active"?: boolean,"applies_to"?: string,"code": string,"created_at"?: string,"duration_months"?: number | null,"expires_at"?: string | null,"id"?: string,"max_redemptions"?: number | null,"percent_off": number,"redemptions"?: number,"stripe_coupon_id"?: string | null,"stripe_promo_id"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"code"?: string,"created_at"?: string,"duration_months"?: number | null,"id"?: string,"max_redemptions"?: number | null,"percent_off"?: number,"redemptions"?: number,"stripe_coupon_id"?: string | null,"stripe_promo_id"?: string | null
+                    "active"?: boolean,"applies_to"?: string,"code"?: string,"created_at"?: string,"duration_months"?: number | null,"expires_at"?: string | null,"id"?: string,"max_redemptions"?: number | null,"percent_off"?: number,"redemptions"?: number,"stripe_coupon_id"?: string | null,"stripe_promo_id"?: string | null
                   }
                   Relationships: [
                     
