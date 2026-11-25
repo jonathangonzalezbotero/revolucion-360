@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración · Automatizaciones</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Administración" style="flex: 1 1 220px; max-width: 256px; background: #141612; color: #FFFFFF; padding: 28px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 8px"><img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 38px; height: 38px"><span style="display: flex; flex-direction: column"><strong style="font-size: 15px">Revolución 360</strong><span style="font-size: 12px; color: #8FD3B9; font-weight: 600">Administración</span></span></div>
+    <a href="Main.dc.html" style="text-decoration: none; font-size: 13px; color: #9FC8B9; padding: 6px 10px 22px">‹ Volver a la app</a>
+    <a href="Admin.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Resumen</a><a href="AdminUsuarios.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Usuarios y accesos</a><a href="AdminMenu.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Menú y funciones</a><a href="AdminAcademia.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Academia</a><a href="AdminPlanes.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Planes y precios</a><a href="AdminPaises.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contenido por país</a><a href="AdminCRM.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contactos</a><a href="AdminCampanas.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Campañas de correo</a><a href="AdminAuto.dc.html" aria-current="page" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: #2A2D27; color: #FFFFFF">Automatizaciones</a><a href="AdminSoporte.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Soporte y privacidad</a><a href="AdminActividad.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Registro de actividad</a>
+    <p style="margin-top: auto; font-size: 12px; color: #7FA9A0; line-height: 1.5; padding: 0 10px">Este panel no muestra los datos financieros de los usuarios.</p>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 44px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; max-width: 1280px">
+<header style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap"><div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">CRM</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Automatizaciones</h1></div><div style="display: flex; gap: 10px"><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; background: #141612">+ Nueva automatización</button></div></header>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 18px; align-items: start">
+      <section aria-label="Automatizaciones" style="display: flex; flex-direction: column; gap: 10px"><sc-for list="{{ flows }}" as="f" hint-placeholder-count="5"><button type="button" aria-pressed="{{ f.cur }}" onClick="{{ f.pick }}" style="font: inherit; text-align: left; cursor: pointer; background: {{ f.bg }}; border: 1.5px solid {{ f.bd }}; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px"><span style="display: flex; justify-content: space-between; gap: 8px"><strong style="font-size: 15px">{{ f.name }}</strong><span style="font-size: 12px; font-weight: 600; color: {{ f.stc }}">{{ f.st }}</span></span><span style="font-size: 13px; color: #5F6359">Empieza cuando: {{ f.trig }}</span><span class="num" style="font-size: 12px; color: #5F6359">{{ f.n }}</span></button></sc-for></section>
+      <section aria-labelledby="fb" style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px"><h2 id="fb" style="margin: 0; font-size: 18px; font-weight: 600">{{ fl.name }}</h2><span style="display: flex; gap: 8px"><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; min-height: 38px">Pausar</button><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; min-height: 38px; background: #141612">Guardar</button></span></div>
+        <div style="background: #141612; color: #FFFFFF; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 600; color: #F4CF0A; text-transform: uppercase; letter-spacing: .06em">Empieza cuando</span><strong style="font-size: 15px">{{ fl.trig }}</strong></div>
+        <ol style="list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid #E6E4DC; display: flex; flex-direction: column; gap: 10px"><sc-for list="{{ steps }}" as="st" hint-placeholder-count="6"><li style="display: flex; gap: 10px; align-items: center; background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 12px; padding: 10px 12px"><span style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: {{ st.bg }}; color: {{ st.fg }}; white-space: nowrap">{{ st.k }}</span><span style="font-size: 14px">{{ st.t }}</span></li></sc-for>
+          <li><button type="button" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border-radius: 12px; border: 1.5px dashed #BDB9AD; background: transparent; cursor: pointer">+ Paso: esperar, correo, condición o etiqueta</button></li></ol>
+        <div style="background: #F8F7F2; border-radius: 14px; padding: 12px 14px; font-size: 13px; color: #3A3D36; line-height: 1.5"><strong>Sale de la automatización si:</strong> se da de baja, cancela su cuenta o ya cumplió el objetivo (por ejemplo, creó su cuenta).</div>
+      </section>
+    </div>
+    <section aria-labelledby="tr" style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px"><h2 id="tr" style="margin: 0; font-size: 16px; font-weight: 600">Eventos de la app que pueden iniciar una automatización</h2><div style="display: flex; gap: 8px; flex-wrap: wrap"><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">Pagó su primer mes</span><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">Entró con código de alumno</span><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">Terminó el asistente</span><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">Hizo su primer cierre</span><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">No abre la app en X días</span><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">Llegó a un hito de meta</span><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">Faltan X días para un cobro</span><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">Pago fallido</span><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">Suscripción terminó</span><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">Hizo el diagnóstico</span><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">Se le puso una etiqueta</span><span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #F1F0EA">Llenó un formulario web</span></div></section>
+    <p style="margin: 0; font-size: 12px; color: #5F6359; line-height: 1.5">El CRM solo guarda datos de contacto, etiquetas y eventos de uso (por ejemplo "hizo su primer cierre"). Nunca muestra montos ni movimientos de nadie. Los correos de marketing solo van a quien dio su consentimiento, siempre con remitente claro y enlace para darse de baja (Spam Act 2003).</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1250}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sel: 0 }; }
+  renderVals() {
+    const F = [['Bienvenida', 'Pagó su primer mes', 'Activa', '412 dentro', [['wait', 'Al instante'], ['mail', 'Correo 1 · "Tu año en un solo lugar empieza hoy"'], ['wait', 'Esperar 1 día'], ['if', '¿Terminó el asistente del plan?'], ['mail', 'No: Correo 2 · "Te faltan 5 minutos para tu plan"'], ['wait', 'Esperar 3 días'], ['mail', 'Correo 3 · "Tu primer cierre de mes, paso a paso"'], ['tag', 'Etiquetar: Bienvenida completa']]], ['Primer mes termina', 'Faltan 3 días para el primer cobro de $8', 'Activa', '58 dentro', [['mail', 'Correo · "Tu primer mes termina en 3 días"'], ['wait', 'Esperar hasta el cobro'], ['if', '¿El pago salió bien?'], ['mail', 'Sí: Correo · "Gracias por seguir"'], ['mail', 'No: Correo · "No pudimos cobrar tu suscripción"']]], ['Lead del diagnóstico', 'Hizo el diagnóstico en la web', 'Activa', '930 dentro', [['mail', 'Correo · "Tu resultado del diagnóstico"'], ['wait', 'Esperar 2 días'], ['mail', 'Correo · "Lo que yo haría con tu resultado"'], ['wait', 'Esperar 4 días'], ['mail', 'Correo · "Prueba un mes por $1"'], ['if', '¿Creó su cuenta?'], ['tag', 'Sí: salir y etiquetar Primer mes']]], ['Te extrañamos', 'No abre la app en 14 días', 'Pausada', '—', [['mail', 'Correo · "Tu plan te espera, sin culpa"'], ['wait', 'Esperar 7 días'], ['if', '¿Volvió a la app?'], ['tag', 'No: etiquetar Inactivo']]], ['Reactivar solo lectura', 'Su suscripción terminó', 'Borrador', '—', [['wait', 'Esperar 30 días'], ['mail', 'Correo · "Todo sigue aquí cuando quieras volver"']]]];
+    const I = { wait: ['Esperar', '#F1F0EA', '#3A3D36'], mail: ['Enviar correo', '#E3F1E8', '#1E5A3F'], if: ['Condición', '#FFF3B0', '#5A4500'], tag: ['Etiquetar', '#E3ECF6', '#2D5C8A'] };
+    const s = this.state;
+    const flows = F.map((f, i) => ({ name: f[0], trig: f[1], st: f[2], n: f[3], cur: String(s.sel === i), bg: s.sel === i ? '#FFF8D6' : '#FFFFFF', bd: s.sel === i ? '#141612' : '#E6E4DC', stc: f[2] === 'Activa' ? '#1E5A3F' : '#5F6359', pick: () => this.setState({ sel: i }) }));
+    const f = F[s.sel];
+    return { flows, fl: { name: f[0], trig: f[1], st: f[2] }, steps: f[4].map(([k, t]) => ({ k: I[k][0], t, bg: I[k][1], fg: I[k][2] })) };
+  }
+}
+</script>
+</body>
+</html>

@@ -54,7 +54,7 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
     </nav>
     
       <sc-if value="{{ isReg }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 16px">
-        <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">Crea tu cuenta</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">Gratis. Sin tarjeta. Tu plan del año listo en 10 minutos.</p></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">Crea tu cuenta</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">Tu primer mes cuesta $1 USD. Tu plan del año listo en 10 minutos.</p></div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
           <button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 48px; border: 1px solid #D9D6CC; background: #FFFFFF; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px"><span aria-hidden="true" style="font-weight: 600; color: #2D5C8A">G</span>Google</button>
           <button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 48px; border: 1px solid #D9D6CC; background: #FFFFFF; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px">Apple</button>
@@ -89,7 +89,7 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
         <div style="display: flex; justify-content: flex-end; margin-top: -8px"><button type="button" onClick="{{ toRec }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">Olvidé mi contraseña</button></div>
         <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><p role="alert" style="margin: 0; font-size: 13px; font-weight: 600; color: #A1401A; background: #FCEDE6; border-radius: 10px; padding: 10px 12px">{{ err }}</p></sc-if>
         <button type="button" onClick="{{ doIn }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; width: 100%; min-height: 52px; font-size: 15px">Entrar</button>
-        <p style="margin: 0; font-size: 14px; color: #5F6359; text-align: center">¿Primera vez? <button type="button" onClick="{{ toReg }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">Crea tu cuenta gratis</button></p>
+        <p style="margin: 0; font-size: 14px; color: #5F6359; text-align: center">¿Primera vez? <button type="button" onClick="{{ toReg }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">Crea tu cuenta</button></p>
       </div></sc-if>
       <sc-if value="{{ isRec }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 16px">
         <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">Recupera tu acceso</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">Escribe tu correo y te mandamos un enlace para crear una contraseña nueva.</p></div>
@@ -103,8 +103,24 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
         <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">{{ mailTitle }}</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">{{ mailText }}</p></div>
         <p style="margin: 0; font-size: 14px; background: #F6F5F0; border-radius: 12px; padding: 12px 14px">Enviado a <strong>{{ mailTo }}</strong></p>
         <span style="font-size: 13px; color: #5F6359; line-height: 1.5">¿No llega? Revisa spam o promociones. Puedes pedir otro en 60 segundos.</span>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap"><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Reenviar correo</button><button type="button" onClick="{{ toNew }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Abrí el enlace</button></div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap"><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Reenviar correo</button><button type="button" onClick="{{ afterMail }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Abrí el enlace</button></div>
         <button type="button" onClick="{{ toReg }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">‹ Usar otro correo</button>
+      </div></sc-if>
+      <sc-if value="{{ isPay }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">Activa tu cuenta</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">Prueba todo un mes por $1 USD. Si te gusta, sigues por $8 USD al mes. Cancelas cuando quieras.</p></div>
+        <div role="radiogroup" aria-label="Elige cómo pagar" style="display: flex; flex-direction: column; gap: 10px">
+          <button type="button" role="radio" aria-checked="{{ planM }}" onClick="{{ pickM }}" style="font: inherit; text-align: left; cursor: pointer; background: #FFFFFF; border: 2px solid {{ pmBd }}; border-radius: 14px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px"><span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">Mensual</strong><span style="font-size: 13px; color: #5F6359">Primer mes $1, luego $8 al mes</span></span><span class="num" style="font-size: 18px; font-weight: 600">$1</span></button>
+          <button type="button" role="radio" aria-checked="{{ planY }}" onClick="{{ pickY }}" style="font: inherit; text-align: left; cursor: pointer; background: #FFFFFF; border: 2px solid {{ pyBd }}; border-radius: 14px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px"><span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">Anual <span style="font-size: 11px; font-weight: 600; background: #FFF3B0; color: #5A4500; border-radius: 6px; padding: 2px 6px; margin-left: 4px">2 meses gratis</span></strong><span style="font-size: 13px; color: #5F6359">Equivale a $6.67 al mes</span></span><span class="num" style="font-size: 18px; font-weight: 600">$80</span></button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 600; color: #3A3D36">Tarjeta</span><div aria-label="Campo de tarjeta seguro de Stripe" style="min-height: 52px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 14px; color: #8A8D83"><span>1234 1234 1234 1234</span><span>MM / AA · CVC</span></div><span style="font-size: 12px; color: #5F6359">Pago seguro con Stripe. Cobramos en USD y tu banco hace la conversión.</span></div>
+        <div style="background: #F6F5F0; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px"><div style="display: flex; justify-content: space-between; font-size: 14px"><span>Hoy pagas</span><strong class="num">{{ payToday }}</strong></div><span style="font-size: 12px; color: #5F6359">{{ payThen }}</span></div>
+        <a href="Onboarding-movil.dc.html" style="text-decoration: none; text-align: center; font-size: 15px; font-weight: 600; min-height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: #141612; color: #FFFFFF">{{ payBtn }}</a>
+        <sc-if value="{{ noStu }}" hint-placeholder-val="{{ true }}"><p style="margin: 0; font-size: 14px; color: #5F6359; text-align: center">¿Eres alumno de Revolución del Dinero? <button type="button" onClick="{{ togStu }}" style="font: inherit; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; cursor: pointer; padding: 8px 4px; min-height: 40px">Tengo un código</button></p></sc-if>
+        <sc-if value="{{ stu }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #E6E4DC; padding-top: 14px">
+          <label for="scm" style="font-size: 13px; font-weight: 600; color: #3A3D36">Código de alumno</label>
+          <div style="display: flex; gap: 8px"><input id="scm" value="{{ scode }}" onChange="{{ setScode }}" placeholder="RDD-XXXX" style="font: inherit; font-size: 16px; flex: 1; min-width: 0; min-height: 48px; border: 1.5px solid #D9D6CC; border-radius: 12px; padding: 0 14px"><a href="Onboarding-movil.dc.html" style="text-decoration: none; font-size: 14px; font-weight: 600; min-height: 48px; display: flex; align-items: center; padding: 0 16px; border-radius: 12px; background: #141612; color: #FFFFFF">Usar</a></div>
+          <span style="font-size: 12px; color: #5F6359">Con un código válido entras sin tarjeta por el tiempo de tu acceso.</span>
+        </div></sc-if>
       </div></sc-if>
       <sc-if value="{{ isCode }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 18px">
         <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.03em">Escribe tu código</h1><p style="margin: 0; font-size: 15px; color: #5F6359; line-height: 1.5">Abre tu app de autenticación (Google Authenticator, 1Password, Authy) y escribe los 6 números.</p></div>
@@ -133,7 +149,7 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { st: 'entrar', name: '', email: '', pw: '', terms: false, code: '', reason: 'registro', show: false, err: '' }; }
+  constructor(props) { super(props); this.state = { st: 'entrar', name: '', email: '', pw: '', terms: false, code: '', reason: 'registro', show: false, err: '', plan: 'm', stu: false, scode: '' }; }
   renderVals() {
     const s = this.state;
     const go = (st, extra) => () => this.setState(Object.assign({ st, err: '' }, extra || {}));
@@ -141,13 +157,17 @@ class Component extends DCLogic {
     let sc = 0; if (pw.length >= 8) sc++; if (pw.length >= 12) sc++; if (/[0-9]/.test(pw) && /[A-Za-z]/.test(pw)) sc++; if (/[^A-Za-z0-9]/.test(pw)) sc++;
     const L = [['Escribe una contraseña', '#D9D6CC'], ['Muy corta', '#C2410C'], ['Débil', '#C46A2A'], ['Buena', '#3E8C7A'], ['Muy segura', '#141612']];
     const bars = [0, 1, 2, 3].map((i) => ({ bg: pw && i < sc ? L[sc][1] : '#E6E4DC' }));
-    const T = [['registro', 'Crear cuenta'], ['entrar', 'Entrar'], ['recuperar', 'Recuperar'], ['correo', 'Revisa tu correo'], ['codigo', 'Código 2 pasos'], ['nueva', 'Nueva contraseña']];
+    const T = [['registro', 'Crear cuenta'], ['entrar', 'Entrar'], ['recuperar', 'Recuperar'], ['correo', 'Revisa tu correo'], ['pago', 'Activa tu cuenta'], ['codigo', 'Código 2 pasos'], ['nueva', 'Nueva contraseña']];
     const tabs = T.map((t) => ({ name: t[1], cur: s.st === t[0] ? 'true' : 'false', bg: s.st === t[0] ? '#141612' : 'transparent', fg: s.st === t[0] ? '#FFFFFF' : '#3A3D36', pick: go(t[0]) }));
     const code = s.code.replace(/[^0-9]/g, '').slice(0, 6);
     const boxes = [0, 1, 2, 3, 4, 5].map((i) => ({ d: code.charAt(i) || '', bd: i === code.length ? '#141612' : '#D9D6CC' }));
     return {
       tabs, bars, pwLabel: pw ? L[sc][0] : L[0][0], pwColor: pw ? L[sc][1] : '#5F6359',
-      isReg: s.st === 'registro', isIn: s.st === 'entrar', isRec: s.st === 'recuperar', isMail: s.st === 'correo', isCode: s.st === 'codigo', isNew: s.st === 'nueva',
+      isReg: s.st === 'registro', isIn: s.st === 'entrar', isRec: s.st === 'recuperar', isMail: s.st === 'correo', isCode: s.st === 'codigo', isNew: s.st === 'nueva', isPay: s.st === 'pago',
+      planM: s.plan === 'm' ? 'true' : 'false', planY: s.plan === 'y' ? 'true' : 'false', pmBd: s.plan === 'm' ? '#141612' : '#E6E4DC', pyBd: s.plan === 'y' ? '#141612' : '#E6E4DC', pickM: () => this.setState({ plan: 'm' }), pickY: () => this.setState({ plan: 'y' }),
+      payToday: s.plan === 'm' ? '$1.00 USD' : '$80.00 USD', payThen: s.plan === 'm' ? 'Desde el 25 de diciembre: $8 USD al mes. Te avisamos 3 días antes.' : 'Se renueva el 25 de noviembre de 2027. Te avisamos 7 días antes.', payBtn: s.plan === 'm' ? 'Pagar $1 y empezar' : 'Pagar $80 y empezar',
+      stu: s.stu, noStu: !s.stu, togStu: () => this.setState({ stu: !s.stu }), scode: s.scode, setScode: (e) => this.setState({ scode: e.target.value.toUpperCase() }),
+      afterMail: go(s.reason === 'registro' ? 'pago' : 'nueva'),
       name: s.name, email: s.email, pw: s.pw, code, boxes,
       setName: (e) => this.setState({ name: e.target.value }), setEmail: (e) => this.setState({ email: e.target.value }), setPw: (e) => this.setState({ pw: e.target.value }),
       setCode: (e) => this.setState({ code: e.target.value }),

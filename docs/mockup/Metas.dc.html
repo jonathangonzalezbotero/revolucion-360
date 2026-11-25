@@ -79,19 +79,24 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
       <button type="button" onClick="{{ openNew }}" aria-expanded="{{ newOpen }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">+ Nueva meta</button>
     </header>
     <section aria-label="Resumen" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 26px 0; display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: space-between">
-      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Llevas ahorrado para tus metas</span><span class="num big" style="font-size: 36px; font-weight: 600; letter-spacing: -0.03em">{{ total }}</span></div>
-      <p style="margin: 0; max-width: 420px; font-size: 15px; color: #5F6359; line-height: 1.5">Cada aporte que registras suma <strong style="color: #B4441C">5 puntos</strong>. Cumplir una meta suma 50.</p>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Llevas ahorrado para tus metas</span><span class="num big" style="font-size: 36px; font-weight: 600; letter-spacing: -0.03em">{{ total }}</span><span class="num" style="font-size: 13px; color: #5F6359">Este mes apartaste {{ monthIn }}. Cada dólar cuenta.</span></div>
+      <p style="margin: 0; max-width: 420px; font-size: 15px; color: #5F6359; line-height: 1.5">Cada aporte suma <strong style="color: #B4441C">5 puntos</strong>, cada hito 20 y cumplir una meta 50. Usar la plata para lo que era también es un logro.</p>
     </section>
     <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}"><div role="status" style="display: flex; align-items: center; gap: 12px; background: #141612; color: #FFFFFF; border-radius: 14px; padding: 12px 16px"><span aria-hidden="true" style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #FFE45C 0%, #F2CD00 100%); flex: none"></span><span style="flex: 1; font-size: 14px; font-weight: 600">{{ toast }}</span><button type="button" onClick="{{ closeToast }}" aria-label="Cerrar" style="font: inherit; border: 0; background: transparent; color: #B9DFD0; font-size: 18px; min-width: 40px; min-height: 40px; cursor: pointer">×</button></div></sc-if>
+    <sc-if value="{{ showLeft }}" hint-placeholder-val="{{ true }}"><section aria-labelledby="lfd" style="background: #FFF8D6; border: 1px solid #F1E3A0; border-radius: 14px; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><h2 id="lfd" style="margin: 0; font-size: 18px; font-weight: 600">Cerraste noviembre y te sobraron <span class="num">{{ leftTxt }}</span></h2><span style="font-size: 14px; color: #3A3D36">¿Quieres mandarlos a una meta? Tú decides, también puedes dejarlos donde están.</span></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{ sendTo }}" as="o" hint-placeholder-count="3"><button type="button" onClick="{{ o.pick }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 42px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #141612; background: #FFFFFF; cursor: pointer">{{ o.name }}</button></sc-for><button type="button" onClick="{{ notNow }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 42px; padding: 0 12px; border: 0; background: transparent; color: #5F6359; cursor: pointer">Ahora no</button></div>
+    </section></sc-if>
     <sc-if value="{{ showNew }}" hint-placeholder-val="{{ false }}"><section aria-labelledby="ng-hd" style="background: #FFFFFF; border-radius: 14px; padding: 24px 26px; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00; display: flex; flex-direction: column; gap: 16px">
         <div style="display: flex; flex-direction: column; gap: 4px"><h2 id="ng-hd" style="margin: 0; font-size: 20px; font-weight: 600">Nueva meta</h2><span style="font-size: 13px; color: #5F6359; line-height: 1.5">Tú le pones el nombre. La app te dice cuánto apartar para llegar a tiempo.</span></div>
         
         <div style="display: flex; flex-direction: column; gap: 8px"><span id="gtd" style="font-size: 12px; font-weight: 500; color: #5F6359">Tipo</span><div role="radiogroup" aria-labelledby="gtd" style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{ types }}" as="t" hint-placeholder-count="6"><button type="button" role="radio" aria-checked="{{ t.checked }}" onClick="{{ t.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 2px solid {{ t.border }}; background: {{ t.bg }}; color: #141612; cursor: pointer">{{ t.name }}</button></sc-for></div></div>
         <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
           <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="gnd" style="font-size: 12px; font-weight: 500; color: #5F6359">Nombre de tu meta</label><input id="gnd" type="text" value="{{ nw.name }}" onChange="{{ setName }}" placeholder="Ej. Carro, curso, boda" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="gyd" style="font-size: 12px; font-weight: 500; color: #5F6359">¿Para qué la quieres? (opcional)</label><input id="gyd" type="text" value="{{ nw.why }}" onChange="{{ setWhy }}" placeholder="Ej. Ver a mi mamá en diciembre" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
           <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="gmd" style="font-size: 12px; font-weight: 500; color: #5F6359">¿Cuánto necesitas?</label><input id="gmd" class="num" type="text" inputmode="decimal" value="{{ nw.target }}" onChange="{{ setTarget }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
           <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="gwd" style="font-size: 12px; font-weight: 500; color: #5F6359">¿Para cuándo?</label><select id="gwd" value="{{ nw.when }}" onChange="{{ setWhen }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option>Mar 2027</option><option>Jun 2027</option><option>Dic 2027</option><option>Jun 2028</option><option>Dic 2028</option></select></div>
-          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="gcd" style="font-size: 12px; font-weight: 500; color: #5F6359">¿Dónde lo vas a guardar?</label><select id="gcd" value="{{ nw.acct }}" onChange="{{ setAcct }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option>Ubank Save</option><option>Ubank Spend</option><option>Stake</option><option>Efectivo</option></select></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="gcd" style="font-size: 12px; font-weight: 500; color: #5F6359">¿Dónde lo vas a guardar? (las transferencias ahí cuentan como aporte)</label><select id="gcd" value="{{ nw.acct }}" onChange="{{ setAcct }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option>Ubank Save</option><option>Ubank Spend</option><option>Stake</option><option>Efectivo</option></select></div>
         </div>
         <sc-if value="{{ hasCalc }}" hint-placeholder-val="{{ true }}"><div style="background: #FFF8D6; border-radius: 14px; padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline"><span style="font-size: 13px; color: #3A3D36">Para llegar en {{ calcWhen }} aparta</span><strong class="num" style="font-size: 22px; color: #1E5A3F">{{ calcM }} al mes</strong><span class="num" style="font-size: 13px; color: #5F6359">o {{ calcW }} por semana</span></div></sc-if>
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Agregarla a mi plan anual</span><span style="font-size: 12px; color: #5F6359">Crea la línea de ahorro mes a mes</span></span><button type="button" role="switch" aria-checked="{{ planS }}" aria-label="Agregarla a mi plan anual" onClick="{{ togPlan }}" style="font: inherit; width: 48px; height: 28px; border-radius: 999px; border: 0; padding: 3px; cursor: pointer; background: {{ planBg }}; display: flex; justify-content: {{ planJ }}; flex: none"><span style="width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF"></span></button></div>
@@ -107,16 +112,21 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
           </div>
           <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap"><span class="num big" style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em">{{ g.saved }}</span><span class="num" style="font-size: 14px; color: #5F6359">de {{ g.target }} · {{ g.when }}</span></div>
           <div aria-hidden="true" style="height: 10px; border-radius: 5px; background: #EFEDE6; overflow: hidden"><div style="height: 100%; width: {{ g.w }}; background: {{ g.color }}; border-radius: 5px"></div></div>
+          <div role="list" aria-label="Hitos" style="display: flex; gap: 6px"><sc-for list="{{ g.ms }}" as="m" hint-placeholder-count="4"><span role="listitem" aria-label="{{ m.lbl }}" class="num" style="flex: 1; text-align: center; font-size: 11px; font-weight: 600; padding: 4px 0; border-radius: 999px; border: 1.5px solid {{ m.bd }}; background: {{ m.bg }}; color: {{ m.fg }}">{{ m.p }}</span></sc-for></div>
+          <sc-if value="{{ g.hasWhy }}" hint-placeholder-val="{{ true }}"><p style="margin: 0; font-size: 14px; font-style: italic; color: #3A3D36; border-left: 3px solid #F4CF0A; padding: 2px 0 2px 10px">"{{ g.why }}"</p></sc-if>
           <span style="font-size: 13px; color: {{ g.sc }}; font-weight: 600">{{ g.status }}</span>
+          <sc-if value="{{ g.hasTip }}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; color: #5F6359; background: #F6F5F0; border-radius: 10px; padding: 8px 10px">Idea, sin presión: {{ g.tip }}</span></sc-if>
           <button type="button" onClick="{{ g.toggle }}" aria-expanded="{{ g.exp }}" style="font: inherit; align-self: flex-start; font-size: 14px; font-weight: 600; color: #141612; border: 0; background: transparent; padding: 6px 0; min-height: 40px; cursor: pointer">Aportar, editar e historial ›</button>
           <sc-if value="{{ g.open }}" hint-placeholder-val="{{ false }}">
             <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #EFEDE6; padding-top: 14px">
               <div style="display: flex; flex-wrap: wrap; gap: 8px">
                 <sc-if value="{{ g.reached }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ g.complete }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; background: linear-gradient(135deg, #FFE45C 0%, #F2CD00 100%); color: #2B1A05">Marcar como cumplida</button></sc-if>
-                <button type="button" onClick="{{ setIn }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612; font-weight: 600; ">+ Aportar</button><button type="button" onClick="{{ setOut }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Usé dinero de la meta</button>
+                <button type="button" onClick="{{ setIn }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1.5px dashed #BDB9AD; background: transparent; color: #141612; font-weight: 600; ">+ Aportar</button><button type="button" onClick="{{ setOut }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">La usé para lo que era</button>
                 <a href="Plan.dc.html" style="font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; min-height: 46px; padding: 0 6px">Ver en mi plan</a>
               </div>
               <sc-if value="{{ hasAct }}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap"><div style="flex: 1 1 160px"><div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="gad" style="font-size: 12px; font-weight: 500; color: #5F6359">{{ actLabel }}</label><input id="gad" class="num" type="text" inputmode="decimal" value="{{ amt }}" onChange="{{ setAmt }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div></div><button type="button" onClick="{{ doAct }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Guardar</button></div></sc-if>
+              <sc-if value="{{ g.hasNext }}" hint-placeholder-val="{{ true }}"><span class="num" style="font-size: 13px; font-weight: 600; color: #3A3D36">{{ g.nextMs }}</span></sc-if>
+              <span style="font-size: 12px; color: #5F6359; line-height: 1.5">Las transferencias a {{ g.acct }} cuentan solas como aporte. Si pagas algo con esta plata, márcalo en Movimientos y la meta se ajusta.</span>
               <h4 style="margin: 4px 0 0; font-size: 13px; font-weight: 600; color: #5F6359">Historial</h4>
               <ul style="list-style: none; margin: 0; padding: 0"><sc-for list="{{ g.hist }}" as="x" hint-placeholder-count="2"><li style="display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid #EFEDE6; font-size: 14px"><span>{{ x.t }}</span><strong class="num">{{ x.v }}</strong></li></sc-for></ul>
             </div>
@@ -124,22 +134,26 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
         </article>
       </sc-for>
     </div>
+    <section aria-labelledby="rtd" style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 2px"><h2 id="rtd" style="margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em">Retos opcionales</h2><span style="font-size: 13px; color: #5F6359">Para cuando tengas ganas. Si un reto no sale, no pasa nada y nadie lo ve.</span></div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px"><sc-for list="{{ retos }}" as="r" hint-placeholder-count="3"><article style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px"><strong style="font-size: 15px">{{ r.t }}</strong><span style="font-size: 13px; color: #5F6359; line-height: 1.5">{{ r.d }}</span><button type="button" aria-pressed="{{ r.pressed }}" onClick="{{ r.tog }}" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #141612; background: {{ r.bg }}; color: {{ r.fg }}; cursor: pointer">{{ r.lbl }}</button></article></sc-for></div>
+    </section>
     <sc-if value="{{ hasDone }}" hint-placeholder-val="{{ false }}"><section style="display: flex; flex-direction: column; gap: 10px"><h2 style="margin: 0; font-size: 17px; font-weight: 600">Cumplidas</h2><sc-for list="{{ done }}" as="d" hint-placeholder-count="1"><div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 12px 16px; font-size: 14px"><span style="font-weight: 600">{{ d.name }}</span><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #E3F1E8; color: #1E5A3F">Cumplida · {{ d.saved }}</span></div></sc-for></section></sc-if>
   </main>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1700}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = {
       goals: [
-        { name: 'Viaje a Colombia', type: 'Viaje', target: '', saved: 8400, when: '', acct: 'Ubank Save', hist: [['Aportes 2026 (plan)', '+$9,600'], ['Gastos del viaje ya pagados', '-$1,200']] },
-        { name: 'Fondo de emergencia', type: 'Fondo de emergencia', target: '5,118', saved: 1200, when: 'Dic 2027', acct: 'Ubank Save', hist: [['Aportes 2026 (plan)', '+$1,200']] },
-        { name: 'Invertir en el S&P500', type: 'Inversión', target: '3,000', saved: 1400, when: 'Dic 2027', acct: 'Stake', hist: [['Aportes 2026 (plan)', '+$1,400']] }
+        { name: 'Viaje a Colombia', type: 'Viaje', why: 'Ver a mi mamá en diciembre', target: '10,000', saved: 8400, when: 'Mar 2027', acct: 'Ubank Save', pace: 800, hist: [['Transferencia desde Ubank Spend · automática', '+$800'], ['Pasajes Avianca · pagado con la meta', '-$1,200'], ['Aportes de enero a octubre', '+$8,800']] },
+        { name: 'Fondo de emergencia', type: 'Fondo de emergencia', why: 'Dormir tranquilo si algo pasa', target: '5,118', saved: 1200, when: 'Dic 2027', acct: 'Ubank Save', pace: 150, hist: [['Transferencia desde Ubank Spend · automática', '+$150'], ['Aportes de enero a octubre', '+$1,050']] },
+        { name: 'Invertir en el S&P500', type: 'Inversión', why: '', target: '3,000', saved: 1400, when: 'Dic 2027', acct: 'Stake', pace: 120, hist: [['Compra recurrente en Stake', '+$120'], ['Aportes de enero a octubre', '+$1,280']] }
       ],
-      done: [], open: -1, act: '', amt: '', mode: '', toast: '',
-      nw: { name: '', type: 'Viaje', target: '', when: 'Dic 2027', acct: 'Ubank Save', plan: true }
+      done: [], open: -1, act: '', amt: '', mode: '', toast: '', left: 240, sent: '', retos: [],
+      nw: { name: '', type: 'Viaje', why: '', target: '', when: 'Dic 2027', acct: 'Ubank Save', plan: true }
     };
   }
   renderVals() {
@@ -154,9 +168,16 @@ class Component extends DCLogic {
       const t = num(g.target), sv = g.saved, m = M[g.when] || 0, left = Math.max(t - sv, 0);
       const pct = t ? Math.min(100, Math.round(sv / t * 100)) : 0;
       const isOpen = s.open === i;
-      let status = 'Ponle monto y fecha para saber si vas a tiempo', sc = '#5F6359';
-      if (t && m) { status = left === 0 ? '¡Llegaste! Márcala como cumplida' : 'Aparta ' + fmt(left / m) + ' al mes para llegar en ' + g.when; sc = left === 0 ? '#1E5A3F' : '#3A3D36'; }
+      const MN = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      const at = (k) => { const x = 10 + Math.ceil(k); return MN[x % 12] + ' ' + (2026 + Math.floor(x / 12)); };
+      let status = 'Ponle monto y fecha cuando quieras. Igual cada aporte suma.', sc = '#5F6359', tip = '';
+      if (t && left === 0) { status = '¡Llegaste! Márcala como cumplida'; sc = '#1E5A3F'; }
+      else if (t && g.pace) { const k = left / g.pace; status = 'A este ritmo llegas en ' + at(k); sc = '#1E5A3F'; const a2 = at(left / (g.pace + 50)); if (a2 !== at(k)) tip = 'Con ' + fmt(50) + ' más al mes, llegarías en ' + a2 + '.'; }
+      else if (t && m) { status = 'Apartando ' + fmt(left / m) + ' al mes llegas en ' + g.when; sc = '#3A3D36'; }
+      const ms = [25, 50, 75, 100].map((p) => ({ p: p + '%', on: pct >= p, bg: pct >= p ? '#141612' : '#FFFFFF', fg: pct >= p ? '#F4CF0A' : '#8A8F84', bd: pct >= p ? '#141612' : '#D8D5CB', lbl: pct >= p ? 'Hito alcanzado: ' + p + '%' : 'Hito pendiente: ' + p + '%' }));
+      const nextMs = [25, 50, 75, 100].find((p) => pct < p);
       return {
+        why: g.why, hasWhy: !!g.why, tip, hasTip: !!tip, ms, nextMs: nextMs ? 'Próximo hito: ' + nextMs + '% · te faltan ' + fmt(Math.max(0, t * nextMs / 100 - sv)) : '', hasNext: !!(t && nextMs),
         name: g.name, type: g.type, color: C[g.type] || '#7A8A83', saved: fmt(sv), target: t ? fmt(t) : 'Sin monto', when: g.when || 'Sin fecha', acct: g.acct,
         w: (t ? pct : 0) + '%', pct: t ? pct + '%' : '', status, sc, reached: !!t && left === 0, notReached: !(t && left === 0),
         noTarget: !t,
@@ -169,13 +190,20 @@ class Component extends DCLogic {
     const doAct = () => {
       const a = num(s.amt); if (!a || !g) return;
       const sign = s.act === 'in' ? 1 : -1;
-      const ng = updG(s.open, { saved: Math.max(0, g.saved + sign * a), hist: [[s.act === 'in' ? 'Aporte' : 'Usaste dinero de la meta', (sign > 0 ? '+' : '-') + fmt(a)]].concat(g.hist) });
-      this.setState({ goals: ng, act: '', amt: '', toast: s.act === 'in' ? 'Aporte de ' + fmt(a) + ' registrado. +5 puntos' : '' });
+      const ns = Math.max(0, g.saved + sign * a), t0 = num(g.target);
+      const ng = updG(s.open, { saved: ns, hist: [[s.act === 'in' ? 'Aporte a mano' : 'Lo usaste para lo que era', (sign > 0 ? '+' : '-') + fmt(a)]].concat(g.hist) });
+      const cross = t0 ? [25, 50, 75, 100].filter((p) => g.saved / t0 * 100 < p && ns / t0 * 100 >= p).pop() : 0;
+      this.setState({ goals: ng, act: '', amt: '', toast: cross ? '¡Llegaste al ' + cross + '% de "' + g.name + '"! +20 puntos' : (s.act === 'in' ? 'Aporte de ' + fmt(a) + ' registrado. +5 puntos' : 'Listo. Para eso la ahorraste.') });
     };
     const nt = num(s.nw.target), nm = M[s.nw.when] || 1;
     const setN = (k) => (e) => this.setState({ nw: Object.assign({}, s.nw, { [k]: e.target.value }) });
     let tot = 0, totT = 0; s.goals.forEach((x) => { tot += x.saved; totT += num(x.target); });
+    const RETOS = [['delivery', 'Una semana sin delivery', 'Lo que no gastes en domicilios va a tu meta.'], ['cafe', 'Café en casa por 2 semanas', 'Calculamos lo que ahorras y te sugerimos aportarlo.'], ['redondeo', 'Redondea cada gasto', 'La diferencia al dólar siguiente va a tu meta.']];
+    const retos = RETOS.map(([id, t, d]) => { const on = s.retos.indexOf(id) >= 0; return { t, d, on, off: !on, lbl: on ? 'Estás dentro' : 'Me animo', bg: on ? '#141612' : '#FFFFFF', fg: on ? '#F4CF0A' : '#141612', pressed: String(on), tog: () => this.setState({ retos: on ? s.retos.filter((x) => x !== id) : s.retos.concat([id]), toast: on ? 'Saliste del reto. Sin problema.' : 'Te uniste a "' + t + '". Si no sale, no pasa nada.' }) }; });
+    const sendTo = s.goals.map((x, i) => ({ name: x.name, pick: () => this.setState({ goals: updG(i, { saved: x.saved + s.left, hist: [['Lo que te sobró en noviembre', '+' + fmt(s.left)]].concat(x.hist) }), sent: x.name, toast: fmt(s.left) + ' van a "' + x.name + '". +10 puntos' }) }));
     return {
+      retos, sendTo, leftTxt: fmt(s.left), showLeft: !s.sent && s.left > 0, notNow: () => this.setState({ sent: 'no' }),
+      monthIn: fmt(s.goals.reduce((a, x) => a + (x.pace || 0), 0)),
       goals, done: s.done, hasDone: s.done.length > 0,
       total: fmt(tot), count: s.goals.length,
       actIn: s.act === 'in', actOut: s.act === 'out', hasAct: s.act !== '', actLabel: s.act === 'in' ? 'Cuánto aportas' : 'Cuánto usaste',
@@ -185,7 +213,7 @@ class Component extends DCLogic {
       nw: s.nw, setName: setN('name'), setTarget: setN('target'), setWhen: setN('when'), setAcct: setN('acct'),
       planS: String(s.nw.plan), togPlan: () => this.setState({ nw: Object.assign({}, s.nw, { plan: !s.nw.plan }) }), planBg: s.nw.plan ? '#141612' : '#CFCCC2', planJ: s.nw.plan ? 'flex-end' : 'flex-start',
       calcM: nt ? fmt(nt / nm) : '$0', calcW: nt ? fmt(nt / nm * 12 / 52) : '$0', calcWhen: s.nw.when, hasCalc: nt > 0,
-      addG: () => { if (!s.nw.name.trim()) return; this.setState({ goals: s.goals.concat([{ name: s.nw.name, type: s.nw.type, target: s.nw.target, saved: 0, when: s.nw.when, acct: s.nw.acct, hist: [] }]), mode: '', toast: s.nw.plan ? 'Meta creada y agregada a tu plan anual' : 'Meta creada', nw: { name: '', type: 'Viaje', target: '', when: 'Dic 2027', acct: 'Ubank Save', plan: true } }); },
+      addG: () => { if (!s.nw.name.trim()) return; this.setState({ goals: s.goals.concat([{ name: s.nw.name, type: s.nw.type, target: s.nw.target, saved: 0, when: s.nw.when, acct: s.nw.acct, why: s.nw.why, pace: 0, hist: [] }]), mode: '', toast: s.nw.plan ? 'Meta creada y agregada a tu plan anual' : 'Meta creada', nw: { name: '', type: 'Viaje', why: '', target: '', when: 'Dic 2027', acct: 'Ubank Save', plan: true } }); },
       hasToast: !!s.toast, toast: s.toast, closeToast: () => this.setState({ toast: '' })
     };
   }

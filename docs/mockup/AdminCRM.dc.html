@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración · Contactos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Administración" style="flex: 1 1 220px; max-width: 256px; background: #141612; color: #FFFFFF; padding: 28px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 8px"><img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 38px; height: 38px"><span style="display: flex; flex-direction: column"><strong style="font-size: 15px">Revolución 360</strong><span style="font-size: 12px; color: #8FD3B9; font-weight: 600">Administración</span></span></div>
+    <a href="Main.dc.html" style="text-decoration: none; font-size: 13px; color: #9FC8B9; padding: 6px 10px 22px">‹ Volver a la app</a>
+    <a href="Admin.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Resumen</a><a href="AdminUsuarios.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Usuarios y accesos</a><a href="AdminMenu.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Menú y funciones</a><a href="AdminAcademia.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Academia</a><a href="AdminPlanes.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Planes y precios</a><a href="AdminPaises.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contenido por país</a><a href="AdminCRM.dc.html" aria-current="page" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: #2A2D27; color: #FFFFFF">Contactos</a><a href="AdminCampanas.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Campañas de correo</a><a href="AdminAuto.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Automatizaciones</a><a href="AdminSoporte.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Soporte y privacidad</a><a href="AdminActividad.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Registro de actividad</a>
+    <p style="margin-top: auto; font-size: 12px; color: #7FA9A0; line-height: 1.5; padding: 0 10px">Este panel no muestra los datos financieros de los usuarios.</p>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 44px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; max-width: 1280px">
+<header style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap"><div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">CRM</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Contactos</h1></div><div style="display: flex; gap: 10px"><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Importar CSV</button><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; background: #141612">+ Contacto</button></div></header>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px"><div style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; color: #5F6359">Contactos</span><span class="num big" style="font-size: 24px; font-weight: 600">[N]</span><span style="font-size: 12px; color: #5F6359">+[N] esta semana</span></div><div style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; color: #5F6359">Leads sin cuenta</span><span class="num big" style="font-size: 24px; font-weight: 600">[N]</span><span style="font-size: 12px; color: #5F6359">Webinar, diagnóstico y web</span></div><div style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; color: #5F6359">Aceptan marketing</span><span class="num big" style="font-size: 24px; font-weight: 600">[%]</span><span style="font-size: 12px; color: #5F6359">El resto solo recibe avisos de cuenta</span></div><div style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; color: #5F6359">Se dieron de baja</span><span class="num big" style="font-size: 24px; font-weight: 600">[N]</span><span style="font-size: 12px; color: #5F6359">Últimos 30 días</span></div></div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start">
+      <section aria-label="Lista de contactos" style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center"><label for="cq" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Buscar</label><input id="cq" type="search" value="{{ q }}" onChange="{{ setQ }}" placeholder="Buscar por nombre o correo" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; flex: 1 1 240px; width: auto"><span class="num" style="font-size: 13px; color: #5F6359">{{ count }} contactos</span></div>
+        <div role="radiogroup" aria-label="Filtrar por etapa" style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{ filters }}" as="f" hint-placeholder-count="6"><button type="button" role="radio" aria-checked="{{ f.checked }}" onClick="{{ f.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1.5px solid {{ f.border }}; background: {{ f.bg }}; color: {{ f.fg }}; cursor: pointer">{{ f.name }}</button></sc-for></div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px"><thead><tr style="text-align: left; font-size: 12px; color: #5F6359"><th style="padding: 8px; font-weight: 600">Contacto</th><th style="padding: 8px; font-weight: 600">Etiquetas</th><th style="padding: 8px; font-weight: 600">Origen</th><th style="padding: 8px; font-weight: 600">Última actividad</th></tr></thead>
+          <tbody><sc-for list="{{ rows }}" as="r" hint-placeholder-count="6"><tr onClick="{{ r.pick }}" aria-selected="{{ r.cur }}" style="border-top: 1px solid #EFEEE8; background: {{ r.bg }}; cursor: pointer"><td style="padding: 12px 8px"><span style="display: flex; flex-direction: column; gap: 2px"><strong>{{ r.name }}</strong><span style="font-size: 12px; color: #5F6359">{{ r.email }}</span></span></td><td style="padding: 12px 8px"><span style="display: flex; gap: 4px; flex-wrap: wrap"><sc-for list="{{ r.tags }}" as="tg" hint-placeholder-count="2"><span style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: {{ tg.bg }}; color: {{ tg.fg }}; white-space: nowrap">{{ tg.t }}</span></sc-for></span></td><td style="padding: 12px 8px; color: #3A3D36">{{ r.src }}</td><td style="padding: 12px 8px; color: #5F6359">{{ r.last }}</td></tr></sc-for></tbody></table>
+      </section>
+      <aside aria-labelledby="cp" style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; gap: 12px; align-items: center"><span aria-hidden="true" style="width: 46px; height: 46px; border-radius: 50%; background: #141612; color: #F4CF0A; font-weight: 600; font-size: 18px; display: flex; align-items: center; justify-content: center">{{ p.initial }}</span><span style="display: flex; flex-direction: column; gap: 2px"><h2 id="cp" style="margin: 0; font-size: 18px; font-weight: 600">{{ p.name }}</h2><span style="font-size: 13px; color: #5F6359">{{ p.email }}</span></span></div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{ p.tags }}" as="tg" hint-placeholder-count="2"><span style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: {{ tg.bg }}; color: {{ tg.fg }}; white-space: nowrap">{{ tg.t }}</span></sc-for><button type="button" style="font: inherit; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; border: 1.5px dashed #BDB9AD; background: transparent; cursor: pointer">+ Etiqueta</button></div>
+        <dl style="margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; font-size: 13px"><dt style="color: #5F6359">Origen</dt><dd style="margin: 0">{{ p.src }}</dd><dt style="color: #5F6359">Marketing</dt><dd style="margin: 0">{{ p.cons }}</dd><dt style="color: #5F6359">País</dt><dd style="margin: 0">Australia</dd></dl>
+        <h3 style="margin: 6px 0 0; font-size: 14px; font-weight: 600">Actividad</h3>
+        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column"><sc-for list="{{ p.tl }}" as="e" hint-placeholder-count="4"><li style="display: flex; gap: 12px; padding: 8px 0; border-top: 1px solid #EFEEE8; font-size: 13px"><span style="width: 64px; flex: none; color: #5F6359">{{ e.d }}</span><span>{{ e.t }}</span></li></sc-for></ol>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap"><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; min-height: 40px">Enviar un correo</button><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; min-height: 40px">Agregar a automatización</button></div>
+      </aside>
+    </div>
+    <p style="margin: 0; font-size: 12px; color: #5F6359; line-height: 1.5">El CRM solo guarda datos de contacto, etiquetas y eventos de uso (por ejemplo "hizo su primer cierre"). Nunca muestra montos ni movimientos de nadie. Los correos de marketing solo van a quien dio su consentimiento, siempre con remitente claro y enlace para darse de baja (Spam Act 2003).</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1050}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { q: '', f: 'Todos', sel: 0 }; }
+  renderVals() {
+    const TC = {'Lead': ['#EFEDE6', '#3A3D36'], 'Primer mes': ['#FFF3B0', '#5A4500'], 'Pagando': ['#E3F1E8', '#1E5A3F'], 'Alumno': ['#E3ECF6', '#2D5C8A'], 'Solo lectura': ['#F6E7DC', '#8A4B12'], 'Webinar': ['#F1F0EA', '#3A3D36'], 'Diagnóstico': ['#F1F0EA', '#3A3D36'], 'Ruta 2026': ['#F1F0EA', '#3A3D36']};
+    const s = this.state;
+    const L = [
+      ['Ana Morales', 'ana.m@correo.com', 'Webinar', ['Primer mes', 'Webinar'], 'Sí', 'Hace 2 h', [['Hoy 09:12', 'Hizo su primer cierre de mes'], ['Ayer', 'Abrió el correo "Tu primer mes termina en 3 días"'], ['12 nov', 'Terminó el asistente del plan'], ['10 nov', 'Pagó su primer mes y creó su cuenta'], ['8 nov', 'Se registró en el webinar "Ordena tu plata en 2027"']]],
+      ['Carlos Pérez', 'carlosp@correo.com', 'Diagnóstico', ['Lead', 'Diagnóstico'], 'Sí', 'Hace 1 día', [['Ayer', 'Hizo el diagnóstico gratuito en la web'], ['Ayer', 'Recibió "Tu resultado del diagnóstico"']]],
+      ['Laura Gómez', 'laura.g@correo.com', 'Registro en la app', ['Pagando'], 'Solo avisos de cuenta', 'Hace 3 días', [['21 nov', 'Abrió la app'], ['1 nov', 'Pagó su mensualidad']]],
+      ['Diego Ríos', 'diego.r@correo.com', 'Código de alumno', ['Alumno', 'Ruta 2026'], 'Sí', 'Hace 5 días', [['19 nov', 'Terminó la clase "Gastos hormiga"'], ['2 nov', 'Entró con código de alumno RDD-2026']]],
+      ['Sofía Castro', 'sofi.c@correo.com', 'Registro en la app', ['Solo lectura'], 'Sí', 'Hace 40 días', [['15 oct', 'Su suscripción terminó'], ['12 oct', 'Canceló desde Suscripción']]],
+      ['Andrés Vélez', 'andres.v@correo.com', 'Formulario web', ['Lead'], 'Sí', 'Hace 8 días', [['16 nov', 'Dejó su correo en revoluciondeldinero.com']]]
+    ];
+    const F = ['Todos', 'Lead', 'Primer mes', 'Pagando', 'Alumno', 'Solo lectura'];
+    const filters = F.map((k) => ({ name: k, checked: String(s.f === k), border: s.f === k ? '#141612' : '#E6E4DC', bg: s.f === k ? '#141612' : '#FFFFFF', fg: s.f === k ? '#FFFFFF' : '#3A3D36', pick: () => this.setState({ f: k }) }));
+    const q = s.q.toLowerCase();
+    const tagsOf = (t) => t.map((x) => ({ t: x, bg: (TC[x] || ['#F1F0EA'])[0], fg: (TC[x] || ['', '#3A3D36'])[1] }));
+    const rows = L.map((c, i) => ({ c, i })).filter(({ c }) => (s.f === 'Todos' || c[3].indexOf(s.f) >= 0) && (!q || (c[0] + c[1]).toLowerCase().indexOf(q) >= 0)).map(({ c, i }) => ({
+      name: c[0], email: c[1], src: c[2], tags: tagsOf(c[3]), cons: c[4], last: c[5], cur: String(s.sel === i), bg: s.sel === i ? '#FFF8D6' : 'transparent', pick: () => this.setState({ sel: i }) }));
+    const c = L[s.sel];
+    return { filters, rows, count: String(rows.length), q: s.q, setQ: (e) => this.setState({ q: e.target.value }),
+      p: { name: c[0], email: c[1], src: c[2], cons: c[4], initial: c[0].charAt(0), tags: tagsOf(c[3]), tl: c[6].map(([d, t]) => ({ d, t })) } };
+  }
+}
+</script>
+</body>
+</html>

@@ -75,55 +75,64 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
   </nav>
   <main style="flex: 999 1 560px; min-width: 0; padding: 40px 48px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; max-width: 1220px">
     <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
-      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Dónde está tu dinero invertido y cuánto vale</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Inversiones</h1></div>
-      <button type="button" onClick="{{ toggleNew }}" aria-expanded="{{ newOpen }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 18px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">+ Agregar inversión</button>
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">Qué tienes, dónde y cuánto vale</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Inversiones</h1></div>
+      <button type="button" onClick="{{ toggleNew }}" aria-expanded="{{ newOpen }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">+ Agregar activo</button>
     </header>
     <section aria-label="Totales" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 28px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px">
-      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Vale hoy</span><span class="num big" style="font-size: 36px; font-weight: 600; letter-spacing: -0.03em">{{ total }}</span></div>
-      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Has puesto</span><span class="num big" style="font-size: 26px; font-weight: 600">{{ aportT }}</span></div>
-      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Resultado</span><span class="num big" style="font-size: 26px; font-weight: 600; color: {{ resC }}">{{ res }}</span></div>
-      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Aportaste en 2026 (plan)</span><span class="num big" style="font-size: 26px; font-weight: 600">$1,400</span><span style="font-size: 12px; color: #5F6359">1.5% de lo que entró</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Vale hoy</span><span class="num big" style="font-size: 36px; font-weight: 600; letter-spacing: -0.03em">{{ total }}</span><span style="font-size: 12px; color: #5F6359">{{ count }} activos</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Has puesto</span><span class="num big" style="font-size: 26px; font-weight: 600">{{ costT }}</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Resultado</span><span class="num big" style="font-size: 26px; font-weight: 600">{{ res }}</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #5F6359">Dividendos recibidos</span><span class="num big" style="font-size: 26px; font-weight: 600">{{ divT }}</span></div>
     </section>
-    <sc-if value="{{ showNew }}" hint-placeholder-val="{{ true }}">
-      <section aria-labelledby="nid" style="background: #FFFFFF; border-radius: 14px; padding: 24px 26px; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00; display: flex; flex-direction: column; gap: 16px">
-        <div style="display: flex; flex-direction: column; gap: 4px"><h2 id="nid" style="margin: 0; font-size: 20px; font-weight: 600">Agregar inversión</h2><span style="font-size: 13px; color: #5F6359">Cualquier lugar donde tengas dinero invertido. Tú le pones el nombre.</span></div>
-        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
-          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nnd" style="font-size: 12px; font-weight: 500; color: #5F6359">Nombre (app, fondo o plataforma)</label><input id="nnd" type="text" value="{{ nw.name }}" onChange="{{ setName }}" placeholder="Ej. AustralianSuper, CommSec, Binance" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
-          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nld" style="font-size: 12px; font-weight: 500; color: #5F6359">Vincular a una línea de tu plan</label><select id="nld" value="{{ nw.link }}" onChange="{{ setLink }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 10px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF"><option value="">Ninguna</option><option value="Investment S&amp;P500">Investment S&amp;P500</option><option value="Emergency fund">Emergency fund</option></select></div>
-          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nad" style="font-size: 12px; font-weight: 500; color: #5F6359">Cuánto has puesto en total</label><input id="nad" class="num" type="text" inputmode="decimal" value="{{ nw.aport }}" onChange="{{ setAport }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
-          <div style="display: flex; flex-direction: column; gap: 6px"><label for="nvd" style="font-size: 12px; font-weight: 500; color: #5F6359">Cuánto vale hoy</label><input id="nvd" class="num" type="text" inputmode="decimal" value="{{ nw.val }}" onChange="{{ setVal }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px"></div>
+    <sc-if value="{{ showNew }}" hint-placeholder-val="{{ false }}"><section aria-labelledby="nwd" style="background: #FFFFFF; border-radius: 14px; padding: 24px 26px; border: 1.5px solid #141612; box-shadow: 5px 5px 0 #F2CD00; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><h2 id="nwd" style="margin: 0; font-size: 20px; font-weight: 600">Agregar un activo</h2><span style="font-size: 13px; color: #5F6359; line-height: 1.5">Una acción, un ETF, una cripto, un fondo o tu super. Después registras tus compras.</span></div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="ntd" style="font-size: 12px; font-weight: 500; color: #5F6359">Símbolo o nombre</label><input id="ntd" type="text" placeholder="Ej. VOO, BTC, AustralianSuper" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="nyd" style="font-size: 12px; font-weight: 500; color: #5F6359">Tipo</label><select id="nyd" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option>ETF</option><option>Acciones</option><option>Cripto</option><option>Fondo</option><option>Super</option><option>Propiedad</option><option>Otro</option></select></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="npd" style="font-size: 12px; font-weight: 500; color: #5F6359">Plataforma (opcional)</label><input id="npd" type="text" placeholder="Ej. Stake, CommSec, Binance" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 8px"><span id="ntd" style="font-size: 12px; font-weight: 500; color: #5F6359">Tipo</span>
-          <div role="radiogroup" aria-labelledby="ntd" style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{ types }}" as="t" hint-placeholder-count="7"><button type="button" role="radio" aria-checked="{{ t.checked }}" onClick="{{ t.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 12px; border-radius: 999px; border: 2px solid {{ t.border }}; background: {{ t.bg }}; color: #141612; cursor: pointer">{{ t.name }}</button></sc-for></div></div>
-        <div style="display: flex; justify-content: flex-end; gap: 10px"><button type="button" onClick="{{ toggleNew }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; padding: 0 16px; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; border-radius: 12px; cursor: pointer">Cancelar</button><button type="button" onClick="{{ addP }}" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 46px; padding: 0 20px; border: 0; background: #141612; color: #FFFFFF; border-radius: 12px; cursor: pointer">Agregar</button></div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px"><button type="button" onClick="{{ toggleNew }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Cancelar</button><button type="button" onClick="{{ toggleNew }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Agregar</button></div>
+      </section></sc-if>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 18px; align-items: start">
+      <section aria-label="Tus inversiones" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 20px; display: flex; flex-direction: column; gap: 14px"><div role="radiogroup" aria-label="Agrupar inversiones" style="display: inline-flex; gap: 4px; padding: 4px; background: #F1F0EA; border-radius: 999px; align-self: flex-start"><sc-for list="{{ views }}" as="v" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ v.checked }}" onClick="{{ v.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: {{ v.bg }}; color: {{ v.fg }}; cursor: pointer">{{ v.name }}</button></sc-for></div><sc-if value="{{ isAsset }}" hint-placeholder-val="{{ true }}"><ul role="listbox" aria-label="Tus activos" style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px"><sc-for list="{{ assets }}" as="r" hint-placeholder-count="5"><li role="option" aria-selected="{{ r.cur }}" onClick="{{ r.pick }}" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid {{ r.bd }}; background: {{ r.bg }}; cursor: pointer">
+          <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 12px; background: {{ r.color }}; color: #FFFFFF; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: none">{{ r.tk }}</span>
+          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ r.name }}</strong><span style="font-size: 12px; color: #5F6359">{{ r.type }} · {{ r.plat }} · {{ r.qty }}</span></span>
+          <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><strong class="num" style="font-size: 15px">{{ r.val }}</strong><span class="num" style="font-size: 12px; font-weight: 600; color: {{ r.resC }}">{{ r.res }}</span></span>
+        </li></sc-for></ul></sc-if>
+      <sc-if value="{{ isGroup }}" hint-placeholder-val="{{ false }}"><ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px"><sc-for list="{{ groups }}" as="gr" hint-placeholder-count="4"><li style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px"><span style="display: flex; flex-direction: column"><strong style="font-size: 14px">{{ gr.name }}</strong><span style="font-size: 12px; color: #5F6359">{{ gr.n }}</span></span><span style="display: flex; gap: 12px; align-items: baseline"><span class="num" style="font-size: 12px; font-weight: 600; color: {{ gr.resC }}">{{ gr.res }}</span><strong class="num" style="font-size: 15px">{{ gr.val }}</strong></span></div><div aria-hidden="true" style="height: 8px; border-radius: 4px; background: #EFEEE8; overflow: hidden"><div style="height: 100%; width: {{ gr.w }}; background: {{ gr.color }}; border-radius: 4px"></div></div></li></sc-for></ul></sc-if></section>
+      <section aria-labelledby="add" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 22px 24px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start"><div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #5F6359">{{ a.type }} · en {{ a.plat }}</span><h2 id="add" style="margin: 0; font-size: 20px; font-weight: 600">{{ a.tk }} · {{ a.name }}</h2></div><strong class="num big" style="font-size: 24px">{{ a.val }}</strong></div>
+        <dl style="margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+          <div><dt style="font-size: 11px; color: #5F6359">Tienes</dt><dd class="num" style="margin: 2px 0 0; font-size: 14px; font-weight: 600">{{ a.qty }}</dd></div>
+          <div><dt style="font-size: 11px; color: #5F6359">Has puesto</dt><dd class="num" style="margin: 2px 0 0; font-size: 14px; font-weight: 600">{{ a.cost }}</dd></div>
+          <div><dt style="font-size: 11px; color: #5F6359">Resultado</dt><dd class="num" style="margin: 2px 0 0; font-size: 14px; font-weight: 600; color: {{ a.resC }}">{{ a.res }}</dd></div>
+          <div><dt style="font-size: 11px; color: #5F6359">Dividendos</dt><dd class="num" style="margin: 2px 0 0; font-size: 14px; font-weight: 600">{{ a.div }}</dd></div>
+        </dl>
+        <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; background: #F8F7F2; border-radius: 14px; padding: 12px 14px">
+          <div style="flex: 1 1 180px"><div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="prd" style="font-size: 12px; font-weight: 500; color: #5F6359">{{ a.priceLbl }}</label><input id="prd" class="num" type="text" inputmode="decimal" value="{{ price }}" onChange="{{ setPrice }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div></div>
+          <span style="font-size: 12px; color: #5F6359; padding-bottom: 12px">Actualizado: {{ a.upd }} · lo escribes tú, sin conectar tu cuenta</span>
+        </div>
+        <sc-if value="{{ a.hasRec }}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #1E5A3F; background: #E3F1E8; border-radius: 10px; padding: 10px 12px">Recurrente: {{ a.rec }}</span></sc-if>
+        <sc-if value="{{ hasMsg }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin: 0; font-size: 13px; font-weight: 600; color: #1E5A3F">{{ msg }}</p></sc-if>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h3 style="margin: 0; font-size: 15px; font-weight: 600">Operaciones</h3><button type="button" onClick="{{ togOp }}" aria-expanded="{{ opOpen }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; min-height: 40px">+ Operación</button></div>
+        <sc-if value="{{ op }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 12px; border: 1.5px solid #141612; border-radius: 14px; padding: 14px">
+          <div style="display: flex; flex-direction: column; gap: 8px"><span id="okd" style="font-size: 12px; font-weight: 500; color: #5F6359">Tipo</span><div role="radiogroup" aria-labelledby="okd" style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{ kinds }}" as="k" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ k.checked }}" onClick="{{ k.pick }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 2px solid {{ k.border }}; background: {{ k.bg }}; color: #141612; cursor: pointer">{{ k.name }}</button></sc-for></div></div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+            <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="odd" style="font-size: 12px; font-weight: 500; color: #5F6359">Fecha</label><input id="odd" type="text" value="{{ nop.d }}" onChange="{{ setD }}" placeholder="Ej. 1 dic" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+            <sc-if value="{{ notDiv }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="oqd" style="font-size: 12px; font-weight: 500; color: #5F6359">Cantidad</label><input id="oqd" class="num" type="text" inputmode="decimal" value="{{ nop.q }}" onChange="{{ setQ }}" placeholder="0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div></sc-if>
+            <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="opd" style="font-size: 12px; font-weight: 500; color: #5F6359">Precio por unidad o monto</label><input id="opd" class="num" type="text" inputmode="decimal" value="{{ nop.p }}" onChange="{{ setP }}" placeholder="$0" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 8px"><button type="button" onClick="{{ togOp }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Cancelar</button><button type="button" onClick="{{ addOp }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; ">Guardar</button></div>
+        </div></sc-if>
+        <ul style="list-style: none; margin: 0; padding: 0"><sc-for list="{{ ops }}" as="o" hint-placeholder-count="4"><li style="display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid #EFEEE8; font-size: 14px"><span style="display: flex; flex-direction: column; gap: 2px"><strong style="color: {{ o.kc }}">{{ o.k }}</strong><span class="num" style="font-size: 12px; color: #5F6359">{{ o.d }} · {{ o.det }}</span></span><strong class="num">{{ o.amt }}</strong></li></sc-for></ul>
       </section>
-    </sc-if>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px">
-      <sc-for list="{{ items }}" as="p" hint-placeholder-count="3">
-        <article style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 20px; display: flex; flex-direction: column; gap: 14px">
-          <div style="display: flex; gap: 12px; align-items: center">
-            <span aria-hidden="true" style="width: 42px; height: 42px; border-radius: 13px; background: {{ p.color }}; color: #FFFFFF; font-weight: 600; font-size: 17px; display: flex; align-items: center; justify-content: center; flex: none">{{ p.initial }}</span>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><h3 style="margin: 0; font-size: 16px; font-weight: 600">{{ p.name }}</h3><span style="font-size: 12px; color: #5F6359">{{ p.type }} · {{ p.share }}</span></div>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
-            <div style="display: flex; flex-direction: column; gap: 5px"><label for="{{ p.idA }}" style="font-size: 11px; font-weight: 500; color: #5F6359">Has puesto</label><input id="{{ p.idA }}" class="num" type="text" inputmode="decimal" value="{{ p.aport }}" onChange="{{ p.setA }}" placeholder="$0" style="font: inherit; font-size: 15px; font-weight: 600; height: 42px; padding: 0 10px; border: 1px solid #E6E4DC; border-radius: 10px; background: #F8F7F2; width: 100%; box-sizing: border-box"></div>
-            <div style="display: flex; flex-direction: column; gap: 5px"><label for="{{ p.idV }}" style="font-size: 11px; font-weight: 500; color: #5F6359">Vale hoy</label><input id="{{ p.idV }}" class="num" type="text" inputmode="decimal" value="{{ p.val }}" onChange="{{ p.setV }}" placeholder="$0" style="font: inherit; font-size: 15px; font-weight: 600; height: 42px; padding: 0 10px; border: 1px solid #E6E4DC; border-radius: 10px; background: #F8F7F2; width: 100%; box-sizing: border-box"></div>
-          </div>
-          <div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: #5F6359">Resultado</span><strong class="num" style="color: {{ p.resC }}">{{ p.res }}</strong></div>
-          <sc-if value="{{ p.linked }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #1E5A3F; background: #FFF8D6; border-radius: 10px; padding: 8px 10px">Vinculada a "{{ p.link }}" de tu plan: tus aportes se suman solos ($1,400 en 2026).</span></sc-if>
-          <span style="font-size: 11px; color: #5F6359">Actualizado: [FECHA]</span>
-        </article>
-      </sc-for>
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start">
-      <section aria-labelledby="dist" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 14px"><h2 id="dist" style="margin: 0; font-size: 17px; font-weight: 600">Cómo está repartido</h2><sc-if value="{{ hasDist }}" hint-placeholder-val="{{ false }}">
-        <div style="display: flex; flex-direction: column; gap: 12px">
-          <div aria-hidden="true" style="display: flex; height: 14px; border-radius: 7px; overflow: hidden; gap: 2px"><sc-for list="{{ dist }}" as="d" hint-placeholder-count="3"><div style="background: {{ d.color }}; width: {{ d.w }}"></div></sc-for></div>
-          <sc-for list="{{ dist }}" as="d" hint-placeholder-count="3"><div style="display: flex; align-items: center; gap: 10px; font-size: 14px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: {{ d.color }}"></span><span style="flex: 1">{{ d.name }}</span><span class="num" style="color: #5F6359">{{ d.pct }}</span><strong class="num" style="width: 80px; text-align: right">{{ d.amt }}</strong></div></sc-for>
-        </div>
-      </sc-if>
-      <sc-if value="{{ noDist }}" hint-placeholder-val="{{ true }}"><p style="margin: 0; font-size: 13px; color: #5F6359; line-height: 1.5">Escribe cuánto vale hoy cada inversión y aquí verás cómo está repartido tu dinero.</p></sc-if></section>
-      <div style="display: flex; flex-direction: column; gap: 12px"><p style="margin: 0; font-size: 13px; color: #3A3D36; background: #E3ECF6; border-radius: 14px; padding: 14px 16px; line-height: 1.5"><strong>¿Tienes super?</strong> Casi todos en Australia tienen uno, y a veces más de uno. Agrégalo para ver todo tu dinero invertido en un solo lugar.</p><p style="margin: 0; font-size: 12px; color: #5F6359">Solo para seguimiento: la app no recomienda dónde invertir. Los valores los actualizas tú, sin dar acceso a tus cuentas.</p></div>
+      <section aria-labelledby="dist" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 24px; display: flex; flex-direction: column; gap: 14px"><h2 id="dist" style="margin: 0; font-size: 17px; font-weight: 600">Por tipo</h2><div style="display: flex; flex-direction: column; gap: 12px">
+          <div aria-hidden="true" style="display: flex; height: 14px; border-radius: 7px; overflow: hidden; gap: 2px"><sc-for list="{{ dist }}" as="d" hint-placeholder-count="4"><div style="background: {{ d.color }}; width: {{ d.w }}"></div></sc-for></div>
+          <sc-for list="{{ dist }}" as="d" hint-placeholder-count="4"><div style="display: flex; align-items: center; gap: 10px; font-size: 14px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: {{ d.color }}"></span><span style="flex: 1">{{ d.name }}</span><span class="num" style="color: #5F6359">{{ d.pct }}</span><strong class="num" style="width: 80px; text-align: right">{{ d.val }}</strong></div></sc-for>
+        </div></section>
+      <p style="margin: 0; font-size: 12px; color: #5F6359; line-height: 1.5">Solo para seguimiento: la app no recomienda qué comprar ni vender. Los precios los escribes tú, sin dar acceso a tus cuentas. Las compras recurrentes vinculadas a tu plan se suman solas cada mes.</p>
     </div>
   </main>
 </div>
@@ -133,50 +142,76 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = {
-      list: [
-        { name: 'Stake', type: 'Acciones y ETF', aport: '', val: '', link: 'Investment S&P500' },
-        { name: 'Raiz', type: 'Fondos', aport: '', val: '', link: '' },
-        { name: 'Cripto', type: 'Cripto', aport: '', val: '', link: '' }
+      assets: [
+        { tk: 'VOO', name: 'Vanguard S&P 500 ETF', type: 'ETF', plat: 'Stake', price: '552.10', upd: '20 nov', unit: 'acciones',
+          rec: 'Compra $120 cada mes · vinculada a "Investment S&P500" de tu plan',
+          ops: [['Compra', '1 nov', 0.22, 545.0, 0], ['Dividendo', '28 sep', 0, 0, 14.6], ['Compra', '1 oct', 0.23, 521.7, 0], ['Compra', 'Ene a sep', 2.12, 470.0, 0]] },
+        { tk: 'IVV', name: 'iShares S&P 500 ETF', type: 'ETF', plat: 'CommSec', price: '61.40', upd: '20 nov', unit: 'unidades', rec: '',
+          ops: [['Compra', '15 mar', 20, 52.1, 0], ['Venta', '2 ago', 5, 58.9, 0]] },
+        { tk: 'BTC', name: 'Bitcoin', type: 'Cripto', plat: 'Binance', price: '97,000', upd: '18 nov', unit: 'BTC', rec: '',
+          ops: [['Compra', '10 feb', 0.012, 75000, 0]] },
+        { tk: 'Raiz', name: 'Raiz Moderately Aggressive', type: 'Fondo', plat: 'Raiz', price: '2,380', upd: '1 nov', unit: 'saldo', rec: 'Redondeo automático de compras',
+          ops: [['Aporte', 'Ene a oct', 1, 2100, 0]] },
+        { tk: 'Super', name: 'AustralianSuper Balanced', type: 'Super', plat: 'AustralianSuper', price: '48,200', upd: '30 sep', unit: 'saldo', rec: 'Aporte del empleador cada quincena',
+          ops: [['Saldo inicial', '1 ene', 1, 41000, 0]] }
       ],
-      showNew: false, nw: { name: '', type: 'Super', aport: '', val: '', link: '' }
+      view: 'activo', sel: 0, op: false, nop: { k: 'Compra', d: '', q: '', p: '' }, msg: '', showNew: false
     };
   }
   renderVals() {
-    const T = { 'Acciones y ETF': '#141612', 'Fondos': '#4C7FB5', 'Cripto': '#E3B800', 'Super': '#2D5C8A', 'Ahorro con interés': '#6FA898', 'Propiedad': '#C46A2A', 'Otro': '#A9B3AE' };
+    const T = { 'Acciones': '#141612', 'ETF': '#3E8C7A', 'Fondo': '#6E8FB5', 'Cripto': '#E3B800', 'Super': '#2D5C8A', 'Propiedad': '#C46A2A', 'Otro': '#A9B3AE' };
     const num = (x) => parseFloat(String(x).replace(/[^0-9.\-]/g, '')) || 0;
     const fmt = (v) => (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-AU');
+    const fq = (v) => (Math.round(v * 10000) / 10000).toLocaleString('en-AU');
     const s = this.state;
-    const upd = (i, patch) => { const l = s.list.slice(); l[i] = Object.assign({}, l[i], patch); this.setState({ list: l }); };
-    let tv = 0, ta = 0;
-    s.list.forEach((p) => { tv += num(p.val); ta += num(p.aport); });
-    const items = s.list.map((p, i) => {
-      const v = num(p.val), a = num(p.aport), has = String(p.val).trim() !== '' && String(p.aport).trim() !== '';
-      const g = v - a;
-      return {
-        name: p.name, type: p.type, color: T[p.type] || '#A9B3AE', initial: p.name.charAt(0).toUpperCase(),
-        aport: p.aport, val: p.val, idA: 'a' + i + 'd', idV: 'v' + i + 'd',
-        setA: (e) => upd(i, { aport: e.target.value }), setV: (e) => upd(i, { val: e.target.value }),
-        linked: !!p.link, link: p.link,
-        res: has ? (g >= 0 ? '+' : '') + fmt(g) + (a ? ' (' + (g / a * 100).toFixed(1) + '%)' : '') : 'Completa ambos valores',
-        resC: has ? (g < 0 ? '#8A4B12' : '#1E5A3F') : '#5F6359',
-        share: tv ? (v / tv * 100).toFixed(0) + '% del total' : ''
-      };
+    const calc = (a) => {
+      let q = 0, cost = 0, div = 0;
+      a.ops.forEach(([k, d, qq, p, dv]) => {
+        if (k === 'Compra' || k === 'Aporte' || k === 'Saldo inicial') { q += qq; cost += qq * p; }
+        else if (k === 'Venta') { const avg = q ? cost / q : 0; q -= qq; cost -= qq * avg; }
+        else if (k === 'Dividendo') div += dv;
+      });
+      const val = a.unit === 'saldo' ? num(a.price) : q * num(a.price);
+      return { q, cost, div, val };
+    };
+    const C = s.assets.map(calc);
+    let tv = 0, tc = 0, td = 0; C.forEach((c) => { tv += c.val; tc += c.cost; td += c.div; });
+    const pctTxt = (g, c) => c ? ' (' + (g >= 0 ? '+' : '') + (g / c * 100).toFixed(1) + '%)' : '';
+    const assets = s.assets.map((a, i) => {
+      const c = C[i], g = c.val - c.cost, on = s.sel === i;
+      return { tk: a.tk, name: a.name, type: a.type, plat: a.plat, color: T[a.type] || '#A9B3AE',
+        qty: a.unit === 'saldo' ? 'Saldo' : fq(c.q) + ' ' + a.unit, val: fmt(c.val), share: tv ? (c.val / tv * 100).toFixed(0) + '%' : '',
+        res: (g >= 0 ? '+' : '') + fmt(g) + pctTxt(g, c.cost), resC: g < 0 ? '#8A4B12' : '#1E5A3F',
+        cur: String(on), bg: on ? '#FFF8D6' : '#FFFFFF', bd: on ? '#141612' : '#E6E4DC',
+        pick: () => this.setState({ sel: i, op: false, msg: '' }) };
     });
-    const byType = {};
-    s.list.forEach((p) => { byType[p.type] = (byType[p.type] || 0) + num(p.val); });
-    const dist = Object.keys(byType).filter((k) => byType[k] > 0).map((k) => ({ name: k, color: T[k] || '#A9B3AE', w: (byType[k] / tv * 100).toFixed(1) + '%', pct: (byType[k] / tv * 100).toFixed(0) + '%', amt: fmt(byType[k]) }));
-    const types = Object.keys(T).map((k) => {
-      const on = s.nw.type === k;
-      return { name: k, checked: String(on), border: on ? '#141612' : '#E6E4DC', bg: on ? '#FFF8D6' : '#FFFFFF', pick: () => this.setState({ nw: Object.assign({}, s.nw, { type: k }) }) };
-    });
-    const setNw = (k) => (e) => this.setState({ nw: Object.assign({}, s.nw, { [k]: e.target.value }) });
-    const g = tv - ta;
+    const group = (key) => {
+      const m = {};
+      s.assets.forEach((a, i) => { const k = a[key]; m[k] = m[k] || { v: 0, c: 0, n: 0 }; m[k].v += C[i].val; m[k].c += C[i].cost; m[k].n++; });
+      return Object.keys(m).sort((x, y) => m[y].v - m[x].v).map((k) => { const g = m[k].v - m[k].c; return { name: k, n: m[k].n + (m[k].n === 1 ? ' activo' : ' activos'), val: fmt(m[k].v), w: tv ? (m[k].v / tv * 100).toFixed(1) + '%' : '0%', pct: tv ? (m[k].v / tv * 100).toFixed(0) + '%' : '', color: key === 'type' ? (T[k] || '#A9B3AE') : '#141612', res: (g >= 0 ? '+' : '') + fmt(g), resC: g < 0 ? '#8A4B12' : '#1E5A3F' }; });
+    };
+    const V = [['activo', 'Por activo'], ['plat', 'Por plataforma'], ['type', 'Por tipo']];
+    const views = V.map(([id, name]) => ({ name, checked: String(s.view === id), bg: s.view === id ? '#141612' : '#FFFFFF', fg: s.view === id ? '#FFFFFF' : '#3A3D36', pick: () => this.setState({ view: id }) }));
+    const a = s.assets[s.sel], c = C[s.sel];
+    const ops = a.ops.map(([k, d, q, p, dv]) => ({ k, d, det: k === 'Dividendo' ? 'Pago en efectivo' : (a.unit === 'saldo' ? 'Monto' : fq(q) + ' × $' + p.toLocaleString('en-AU')), amt: k === 'Dividendo' ? '+' + fmt(dv) : (k === 'Venta' ? '+' : '') + fmt(k === 'Venta' ? q * p : q * p), kc: k === 'Venta' ? '#8A4B12' : (k === 'Dividendo' ? '#1E5A3F' : '#141612') }));
+    const g = c.val - c.cost;
+    const setN = (k) => (e) => this.setState({ nop: Object.assign({}, s.nop, { [k]: e.target.value }) });
+    const kinds = ['Compra', 'Venta', 'Dividendo'].map((k) => ({ name: k, checked: String(s.nop.k === k), border: s.nop.k === k ? '#141612' : '#E6E4DC', bg: s.nop.k === k ? '#FFF8D6' : '#FFFFFF', pick: () => this.setState({ nop: Object.assign({}, s.nop, { k }) }) }));
+    const updA = (patch) => { const l = s.assets.slice(); l[s.sel] = Object.assign({}, a, patch); return l; };
+    const tg = tv - tc;
     return {
-      items, dist, types, nw: s.nw, hasDist: dist.length > 0, noDist: dist.length === 0,
-      total: fmt(tv), aportT: fmt(ta), res: (g >= 0 ? '+' : '') + fmt(g), resC: g < 0 ? '#B4441C' : '#1F8A5B', count: s.list.length,
-      showNew: s.showNew, newOpen: String(s.showNew), toggleNew: () => this.setState({ showNew: !s.showNew }),
-      setName: setNw('name'), setAport: setNw('aport'), setVal: setNw('val'), setLink: setNw('link'),
-      addP: () => { if (!(s.nw.name || '').trim()) return; this.setState({ list: s.list.concat([Object.assign({}, s.nw)]), showNew: false, nw: { name: '', type: 'Super', aport: '', val: '', link: '' } }); }
+      total: fmt(tv), costT: fmt(tc), res: (tg >= 0 ? '+' : '') + fmt(tg) + pctTxt(tg, tc), divT: fmt(td), count: String(s.assets.length),
+      views, isAsset: s.view === 'activo', isGroup: s.view !== 'activo', groups: s.view === 'activo' ? [] : group(s.view), assets,
+      dist: group('type'),
+      a: { tk: a.tk, name: a.name, type: a.type, plat: a.plat, unit: a.unit, rec: a.rec, hasRec: !!a.rec, upd: a.upd, isSaldo: a.unit === 'saldo', notSaldo: a.unit !== 'saldo',
+        qty: a.unit === 'saldo' ? 'Saldo' : fq(c.q) + ' ' + a.unit, avg: c.q && a.unit !== 'saldo' ? '$' + (c.cost / c.q).toFixed(2) : '—', cost: fmt(c.cost), val: fmt(c.val), div: fmt(c.div),
+        res: (g >= 0 ? '+' : '') + fmt(g) + pctTxt(g, c.cost), resC: g < 0 ? '#8A4B12' : '#1E5A3F', priceLbl: a.unit === 'saldo' ? 'Saldo de hoy' : 'Precio de hoy (por unidad)' },
+      price: a.price, setPrice: (e) => this.setState({ assets: updA({ price: e.target.value, upd: 'hoy' }), msg: 'Valor actualizado.' }),
+      ops, op: s.op, opOpen: String(s.op), togOp: () => this.setState({ op: !s.op, msg: '' }), kinds, nop: s.nop, setD: setN('d'), setQ: setN('q'), setP: setN('p'),
+      isDiv: s.nop.k === 'Dividendo', notDiv: s.nop.k !== 'Dividendo',
+      addOp: () => { const q = num(s.nop.q), p = num(s.nop.p); if (s.nop.k === 'Dividendo' ? !p : !(q && p)) return; const row = s.nop.k === 'Dividendo' ? ['Dividendo', s.nop.d || 'Hoy', 0, 0, p] : [s.nop.k, s.nop.d || 'Hoy', q, p, 0]; this.setState({ assets: updA({ ops: [row].concat(a.ops) }), op: false, nop: { k: 'Compra', d: '', q: '', p: '' }, msg: s.nop.k + ' registrada.' }); },
+      hasMsg: !!s.msg, msg: s.msg,
+      showNew: s.showNew, newOpen: String(s.showNew), toggleNew: () => this.setState({ showNew: !s.showNew })
     };
   }
 }

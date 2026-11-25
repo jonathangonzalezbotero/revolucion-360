@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración · Campañas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}a:hover{color:#000}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important;font-variant-numeric:lining-nums tabular-nums}
+input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(5){animation-delay:.16s}main>*:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+<style>/*ds*/
+body{margin:0;background:#F6F5F0;-webkit-font-smoothing:antialiased}
+a{color:#141612;text-decoration-color:#F2CD00;text-decoration-thickness:2px;text-underline-offset:3px}
+strong,b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+h1{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.015em!important}
+.big{font-family:Newsreader,Georgia,serif!important;font-weight:500!important;letter-spacing:-0.02em!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#141612!important;box-shadow:0 0 0 3px rgba(242,205,0,.45)}
+button,a{transition:transform .12s ease,background-color .15s ease,color .15s ease}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid #141612;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main>*,.mb>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),.mb>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4),.mb>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5),.mb>*:nth-child(n+5){animation-delay:.16s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+[role=status]{animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Administración" style="flex: 1 1 220px; max-width: 256px; background: #141612; color: #FFFFFF; padding: 28px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 8px"><img src="/_blob/c1c00c94f8bad5ba24b38b4ea7cf1b3f" alt="Revolución del Dinero" style="width: 38px; height: 38px"><span style="display: flex; flex-direction: column"><strong style="font-size: 15px">Revolución 360</strong><span style="font-size: 12px; color: #8FD3B9; font-weight: 600">Administración</span></span></div>
+    <a href="Main.dc.html" style="text-decoration: none; font-size: 13px; color: #9FC8B9; padding: 6px 10px 22px">‹ Volver a la app</a>
+    <a href="Admin.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Resumen</a><a href="AdminUsuarios.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Usuarios y accesos</a><a href="AdminMenu.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Menú y funciones</a><a href="AdminAcademia.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Academia</a><a href="AdminPlanes.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Planes y precios</a><a href="AdminPaises.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contenido por país</a><a href="AdminCRM.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Contactos</a><a href="AdminCampanas.dc.html" aria-current="page" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: #2A2D27; color: #FFFFFF">Campañas de correo</a><a href="AdminAuto.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Automatizaciones</a><a href="AdminSoporte.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Soporte y privacidad</a><a href="AdminActividad.dc.html" style="text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; background: transparent; color: #CFE6DD">Registro de actividad</a>
+    <p style="margin-top: auto; font-size: 12px; color: #7FA9A0; line-height: 1.5; padding: 0 10px">Este panel no muestra los datos financieros de los usuarios.</p>
+  </nav>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 40px 44px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; max-width: 1280px">
+<header style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap"><div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #5F6359">CRM</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Campañas de correo</h1></div><div style="display: flex; gap: 10px"><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; background: #141612">+ Nueva campaña</button></div></header>
+    <section aria-labelledby="cl" style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px"><h2 id="cl" style="margin: 0; font-size: 17px; font-weight: 600">Tus campañas</h2>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px"><thead><tr style="text-align: left; font-size: 12px; color: #5F6359"><th style="padding: 8px">Campaña</th><th style="padding: 8px">Estado</th><th style="padding: 8px">Para quién</th><th style="padding: 8px; text-align: right">Abrieron</th><th style="padding: 8px; text-align: right">Hicieron clic</th></tr></thead><tbody><tr style="border-top: 1px solid #EFEEE8"><td style="padding: 12px 8px; font-weight: 600">Tu diciembre sin sustos</td><td style="padding: 12px 8px; color: #5F6359">Borrador</td><td style="padding: 12px 8px">Pagando y Primer mes</td><td class="num" style="padding: 12px 8px; text-align: right">—</td><td class="num" style="padding: 12px 8px; text-align: right">—</td></tr><tr style="border-top: 1px solid #EFEEE8"><td style="padding: 12px 8px; font-weight: 600">Nueva clase: Gastos hormiga</td><td style="padding: 12px 8px; color: #5F6359">Programada · 1 dic 7:00</td><td style="padding: 12px 8px">Todos con consentimiento</td><td class="num" style="padding: 12px 8px; text-align: right">—</td><td class="num" style="padding: 12px 8px; text-align: right">—</td></tr><tr style="border-top: 1px solid #EFEEE8"><td style="padding: 12px 8px; font-weight: 600">Webinar de enero: inscríbete</td><td style="padding: 12px 8px; color: #5F6359">Enviada · 14 nov</td><td style="padding: 12px 8px">Leads sin cuenta</td><td class="num" style="padding: 12px 8px; text-align: right">48%</td><td class="num" style="padding: 12px 8px; text-align: right">9.2%</td></tr><tr style="border-top: 1px solid #EFEEE8"><td style="padding: 12px 8px; font-weight: 600">Así cierras noviembre</td><td style="padding: 12px 8px; color: #5F6359">Enviada · 28 oct</td><td style="padding: 12px 8px">Pagando y Primer mes</td><td class="num" style="padding: 12px 8px; text-align: right">61%</td><td class="num" style="padding: 12px 8px; text-align: right">22%</td></tr></tbody></table></section>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 18px; align-items: start"><section aria-labelledby="ed" style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <h2 id="ed" style="margin: 0; font-size: 17px; font-weight: 600">Editar: Tu diciembre sin sustos</h2>
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="cs" style="font-size: 12px; font-weight: 500; color: #5F6359">Asunto</label><input id="cs" type="text" value="{{ subj }}" onChange="{{ setSubj }}" placeholder="" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="cpr" style="font-size: 12px; font-weight: 500; color: #5F6359">Texto de vista previa</label><input id="cpr" type="text" value="{{ pre }}" onChange="{{ setPre }}" placeholder="" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><label for="ca" style="font-size: 12px; font-weight: 500; color: #5F6359">Para quién</label><select id="ca" value="{{ aud }}" onChange="{{ setAud }}" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box; padding: 0 10px"><option>Pagando y Primer mes</option><option>Todos con consentimiento</option><option>Leads sin cuenta</option><option>Alumnos</option><option>Solo lectura</option></select><span class="num" style="font-size: 12px; color: #5F6359">{{ n }} · solo quienes aceptaron recibir correos</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 500; color: #5F6359">Contenido</span>
+          <div style="border: 1px solid #E6E4DC; border-radius: 12px; padding: 12px; font-size: 13px; color: #3A3D36; display: flex; flex-direction: column; gap: 8px"><span style="background: #F8F7F2; border-radius: 8px; padding: 8px 10px">Título · "Hola, [nombre]"</span><span style="background: #F8F7F2; border-radius: 8px; padding: 8px 10px">Texto · 3 párrafos</span><span style="background: #F8F7F2; border-radius: 8px; padding: 8px 10px">Botón · "Revisar mi plan de diciembre" → app</span><span style="background: #F8F7F2; border-radius: 8px; padding: 8px 10px">Firma · Jonathan</span></div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap"><button type="button" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 34px; padding: 0 10px; border-radius: 999px; border: 1.5px dashed #BDB9AD; background: transparent; cursor: pointer">+ Texto</button><button type="button" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 34px; padding: 0 10px; border-radius: 999px; border: 1.5px dashed #BDB9AD; background: transparent; cursor: pointer">+ Imagen</button><button type="button" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 34px; padding: 0 10px; border-radius: 999px; border: 1.5px dashed #BDB9AD; background: transparent; cursor: pointer">+ Botón</button><button type="button" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 34px; padding: 0 10px; border-radius: 999px; border: 1.5px dashed #BDB9AD; background: transparent; cursor: pointer">+ Clase de la Academia</button><button type="button" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 34px; padding: 0 10px; border-radius: 999px; border: 1.5px dashed #BDB9AD; background: transparent; cursor: pointer">+ Separador</button></div>
+        </div>
+        <div role="radiogroup" aria-label="Cuándo enviar" style="display: flex; gap: 8px"><sc-for list="{{ whens }}" as="w" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{ w.checked }}" onClick="{{ w.pick }}" style="font: inherit; flex: 1; font-size: 14px; font-weight: 600; min-height: 44px; border-radius: 12px; border: 1.5px solid {{ w.border }}; background: {{ w.bg }}; cursor: pointer">{{ w.name }}</button></sc-for></div>
+        <sc-if value="{{ isLater }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><label for="cw" style="font-size: 12px; font-weight: 500; color: #5F6359">Fecha y hora (hora de cada persona)</label><input id="cw" type="text" placeholder="1 dic 2026 · 7:00" style="font: inherit; font-size: 15px; height: 46px; padding: 0 12px; border: 1.5px solid #D9D6CC; border-radius: 12px; background: #FFFFFF; width: 100%; box-sizing: border-box"></div></sc-if>
+        <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin: 0; font-size: 13px; font-weight: 600; color: #1E5A3F; background: #E3F1E8; border-radius: 10px; padding: 10px 12px">Prueba enviada a jonathan@… Revisa cómo se ve.</p></sc-if>
+        <div style="display: flex; gap: 8px; justify-content: flex-end"><button type="button" onClick="{{ test }}" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 1px solid #E6E4DC; background: #FFFFFF; color: #3A3D36; font-weight: 600; ">Enviar prueba</button><button type="button" style="font: inherit; font-size: 14px; min-height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer; border: 0; background: #141612; color: #FFFFFF; font-weight: 600; background: #141612">Confirmar envío</button></div>
+      </section><section aria-labelledby="pvh" style="background: #FFFFFF; border: 1px solid #E6E4DC; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 14px; align-items: center; background: #F1F0EA">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%"><h2 id="pvh" style="margin: 0; font-size: 17px; font-weight: 600">Vista previa</h2><div role="radiogroup" aria-label="Dispositivo" style="display: inline-flex; gap: 4px; padding: 4px; background: #FFFFFF; border-radius: 999px"><sc-for list="{{ devs }}" as="d" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{ d.checked }}" onClick="{{ d.pick }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: {{ d.bg }}; color: {{ d.fg }}; cursor: pointer">{{ d.name }}</button></sc-for></div></div>
+        <div style="width: {{ pw }}; max-width: 100%; background: #FFFFFF; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 24px rgba(20,22,18,.08)">
+          <div style="padding: 12px 16px; border-bottom: 1px solid #EFEEE8; font-size: 12px; color: #5F6359">De: Jonathan · Revolución 360<br><strong style="color: #141612; font-size: 14px">{{ subj }}</strong><br>{{ pre }}</div>
+          <div style="padding: 22px 22px 18px; display: flex; flex-direction: column; gap: 12px; font-size: 14px; line-height: 1.6; color: #3A3D36"><strong style="font-size: 20px; color: #141612">Hola, Ana</strong><p style="margin: 0">Diciembre es el mes donde más se nos va la plata sin darnos cuenta. Te dejo las 3 cosas que yo hago antes de las fiestas.</p><p style="margin: 0">1. Revisa tu plan de diciembre. 2. Aparta lo de los regalos. 3. Mira cuánto puedes gastar cada día.</p><span style="align-self: flex-start; background: #141612; color: #FFFFFF; font-weight: 600; padding: 12px 16px; border-radius: 10px">Revisar mi plan de diciembre</span><span>— Jonathan</span></div>
+          <div style="padding: 12px 16px; border-top: 1px solid #EFEEE8; font-size: 11px; color: #8A8F84; line-height: 1.5">Revolución del Dinero · [RAZÓN SOCIAL, ABN] · [DIRECCIÓN]<br>Recibes este correo porque aceptaste noticias de Revolución 360. <u>Darte de baja</u> · <u>Elegir qué correos recibo</u></div>
+        </div>
+      </section></div>
+    <p style="margin: 0; font-size: 12px; color: #5F6359; line-height: 1.5">El CRM solo guarda datos de contacto, etiquetas y eventos de uso (por ejemplo "hizo su primer cierre"). Nunca muestra montos ni movimientos de nadie. Los correos de marketing solo van a quien dio su consentimiento, siempre con remitente claro y enlace para darse de baja (Spam Act 2003).</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { subj: 'Tu diciembre sin sustos: 3 cosas para hacer hoy', pre: 'Lo que yo hago cada año antes de las fiestas', aud: 'Pagando y Primer mes', dev: 'desk', sent: false, when: 'now' }; }
+  renderVals() {
+    const s = this.state;
+    const set = (k) => (e) => this.setState({ [k]: e.target.value });
+    const N = { 'Todos con consentimiento': 1840, 'Pagando y Primer mes': 612, 'Leads sin cuenta': 930, 'Alumnos': 210, 'Solo lectura': 88 };
+    const D = [['desk', 'Computador'], ['mob', 'Celular']].map(([id, name]) => ({ name, checked: String(s.dev === id), bg: s.dev === id ? '#141612' : 'transparent', fg: s.dev === id ? '#FFFFFF' : '#3A3D36', pick: () => this.setState({ dev: id }) }));
+    const W = [['now', 'Enviar ahora'], ['later', 'Programar']].map(([id, name]) => ({ name, checked: String(s.when === id), border: s.when === id ? '#141612' : '#E6E4DC', bg: s.when === id ? '#FFF8D6' : '#FFFFFF', pick: () => this.setState({ when: id }) }));
+    return { subj: s.subj, pre: s.pre, aud: s.aud, setSubj: set('subj'), setPre: set('pre'), setAud: set('aud'), n: (N[s.aud] || 0).toLocaleString('en-AU') + ' personas',
+      devs: D, pw: s.dev === 'desk' ? '560px' : '340px', whens: W, isLater: s.when === 'later',
+      sent: s.sent, test: () => this.setState({ sent: true }) };
+  }
+}
+</script>
+</body>
+</html>

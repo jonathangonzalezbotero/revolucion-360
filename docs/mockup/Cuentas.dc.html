@@ -206,7 +206,7 @@ class Component extends DCLogic {
       openNew: () => this.setState({ mode: s.mode === 'new' ? '' : 'new', msg: '' }), openTf: () => this.setState({ mode: s.mode === 'tf' ? '' : 'tf', msg: '' }),
       close: () => this.setState({ mode: '' }),
       types: chipsOf(Object.keys(C), s.nw.type, (k) => this.setState({ nw: Object.assign({}, s.nw, { type: k }) })),
-      nw: s.nw, setName: setN('name'), setBank: setN('bank'), setBal: setN('bal'),
+      nw: s.nw, setWhy: setN('why'), setName: setN('name'), setBank: setN('bank'), setBal: setN('bal'),
       addA: () => { if (!s.nw.name.trim()) return; const n = Object.assign({ exp: null, proj: s.nw.type !== 'Empresa', net: s.nw.type !== 'Empresa' }, s.nw); this.setState({ list: s.list.concat([n]), mode: '', sel: s.list.length, msg: 'Cuenta agregada. Ya aparece en tu proyección.', nw: { name: '', bank: '', type: 'Día a día', bal: '' } }); },
       tf: s.tf, setFrom: setT('from'), setTo: setT('to'), setAmt: setT('amt'),
       doTf: () => {

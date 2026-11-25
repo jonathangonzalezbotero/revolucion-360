@@ -91,6 +91,15 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
       </div>
     </section>
 
+    <section aria-labelledby="hg" style="background: #FFF8D6; border: 1px solid #F1E3A0; border-radius: 14px; padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 18px 32px; align-items: center; justify-content: space-between">
+      <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 320px">
+        <h2 id="hg" style="margin: 0; font-size: 14px; font-weight: 600; color: #5A4500">Hoy puedes gastar</h2>
+        <span class="num big" style="font-size: 40px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.05">$42</span>
+        <span style="font-size: 14px; color: #3A3D36; line-height: 1.5">en comida, salidas y antojos sin salirte de tu plan. Te quedan <strong class="num">$252</strong> para los 6 días que faltan de noviembre.</span>
+      </div>
+      <a href="Repaso.dc.html" style="text-decoration: none; flex: 0 1 320px; background: #FFFFFF; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; color: #141612"><strong style="font-size: 14px">Tu repaso de la semana está listo</strong><span style="font-size: 13px; color: #5F6359">2 minutos: cómo te fue y lo que viene ›</span></a>
+    </section>
+
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 18px; align-items: start">
       <section aria-labelledby="hoy" style="display: flex; flex-direction: column; gap: 12px">
         <h2 id="hoy" style="margin: 0; font-size: 18px; font-weight: 600">Para hoy</h2>
@@ -154,7 +163,7 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
   </main>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1450}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1620}}'>
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { sel: 10 }; }
   renderVals() {

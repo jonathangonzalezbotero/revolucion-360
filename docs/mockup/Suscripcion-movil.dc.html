@@ -52,36 +52,32 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
     <a href="Mas-movil.dc.html" style="font-size: 14px; font-weight: 600; padding: 10px 0">‹ Más</a>
   </header>
   <div class="mb" style="flex: 1; padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 12px">
-<section aria-label="Tu plan actual" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 20px 0; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between">
+<div role="group" aria-label="Estados de la suscripción (solo en el mockup)" style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px; background: #FFFFFF; border: 1px dashed #CFCCC2; border-radius: 14px">
+      <span style="font-size: 11px; font-weight: 600; color: #5F6359; text-transform: uppercase; letter-spacing: .06em; padding: 0 6px">Mockup · ver</span>
+      <sc-for list="{{ states }}" as="t" hint-placeholder-count="6"><button type="button" aria-pressed="{{ t.cur }}" onClick="{{ t.pick }}" style="font: inherit; font-size: 12px; font-weight: 600; min-height: 32px; padding: 0 10px; border-radius: 999px; border: 0; background: {{ t.bg }}; color: {{ t.fg }}; cursor: pointer">{{ t.l }}</button></sc-for>
+    </div>
+    <section aria-label="Tu suscripción" style="background: transparent; color: #141612; border-top: 2px solid #141612; border-bottom: 1px solid #E6E4DC; border-radius: 0; padding: 20px 0; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between">
       <div style="display: flex; flex-direction: column; gap: 8px; flex: 1 1 280px">
-        <span style="align-self: flex-start; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; background: #E3B800; color: #141612">Acceso fundador</span>
-        <h2 style="margin: 0; font-size: 22px; font-weight: 600">Todo lo de Pro, gratis</h2>
-        <span style="font-size: 14px; color: #5F6359; line-height: 1.5">Otorgado por Revolución del Dinero · vence el [FECHA] (o de por vida, según tu acceso)</span>
-        <span style="font-size: 13px; color: #5F6359; line-height: 1.5">Cuando venza pasas a Gratis. No pierdes tus datos: lo de Pro queda en modo lectura y puedes exportarlo siempre.</span>
+        <span style="align-self: flex-start; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; background: #F2CD00; color: #141612">{{ curTag }}</span>
+        <h2 style="margin: 0; font-size: 22px; font-weight: 600">{{ curTitle }}</h2>
+        <span style="font-size: 14px; color: #5F6359; line-height: 1.5">{{ curText }}</span>
+        <sc-if value="{{ hasCta }}" hint-placeholder-val="{{ true }}"><a href="#" style="text-decoration: none; align-self: flex-start; margin-top: 4px; font-size: 14px; font-weight: 600; padding: 12px 16px; border-radius: 12px; background: #FFFFFF; color: #141612">{{ curCta }}</a></sc-if>
       </div>
       <img src="/_blob/07130166ac57906f8a4d3175882f16f6" alt="Revolución del Dinero" style="width: 64px; height: 64px">
     </section>
 <section aria-labelledby="planes" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 16px">
       <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
-        <h2 id="planes" style="margin: 0; font-size: 17px; font-weight: 600">Planes</h2>
+        <h2 id="planes" style="margin: 0; font-size: 17px; font-weight: 600">Un solo plan, todo incluido</h2>
         <div role="group" aria-label="Frecuencia de pago" style="display: flex; gap: 4px; background: #F6F5F0; border-radius: 10px; padding: 4px">
           <button type="button" aria-pressed="{{ m.pressed }}" onClick="{{ toMonthly }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: {{ m.bg }}; color: {{ m.fg }}; cursor: pointer">Mensual</button>
-          <button type="button" aria-pressed="{{ a.pressed }}" onClick="{{ toYearly }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: {{ a.bg }}; color: {{ a.fg }}; cursor: pointer">Anual</button>
+          <button type="button" aria-pressed="{{ a.pressed }}" onClick="{{ toYearly }}" style="font: inherit; font-size: 13px; font-weight: 600; min-height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: {{ a.bg }}; color: {{ a.fg }}; cursor: pointer">Anual · 2 meses gratis</button>
         </div>
       </div>
-      <div style="overflow-x: auto">
-        <table style="width: 100%; min-width: 320px; border-collapse: collapse; font-size: 13px">
-          <thead><tr>
-            <th scope="col" style="text-align: left; padding: 10px 0; font-size: 12px; color: #5F6359; font-weight: 600">Incluye</th>
-            <th scope="col" style="padding: 10px 8px; text-align: center; vertical-align: bottom"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Gratis</span><span style="font-size: 12px; color: #5F6359; font-weight: 600">$0</span></span></th>
-            <th scope="col" style="padding: 10px 8px; text-align: center; background: #FFF8D6; border-radius: 12px 12px 0 0; vertical-align: bottom"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600; color: #141612">Pro</span><span class="num" style="font-size: 12px; font-weight: 600">{{ price }}</span></span></th>
-          </tr></thead>
-          <tbody>
-            <sc-for list="{{ feats }}" as="f" hint-placeholder-count="10"><tr style="border-top: 1px solid #EFEDE6"><td style="padding: 11px 0">{{ f.n }}</td><td style="padding: 11px 8px; text-align: center; color: {{ f.aC }}">{{ f.a }}</td><td style="padding: 11px 8px; text-align: center; background: #FFF8D6; font-weight: 600; color: #1E5A3F">{{ f.b }}</td></tr></sc-for>
-          </tbody>
-        </table>
+      <div style="display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start">
+        <div style="display: flex; flex-direction: column; gap: 4px"><div style="display: flex; align-items: baseline; gap: 8px"><span class="num big" style="font-size: 44px; font-weight: 600; letter-spacing: -0.03em">{{ bigPrice }}</span><span style="font-size: 14px; color: #5F6359">{{ per }}</span></div><span style="font-size: 13px; font-weight: 600; color: #141612">{{ priceLine }}</span><span style="font-size: 12px; color: #5F6359; line-height: 1.5">Se cobra en dólares americanos. Stripe te muestra el valor en tu moneda y tu banco puede cobrar una comisión por el cambio.</span></div>
+        <ul style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 8px 16px"><sc-for list="{{ incl }}" as="i" hint-placeholder-count="7"><li style="display: flex; gap: 8px; align-items: flex-start; font-size: 14px"><span aria-hidden="true" style="color: #1F8A5B; font-weight: 600">✓</span>{{ i.t }}</li></sc-for></ul>
       </div>
-      <span style="font-size: 12px; color: #5F6359">{{ priceNote }}. Los precios se configuran en Administración.</span>
+      <span style="font-size: 12px; color: #5F6359">Cancela cuando quieras. Los precios se configuran en Administración.</span>
     </section>
 <section aria-labelledby="metodo" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 14px">
       <h2 id="metodo" style="margin: 0; font-size: 17px; font-weight: 600">Método de pago</h2>
@@ -98,10 +94,10 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
       <div style="overflow-x: auto"><table style="width: 100%; min-width: 420px; border-collapse: collapse; font-size: 14px">
         <thead><tr style="font-size: 12px; color: #5F6359; text-align: left"><th scope="col" style="padding: 8px 0; font-weight: 600">Fecha</th><th scope="col" style="padding: 8px; font-weight: 600">Concepto</th><th scope="col" style="padding: 8px; font-weight: 600; text-align: right">Monto</th><th scope="col" style="padding: 8px; font-weight: 600">Estado</th><th scope="col" style="padding: 8px 0; font-weight: 600; text-align: right">Factura</th></tr></thead>
         <tbody>
-          <tr style="border-top: 1px solid #EFEDE6"><td style="padding: 12px 0">[FECHA]</td><td style="padding: 12px 8px">Acceso fundador</td><td class="num" style="padding: 12px 8px; text-align: right">$0</td><td style="padding: 12px 8px"><span style="font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #E3F1E8; color: #1E5A3F">Activo</span></td><td style="padding: 12px 0; text-align: right">—</td></tr>
-          <tr style="border-top: 1px solid #EFEDE6"><td style="padding: 12px 0">[FECHA]</td><td style="padding: 12px 8px">Pro · mensual</td><td class="num" style="padding: 12px 8px; text-align: right">[MONTO]</td><td style="padding: 12px 8px"><span style="font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #E3F1E8; color: #1E5A3F">Pagado</span></td><td style="padding: 12px 0; text-align: right"><a href="#" style="font-weight: 600">Descargar</a></td></tr>
+          <tr style="border-top: 1px solid #EFEDE6"><td style="padding: 12px 0">[FECHA]</td><td style="padding: 12px 8px">Primer mes</td><td class="num" style="padding: 12px 8px; text-align: right">$1.00 USD</td><td style="padding: 12px 8px"><span style="font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #E3F1E8; color: #1E5A3F">Activo</span></td><td style="padding: 12px 0; text-align: right">—</td></tr>
+          <tr style="border-top: 1px solid #EFEDE6"><td style="padding: 12px 0">[FECHA]</td><td style="padding: 12px 8px">Mensual</td><td class="num" style="padding: 12px 8px; text-align: right">$8.00 USD</td><td style="padding: 12px 8px"><span style="font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #E3F1E8; color: #1E5A3F">Pagado</span></td><td style="padding: 12px 0; text-align: right"><a href="#" style="font-weight: 600">Descargar</a></td></tr>
         </tbody></table></div>
-      <span style="font-size: 12px; color: #5F6359">La segunda fila muestra cómo se verá un pago real.</span>
+      <span style="font-size: 12px; color: #5F6359">Cada pago tiene su factura descargable.</span>
     </section>
 <section aria-labelledby="fact" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 12px">
       <h2 id="fact" style="margin: 0; font-size: 17px; font-weight: 600">Datos de facturación</h2>
@@ -112,7 +108,7 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
     </section>
 <section aria-labelledby="canc" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #E6E4DC; padding: 16px; display: flex; flex-direction: column; gap: 12px">
       <h2 id="canc" style="margin: 0; font-size: 17px; font-weight: 600">Cancelar</h2>
-      <p style="margin: 0; font-size: 14px; color: #3A3D36; line-height: 1.55">Si cancelas, sigues con Pro hasta el final del periodo pagado. Después pasas a Gratis: tus datos no se borran y puedes exportarlos cuando quieras.</p>
+      <p style="margin: 0; font-size: 14px; color: #3A3D36; line-height: 1.55">Si cancelas, sigues con todo hasta el final del periodo pagado. Después tu cuenta queda en solo lectura: ves tus datos y puedes exportarlos, pero no editar. Nada se borra.</p>
       <button type="button" onClick="{{ toggleCancel }}" aria-expanded="{{ cancelOpen }}" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border: 1px solid #E8C8B0; background: #FFFFFF; color: #8A4B12; border-radius: 10px; cursor: pointer">Cancelar suscripción</button>
       <sc-if value="{{ cancelOpen }}" hint-placeholder-val="{{ false }}"><div style="background: #FBEBD8; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px"><span style="font-size: 14px; font-weight: 600; color: #5C3208">¿Por qué te vas? (opcional)</span><div style="display: flex; flex-wrap: wrap; gap: 6px"><span style="font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 999px; background: #FFFFFF">Es muy caro</span><span style="font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 999px; background: #FFFFFF">No lo uso</span><span style="font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 999px; background: #FFFFFF">Me falta algo</span></div><button type="button" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 14px; border: 0; background: #8A4B12; color: #FFFFFF; border-radius: 10px">Confirmar cancelación</button></div></sc-if>
     </section>
@@ -122,15 +118,25 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":2400}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { yearly: false, cancel: false }; }
+  constructor(props) { super(props); this.state = { yearly: false, cancel: false, st: 'trial' }; }
   renderVals() {
-    const y = this.state.yearly;
-    const F = [['Plan anual y asistente', true, true], ['Diagnóstico financiero', true, true], ['Metas', '2', 'Ilimitadas'], ['Proyección', 'Básica', 'Con ¿qué pasa si…?'], ['Movimientos', 'Solo plan y totales', 'Detalle, CSV y recurrentes'], ['Análisis y comercios', false, true], ['Inversiones', false, true], ['Cierre de mes con recordatorios', false, true], ['Academia', 'Clases de uso', 'Completa'], ['Exportar tus datos', true, true]];
-    const feats = F.map(([n, a, b]) => ({ n, a: a === true ? '✓' : (a === false ? '—' : a), b: b === true ? '✓' : b, aC: a === false ? '#A9B3AE' : '#141612' }));
+    const y = this.state.yearly, st = this.state.st;
     const seg = (on) => ({ bg: on ? '#141612' : 'transparent', fg: on ? '#FFFFFF' : '#3A3D36', pressed: String(on) });
+    const S = {
+      trial: ['Tu primer mes', 'Primer mes por $1 USD', 'Desde el 3 de diciembre: $8 USD al mes. Te avisamos 3 días antes del cobro.', 'Cambiar a anual y ahorrar'],
+      monthly: ['Mensual', '$8 USD al mes', 'Próximo cobro: 3 de enero de 2027.', 'Cambiar a anual y ahorrar'],
+      yearly: ['Anual', '$80 USD al año', 'Próximo cobro: 3 de diciembre de 2027. Equivale a $6.67 al mes.', 'Cambiar a mensual'],
+      gift: ['Acceso fundador', 'Todo incluido, sin costo', 'Otorgado por Revolución del Dinero. De por vida.', ''],
+      failed: ['Pago pendiente', 'No pudimos cobrar $8 USD', 'Lo intentamos de nuevo en 3 días. Mientras tanto todo sigue funcionando.', 'Actualizar mi tarjeta'],
+      ended: ['Solo lectura', 'Tu suscripción terminó', 'Ves todo y puedes exportar tus datos, pero no editar. Nada se borra.', 'Volver a activar por $8 USD']
+    };
+    const cur = S[st];
+    const states = [['trial', 'Primer mes'], ['monthly', 'Mensual'], ['yearly', 'Anual'], ['gift', 'Fundador / alumno'], ['failed', 'Pago pendiente'], ['ended', 'Cancelada']].map(([k, l]) => ({ l, cur: String(st === k), bg: st === k ? '#141612' : 'transparent', fg: st === k ? '#FFFFFF' : '#3A3D36', pick: () => this.setState({ st: k }) }));
+    const INC = ['Plan anual y asistente', 'Movimientos a mano y con CSV', 'Cuentas, metas, deudas e inversiones', 'Proyección y análisis', 'Cierre de mes y diagnóstico', 'Academia completa', 'Exportar tus datos siempre'];
     return {
-      feats, m: seg(!y), a: seg(y), toMonthly: () => this.setState({ yearly: false }), toYearly: () => this.setState({ yearly: true }),
-      price: y ? '[PRECIO]/año' : '[PRECIO]/mes', priceNote: y ? 'Equivale a [PRECIO]/mes · ahorras [X]%' : 'Se cobra cada mes · cancela cuando quieras',
+      states, curTag: cur[0], curTitle: cur[1], curText: cur[2], curCta: cur[3], hasCta: !!cur[3], isWarn: st === 'failed' || st === 'ended',
+      incl: INC.map((t) => ({ t })), m: seg(!y), a: seg(y), toMonthly: () => this.setState({ yearly: false }), toYearly: () => this.setState({ yearly: true }),
+      bigPrice: y ? '$80' : '$8', per: y ? 'USD al año' : 'USD al mes', priceLine: y ? 'Equivale a $6.67 al mes · 2 meses gratis' : 'Tu primer mes cuesta $1 USD',
       cancelOpen: this.state.cancel, toggleCancel: () => this.setState({ cancel: !this.state.cancel })
     };
   }

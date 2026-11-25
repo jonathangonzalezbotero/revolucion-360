@@ -47,7 +47,7 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
 </style>
 </helmet>
 <div style="font-family: Geist, system-ui, sans-serif; color: #141612; background: #F6F5F0; min-height: 100%; width: 100%"><div style="padding: 48px 56px; display: flex; flex-direction: column; gap: 32px">
-    <header style="display: flex; flex-direction: column; gap: 6px; max-width: 760px"><span style="font-size: 14px; color: #5F6359">Correos automáticos</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Lo que le llega a cada usuario</h1><p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.6">Mismo formato para todos: un solo mensaje, un solo botón, firmado por ti. Se editan desde Administración. Los precios entre corchetes se llenan solos con el plan.</p></header>
+    <header style="display: flex; flex-direction: column; gap: 6px; max-width: 760px"><span style="font-size: 14px; color: #5F6359">Correos automáticos</span><h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Lo que le llega a cada usuario</h1><p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.6">Mismo formato para todos: un solo mensaje, un solo botón, firmado por ti. Se editan desde Administración. Los precios salen de Planes y precios en Administración.</p></header>
     <div style="display: grid; grid-template-columns: repeat(2, 600px); gap: 40px 48px"><article aria-label="1 · Bienvenida" style="display: flex; flex-direction: column; gap: 10px">
       <div style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">1 · Bienvenida</strong><span style="font-size: 12px; color: #5F6359">Asunto y vista previa en la bandeja: <em>"Tu año en un solo lugar empieza hoy"</em></span></div>
       <div style="background: #FFFFFF; border-radius: 16px; border: 1px solid #E6E4DC; overflow: hidden; width: 600px; max-width: 100%">
@@ -81,8 +81,8 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
         <div style="padding: 30px 32px; display: flex; flex-direction: column; gap: 16px">
           <span style="font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5F6359">Tu acceso</span>
           <h3 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.25">Tu acceso de alumno termina el 1 de marzo.</h3>
-          <p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.65">Tus datos no se borran. Si no continúas, todo queda guardado en modo lectura y puedes exportarlo cuando quieras.</p><p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.65">Si quieres seguir con todo, Pro cuesta [PRECIO] al mes. Como alumno tienes [X]% de descuento el primer año.</p>
-          <a href="#" style="text-decoration: none; align-self: flex-start; font-size: 15px; font-weight: 600; padding: 14px 22px; border-radius: 12px; background: #141612; color: #FFFFFF">Seguir con Pro</a>
+          <p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.65">Tus datos no se borran. Si no continúas, todo queda guardado en modo lectura y puedes exportarlo cuando quieras.</p><p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.65">Si quieres seguir, son $8 USD al mes o $80 USD al año. Pones tu tarjeta una vez y sigues sin cortes.</p>
+          <a href="#" style="text-decoration: none; align-self: flex-start; font-size: 15px; font-weight: 600; padding: 14px 22px; border-radius: 12px; background: #141612; color: #FFFFFF">Seguir con mi cuenta</a>
           <p style="margin: 0; font-size: 14px; color: #3A3D36">— Jonathan</p>
         </div>
         <div style="background: #F6F5F0; padding: 18px 32px; font-size: 12px; color: #5F6359; line-height: 1.6">Te avisamos 30 y 7 días antes de que venza tu acceso. <a href="#">Elegir qué correos recibo</a> · Revolución del Dinero · Sydney, Australia</div>
@@ -93,17 +93,30 @@ main>*:nth-child(2),.mb>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3),
         <div style="background: radial-gradient(120% 150% at 100% 100%, rgba(242,205,0,.20) 0%, rgba(242,205,0,0) 55%), linear-gradient(135deg, #0B0C0A 0%, #1C1E19 100%); color: #FFFFFF; padding: 22px 32px; display: flex; justify-content: space-between; align-items: center"><img src="/_blob/9ab9d789ae6bcaf9323c4bf548b6e00c" alt="Revolución 360 · Revolución del Dinero" style="height: 40px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; align-self: flex-start; display: block; flex: none"></div>
         <div style="padding: 30px 32px; display: flex; flex-direction: column; gap: 16px">
           <span style="font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5F6359">Pagos</span>
-          <h3 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.25">No pudimos cobrar tu suscripción Pro.</h3>
+          <h3 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.25">No pudimos cobrar tu suscripción.</h3>
           <p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.65">Tu tarjeta terminada en 4821 fue rechazada el 24 de noviembre. Lo intentamos de nuevo en 3 días.</p><p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.65">No pierdes nada mientras tanto. Si quieres, actualiza tu tarjeta ahora y listo.</p>
           <a href="#" style="text-decoration: none; align-self: flex-start; font-size: 15px; font-weight: 600; padding: 14px 22px; border-radius: 12px; background: #141612; color: #FFFFFF">Actualizar mi tarjeta</a>
           <p style="margin: 0; font-size: 14px; color: #3A3D36">— Jonathan</p>
         </div>
         <div style="background: #F6F5F0; padding: 18px 32px; font-size: 12px; color: #5F6359; line-height: 1.6">Correo importante sobre tu cuenta: no se puede desactivar. <a href="#">Elegir qué correos recibo</a> · Revolución del Dinero · Sydney, Australia</div>
       </div>
+    </article><article aria-label="5 · Fin del primer mes" style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">5 · Fin del primer mes</strong><span style="font-size: 12px; color: #5F6359">Asunto y vista previa en la bandeja: <em>"Tu primer mes termina en 3 días"</em></span></div>
+      <div style="background: #FFFFFF; border-radius: 16px; border: 1px solid #E6E4DC; overflow: hidden; width: 600px; max-width: 100%">
+        <div style="background: radial-gradient(120% 150% at 100% 100%, rgba(242,205,0,.20) 0%, rgba(242,205,0,0) 55%), linear-gradient(135deg, #0B0C0A 0%, #1C1E19 100%); color: #FFFFFF; padding: 22px 32px; display: flex; justify-content: space-between; align-items: center"><img src="/_blob/9ab9d789ae6bcaf9323c4bf548b6e00c" alt="Revolución 360 · Revolución del Dinero" style="height: 40px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; align-self: flex-start; display: block; flex: none"></div>
+        <div style="padding: 30px 32px; display: flex; flex-direction: column; gap: 16px">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5F6359">Tu suscripción</span>
+          <h3 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.25">Ana, ya llevas casi un mes con tu plan.</h3>
+          <div style="display: flex; gap: 12px"><div style="flex: 1; background: #F6F5F0; border-radius: 12px; padding: 14px"><span style="font-size: 12px; color: #5F6359">Movimientos registrados</span><br><strong style="font-size: 20px">46</strong></div><div style="flex: 1; background: #FFF6CC; border-radius: 12px; padding: 14px"><span style="font-size: 12px; color: #7A5A00">Ya apartaste para tus metas</span><br><strong style="font-size: 20px">$320</strong></div></div><p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.65">El 25 de diciembre cobramos $8 USD a tu tarjeta terminada en 4821 y sigues igual. Si prefieres el plan anual ($80 USD, 2 meses gratis), puedes cambiarlo antes.</p><p style="margin: 0; font-size: 15px; color: #3A3D36; line-height: 1.65">Si no quieres seguir, cancelas en un toque desde Suscripción. No te cobramos nada más y tus datos quedan guardados.</p>
+          <a href="#" style="text-decoration: none; align-self: flex-start; font-size: 15px; font-weight: 600; padding: 14px 22px; border-radius: 12px; background: #141612; color: #FFFFFF">Ver mi suscripción</a>
+          <p style="margin: 0; font-size: 14px; color: #3A3D36">— Jonathan</p>
+        </div>
+        <div style="background: #F6F5F0; padding: 18px 32px; font-size: 12px; color: #5F6359; line-height: 1.6">Te escribimos porque se acerca tu primer cobro completo. <a href="#">Elegir qué correos recibo</a> · Revolución del Dinero · Sydney, Australia</div>
+      </div>
     </article></div>
   </div></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1700}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2500}}'>
 class Component extends DCLogic {
   renderVals() { return {}; }
 }
