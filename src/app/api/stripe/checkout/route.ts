@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       // La regla de frecuencia solo la conoce la tabla `coupons` (Stripe no la sabe). La función `coupon_rule`
       // devuelve solo `applies_to` y `expires_at` de ese código, con la sesión del usuario (sin clave de servicio).
       // Un código que existe en Stripe pero no en la tabla no tiene regla de frecuencia: lo valida solo Stripe.
-      const rule = await s.supabase.rpc("coupon_rule" as never, { p_code: coupon } as never) as { data: { applies_to: string; expires_at: string | null }[] | null; error: unknown };
+      const rule = await s.supabase.rpc("coupon_rule", { p_code: coupon });
       if (rule.error) throw new Error("lectura cupón");
       const row = rule.data?.[0];
       if (row) {

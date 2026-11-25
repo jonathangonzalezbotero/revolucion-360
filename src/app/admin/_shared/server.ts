@@ -45,8 +45,8 @@ export async function loadUser(s: Session, id: string): Promise<AdminUser | null
 }
 
 // ───────── Funciones de la migración 20261125000027_admin_parte1.sql ─────────
-// Aún no están en los tipos generados (`npm run db:types` después de aplicarla): se llaman con un cast puntual (`as never`).
-// Mientras no se aplique, PostgREST responde PGRST202 ("función no encontrada") y se usa el camino anterior.
+// Aplicadas en producción el 25 nov 2026. Se conserva el camino anterior por si PostgREST responde PGRST202
+// ("función no encontrada"), p. ej. en un Supabase local sin esa migración.
 type RpcResult<T> = { data: T | null; error: { message: string; code?: string } | null };
 async function rpcNew<T>(s: Session, fn: "admin_emails" | "admin_users_v2" | "admin_academy_dropoff", args: Record<string, unknown>): Promise<RpcResult<T> | null> {
   const r = (await s.supabase.rpc(fn as never, args as never)) as unknown as RpcResult<T>;

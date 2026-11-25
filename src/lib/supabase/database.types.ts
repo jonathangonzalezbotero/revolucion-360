@@ -1021,7 +1021,17 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "admin_grant_access":
+            "admin_academy_dropoff":
+{ Args: { "p_since"?: string }; Returns: {
+              "course_title": string,"lesson_id": string,"lesson_title": string,"stuck": number
+            }[]
+                           },
+"admin_emails":
+{ Args: { "p_ids": (string)[] }; Returns: {
+              "email": string,"id": string,"locale": string,"name": string
+            }[]
+                           },
+"admin_grant_access":
 { Args: { "p_expires": string,"p_group"?: string,"p_kind": string,"p_user": string }; Returns: undefined
                            },
 "admin_log":
@@ -1047,6 +1057,11 @@ isOneToOne: false
               "access_until": string,"country": string,"created_at": string,"email": string,"groups": (string)[],"id": string,"last_active_at": string,"name": string,"payment_failed_at": string,"pro_until": string,"role": string,"state": string,"suspended_at": string,"total": number
             }[]
                            },
+"admin_users_v2":
+{ Args: { "p_country"?: string,"p_email"?: string,"p_filter"?: string,"p_limit"?: number,"p_offset"?: number,"p_role"?: string,"p_search"?: string }; Returns: {
+              "access_until": string,"country": string,"created_at": string,"email": string,"groups": (string)[],"id": string,"last_active_at": string,"name": string,"payment_failed_at": string,"pro_until": string,"role": string,"state": string,"suspended_at": string,"total": number
+            }[]
+                           },
 "award_badge":
 { Args: { "p_badge": string }; Returns: boolean
                            },
@@ -1055,6 +1070,11 @@ isOneToOne: false
                            },
 "can_write":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"coupon_rule":
+{ Args: { "p_code": string }; Returns: {
+              "applies_to": string,"expires_at": string
+            }[]
                            },
 "course_live":
 { Args: { "p_course": string }; Returns: boolean
