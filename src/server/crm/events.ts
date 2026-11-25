@@ -37,7 +37,7 @@ export async function contactForUser(db: Db, userId: string): Promise<string | n
 export async function recordEvent(db: Db, contactId: string, kind: EventKind, ref?: string | number | null, at?: Date): Promise<boolean> {
   const row = { contact_id: contactId, kind, ref: cleanRef(ref), ...(at ? { at: at.toISOString() } : {}) };
   const r = must(await db.from("crm_events").upsert(row, { onConflict: "contact_id,kind,ref", ignoreDuplicates: true }).select("id")) as { id: number }[];
-  if (!["email_sent", "sms_sent", "stage_changed", "inactive_days", "charge_upcoming"].includes(kind)) {
+  if (!["email_sent", "sms_sent", "stage_changed", "inactive_days", "charge_upcoming", "challenge_idle"].includes(kind)) {
     must(await db.from("crm_contacts").update({ last_activity_at: (at ?? new Date()).toISOString() }).eq("id", contactId).select("id"));
   }
   return r.length > 0;

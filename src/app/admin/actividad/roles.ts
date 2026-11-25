@@ -10,6 +10,7 @@ export type AdminRole = (typeof ADMIN_ROLES)[number];
  */
 export const ADMIN_SECTIONS = [
   "resumen", "usuarios", "grupos", "menu", "academia", "planes", "paises", "soporte", "actividad", "administradores", "crm",
+  "retos", // Retos (20261125000037_retos.sql): solo el Dueño — al publicar crea automatizaciones del CRM y usa códigos de acceso
 ] as const;
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
 
@@ -28,8 +29,13 @@ export const isAdminRole = (v: unknown): v is AdminRole => typeof v === "string"
 
 export const canUse = (role: AdminRole, section: AdminSection) => ROLE_SECTIONS[role].includes(section);
 
-/** Rutas del CRM: las tres pantallas son una sola sección ("crm"). */
-export const CRM_ROUTES = ["crm", "campanas", "automatizaciones"] as const;
+/** Rutas del CRM: Contactos, Campañas, Automatizaciones y Conexiones web son una sola sección ("crm"). */
+export const CRM_ROUTES = ["crm", "campanas", "automatizaciones", "conexiones"] as const;
+/** Ruta de "Conexiones web" (la navegación la agrega en "CRM y correos"). */
+export const CONEXIONES_PATH = "/admin/conexiones";
+
+/** Ruta de "Retos" (la navegación la agrega en "La app"; sección "retos", solo el Dueño). */
+export const RETOS_PATH = "/admin/retos";
 
 /** Sección de una ruta del panel; null si no es del panel o no es una sección conocida. */
 export function sectionOf(path: string): AdminSection | null {

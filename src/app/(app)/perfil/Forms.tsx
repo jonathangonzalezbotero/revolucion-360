@@ -4,8 +4,9 @@ import { useState, useTransition } from "react";
 import { fill } from "@/i18n";
 import { ConfirmButton, Switch, useToast } from "@/components/ui/client";
 import type { Result } from "@/server/action";
-import { saveCategories, saveMarketing, savePersonal, savePrefs, saveRegion, saveTerms, spendWildcard } from "./actions";
-import { CHANNELS, CLOSE_DAYS, CURRENCIES, isCurrency, NOTIFY_KEYS, PAY_FREQUENCIES, TERM_KEYS, type NotifyPrefs, type PayFrequency, type TermKey } from "./lib";
+import type { HabitPrefKey } from "@/lib/engine/habito";
+import { saveCategories, saveHabitPrefs, saveMarketing, savePersonal, savePrefs, saveRegion, saveTerms, spendWildcard } from "./actions";
+import { CHANNELS, CLOSE_DAYS, CURRENCIES, isCurrency, PAY_FREQUENCIES, TERM_KEYS, type NotifyKey, type NotifyPrefs, type PayFrequency, type TermKey } from "./lib";
 import type { PerfilMessages } from "./messages";
 import css from "./perfil.module.css";
 
@@ -151,28 +152,47 @@ export function NamesForm({ m, countryTerms, terms, categories, canEdit }: { m: 
 
 // ───────── Preferencias de notificaciones (se guardan al tocar) ─────────
 /**
+ * Una sola lista en el orden del mockup (Perfil › Notificaciones). Cada interruptor guarda donde siempre: los de
+ * `prefs.notify` con `savePrefs` y los del hábito (Hoy puedes gastar, Repaso semanal, Metas y retos = `prefs.habit`
+ * daily / weekly / goal) con `saveHabitPrefs`. "Logros" no está en el mockup: se conserva porque ya existía.
+ */
+type PrefRow = { from: "notify"; k: NotifyKey } | { from: "habit"; k: HabitPrefKey };
+const PREF_ROWS: readonly PrefRow[] = [
+  { from: "notify", k: "close" }, { from: "notify", k: "payments" }, { from: "notify", k: "academy" },
+  { from: "habit", k: "daily" }, { from: "habit", k: "weekly" }, { from: "habit", k: "goal" },
+  { from: "notify", k: "achievements" }, { from: "notify", k: "news" },
+];
+
+/**
  * `marketing`: consentimiento de marketing guardado en el CRM. Cuando existe, el interruptor "Novedades de Revolución del
  * Dinero" (mismo texto del mockup) es ESE consentimiento (única fuente de verdad); `prefs.notify.news` ya no se usa.
  * Sin CRM disponible (migración aún sin aplicar), queda como antes.
  */
-export function PrefsForm({ m, initial, marketing }: { m: PerfilMessages; initial: NotifyPrefs; marketing?: { email: boolean } | null }) {
+export function PrefsForm({ m, initial, habit: habitInitial, marketing }: { m: PerfilMessages; initial: NotifyPrefs; habit: Record<HabitPrefKey, boolean>; marketing?: { email: boolean } | null }) {
   const [p, setP] = useState(initial);
+  const [habit, setHabit] = useState(habitInitial);
   const [news, setNews] = useState(marketing?.email ?? false);
   const { error, act } = useAct();
   const save = (patch: Partial<NotifyPrefs>, next: NotifyPrefs) => { setP(next); act(() => savePrefs(patch), undefined, m.saved); };
+  const row = (key: string, t: string, d: string, checked: boolean, onChange: (v: boolean) => void) => (
+    <div key={key} className={css.switchRow}>
+      <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}><strong style={{ fontSize: 14 }}>{t}</strong><span className="xs muted">{d}</span></span>
+      <Switch checked={checked} label={t} onChange={onChange} />
+    </div>
+  );
   return (
     <section className={css.section} style={{ gap: 4 }}>
-      {NOTIFY_KEYS.map((k) => (k === "news" && marketing ? (
-        <div key={k} className={css.switchRow}>
-          <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}><strong style={{ fontSize: 14 }}>{m.notify.news.t}</strong><span className="xs muted">{m.notify.news.d}. {m.marketing.emailNote}</span></span>
-          <Switch checked={news} label={m.notify.news.t} onChange={(v) => { const before = news; setNews(v); act(() => saveMarketing({ email: v }).then((r) => { if (!r.ok) setNews(before); return r; }), undefined, m.saved); }} />
-        </div>
-      ) : (
-        <div key={k} className={css.switchRow}>
-          <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}><strong style={{ fontSize: 14 }}>{m.notify[k].t}</strong><span className="xs muted">{m.notify[k].d}</span></span>
-          <Switch checked={p.notify[k]} label={m.notify[k].t} onChange={(v) => save({ notify: { ...p.notify, [k]: v } }, { ...p, notify: { ...p.notify, [k]: v } })} />
-        </div>
-      )))}
+      {PREF_ROWS.map((r) => {
+        if (r.from === "habit") {
+          const k = r.k;
+          return row(`habit-${k}`, m.habit.items[k].t, m.habit.items[k].d, habit[k], (v) => { setHabit({ ...habit, [k]: v }); act(() => saveHabitPrefs({ [k]: v }), undefined, m.saved); });
+        }
+        const k = r.k;
+        if (k === "news" && marketing) {
+          return row(k, m.notify.news.t, `${m.notify.news.d}. ${m.marketing.emailNote}`, news, (v) => { const before = news; setNews(v); act(() => saveMarketing({ email: v }).then((res) => { if (!res.ok) setNews(before); return res; }), undefined, m.saved); });
+        }
+        return row(k, m.notify[k].t, m.notify[k].d, p.notify[k], (v) => save({ notify: { ...p.notify, [k]: v } }, { ...p, notify: { ...p.notify, [k]: v } }));
+      })}
       <div className={css.grid2} style={{ marginTop: 12 }}>
         <div className="field"><label htmlFor="n-day">{m.closeDay}</label>
           <select id="n-day" className={css.input} value={p.closeDay} onChange={(e) => { const v = e.target.value as NotifyPrefs["closeDay"]; save({ closeDay: v }, { ...p, closeDay: v }); }}>
@@ -183,6 +203,7 @@ export function PrefsForm({ m, initial, marketing }: { m: PerfilMessages; initia
             {CHANNELS.map((c) => <option key={c} value={c}>{m.channels[c]}</option>)}
           </select></div>
       </div>
+      <p className="xs muted" style={{ margin: "8px 0 0", lineHeight: 1.5 }}>{m.habit.note}</p>
       <Alert text={error} />
     </section>
   );

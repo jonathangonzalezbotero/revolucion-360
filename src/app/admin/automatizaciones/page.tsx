@@ -3,7 +3,7 @@ import { fill } from "@/i18n";
 import { CRM_FOOTNOTE, triggerLabel } from "@/lib/crm/labels";
 import { ExitRulesSchema, StepsSchema, TRIGGER_KINDS, TriggerSchema, type Trigger } from "@/lib/crm/schema";
 import { Empty } from "@/components/ui/basics";
-import { listAutomations, listTags } from "@/server/crm";
+import { listAutomations, listConnections, listTags } from "@/server/crm";
 import { requireAdmin, type Session } from "@/server/session";
 import css from "../_shared/admin.module.css";
 import { isUuid } from "../_shared/lib";
@@ -13,6 +13,7 @@ import c from "../crm/crm.module.css";
 import { crmMissing } from "../crm/lib";
 import { crmOf, loadLessons, publicAppUrl } from "../crm/server";
 import { AutomationsView, type AutoDraft } from "./AutomationsView";
+import { visibleTriggers } from "./lib";
 import { M } from "./messages";
 
 export const metadata: Metadata = { title: "Automatizaciones" };
@@ -42,7 +43,7 @@ export default async function AdminAutomatizaciones({ searchParams }: { searchPa
       <AutomationsView m={m} mc={MC[s.locale]} locale={s.locale} initial={sel} {...view} />
       <section aria-labelledby="tr" className={c.box} style={{ gap: 10, padding: "20px 22px" }}>
         <h2 id="tr" style={{ fontSize: 16 }}>{m.eventsTitle}</h2>
-        <div className={c.events}>{TRIGGER_KINDS.map((k) => <span key={k}>{triggerLabel({ kind: k }, s.locale)}</span>)}</div>
+        <div className={c.events}>{visibleTriggers(TRIGGER_KINDS).map((k) => <span key={k}>{triggerLabel({ kind: k }, s.locale)}</span>)}</div>
       </section>
       <p className={c.foot}>{CRM_FOOTNOTE[s.locale]}</p>
     </main>
@@ -52,7 +53,9 @@ export default async function AdminAutomatizaciones({ searchParams }: { searchPa
 async function load(s: Session) {
   const m = M[s.locale];
   const db = crmOf(s);
-  const [autos, tags, lessons] = await Promise.all([listAutomations(db), listTags(db), loadLessons(s)]);
+  // Conexiones web (migración 038): si aún no está aplicada, el editor funciona igual, sin elegir conexión.
+  const [autos, tags, lessons, connections] = await Promise.all([listAutomations(db), listTags(db), loadLessons(s),
+    listConnections(db).then((l) => l.map((x) => ({ id: x.id, name: x.name }))).catch((e: unknown) => { if (crmMissing(e)) return []; throw e; })]);
   const fallback: Trigger = { kind: "first_month_paid" };
   const drafts: AutoDraft[] = autos.map((a) => {
     const tr = TriggerSchema.safeParse(a.trigger), st = StepsSchema.safeParse(a.steps), ex = ExitRulesSchema.safeParse(a.exit_rules ?? {});
@@ -61,10 +64,11 @@ async function load(s: Session) {
       inside: a.activeCount > 0 ? fill(m.inside, { n: a.activeCount.toLocaleString("en-AU") }) : m.dash,
       trigger: tr.success ? tr.data : fallback, steps: st.success ? st.data : [],
       exitRules: ex.success ? ex.data : { onUnsubscribe: true, onCancel: true, goal: null },
+      transactional: a.transactional === true,
     };
   });
   return {
-    drafts, lessons, appUrl: publicAppUrl(), heading: MC[s.locale].defaultHeading,
+    drafts, lessons, connections, appUrl: publicAppUrl(), heading: MC[s.locale].defaultHeading,
     tags: tags.map((t) => ({ id: t.id, name: t.name, system: !!t.system_key })),
   };
 }

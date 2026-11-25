@@ -34,13 +34,19 @@ export type MessageRow = {
   id: string; contact_id: string; channel: "email" | "sms"; source_key: string; campaign_id: string | null; automation_id: string | null;
   enrollment_id: string | null; step_id: string | null; scheduled_for: string; status: string; attempts: number; locked_at: string | null;
   provider_id: string | null; error: string | null;
+  /** Migración 038: se encoló desde una automatización transaccional. */
+  transactional?: boolean;
 };
 export type CampaignRow = {
   id: string; name: string; subject: string; preheader: string; audience: unknown; blocks: unknown; status: string; send_mode: "now" | "local";
   scheduled_local: string | null; scheduled_at: string | null; enqueue_cursor: string | null; enqueued_at: string | null; sent_at: string | null;
   recipients_count: number; sent_count: number; opened_count: number; clicked_count: number; bounced_count: number; created_at: string; updated_at: string;
 };
-export type AutomationRow = { id: string; name: string; trigger: unknown; steps: unknown; exit_rules: unknown; status: "draft" | "active" | "paused"; created_at: string; updated_at: string };
+export type AutomationRow = {
+  id: string; name: string; trigger: unknown; steps: unknown; exit_rules: unknown; status: "draft" | "active" | "paused"; created_at: string; updated_at: string;
+  /** Migración 038: "De una compra o un acceso (transaccional)". Sin la 038 no viene (= false). */
+  transactional?: boolean;
+};
 export type EnrollmentRow = {
   id: string; automation_id: string; contact_id: string; trigger_ref: string; trigger_event_id: number | null; status: string;
   current_step_id: string | null; next_at: string | null; enrolled_at: string; finished_at: string | null; exit_reason: string | null;

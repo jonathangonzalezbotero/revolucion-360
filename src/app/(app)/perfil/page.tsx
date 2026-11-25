@@ -11,7 +11,6 @@ import { term } from "@/server/terms";
 import { Achievements, type BadgeView } from "./Achievements";
 import { NamesForm, PersonalForm, PrefsForm, RegionForm } from "./Forms";
 import { readHabitPrefs } from "@/lib/engine/habito";
-import { HabitPrefsForm } from "./HabitPrefs";
 import { SmsPrefsForm } from "./SmsPrefs";
 import { PAY_FREQUENCIES, readNotifyPrefs, TERM_KEYS, timezoneOptions, visibleTabs, type PayFrequency, type Tab, type TermKey } from "./lib";
 import { M, type PerfilMessages } from "./messages";
@@ -64,9 +63,8 @@ export default async function PerfilPage() {
     nombres: <NamesForm m={m} countryTerms={countryTerms} terms={s.profile.terms} categories={categories.map((c) => ({ id: c.id, name: c.name, original: c.original_name, isBasic: c.is_basic }))} canEdit={s.canEdit} />,
     notificaciones: (
       <div className="stack" style={{ gap: 16 }}>
-        <PrefsForm m={m} initial={readNotifyPrefs(s.profile.prefs)} marketing={marketing ? { email: marketing.email } : null} />
+        <PrefsForm m={m} initial={readNotifyPrefs(s.profile.prefs)} habit={readHabitPrefs(s.profile.prefs)} marketing={marketing ? { email: marketing.email } : null} />
         {marketing ? <SmsPrefsForm m={m} initial={marketing.sms} phone={marketing.phone} suggested={extra.phone || undefined} /> : null}
-        <HabitPrefsForm m={m} initial={readHabitPrefs(s.profile.prefs)} />
       </div>
     ),
     seguridad: <Security m={m} mfa={mfa} isAdmin={s.profile.role === "admin"} passwordChanged={extra.password_changed_at ? day(extra.password_changed_at) : null} />,

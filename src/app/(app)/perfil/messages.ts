@@ -75,14 +75,14 @@ export const M = {
       smsStopped: "Respondiste STOP a nuestros SMS. Para volver a recibirlos, responde START a ese mismo número.",
       emailBlocked: "No podemos enviarte novedades a este correo: rebotó o se marcó como spam. Escríbenos para revisarlo.",
     },
+    // Avisos del hábito (prefs.habit): van en la misma lista que los demás, en el orden del mockup.
     habit: {
-      title: "Avisos del hábito", text: "En la app y al celular. Máximo uno al día y nunca de noche (de 21:00 a 8:00, en tu hora).",
       items: {
-        daily: { t: "Hoy puedes gastar", d: "Cada mañana, lo que te queda para el día a día repartido en los días del mes" },
-        weekly: { t: "Tu repaso de la semana", d: "El domingo: cómo te fue y lo que viene, en 2 minutos" },
-        goal: { t: "Hitos de tus metas", d: "Al llegar al 25, 50, 75 y 100% de una meta" },
+        daily: { t: "Hoy puedes gastar", d: "Cada mañana, cuánto puedes gastar hoy en lo del día a día" },
+        weekly: { t: "Repaso semanal", d: "El domingo: lo que lograste y lo que se paga esta semana" },
+        goal: { t: "Metas y retos", d: "Cuando llegas a un hito de una meta o avanzas en un reto" },
       },
-      note: "\"Mañana se paga…\" sale con Pagos por vencer y \"5 minutos para cerrar el mes\" con el recordatorio de cierre (si elegiste los últimos días del mes). Con \"Solo correo\" no te llega ninguno.",
+      note: "Hoy puedes gastar, Repaso semanal y Metas y retos llegan en la app y al celular: máximo uno al día y nunca de noche (de 21:00 a 8:00, en tu hora). \"Mañana se paga…\" sale con Pagos por vencer y \"5 minutos para cerrar el mes\" con el recordatorio de cierre (si elegiste los últimos días del mes). Con \"Solo correo\" no te llega ninguno de estos.",
     },
     // Seguridad
     password: "Contraseña", passwordSub: "Usa una frase larga que no uses en otro lado.", passwordChanged: "Cambiada por última vez el {date}", passwordNever: "Cambiada por última vez: Nunca", changePassword: "Cambiar contraseña", newPassword: "Contraseña nueva",
@@ -179,13 +179,12 @@ export const M = {
       emailBlocked: "We can't send news to this email: it bounced or was marked as spam. Write to us so we can check.",
     },
     habit: {
-      title: "Habit reminders", text: "In the app and on your phone. At most one a day and never at night (9 pm to 8 am, your time).",
       items: {
-        daily: { t: "You can spend today", d: "Each morning, what you have left for day-to-day spending spread over the days of the month" },
-        weekly: { t: "Your weekly review", d: "On Sunday: how it went and what's coming, in 2 minutes" },
-        goal: { t: "Goal milestones", d: "When a goal reaches 25, 50, 75 and 100%" },
+        daily: { t: "You can spend today", d: "Each morning, how much you can spend today on day-to-day things" },
+        weekly: { t: "Weekly review", d: "On Sunday: what you achieved and what's due this week" },
+        goal: { t: "Goals and challenges", d: "When you hit a goal milestone or move forward in a challenge" },
       },
-      note: "\"Due tomorrow…\" comes with Payments due, and \"5 minutes to close the month\" with the month close reminder (if you chose the last days of the month). With \"Email only\" you won't get any.",
+      note: "You can spend today, Weekly review and Goals and challenges arrive in the app and on your phone: at most one a day and never at night (9 pm to 8 am, your time). \"Due tomorrow…\" comes with Payments due, and \"5 minutes to close the month\" with the month close reminder (if you chose the last days of the month). With \"Email only\" you won't get any of these.",
     },
     password: "Password", passwordSub: "Use a long phrase you don't use anywhere else.", passwordChanged: "Last changed on {date}", passwordNever: "Last changed: Never", changePassword: "Change password", newPassword: "New password",
     show: "Show", hide: "Hide", pwHint: "At least 8 characters. A long phrase is better, e.g. \"my-trip-to-cali-2027\".",

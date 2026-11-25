@@ -7,6 +7,21 @@ Dominio: app.revoluciondeldinero.com. El panel de administración vive en `/admi
 **Stack:** Next.js 16 (App Router, React 19, TypeScript) en Vercel · Supabase (Postgres + Auth, región Sydney) · Stripe · Resend.
 Antes de usar una API de Next, lee su guía en `node_modules/next/dist/docs/` (ver AGENTS.md): el middleware ahora es `src/proxy.ts`, `cookies()` y `params` son asíncronos.
 
+## Herramientas por bloque
+Verificado en `package.json` y en el código (25 nov 2026).
+- **App y hosting:** Next.js 16 (App Router, React 19, TypeScript) en Vercel.
+- **Base, usuarios y permisos:** Supabase: Postgres + Auth (2 pasos) + RLS, región Sydney (`@supabase/ssr`, `@supabase/supabase-js`).
+- **Cobros:** Stripe Embedded Checkout dentro de `/activar` (`stripe`, `@stripe/stripe-js`, `@stripe/react-stripe-js`); webhook en `src/app/api/stripe/webhook`.
+- **Correo:** Resend (`resend`, `src/lib/email/send.ts`; webhook en `src/app/api/crm/resend`).
+- **SMS:** Twilio por su API REST con `fetch` (sin librería; `src/server/crm/sms.ts`, webhook en `src/app/api/crm/twilio`).
+- **Avisos al celular:** web-push (`web-push`, `src/lib/email/push.ts`).
+- **Tareas programadas:** Vercel Cron (`vercel.json`: correos, cierre, racha, hábito…).
+- **Motor del CRM:** pg_cron + pg_net de Supabase llaman `/api/crm/run` cada 10 minutos (paso manual, `docs/CRM.md`; no está en las migraciones).
+- **Anti-bots en conexiones web:** Cloudflare Turnstile, verificado en el servidor (`src/server/crm/connections.ts`; Conexiones web, en construcción).
+- **Imágenes:** sharp, solo en `scripts/optimize-images.ts` (dependencia transitiva de Next; no está en `package.json`).
+- **Validación:** zod en las acciones del servidor y en las entradas de las rutas `api/`.
+- **Pruebas:** vitest (`tests/`).
+
 ## Documentos que mandan
 - `docs/plan-de-implementacion.md` — decisiones tomadas, fases y reglas de negocio. **No se cambia una decisión sin aprobación de Jonathan.**
 - `docs/mockup/*.dc.html` — las 60 pantallas aprobadas. **Son el contrato visual: no se rediseña.** Si algo no se puede hacer, se pregunta.

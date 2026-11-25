@@ -61,8 +61,10 @@ export function stepSummary(s: Step, x: Ctx): string {
 
 export type TriggerTexts = { first: string; anyForm: string; pct: string };
 /** "Empieza cuando": el disparador con sus parámetros ("No abre la app en 14 días", "Se le puso una etiqueta: Webinar"). */
-export function triggerSummary(tr: Trigger, label: string, t: TriggerTexts, tagName: (id: string) => string): string {
+export function triggerSummary(tr: Trigger, label: string, t: TriggerTexts, tagName: (id: string) => string, connName: (id: string) => string = () => "—"): string {
   switch (tr.kind) {
+    case "web_connection":
+    case "email_confirmed": return tr.connectionId ? `${label}: ${connName(tr.connectionId)}` : label;
     case "tag_added": return tr.tagId ? `${label}: ${tagName(tr.tagId)}` : label;
     case "web_form": return tr.form ? `${label}: ${tr.form}` : label;
     case "goal_milestone": return tr.pct ? `${label} · ${fill(t.pct, { n: tr.pct })}` : label;
@@ -108,6 +110,12 @@ export function replaceStep(steps: Step[], id: string, next: Step | null): Step[
 }
 
 /** Eventos que sirven como objetivo de salida o en "¿Pasó X?". */
-export const GOAL_KINDS: EventKind[] = ["signup", "first_month_paid", "paying", "student_code", "wizard_done", "first_closure", "goal_milestone", "diagnostic_done", "web_form", "payment_failed", "subscription_ended"];
+export const GOAL_KINDS: EventKind[] = ["signup", "first_month_paid", "paying", "student_code", "wizard_done", "first_closure", "goal_milestone", "diagnostic_done", "web_form", "payment_failed", "subscription_ended", "web_connection", "email_confirmed"];
+
+/**
+ * Disparadores que se ofrecen (mockup AdminAuto: 13). "Llenó un formulario web" es de la API vieja /api/crm/ingest (la
+ * reemplazan las Conexiones web): solo aparece si la automatización abierta ya lo usa.
+ */
+export const visibleTriggers = <K extends string>(all: readonly K[], current?: string): K[] => all.filter((k) => k !== "web_form" || k === current);
 export const CHECK_TYPES: Check["type"][] = ["event", "has_account", "stage", "active_since_enrolled", "has_tag"];
 export const STAGE_KEYS: Stage[] = ["lead", "primer_mes", "pagando", "alumno", "solo_lectura"];

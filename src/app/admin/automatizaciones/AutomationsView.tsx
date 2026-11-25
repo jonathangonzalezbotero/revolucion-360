@@ -6,7 +6,7 @@ import { fill } from "@/i18n";
 import { EVENT_LABELS, STAGE_LABELS, triggerLabel } from "@/lib/crm/labels";
 import { TRIGGER_KINDS, type Block, type Check, type ConditionStepT, type EventKind, type ExitRules, type LeafStepT, type Step, type Trigger } from "@/lib/crm/schema";
 import { Empty } from "@/components/ui/basics";
-import { Modal, useToast } from "@/components/ui/client";
+import { Modal, Switch, useToast } from "@/components/ui/client";
 import { Icon } from "@/components/ui/Icon";
 import css from "../_shared/admin.module.css";
 import { AdminHeader } from "../_shared/ui";
@@ -16,22 +16,25 @@ import type { CampanasText } from "../campanas/messages";
 import c from "../crm/crm.module.css";
 import { move } from "../crm/lib";
 import { saveAuto, setAutoStatus } from "./actions";
-import { CHECK_TYPES, exitSentence, GOAL_KINDS, LEAF_TYPES, newStep, replaceStep, STAGE_KEYS, STEP_TONE, STEP_TYPES, stepIds, stepSummary, triggerSummary, type Ctx, type StepType } from "./lib";
+import { CHECK_TYPES, exitSentence, GOAL_KINDS, LEAF_TYPES, newStep, replaceStep, STAGE_KEYS, STEP_TONE, STEP_TYPES, stepIds, stepSummary, triggerSummary, visibleTriggers, type Ctx, type StepType } from "./lib";
 import type { AutoText } from "./messages";
 
-export type AutoDraft = { id: string; name: string; status: "draft" | "active" | "paused"; inside: string; trigger: Trigger; steps: Step[]; exitRules: ExitRules };
+export type AutoDraft = { id: string; name: string; status: "draft" | "active" | "paused"; inside: string; trigger: Trigger; steps: Step[]; exitRules: ExitRules; transactional: boolean };
 type TagOpt = { id: string; name: string; system: boolean };
+type ConnOpt = { id: string; name: string };
 type R<T> = { ok: true; data: T } | { ok: false; error: string };
 type Shared = { m: AutoText; mc: CampanasText; ctx: Ctx; ownTags: TagOpt[]; lessons: LessonOption[]; appUrl: string; heading: string; allIds: () => string[] };
 
-export function AutomationsView({ m, mc, locale, initial, drafts, tags, lessons, appUrl, heading }: {
+export function AutomationsView({ m, mc, locale, initial, drafts, tags, lessons, appUrl, heading, connections = [] }: {
   m: AutoText; mc: CampanasText; locale: "es" | "en"; initial: string | null; drafts: AutoDraft[]; tags: TagOpt[]; lessons: LessonOption[]; appUrl: string; heading: string;
+  connections?: ConnOpt[];
 }) {
   const router = useRouter();
   const tagName = (id: string) => tags.find((t) => t.id === id)?.name ?? "—";
-  const trig = (t: Trigger) => triggerSummary(t, triggerLabel(t, locale), m.trig, tagName);
+  const connName = (id: string) => connections.find((x) => x.id === id)?.name ?? "—";
+  const trig = (t: Trigger) => triggerSummary(t, triggerLabel(t, locale), m.trig, tagName, connName);
   const current = drafts.find((d) => d.id === initial) ?? null;
-  const fresh: AutoDraft = { id: "", name: m.newName, status: "draft", inside: m.dash, trigger: { kind: "first_month_paid" }, steps: [], exitRules: { onUnsubscribe: true, onCancel: true, goal: { kind: "signup" } } };
+  const fresh: AutoDraft = { id: "", name: m.newName, status: "draft", inside: m.dash, trigger: { kind: "first_month_paid" }, steps: [], exitRules: { onUnsubscribe: true, onCancel: true, goal: { kind: "signup" } }, transactional: false };
 
   return (
     <>
@@ -44,21 +47,21 @@ export function AutomationsView({ m, mc, locale, initial, drafts, tags, lessons,
             <div className={c.box}><Empty image="/ilustraciones/vacio-movimientos.webp" title={m.empty} text={m.emptySub} /></div>
           ) : drafts.map((f) => (
             <button key={f.id} type="button" className={c.flow} aria-pressed={f.id === initial} onClick={() => router.push(`/admin/automatizaciones?a=${f.id}`, { scroll: false })}>
-              <span><strong>{f.name}</strong><span style={{ fontSize: 12, fontWeight: 600, color: f.status === "active" ? "var(--verde-fuerte)" : "var(--gris)" }}>{m.status[f.status]}</span></span>
+              <span><strong>{f.name}</strong><span style={{ fontSize: 12, fontWeight: 600, color: f.status === "active" ? "var(--verde-fuerte)" : "var(--gris)" }}>{f.transactional ? `${m.transactionalTag} · ` : ""}{m.status[f.status]}</span></span>
               <span className={c.flowSub}>{fill(m.startsWhenSum, { trig: trig(f.trigger) })}</span>
               <span className={`num ${c.flowN}`}>{f.inside}</span>
             </button>
           ))}
         </section>
-        <Editor key={current?.id ?? "nueva"} m={m} mc={mc} locale={locale} draft={current ?? fresh} isNew={!current} tags={tags} lessons={lessons} appUrl={appUrl} heading={heading} trig={trig} tagName={tagName} />
+        <Editor key={current?.id ?? "nueva"} m={m} mc={mc} locale={locale} draft={current ?? fresh} isNew={!current} tags={tags} lessons={lessons} appUrl={appUrl} heading={heading} trig={trig} tagName={tagName} connections={connections} />
       </div>
     </>
   );
 }
 
-function Editor({ m, mc, locale, draft, isNew, tags, lessons, appUrl, heading, trig, tagName }: {
+function Editor({ m, mc, locale, draft, isNew, tags, lessons, appUrl, heading, trig, tagName, connections }: {
   m: AutoText; mc: CampanasText; locale: "es" | "en"; draft: AutoDraft; isNew: boolean; tags: TagOpt[]; lessons: LessonOption[]; appUrl: string; heading: string;
-  trig: (t: Trigger) => string; tagName: (id: string) => string;
+  trig: (t: Trigger) => string; tagName: (id: string) => string; connections: ConnOpt[];
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -72,7 +75,7 @@ function Editor({ m, mc, locale, draft, isNew, tags, lessons, appUrl, heading, t
   const ctx: Ctx = { t: m.sum, events: EVENT_LABELS[locale], stages: STAGE_LABELS[locale], tagName };
   const shared: Shared = { m, mc, ctx, ownTags, lessons, appUrl, heading, allIds: () => stepIds(d.steps) };
 
-  const payload = () => ({ id: d.id || null, name: d.name, trigger: d.trigger, steps: d.steps, exitRules: d.exitRules });
+  const payload = () => ({ id: d.id || null, name: d.name, trigger: d.trigger, steps: d.steps, exitRules: d.exitRules, transactional: d.transactional });
   const go = (id: string | null) => { if (id && id !== d.id) router.replace(`/admin/automatizaciones?a=${id}`, { scroll: false }); router.refresh(); };
   const run = (steps: (() => Promise<R<unknown>>)[], done: string, after: (id: string | null) => void) => start(async () => {
     setError(null);
@@ -133,7 +136,7 @@ function Editor({ m, mc, locale, draft, isNew, tags, lessons, appUrl, heading, t
           <div className="field">
             <label htmlFor="au-k">{m.event}</label>
             <select id="au-k" className="input" value={d.trigger.kind} onChange={(e) => patch({ trigger: { kind: e.target.value as Trigger["kind"], ...(e.target.value === "inactive_days" || e.target.value === "charge_upcoming" ? { days: d.trigger.days ?? (e.target.value === "charge_upcoming" ? 3 : 14) } : {}) } as Trigger })}>
-              {TRIGGER_KINDS.map((k) => <option key={k} value={k}>{triggerLabel({ kind: k }, locale)}</option>)}
+              {visibleTriggers(TRIGGER_KINDS, draft.trigger.kind).map((k) => <option key={k} value={k}>{triggerLabel({ kind: k }, locale)}</option>)}
             </select>
           </div>
           {kindNeedsDays ? (
@@ -157,6 +160,15 @@ function Editor({ m, mc, locale, draft, isNew, tags, lessons, appUrl, heading, t
               <input id="au-f" className="input" maxLength={60} placeholder={m.formPh} value={d.trigger.form ?? ""} onChange={(e) => setTrigger({ form: e.target.value || undefined })} />
             </div>
           ) : null}
+          {d.trigger.kind === "web_connection" || d.trigger.kind === "email_confirmed" ? (
+            <div className="field">
+              <label htmlFor="au-c">{m.conn}</label>
+              <select id="au-c" className="input" value={d.trigger.connectionId ?? ""} onChange={(e) => setTrigger({ connectionId: e.target.value || undefined })}>
+                <option value="">{m.connAny}</option>
+                {connections.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+              </select>
+            </div>
+          ) : null}
           {d.trigger.kind === "goal_milestone" ? (
             <div className="field">
               <label htmlFor="au-p">{m.pct}</label>
@@ -170,6 +182,17 @@ function Editor({ m, mc, locale, draft, isNew, tags, lessons, appUrl, heading, t
         {d.trigger.kind === "charge_upcoming" ? (
           <label className={c.check}><input type="checkbox" checked={!!d.trigger.firstOnly} onChange={(e) => setTrigger({ firstOnly: e.target.checked || undefined })} />{m.firstOnly}</label>
         ) : null}
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <strong style={{ fontSize: 14, fontWeight: 600 }}>{m.transactional}</strong>
+            <span className={c.hint}>{m.transactionalSub}</span>
+          </span>
+          <Switch checked={d.transactional} label={m.transactional} onChange={(v) => patch({ transactional: v })} />
+        </div>
+        {d.transactional ? <p role="note" className={c.hint} style={{ color: "var(--ambar-texto)", background: "var(--ambar-fondo)", borderRadius: "var(--r-md)", padding: "10px 12px", fontSize: 13 }}>{m.transactionalWarn}</p> : null}
       </div>
 
       <ol className={c.steps}>

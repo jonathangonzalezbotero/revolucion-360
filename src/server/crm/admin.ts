@@ -272,8 +272,10 @@ export const AutomationInput = z.object({
   trigger: TriggerSchema,
   steps: StepsSchema,
   exitRules: ExitRulesSchema.default({ onUnsubscribe: true, onCancel: true, goal: null }),
+  /** "De una compra o un acceso (transaccional)": sus correos salen sin consentimiento de marketing (docs/CRM.md). */
+  transactional: z.boolean().default(false),
 });
-export type AutomationDraft = { id?: string; name: string; trigger: Trigger; steps: Step[]; exitRules: ExitRules };
+export type AutomationDraft = { id?: string; name: string; trigger: Trigger; steps: Step[]; exitRules: ExitRules; transactional?: boolean };
 
 /** Guarda (las inscripciones activas siguen; si un paso donde estaban ya no existe, salen con motivo "deleted_step"). */
 export async function saveAutomation(db: Db, input: unknown): Promise<string> {
@@ -287,13 +289,20 @@ export async function saveAutomation(db: Db, input: unknown): Promise<string> {
     const tags = new Map((must(await db.from("crm_tags").select("id, system_key").in("id", ids)) as { id: string; system_key: string | null }[]).map((t) => [t.id, t]));
     if (ids.some((id) => !tags.has(id)) || refs.own.some((id) => tags.get(id)?.system_key)) fail("invalid_tag");
   }
-  const row = { name: d.name, trigger: d.trigger, steps: d.steps, exit_rules: d.exitRules, updated_at: new Date().toISOString() };
+  const base = { name: d.name, trigger: d.trigger, steps: d.steps, exit_rules: d.exitRules, updated_at: new Date().toISOString() };
+  const row = { ...base, transactional: d.transactional };
+  // Sin la migración 038 la columna `transactional` no existe: una automatización de marketing se guarda igual (sin ella);
+  // una transaccional no se puede guardar hasta aplicarla (PGRST204 = columna desconocida).
+  const missingColumn = (e: { code?: string } | null) => e?.code === "PGRST204" && !d.transactional;
   if (d.id) {
-    const r = must(await db.from("crm_automations").update(row).eq("id", d.id).select("id")) as unknown[];
-    if (!r.length) fail("not_found");
+    let r = await db.from("crm_automations").update(row).eq("id", d.id).select("id");
+    if (missingColumn(r.error)) r = await db.from("crm_automations").update(base).eq("id", d.id).select("id");
+    if (!(must(r) as unknown[]).length) fail("not_found");
     return d.id;
   }
-  return (must(await db.from("crm_automations").insert(row).select("id").single()) as { id: string }).id;
+  let ins = await db.from("crm_automations").insert(row).select("id").single();
+  if (missingColumn(ins.error)) ins = await db.from("crm_automations").insert(base).select("id").single();
+  return (must(ins) as { id: string }).id;
 }
 
 /**

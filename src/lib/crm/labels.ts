@@ -19,12 +19,16 @@ export const TRIGGER_LABELS: Record<Locale, Record<Trigger["kind"], string>> = {
     first_closure: "Hizo su primer cierre", inactive_days: "No abre la app en {n} días", goal_milestone: "Llegó a un hito de meta",
     charge_upcoming: "Faltan {n} días para un cobro", payment_failed: "Pago fallido", subscription_ended: "Suscripción terminó",
     diagnostic_done: "Hizo el diagnóstico", tag_added: "Se le puso una etiqueta", web_form: "Llenó un formulario web",
+    web_connection: "Llegó por una conexión web", email_confirmed: "Confirmó su correo",
+    challenge_idle: "Reto: no marca en {n} días", challenge_done: "Reto: lo terminó",
   },
   en: {
     first_month_paid: "Paid their first month", student_code: "Joined with a student code", wizard_done: "Finished the setup wizard",
     first_closure: "Closed their first month", inactive_days: "Hasn't opened the app in {n} days", goal_milestone: "Reached a goal milestone",
     charge_upcoming: "{n} days until a charge", payment_failed: "Payment failed", subscription_ended: "Subscription ended",
     diagnostic_done: "Did the diagnostic", tag_added: "Got a tag", web_form: "Filled in a web form",
+    web_connection: "Came in through a web connection", email_confirmed: "Confirmed their email",
+    challenge_idle: "Challenge: no check-in for {n} days", challenge_done: "Challenge: finished",
   },
 };
 /** Nombre del disparador con sus días ("No abre la app en 14 días"); "X" si no hay días. */

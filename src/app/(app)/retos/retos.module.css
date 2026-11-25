@@ -1,0 +1,84 @@
+/* Retos (mockup Retos.dc.html / Retos-movil.dc.html). Corte en 900 px. */
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.eyebrow { font-size: 14px; color: var(--gris); }
+.title { margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.03em; }
+.back { font-size: 14px; font-weight: 600; }
+
+.tabs { display: inline-flex; gap: 4px; padding: 4px; background: var(--seleccion); border-radius: var(--r-pill); align-self: flex-start; }
+.tab { font-size: 13px; font-weight: 600; min-height: 38px; padding: 0 16px; border: 0; border-radius: var(--r-pill); background: transparent; color: var(--tinta-2); cursor: pointer; }
+.tab[aria-checked="true"] { background: var(--tinta); color: var(--blanco); }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.col { display: flex; flex-direction: column; gap: 16px; }
+
+.card { background: var(--blanco); border-radius: var(--r-xl); border: 1px solid var(--linea); padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; }
+.cardTop { display: flex; gap: 14px; align-items: center; }
+.cardImg { width: 88px; height: 88px; object-fit: contain; flex: none; margin: -8px -4px -8px -8px; }
+.cardText { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.who { font-size: 12px; color: var(--gris); }
+.cardTitle { margin: 0; font-size: 18px; font-weight: 600; }
+.how { font-size: 13px; color: var(--tinta-2); }
+.prog { font-size: 14px; font-weight: 600; white-space: nowrap; }
+
+.dots { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 4px; }
+.dot { height: 10px; border-radius: 3px; background: var(--linea); }
+.dot[data-s="done"] { background: var(--tinta); }
+.dot[data-s="today"] { background: var(--amarillo); }
+
+.ask { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--papel-3); border-radius: var(--r-xl); padding: 12px 14px; }
+.askText { flex: 1 1 180px; font-size: 14px; font-weight: 600; }
+.yes { font-size: 14px; min-height: 42px; padding: 0 18px; border-radius: var(--r-lg); border: 0; background: var(--tinta); color: var(--blanco); font-weight: 600; cursor: pointer; }
+.no { font-size: 14px; min-height: 42px; padding: 0 18px; border-radius: var(--r-lg); border: 1px solid var(--linea); background: var(--blanco); color: var(--tinta-2); font-weight: 600; cursor: pointer; }
+.note { font-size: 13px; color: var(--tinta-2); background: var(--papel-3); border-radius: var(--r-md); padding: 10px 12px; }
+.noteOk { font-size: 13px; font-weight: 600; color: var(--verde-fuerte); background: var(--verde-fondo); border-radius: var(--r-md); padding: 10px 12px; }
+
+.meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--gris); }
+.meta strong { color: var(--tinta); }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.people { font-size: 13px; font-weight: 600; }
+.leave { font-size: 13px; font-weight: 600; color: var(--gris); border: 0; background: transparent; min-height: 40px; cursor: pointer; margin-left: auto; }
+
+.avGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.av { background: var(--blanco); border-radius: var(--r-xl); border: 1px solid var(--linea); padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.avImg { width: 96px; height: 96px; object-fit: contain; margin: -8px 0 -6px -10px; }
+.avTitle { font-size: 16px; }
+.avHow { font-size: 13px; color: var(--tinta-2); line-height: 1.5; }
+.avMeta { font-size: 12px; color: var(--gris); }
+.avMeta strong { color: var(--tinta); }
+.join { align-self: flex-start; font-size: 14px; font-weight: 600; min-height: 42px; padding: 0 16px; border-radius: var(--r-pill); border: 1.5px solid var(--tinta); background: var(--blanco); color: var(--tinta); cursor: pointer; }
+
+.fin { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.finRow { display: flex; gap: 12px; align-items: center; background: var(--blanco); border: 1px solid var(--linea); border-radius: var(--r-2xl); padding: 12px 16px; }
+.finImg { width: 56px; height: 56px; object-fit: contain; margin: -8px 0; flex: none; }
+.finText { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.finTitle { font-size: 15px; }
+.finDetail { font-size: 13px; color: var(--gris); }
+.pts { font-size: 13px; font-weight: 600; background: var(--amarillo-pastel); color: var(--amarillo-texto); border-radius: var(--r-pill); padding: 4px 10px; white-space: nowrap; }
+
+.empty { margin: 0; font-size: 14px; color: var(--gris); }
+
+.board { background: var(--blanco); border-radius: var(--r-xl); border: 1px solid var(--linea); padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; }
+.boardTitle { margin: 0; font-size: 16px; font-weight: 600; }
+.boardSub { font-size: 12px; color: var(--gris); }
+.boardList { list-style: none; margin: 0; padding: 0; }
+.boardRow { display: flex; gap: 12px; align-items: center; padding: 9px 8px; border-top: 1px solid var(--linea-2); border-radius: var(--r-sm); font-size: 14px; }
+.boardRow[data-me="true"] { background: var(--amarillo-suave); }
+.boardPos { width: 20px; color: var(--gris); }
+.boardName { flex: 1; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.boardToggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--linea-2); padding-top: 12px; font-size: 13px; }
+.legal { margin: 0; font-size: 12px; color: var(--gris); line-height: 1.6; }
+
+@media (max-width: 899px) {
+  .head { align-items: center; }
+  .eyebrow { font-size: 13px; }
+  .title { font-size: 26px; }
+  .grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .col { gap: 12px; }
+  .card { padding: 16px; }
+  .cardImg { width: 72px; height: 72px; }
+  .cardTitle { font-size: 16px; }
+  .dots { grid-template-columns: repeat(var(--cols-m), minmax(0, 1fr)); }
+  .avGrid { grid-template-columns: minmax(0, 1fr); }
+  .board { padding: 16px; }
+  .yes, .no, .join, .leave, .tab { min-height: 44px; }
+}

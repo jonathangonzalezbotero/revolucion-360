@@ -23,7 +23,11 @@ export const TRIGGER_KINDS = [
   "subscription_ended", // Suscripción terminó
   "diagnostic_done", // Hizo el diagnóstico
   "tag_added", // Se le puso una etiqueta
-  "web_form", // Llenó un formulario web
+  "web_form", // Llenó un formulario web (API vieja /api/crm/ingest; las automatizaciones que ya lo usan siguen valiendo)
+  "web_connection", // Llegó por una conexión web (ref = id de la conexión + fecha)
+  "email_confirmed", // Confirmó su correo (clic en la confirmación de una conexión con "Pedir confirmación por correo")
+  "challenge_idle", // Reto: no marca en X días (lo detecta el motor; ref = días:reto:intento:último día). "Reto: recordatorio"
+  "challenge_done", // Reto: lo terminó (ref = reto:intento). "Reto: ¡lo lograste!"
 ] as const;
 export type TriggerKind = (typeof TRIGGER_KINDS)[number];
 
@@ -93,6 +97,10 @@ export const TriggerSchema = z.object({
   tagId: z.string().uuid().optional(),
   /** "Llenó un formulario web": cuál (vacío = cualquiera). */
   form: z.string().trim().max(60).optional(),
+  /** "Llegó por una conexión web" y "Confirmó su correo": cuál conexión (vacío = cualquiera). */
+  connectionId: z.string().uuid().optional(),
+  /** "Reto: no marca en X días" y "Reto: lo terminó": cuál reto (vacío = cualquiera). */
+  challengeId: z.string().uuid().optional(),
   /** "Llegó a un hito de meta": cuál (25/50/75/100; vacío = cualquiera). */
   pct: z.union([z.literal(25), z.literal(50), z.literal(75), z.literal(100)]).optional(),
 }).superRefine((t, ctx) => {

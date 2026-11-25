@@ -3,7 +3,8 @@ import type { Session } from "./session";
 import { weekStart, type BadgeKey } from "@/lib/engine";
 
 export type PointKind = "lesson" | "course" | "closure" | "debt_paid" | "goal_done" | "goal_contrib" | "week_active" | "first_step"
-  | "goal_milestone" | "goal_used" | "goal_leftover"; // metas amables (20261125000031_metas.sql)
+  | "goal_milestone" | "goal_used" | "goal_leftover" // metas amables (20261125000031_metas.sql)
+  | "challenge_day" | "challenge_done"; // retos (20261125000037_retos.sql): un día cumplido (1 al día) y terminar un reto
 
 /** Suma puntos por un hecho real (la base de datos lo valida y nunca los da dos veces). Devuelve los puntos ganados. */
 export async function award(s: Session, kind: PointKind, ref: string): Promise<number> {
@@ -27,6 +28,21 @@ export async function tryBadge(s: Session, badge: BadgeKey): Promise<boolean> {
   if (data === true) {
     const name = badgeName(badge, s.locale);
     await notify(s, "logro", s.locale === "en" ? `New badge: ${name}` : `Nueva insignia: ${name}`, "", "/perfil#insignias", `badge-${badge}`);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Insignia de un reto (nombre que puso el admin). Clave `reto:<id del reto>`: la base comprueba que lo terminó y que el
+ * reto tiene insignia. Perfil y Academia solo pintan las 10 fijas; esta se ve en Retos › Terminados.
+ */
+export async function tryChallengeBadge(s: Session, challengeId: string, name: string): Promise<boolean> {
+  if (!s.config.gamification) return false;
+  const key = `reto:${challengeId}`;
+  const { data } = await s.supabase.rpc("award_badge", { p_badge: key });
+  if (data === true) {
+    await notify(s, "logro", (s.locale === "en" ? `New badge: ${name}` : `Nueva insignia: ${name}`).slice(0, 140), "", "/retos", `badge-${key}`);
     return true;
   }
   return false;

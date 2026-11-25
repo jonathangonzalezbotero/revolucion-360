@@ -9,3 +9,4 @@ export * from "./flow";
 export * from "./render";
 export * from "./labels";
 export * from "./rate";
+export * from "./connections";

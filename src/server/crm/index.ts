@@ -6,4 +6,8 @@ export { runCrm } from "./engine";
 export { countAudience } from "./audience";
 export { untypedDb, crmDb } from "./db";
 export * from "./admin";
+export {
+  listConnections, connectionLog, saveConnection, setConnectionStatus, revealConnectionSecret, regenerateConnectionSecret, sendConnectionTest,
+  getAntiBot, saveTurnstileSiteKey, importSysteme, CONNECTION_COLS, type ConnectionRow, type ConnectionListItem, type ConnectionLogItem,
+} from "./connections";
 export type { Db, ContactRow, CampaignRow, AutomationRow } from "./db";

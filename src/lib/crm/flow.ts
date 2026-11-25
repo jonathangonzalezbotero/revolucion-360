@@ -4,6 +4,10 @@ import { formKey, type Check, type EventKind, type ExitRules, type LeafStepT, ty
 import { waitUntil } from "./time";
 
 // ───────── Disparador ─────────
+/** "Reto: recordatorio": a quien no marca su reto en 3 días (si la automatización no dice otra cifra). */
+export const CHALLENGE_IDLE_DAYS = 3;
+/** Ref del evento "Reto: no marca en X días": el mismo bache (mismo último día cumplido) avisa una sola vez. */
+export const challengeIdleRef = (days: number, challengeId: string, memberId: string, lastDay: string) => `${days}:${challengeId}:${memberId}:${lastDay}`;
 export type EventLite = { kind: EventKind | string; ref: string };
 
 /** ¿Este evento inicia la automatización? (los parámetros van en el ref del evento: días, etiqueta, formulario, hito). */
@@ -15,7 +19,11 @@ export function matchesTrigger(t: Trigger, e: EventLite): boolean {
     case "charge_upcoming": return parts[0] === String(t.days) && (!t.firstOnly || parts[2] === "first");
     case "tag_added": return parts[0] === t.tagId;
     case "web_form": return !t.form || parts[0] === formKey(t.form);
+    case "web_connection":
+    case "email_confirmed": return !t.connectionId || parts[0] === t.connectionId;
     case "goal_milestone": return !t.pct || parts[parts.length - 1] === String(t.pct);
+    case "challenge_idle": return parts[0] === String(t.days ?? CHALLENGE_IDLE_DAYS) && (!t.challengeId || parts[1] === t.challengeId);
+    case "challenge_done": return !t.challengeId || parts[0] === t.challengeId;
     default: return true;
   }
 }
@@ -29,8 +37,9 @@ export type ExitReason = "unsubscribed" | "cancelled" | "goal";
  * ¿Este evento (posterior a la inscripción) lo saca? Se da de baja del correo, su suscripción terminó (salvo que la
  * automatización empiece justo por eso) o cumplió el objetivo.
  */
-export function exitFor(rules: ExitRules, trigger: Trigger, e: EventLite): ExitReason | null {
-  if (rules.onUnsubscribe && e.kind === "unsubscribed" && e.ref.startsWith("email:")) return "unsubscribed";
+export function exitFor(rules: ExitRules, trigger: Trigger, e: EventLite, transactional = false): ExitReason | null {
+  // Una automatización transaccional (compra o acceso) no se corta por darse de baja del marketing.
+  if (rules.onUnsubscribe && !transactional && e.kind === "unsubscribed" && e.ref.startsWith("email:")) return "unsubscribed";
   if (rules.onCancel && e.kind === "subscription_ended" && trigger.kind !== "subscription_ended") return "cancelled";
   if (rules.goal && e.kind === rules.goal.kind) return "goal";
   return null;

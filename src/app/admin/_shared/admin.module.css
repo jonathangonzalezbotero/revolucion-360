@@ -11,6 +11,14 @@
 .link { text-decoration: none; padding: 11px 12px; border-radius: var(--r-md); font-size: 14px; font-weight: 500; color: var(--oscuro-texto); white-space: nowrap; }
 .link:hover { background: var(--oscuro-3); color: var(--blanco); }
 .link[aria-current="page"] { background: var(--oscuro-4); color: var(--blanco); font-weight: 600; }
+/* Grupos plegables del menú (<details>): título en mayúsculas pequeñas y flecha que gira al cerrar. */
+.group { display: block; }
+.groupTitle { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--oscuro-texto-3); padding: 18px 12px 6px; user-select: none; border-radius: var(--r-md); }
+.groupTitle::-webkit-details-marker { display: none; }
+.groupTitle:hover { color: var(--blanco); }
+.chev { font-size: 12px; transition: transform .15s; }
+.group:not([open]) .chev { transform: rotate(-90deg); }
+.groupLinks { display: flex; flex-direction: column; gap: 4px; }
 .note { margin: auto 0 0; font-size: 12px; color: var(--oscuro-texto-3); line-height: 1.5; padding: 16px 10px 0; }
 
 .main { flex: 1; min-width: 0; display: flex; }
@@ -81,8 +89,10 @@
   .nav { width: auto; height: auto; position: static; padding: 16px 16px 12px; gap: 2px; }
   .brand { padding: 0 0 4px; }
   .back { padding: 10px 0; min-height: 44px; display: inline-flex; align-items: center; }
-  .links { flex-direction: row; overflow-x: auto; gap: 4px; margin: 0 -16px; padding: 0 16px 4px; -webkit-overflow-scrolling: touch; }
+  .links { gap: 2px; }
   .link { min-height: 44px; display: inline-flex; align-items: center; }
+  .groupTitle { min-height: 44px; padding: 8px 12px; }
+  .groupLinks { flex-direction: row; flex-wrap: wrap; }
   .note { padding: 8px 0 0; }
   .page { padding: 20px 16px 48px; gap: 14px; }
   .detail { grid-template-columns: minmax(0, 1fr); }

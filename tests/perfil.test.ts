@@ -1,7 +1,7 @@
 // Cálculos propios de Mi perfil, Notificaciones, Ayuda, Legal y la exportación de datos.
 import { describe, expect, it } from "vitest";
 import { backupCodesText, confirmsWord, isPhone, isValidTimezone, mergeNotifyPrefs, mergeTerms, readNotifyPrefs, tabFromHash, timezoneOptions, visibleTabs } from "@/app/(app)/perfil/lib";
-import { asKind, groupOf, matches, safeHref, sortNotifs } from "@/app/(app)/notificaciones/lib";
+import { asKind, categoryOf, ctaOf, groupOf, matches, safeHref, sortNotifs } from "@/app/(app)/notificaciones/lib";
 import { appVersion, browserLabel, buildTech, searchFaqs, subjectOf, ticketCode } from "@/app/(app)/ayuda/lib";
 import { centsToDecimal, csvCell, EXPORT_TABLES, transactionsCsv } from "@/app/api/export/lib";
 import { mergeLegal } from "@/app/legal/lib";
@@ -91,6 +91,19 @@ describe("notificaciones", () => {
     expect(safeHref("//malo.com")).toBeNull();
     expect(asKind("logro")).toBe("logro");
     expect(asKind("otra")).toBe("sistema");
+  });
+
+  it("filtros del mockup: Recordatorios, Logros, Academia y Cuenta; botón según el destino", () => {
+    expect(["cierre", "pago", "habito"].map((k) => categoryOf(asKind(k)))).toEqual(["recordatorios", "recordatorios", "recordatorios"]);
+    expect(categoryOf(asKind("reto"))).toBe("logros");
+    expect(categoryOf(asKind("acceso"))).toBe("cuenta");
+    const n = { id: "x", kind: "habito" as const, unread: false, createdAt: "2026-11-24T09:00:00Z" };
+    expect(matches(n, "recordatorios")).toBe(true);
+    expect(matches(n, "logros")).toBe(false);
+    expect(ctaOf("/repaso")).toBe("/repaso");
+    expect(ctaOf("/metas/abc")).toBe("/metas");
+    expect(ctaOf("/metasx")).toBeNull();
+    expect(ctaOf("/plan/mes/11")).toBeNull();
   });
 });
 

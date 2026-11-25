@@ -8,9 +8,11 @@ import { Empty, PageHeader } from "@/components/ui/basics";
 import { ConfirmButton, Switch, useToast } from "@/components/ui/client";
 import { Icon } from "@/components/ui/Icon";
 import { formatDate, formatMoney, goalPlan, parseMoney, type Cents, type GoalPlan, type ISODate, type MoneyFormat } from "@/lib/engine";
-import { MILESTONES, type Challenge, type GoalOutlook, type Milestone } from "@/lib/engine/metas";
+import { MILESTONES, type GoalOutlook, type Milestone } from "@/lib/engine/metas";
 import type { Result } from "@/server/action";
-import { addEntry, addToPlan, archiveGoal, completeGoal, createGoal, sendLeftover, setChallenge, updateGoal } from "./actions";
+import { addEntry, addToPlan, archiveGoal, completeGoal, createGoal, sendLeftover, updateGoal } from "./actions";
+import { joinChallenge, leaveChallenge } from "../retos/actions";
+import type { MetasReto } from "../retos/server";
 import { GOAL_TYPES, monthOptions, resolveTargetDate, TYPE_COLOR, TYPE_IMG, whenLabel, ymOf, type GoalStatus, type GoalType } from "./lib";
 import type { MetasMessages } from "./messages";
 import css from "./metas.module.css";
@@ -28,7 +30,8 @@ type Props = {
   points: { contrib: number; done: number; milestone: number } | null; planHref: string | null; wall: React.ReactNode;
   monthIn: Cents;
   leftover: { year: number; month: number; monthLabel: string; cents: Cents } | null;
-  challenges: { key: Challenge; title: string; text: string; active: boolean }[];
+  /** Retos opcionales (migración 20261125000037_retos.sql): hasta 3, primero los tuyos activos. */
+  challenges: MetasReto[];
   /** Hitos que se cruzaron al poner al día las transferencias automáticas: se celebran una vez al abrir. */
   crossed: { text: string; points: number }[];
 };
@@ -337,22 +340,26 @@ export function Metas(p: Props) {
       <section aria-labelledby="rt-h" className="stack" style={{ gap: 10 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <h2 id="rt-h" className={css.rtTitle}>{m.rtTitle}</h2>
-          <span className="small muted">{m.rtSub}</span>
+          <span className="small muted">{m.rtSub} <Link href="/retos" style={{ fontWeight: 600 }}>{m.rtAll}</Link></span>
         </div>
+        {p.challenges.length ? (
         <div className={css.retos}>
           {p.challenges.map((c) => (
-            <article key={c.key} className={css.reto}>
+            <article key={c.challengeId} className={css.reto}>
               <strong style={{ fontSize: 15 }}>{c.title}</strong>
               <span className="small muted" style={{ lineHeight: 1.5 }}>{c.text}</span>
               {canEdit ? (
-                <button type="button" className={css.retoBtn} aria-pressed={c.active} disabled={pending}
-                  onClick={() => run(() => setChallenge({ challenge: c.key, active: !c.active }), (r) => toast(r.data.active ? fill(m.tJoin, { name: c.title }) : m.tLeave), (e) => toast(e))}>
-                  {c.active ? m.rtIn : m.rtJoin}
+                <button type="button" className={css.retoBtn} aria-pressed={!!c.memberId} disabled={pending}
+                  onClick={() => c.memberId
+                    ? run(() => leaveChallenge({ memberId: c.memberId }), () => toast(m.tLeave), (e) => toast(e))
+                    : run(() => joinChallenge({ challengeId: c.challengeId }), (r) => toast(fill(m.tJoin, { name: c.title }), r.points), (e) => toast(e))}>
+                  {c.memberId ? m.rtIn : m.rtJoin}
                 </button>
-              ) : c.active ? <span className={css.retoBtn} data-on="true">{m.rtIn}</span> : null}
+              ) : c.memberId ? <span className={css.retoBtn} data-on="true">{m.rtIn}</span> : null}
             </article>
           ))}
         </div>
+        ) : null}
       </section>
 
       {done.length > 0 ? (

@@ -13,6 +13,7 @@ import { awardGoal, raw, syncGoalLinks, type Crossed } from "../metas/server";
 import { anchorDayOf, nextRecurringDate, rulePattern, signed, splitInTwo, type RecFrequency } from "./lib";
 import { M } from "./messages";
 import { clearMark, lineForDate, lineOfYear, suggestionFor, txBetween } from "./server";
+import { countChallenge } from "../retos/server";
 
 // Rutas que leen movimientos, marcas o totales: Inicio, Plan, Detalle del mes, Cuentas, Cierre y Análisis.
 const PATHS = ["/movimientos", "/inicio", "/plan", "/cuentas", "/cierre", "/analisis", "/metas"];
@@ -213,6 +214,7 @@ export async function addTx(input: unknown) {
     }
 
     await touchWeek(s);
+    if (!transfer && amountCents < 0) await countChallenge(s, "expense", row.id); // Retos: "registrar un gasto" (nunca lanza)
     const points = await firstStep(s, "gasto");
     const suggestion = !transfer && !lineId ? await suggestionFor(s, { id: row.id, accountId: d.accountId, date: d.date, amountCents, description }) : null;
     if (transfer) await syncGoalLinks(s); // una transferencia a la cuenta de una meta cuenta sola como aporte

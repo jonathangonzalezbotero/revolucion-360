@@ -20,6 +20,7 @@ export const TEXTS = {
   es: {
     from: "De",
     footerWhy: "Recibes este correo porque aceptaste noticias de Revolución 360.",
+    footerTransactional: "Recibes este correo por una compra, una inscripción o un acceso que pediste. No es publicidad.",
     unsubscribe: "Darte de baja",
     preferences: "Elegir qué correos recibo",
     brand: "Revolución del Dinero",
@@ -29,6 +30,7 @@ export const TEXTS = {
   en: {
     from: "From",
     footerWhy: "You get this email because you agreed to receive news from Revolución 360.",
+    footerTransactional: "You get this email because of a purchase, a sign-up or an access you asked for. It isn't advertising.",
     unsubscribe: "Unsubscribe",
     preferences: "Choose which emails I get",
     brand: "Revolución del Dinero",
@@ -56,6 +58,8 @@ export function personalize(text: string, name: string | null | undefined): stri
 export type EmailInput = {
   subject: string; preheader: string; blocks: Block[]; locale: Locale; appUrl: string;
   name: string | null; legal: Legal; token: string | null; fromLabel: string;
+  /** Correo transaccional (compra o acceso): sin "Darte de baja" de marketing ni "Elegir qué correos recibo"; sí remitente y datos legales. */
+  transactional?: boolean;
 };
 export type RenderedEmail = { subject: string; preheader: string; html: string; text: string };
 
@@ -116,7 +120,7 @@ export function renderMarketingEmail(i: EmailInput): RenderedEmail {
 ${i.blocks.map((b) => blockHtml(b, i)).join("\n")}
 </table></td></tr>
 <tr><td bgcolor="${C.papel}" style="background:${C.papel};padding:18px 32px;font-family:${SANS};font-size:12px;line-height:1.6;color:${C.gris};">
-${escapeHtml(legalLine(i.legal, t))}<br>${escapeHtml(t.footerWhy)} ${link(unsub, t.unsubscribe)} · ${link(prefs, t.preferences)}
+${escapeHtml(legalLine(i.legal, t))}<br>${i.transactional ? escapeHtml(t.footerTransactional) : `${escapeHtml(t.footerWhy)} ${link(unsub, t.unsubscribe)} · ${link(prefs, t.preferences)}`}
 </td></tr>
 </table></td></tr></table>
 </body></html>`;
@@ -124,9 +128,11 @@ ${escapeHtml(legalLine(i.legal, t))}<br>${escapeHtml(t.footerWhy)} ${link(unsub,
     ...i.blocks.map((b) => blockText(b, i)).filter(Boolean).flatMap((x) => [x, ""]),
     "—",
     legalLine(i.legal, t),
-    t.footerWhy,
-    unsub ? `${t.unsubscribe}: ${unsub}` : t.unsubscribe,
-    prefs ? `${t.preferences}: ${prefs}` : t.preferences,
+    ...(i.transactional ? [t.footerTransactional] : [
+      t.footerWhy,
+      unsub ? `${t.unsubscribe}: ${unsub}` : t.unsubscribe,
+      prefs ? `${t.preferences}: ${prefs}` : t.preferences,
+    ]),
   ].join("\n");
   return { subject, preheader, html, text };
 }

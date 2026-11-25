@@ -3,26 +3,29 @@ import {
   advance, AudienceSchema, automationSourceKey, BlocksSchema, campaignSendAt, campaignSourceKey, campaignStartsAt, chargeRef, chargeWindow, compile,
   enrollmentRef, exitFor, ExitRulesSchema, inactiveRef, inactiveWindow, isUpcomingCharge, legalReady, matchesTrigger, mayMarket, renderMarketingEmail,
   maySms, parseTestNumbers, renderSms, resolveTz, retryAt, smsSendAt, smsTz, sourceBlocked, stageFor, StepsSchema, TriggerSchema, unsubscribeHeaders, unsubscribeUrl, TRIGGER_KINDS,
+  isConnectionTestEmail, mayTransactional,
   type ExitRules, type Facts, type LeafStepT, type Program, type Stage, type Step, type Trigger,
 } from "@/lib/crm";
 import { isProduction, sendEmailDetailed } from "@/lib/email/send";
 import { chunks, mayEmail } from "@/lib/email/lib";
 import { audienceBatch } from "./audience";
 import { appUrl, CONTACT_COLS, crmFrom, crmReplyTo, loadLegal, must, type AutomationRow, type CampaignRow, type ContactRow, type Db, type EnrollmentRow, type MessageRow } from "./db";
+import { clearExpiredConfirmations } from "./connections";
 import { addTag, applyStage, contactForUser, recordEvent, removeTag } from "./events";
+import { detectChallengeIdle } from "./retos";
 import { sendSms, twilioConfig } from "./sms";
 
 const BATCH = 500;
 const EMAIL_BATCH = () => Math.max(1, Math.min(500, Number(process.env.CRM_EMAIL_BATCH) || 150));
 const SMS_BATCH = () => Math.max(1, Math.min(200, Number(process.env.CRM_SMS_BATCH) || 50));
 
-export type Auto = { id: string; name: string; status: AutomationRow["status"]; trigger: Trigger; steps: Step[]; program: Program; exit: ExitRules };
+export type Auto = { id: string; name: string; status: AutomationRow["status"]; trigger: Trigger; steps: Step[]; program: Program; exit: ExitRules; transactional: boolean };
 
 /** Automatizaciones válidas (las que no pasan la validación se ignoran y se cuentan). */
 export function parseAutomation(r: AutomationRow): Auto | null {
   const t = TriggerSchema.safeParse(r.trigger), s = StepsSchema.safeParse(r.steps), x = ExitRulesSchema.safeParse(r.exit_rules ?? {});
   if (!t.success || !s.success || !x.success) return null;
-  return { id: r.id, name: r.name, status: r.status, trigger: t.data, steps: s.data, program: compile(s.data), exit: x.data };
+  return { id: r.id, name: r.name, status: r.status, trigger: t.data, steps: s.data, program: compile(s.data), exit: x.data, transactional: r.transactional === true };
 }
 
 export type RunReport = Record<string, number | string | boolean | undefined>;
@@ -63,6 +66,7 @@ export async function runCrm(db: Db, opts: { now?: Date; budgetMs?: number } = {
   await stage("email", () => drainEmail(db, left));
   await stage("sms", () => drainSms(db, left));
   await stage("counts", async () => { await refreshCampaigns(db); return {}; });
+  await stage("confirmations", async () => ({ confirmationsCleared: await clearExpiredConfirmations(db) }));
   report.ms = Date.now() - started;
   return report;
 }
@@ -158,7 +162,8 @@ async function detectTimeEvents(db: Db, active: Auto[], now: Date) {
       if (c && (await recordEvent(db, c, "charge_upcoming", chargeRef(days, e.pro_until!, e.stripe_status === "trialing")))) charges++;
     }
   }
-  return { inactiveDetected: inactive, chargesDetected: charges };
+  const challengeIdle = await detectChallengeIdle(db, active); // Retos: "no marca en X días" (037)
+  return { inactiveDetected: inactive, chargesDetected: charges, challengeIdleDetected: challengeIdle };
 }
 
 // ───────── 3) Eventos → inscripciones y salidas ─────────
@@ -182,7 +187,7 @@ async function processEvents(db: Db, autos: Auto[], active: Auto[], now: Date, l
       for (const r of [...mine]) {
         const a = byId.get(r.automation_id);
         if (!a || (r.trigger_event_id ?? 0) >= e.id) continue;
-        const reason = exitFor(a.exit, a.trigger, e);
+        const reason = exitFor(a.exit, a.trigger, e, a.transactional);
         if (!reason) continue;
         must(await db.from("crm_enrollments").update({ status: "exited", exit_reason: reason, finished_at: now.toISOString(), next_at: null }).eq("id", r.id).eq("status", "active").select("id"));
         mine.splice(mine.indexOf(r), 1);
@@ -218,8 +223,11 @@ async function processEvents(db: Db, autos: Auto[], active: Auto[], now: Date, l
 const iso = (s: string | null | undefined) => (s ? new Date(s).toISOString() : null);
 const CHECK_KINDS = [...TRIGGER_KINDS, "signup", "paying"];
 
-async function insertMessage(db: Db, m: { contact_id: string; channel: "email" | "sms"; source_key: string; scheduled_for: Date; campaign_id?: string; automation_id?: string; enrollment_id?: string; step_id?: string }): Promise<boolean> {
-  const r = must(await db.from("crm_messages").upsert({ ...m, scheduled_for: m.scheduled_for.toISOString() }, { onConflict: "source_key,contact_id", ignoreDuplicates: true }).select("id")) as unknown[];
+async function insertMessage(db: Db, m: { contact_id: string; channel: "email" | "sms"; source_key: string; scheduled_for: Date; campaign_id?: string; automation_id?: string; enrollment_id?: string; step_id?: string; transactional?: boolean }): Promise<boolean> {
+  // `transactional` solo se escribe cuando es true (columna de la migración 038; sin ella, lo demás sigue igual).
+  const { transactional, ...rest } = m;
+  const row = { ...rest, scheduled_for: m.scheduled_for.toISOString(), ...(transactional ? { transactional: true } : {}) };
+  const r = must(await db.from("crm_messages").upsert(row, { onConflict: "source_key,contact_id", ignoreDuplicates: true }).select("id")) as unknown[];
   return r.length > 0;
 }
 
@@ -282,7 +290,7 @@ async function advanceEnrollments(db: Db, active: Auto[], now: Date, left: () =>
       const tz = smsTz(c.timezone, c.country ? tzByCountry.get(c.country) : null);
       for (const act of actions) {
         const key = automationSourceKey(a.id, act.step.id, enr.id);
-        if (act.type === "email" && (await insertMessage(db, { contact_id: c.id, channel: "email", source_key: key, scheduled_for: now, automation_id: a.id, enrollment_id: enr.id, step_id: act.step.id }))) queued++;
+        if (act.type === "email" && (await insertMessage(db, { contact_id: c.id, channel: "email", source_key: key, scheduled_for: now, automation_id: a.id, enrollment_id: enr.id, step_id: act.step.id, transactional: a.transactional }))) queued++;
         if (act.type === "sms" && c.phone && !tz) smsNoTz++;
         if (act.type === "sms" && c.phone && tz && (await insertMessage(db, { contact_id: c.id, channel: "sms", source_key: key, scheduled_for: smsSendAt(now, tz), automation_id: a.id, enrollment_id: enr.id, step_id: act.step.id }))) queued++;
         if (act.type === "tag") {
@@ -363,7 +371,7 @@ type Content = { subject: string; preheader: string; blocks: unknown };
 /** Contenido y estado de las campañas y automatizaciones de los mensajes tomados (el estado se lee justo antes de enviar). */
 async function contentFor(db: Db, msgs: MessageRow[]) {
   const campaigns = new Map<string, Content>(), steps = new Map<string, LeafStepT>();
-  const campaignStatus = new Map<string, string>(), automationStatus = new Map<string, string>();
+  const campaignStatus = new Map<string, string>(), automationStatus = new Map<string, string>(), transactionalAutos = new Set<string>();
   const cids = [...new Set(msgs.map((m) => m.campaign_id).filter((x): x is string => !!x))];
   if (cids.length) {
     for (const c of must(await db.from("crm_campaigns").select("id, subject, preheader, blocks, status").in("id", cids)) as (Content & { id: string; status: string })[]) {
@@ -375,6 +383,7 @@ async function contentFor(db: Db, msgs: MessageRow[]) {
   if (aids.length) {
     for (const r of must(await db.from("crm_automations").select("*").in("id", aids)) as AutomationRow[]) {
       automationStatus.set(r.id, r.status);
+      if (r.transactional === true) transactionalAutos.add(r.id);
       const a = parseAutomation(r);
       if (!a) continue;
       for (const s of a.steps) for (const leaf of s.type === "condition" ? [...s.yes, ...s.no] : [s]) steps.set(`${a.id}:${leaf.id}`, leaf);
@@ -382,7 +391,9 @@ async function contentFor(db: Db, msgs: MessageRow[]) {
   }
   const blocked = (m: MessageRow) => sourceBlocked({ campaignId: m.campaign_id, automationId: m.automation_id },
     { campaign: m.campaign_id ? campaignStatus.get(m.campaign_id) ?? null : null, automation: m.automation_id ? automationStatus.get(m.automation_id) ?? null : null });
-  return { campaigns, steps, blocked };
+  /** Transaccional solo si se encoló así Y la automatización sigue marcada como transaccional al enviar. */
+  const isTransactional = (m: MessageRow) => m.transactional === true && !!m.automation_id && transactionalAutos.has(m.automation_id);
+  return { campaigns, steps, blocked, isTransactional };
 }
 
 async function contactsAndSuppressions(db: Db, msgs: MessageRow[]) {
@@ -391,15 +402,16 @@ async function contactsAndSuppressions(db: Db, msgs: MessageRow[]) {
     for (const c of must(await db.from("crm_contacts").select(CONTACT_COLS).in("id", ids)) as ContactRow[]) contacts.set(c.id, c);
   }
   const values = [...contacts.values()].flatMap((c) => [c.email, c.phone].filter((x): x is string => !!x));
-  const suppressed = new Set<string>();
+  const suppressed = new Map<string, string>(); // "canal:valor" → motivo (baja, rebote, queja, STOP, a mano)
   for (const vs of chunks(values, 100)) {
-    for (const s of must(await db.from("crm_suppressions").select("channel, value").in("value", vs).is("lifted_at", null)) as { channel: string; value: string }[]) suppressed.add(`${s.channel}:${s.value}`);
+    for (const s of must(await db.from("crm_suppressions").select("channel, value, reason").in("value", vs).is("lifted_at", null)) as { channel: string; value: string; reason: string }[]) suppressed.set(`${s.channel}:${s.value}`, s.reason);
   }
   const consent = (c: ContactRow) => ({
     emailConsent: c.email_consent, emailUnsubscribedAt: c.email_unsubscribed_at, smsConsent: c.sms_consent, smsUnsubscribedAt: c.sms_unsubscribed_at,
     phone: c.phone, emailSuppressed: suppressed.has(`email:${c.email}`), smsSuppressed: !!c.phone && suppressed.has(`sms:${c.phone}`),
   });
-  return { contacts, consent };
+  const emailSuppression = (c: ContactRow) => suppressed.get(`email:${c.email}`) ?? null;
+  return { contacts, consent, emailSuppression };
 }
 
 /** Deja el motivo en los mensajes que tocan y no pueden salir (falta configuración): siguen en la cola. */
@@ -435,12 +447,14 @@ async function drainEmail(db: Db, left: () => boolean) {
     const msgs = must(await db.rpc("crm_claim_messages", { p_channel: "email", p_limit: Math.min(25, total - done) })) as MessageRow[];
     if (!msgs.length) break;
     done += msgs.length;
-    const { campaigns, steps, blocked } = await contentFor(db, msgs);
-    const { contacts, consent } = await contactsAndSuppressions(db, msgs);
+    const { campaigns, steps, blocked, isTransactional } = await contentFor(db, msgs);
+    const { contacts, consent, emailSuppression } = await contactsAndSuppressions(db, msgs);
     let released = 0;
     for (const m of msgs) {
       try {
         const c = contacts.get(m.contact_id);
+        // El contacto de prueba de una conexión nunca recibe nada (tampoco lo transaccional).
+        if (c && isConnectionTestEmail(c.email)) { await finish(db, m.id, { status: "skipped", error: "test_contact" }); skipped++; continue; }
         // Fuera de producción (local o preview, contra la MISMA base) solo salen correos a @revolucion360.test: los demás se
         // devuelven a la cola intactos para que la corrida de producción los envíe (nunca se marcan "skipped").
         if (c && !mayEmail(c.email, isProduction())) { await finish(db, m.id, { status: "queued", attempts: m.attempts - 1 }); released++; continue; }
@@ -451,10 +465,14 @@ async function drainEmail(db: Db, left: () => boolean) {
         const content: Content | null = m.campaign_id ? campaigns.get(m.campaign_id) ?? null : step?.type === "email" ? step : null;
         const blocks = BlocksSchema.safeParse(content?.blocks);
         if (!c || !content || !blocks.success || !content.subject) { await finish(db, m.id, { status: "skipped", error: "missing_content" }); skipped++; continue; }
-        const may = mayMarket("email", consent(c));
+        // Transaccional (compra o acceso): sin consentimiento de marketing, pero nunca con rebote o queja. Lo demás exige consentimiento.
+        const transactional = isTransactional(m);
+        const may = transactional ? mayTransactional(c.email, emailSuppression(c)) : mayMarket("email", consent(c));
         if (!may.ok) { await finish(db, m.id, { status: "skipped", error: may.reason }); skipped++; continue; }
-        const r = renderMarketingEmail({ subject: content.subject, preheader: content.preheader, blocks: blocks.data, locale: c.locale, appUrl: app, name: c.name, legal, token: c.token, fromLabel: "" });
-        const res = await sendEmailDetailed(c.email, r, "crm", { from: crmFrom(), replyTo: crmReplyTo(), headers: unsubscribeHeaders(unsubscribeUrl(app, c.token)), idempotencyKey: `crm-${m.id}` });
+        const r = renderMarketingEmail({ subject: content.subject, preheader: content.preheader, blocks: blocks.data, locale: c.locale, appUrl: app, name: c.name, legal, token: c.token, fromLabel: "", transactional });
+        const res = await sendEmailDetailed(c.email, r, transactional ? "crm_transactional" : "crm", {
+          from: crmFrom(), replyTo: crmReplyTo(), headers: transactional ? {} : unsubscribeHeaders(unsubscribeUrl(app, c.token)), idempotencyKey: `crm-${m.id}`,
+        });
         if (res.status === "sent") {
           await finish(db, m.id, { status: "sent", provider_id: res.id ?? null, sent_at: new Date().toISOString(), error: null });
           sent++;
@@ -503,6 +521,7 @@ async function drainSms(db: Db, left: () => boolean) {
     for (const m of msgs) {
       try {
         const c = contacts.get(m.contact_id);
+        if (c && isConnectionTestEmail(c.email)) { await finish(db, m.id, { status: "skipped", error: "test_contact" }); skipped++; continue; }
         // Fuera de producción solo a SMS_TEST_NUMBERS; los demás vuelven a la cola intactos (como los correos).
         if (c?.phone && !maySms(c.phone, isProduction(), testNumbers)) { await finish(db, m.id, { status: "queued", attempts: m.attempts - 1 }); released++; continue; }
         const stop = blocked(m);

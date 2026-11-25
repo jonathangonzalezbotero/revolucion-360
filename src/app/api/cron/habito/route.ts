@@ -3,7 +3,7 @@ import { HABIT_PRIORITY, readHabitPrefs, isLastDayOfMonth, isQuietHour, isSunday
 import { parts } from "@/lib/engine";
 import { byIds, FIRST_UUID, BATCH, loadCronConfig, runCron, type Admin } from "@/lib/email/cron";
 import { readPrefs } from "@/lib/email/lib";
-import { notifyHabit, type HabitProfile, type HabitSendResult } from "@/server/habit-notify";
+import { challengeNoticeFor, notifyHabit, type HabitProfile, type HabitSendResult } from "@/server/habit-notify";
 import { allowanceOf, dueTomorrow, loadHabitPlan, type HabitPlan } from "./data";
 
 export const dynamic = "force-dynamic";
@@ -60,7 +60,7 @@ export async function GET(request: Request) {
         const notify = readPrefs(p.prefs), habit = readHabitPrefs(p.prefs);
         const np = { payments: notify.notify.payments, close: notify.notify.close, closeDay: notify.closeDay, channel: notify.channel };
         const wants = (k: HabitKind) => wantsHabit(k, habit, np);
-        if (!HABIT_PRIORITY.some(wants)) { counts.nothing++; continue; }
+        if (!HABIT_PRIORITY.some(wants) && !wants("goal")) { counts.nothing++; continue; }
 
         const today = clock.date;
         let plan: HabitPlan | null | undefined;
@@ -69,6 +69,12 @@ export async function GET(request: Request) {
         // Se evalúan en orden de prioridad y se detiene en el primero que aplica (solo carga lo necesario).
         let sent: HabitSendResult | null = null, kind: HabitKind | null = null;
         for (const k of HABIT_PRIORITY) {
+          // Retos (20261125000037): "Reto: día N de M · ¿Lo cumpliste hoy?" va antes de "hoy puedes gastar", con la
+          // preferencia "Metas y retos". Se cuenta en byKind.goal (en habit_sends también queda como 'goal').
+          if (k === "daily" && wants("goal")) {
+            const ch = await challengeNoticeFor(db, p.id);
+            if (ch) { sent = await notifyHabit(p.id, "challenge", ch, { db, profile, now }); kind = "goal"; break; }
+          }
           if (!wants(k)) continue;
           if (k === "close") {
             if (!isLastDayOfMonth(today) || (cfg.menuCierre !== undefined && cfg.menuCierre !== "on")) continue;

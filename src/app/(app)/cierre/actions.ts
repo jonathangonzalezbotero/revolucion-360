@@ -14,6 +14,7 @@ import { buildSnapshot, cardSigned, closureStreak, nextPeriod, parsePeriod, pend
 import { assetName, assetValue, closeAssets, closeData } from "./server";
 import { pricePatch, untyped, type AssetRow } from "../inversiones/lib";
 import { leftoverFor } from "../metas/server";
+import { countChallenge } from "../retos/server";
 import { M } from "./messages";
 
 const PATHS = ["/cierre", "/inicio", "/plan", "/movimientos", "/diagnostico"];
@@ -183,6 +184,7 @@ export async function closeMonth(input: unknown): Promise<Result<CloseResult>> {
     // 3. Logros (la base nunca da los puntos del mismo mes dos veces)
     const points = await award(s, "closure", ymRef(period));
     await touchWeek(s);
+    await countChallenge(s, "closure", ymRef(period)); // Retos: "hacer el cierre de mes" (nunca lanza)
     await tryBadge(s, "check");
     await tryBadge(s, "flame");
     await tryBadge(s, "star");

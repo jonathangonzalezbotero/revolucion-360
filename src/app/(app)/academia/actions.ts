@@ -7,6 +7,7 @@ import { award, firstStep, touchWeek, tryBadge } from "@/server/rewards";
 import { cleanComment, courseProgress, lessonStates } from "./lib";
 import { M } from "./messages";
 import { loadCatalog, totalPoints } from "./server";
+import { countChallenge } from "../retos/server";
 
 const PATHS = ["/inicio", "/perfil"];
 const Id = z.string().uuid();
@@ -37,6 +38,7 @@ export async function completeLesson(input: unknown) {
     if (ins.error && ins.error.code !== "23505") throw new Error(`db: ${ins.error.message}`);
     await award(s, "lesson", lesson.id);
     await touchWeek(s);
+    await countChallenge(s, "lesson", lesson.id); // Retos: "terminar una clase" (nunca lanza)
     await firstStep(s, "clase");
     await tryBadge(s, "play");
 

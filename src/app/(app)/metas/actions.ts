@@ -1,7 +1,6 @@
 "use server";
 import { z } from "zod";
 import { goalPlan, parseMoney, type Cents, type ISODate } from "@/lib/engine";
-import { isChallenge } from "@/lib/engine/metas";
 import { fail, ok, run, type Result } from "@/server/action";
 import { fetchAll, loadPlan, must } from "@/server/data";
 import { archiveLine, createLine, setCells, updateLine } from "@/server/plan-write";
@@ -10,6 +9,7 @@ import type { Session } from "@/server/session";
 import { canUse, planRange, resolveTargetDate } from "./lib";
 import { M } from "./messages";
 import { awardGoal, celebrate, leftoverFor, raw, savedNow, type Crossed } from "./server";
+import { countChallenge } from "../retos/server";
 
 const PATHS = ["/metas", "/inicio", "/plan", "/diagnostico", "/perfil"];
 const Id = z.string().uuid();
@@ -129,6 +129,7 @@ export async function addEntry(input: unknown) {
     const before = await savedNow(s);
     const entry = must(await s.supabase.from("goal_entries").insert({ user_id: s.userId, goal_id: goal.id, date: s.today, amount_cents: p.data.mode === "in" ? cents : -cents }).select("id").single());
     await touchWeek(s);
+    if (p.data.mode === "in") await countChallenge(s, "goal_contrib", entry.id); // Retos: "aportar a una meta" (nunca lanza)
     if (p.data.mode === "out") {
       const points = await awardGoal(s, "goal_used", goal.id);
       return ok({ amountCents: cents, crossed: [] }, { points: points || undefined });
@@ -212,20 +213,10 @@ export async function sendLeftover(input: unknown): Promise<Result<{ amountCents
     const crossed = await celebrate(s, before, await savedNow(s), [goal.id]);
     points += crossed.reduce((a, c) => a + c.points, 0);
     await touchWeek(s);
+    await countChallenge(s, "goal_contrib", entry.id); // Retos: "aportar a una meta" (nunca lanza)
     if (goal.is_emergency_fund) await tryBadge(s, "shield");
     return ok({ amountCents: amount, name: goal.name, crossed }, { points: points || undefined });
   });
 }
 
-/** Retos opcionales: entrar o salir. Sin puntos y sin castigo: si un reto no sale, no pasa nada. */
-export async function setChallenge(input: unknown): Promise<Result<{ active: boolean }>> {
-  return run<{ active: boolean }>({ feature: "metas", revalidate: ["/metas"] }, async (s) => {
-    const p = z.object({ challenge: z.string().max(40), active: z.boolean() }).safeParse(input);
-    if (!p.success || !isChallenge(p.data.challenge)) return fail(s.t.errors.generic);
-    must(await raw(s).from("user_challenges").upsert(
-      { user_id: s.userId, challenge: p.data.challenge, active: p.data.active, updated_at: new Date().toISOString(), ...(p.data.active ? { joined_at: new Date().toISOString() } : {}) },
-      { onConflict: "user_id,challenge" },
-    ).select("challenge"));
-    return ok({ active: p.data.active });
-  });
-}
+// Retos opcionales: entrar y salir pasan por src/app/(app)/retos/actions.ts (modelo de la migración 20261125000037_retos.sql).
