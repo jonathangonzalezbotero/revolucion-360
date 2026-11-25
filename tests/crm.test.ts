@@ -7,7 +7,8 @@ import {
   advance, AUDIENCE_PRESETS, AudienceSchema, BlocksSchema, campaignSendAt, campaignStartsAt, chargeRef, chargeWindow, clientIp, compile, enrollmentRef, evaluate,
   exitFor, ExitRulesSchema, findTagByName, formKey, inactiveRef, inactiveWindow, IngestSchema, ingestSmsDecision, isAbn, isLimited, isUpcomingCharge, legalReady, matchesTrigger,
   MAX_ATTEMPTS, mayMarket, maySms, parseTestNumbers, personalize, rateLimit, readBodyLimited, renderMarketingEmail, renderSms, resolveTz, retryAt, smsSendAt, smsTz,
-  sourceBlocked, stageFor, StepsSchema, tagRefs, toE164, TriggerSchema, unsubscribeHeaders, unsubscribeUrl, waitUntil, WEBHOOK_MAX_BYTES, zonedToUtc,
+  sourceBlocked, stageFor, StepsSchema, tagRefs, toE164, TRANSACTIONAL_BLOCKS, TRANSACTIONAL_TRIGGERS, transactionalProblem, transactionalTriggerOk, TriggerSchema,
+  unsubscribeHeaders, unsubscribeUrl, waitUntil, WEBHOOK_MAX_BYTES, zonedToUtc,
   type ConsentFacts, type Facts, type RateStore, type Step,
 } from "@/lib/crm";
 import { smsKeyword, twilioSignature, verifySvix, verifyTwilio } from "@/lib/crm/sign";
@@ -466,8 +467,18 @@ describe("migración del CRM: permisos y reglas que no se pueden olvidar", () =>
   it("una alta solo levanta supresiones si se pide (p_lift) y nunca un rebote o una queja", () => {
     expect(sql).toMatch(/p_lift boolean default false/);
     expect(sql).toMatch(/v_reason in \('bounce', 'complaint'\) or \(v_reason = 'stop' and p_source <> 'sms_start'\) or not p_lift/);
-    expect(sql).toMatch(/reason in \('unsubscribe', 'manual'\) or \(reason = 'stop' and p_source = 'sms_start'\)/);
+    expect(sql).toMatch(/reason = 'unsubscribe' or \(reason = 'manual' and not v_confirm\) or \(reason = 'stop' and p_source = 'sms_start'\)/);
     expect(sql).not.toMatch(/reason in \('unsubscribe', 'stop', 'complaint'\)/);
+  });
+  it("el clic de confirmación (confirma:<slug>) solo levanta una baja que pidió la persona", () => {
+    expect(sql).toMatch(/v_confirm boolean := coalesce\(p_source like 'confirma:%', false\)/);
+    // En la condición que devuelve 'suppressed' (no solo al levantar): una baja manual, rebote, queja o STOP no se toca.
+    expect(sql).toMatch(/or \(v_confirm and v_reason <> 'unsubscribe'\)\)\)[\s\S]{0,400}return 'suppressed'/);
+  });
+  it("cada create policy de 036 lleva antes su drop policy if exists", () => {
+    const creates = [...sql.matchAll(/create policy (\w+) on (public\.\w+)/g)];
+    expect(creates.length).toBeGreaterThan(5);
+    for (const [, name, table] of creates) expect(sql).toContain(`drop policy if exists ${name} on ${table};`);
   });
   it("las supresiones por rebote o queja no cambian de motivo", () => {
     const upserts = sql.match(/on conflict \(channel, value\) do update[\s\S]*?;/g) ?? [];
@@ -486,5 +497,33 @@ describe("migración del CRM: permisos y reglas que no se pueden olvidar", () =>
   });
   it("nada del CRM para anon", () => {
     expect(sql).toMatch(/revoke all on table public\.crm_contacts[\s\S]*?public\.crm_inbound_sms from anon;/);
+  });
+});
+
+describe("automatizaciones transaccionales: solo disparadores y bloques permitidos", () => {
+  const email = (blocks: unknown[], id = "c1") => ({ id, type: "email", subject: "Tu entrada", preheader: "", blocks });
+  const ok = [{ type: "heading", text: "Hola" }, { type: "text", text: "Tu entrada" }, { type: "button", text: "Ver", href: "/x" }, { type: "divider" }, { type: "signature", text: "J" }];
+  it("disparadores: compra, código de alumno, conexión web, confirmación y etiqueta (Skool y evento)", () => {
+    expect([...TRANSACTIONAL_TRIGGERS].sort()).toEqual(["email_confirmed", "first_month_paid", "student_code", "tag_added", "web_connection"]);
+    expect(transactionalTriggerOk("tag_added")).toBe(true);
+    for (const k of ["wizard_done", "inactive_days", "payment_failed", "charge_upcoming", "challenge_done", "web_form"]) expect(transactionalTriggerOk(k)).toBe(false);
+  });
+  it("bloques: título, texto, botón, separador y firma; nunca imagen ni clase", () => {
+    expect([...TRANSACTIONAL_BLOCKS].sort()).toEqual(["button", "divider", "heading", "signature", "text"]);
+    const steps = StepsSchema.parse([email(ok)]);
+    expect(transactionalProblem({ kind: "tag_added" }, steps)).toBeNull();
+    expect(transactionalProblem({ kind: "wizard_done" }, steps)).toBe("transactional_trigger");
+    const img = StepsSchema.parse([email([...ok, { type: "image", src: "https://x.com/a.png", alt: "" }])]);
+    expect(transactionalProblem({ kind: "tag_added" }, img)).toBe("transactional_blocks");
+  });
+  it("también revisa los correos dentro de las ramas de una condición", () => {
+    const steps = StepsSchema.parse([{ id: "k", type: "condition", check: { type: "has_account" }, yes: [], no: [email([{ type: "lesson", title: "Clase", href: "/academia/a/b" }], "c2")] }]);
+    expect(transactionalProblem({ kind: "first_month_paid" }, steps)).toBe("transactional_blocks");
+  });
+  it("la 038 lo impone con CHECK (columna `trigger`, ids de automatización y campaña)", () => {
+    const m38 = readFileSync(path.join(import.meta.dirname, "..", "supabase", "migrations", "20261125000038_conexiones.sql"), "utf8").replace(/--[^\n]*/g, "");
+    const list = TRANSACTIONAL_TRIGGERS.map((k) => `'${k}'`).join(", ");
+    expect(m38).toContain(`check (not transactional or trigger->>'kind' in (${list}))`);
+    expect(m38).toContain("check (not transactional or (automation_id is not null and campaign_id is null))");
   });
 });

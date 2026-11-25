@@ -154,6 +154,25 @@ export const StepsSchema = z.array(StepSchema).max(40).superRefine((steps, ctx) 
   }
 });
 
+// ───────── Automatizaciones transaccionales ─────────
+/**
+ * Disparadores con los que una automatización puede ser transaccional (de una compra, un acceso o una confirmación que
+ * pidió la persona; decisión de Jonathan, 25 nov 2026). `tag_added` es el que usan el acceso a Skool y la entrada del
+ * evento. La base lo impone también (CHECK crm_automations_transactional_trigger, migración 038).
+ */
+export const TRANSACTIONAL_TRIGGERS = ["first_month_paid", "student_code", "web_connection", "email_confirmed", "tag_added"] as const satisfies readonly TriggerKind[];
+/** Bloques que puede llevar un correo transaccional: sin imágenes ni clases (nada que se parezca a una promoción). */
+export const TRANSACTIONAL_BLOCKS = ["heading", "text", "button", "divider", "signature"] as const satisfies readonly Block["type"][];
+export const transactionalTriggerOk = (kind: string) => (TRANSACTIONAL_TRIGGERS as readonly string[]).includes(kind);
+export const transactionalBlockOk = (type: string) => (TRANSACTIONAL_BLOCKS as readonly string[]).includes(type);
+/** ¿Qué impide que esta automatización sea transaccional? (también los correos dentro de las ramas de una condición). */
+export function transactionalProblem(trigger: Pick<Trigger, "kind">, steps: readonly Step[]): "transactional_trigger" | "transactional_blocks" | null {
+  if (!transactionalTriggerOk(trigger.kind)) return "transactional_trigger";
+  const leaves = steps.flatMap((s) => (s.type === "condition" ? [...s.yes, ...s.no] : [s]));
+  if (leaves.some((s) => s.type === "email" && s.blocks.some((b) => !transactionalBlockOk(b.type)))) return "transactional_blocks";
+  return null;
+}
+
 export const ExitRulesSchema = z.object({
   onUnsubscribe: z.boolean().default(true),
   onCancel: z.boolean().default(true),

@@ -14,8 +14,11 @@
 --   app, máximo 200. Además 1 punto por día cumplido (`app_config.points.challenge_day`, uno al día como máximo).
 -- · Salir no borra lo logrado (las marcas y los puntos quedan). Si la persona cambia de grupo, pierde el código o se le
 --   vence el acceso, conserva lo logrado pero no puede seguir (`challenge_can_go`).
--- · El avance NO lo escribe el usuario a mano: las marcas de la app solo las pone `challenge_count` (comprueba el hecho
---   en la base); las de check-in solo para HOY en su zona horaria. El premio se recuenta en `award_points`.
+-- · El avance NO lo escribe el usuario a mano: por la API solo lee lo suyo y sale de un intento. Las marcas de la app solo
+--   las pone `challenge_count` (comprueba el hecho en la base); las de check-in, `challenge_checkin`, solo para HOY en su
+--   zona horaria (acotada a ±1 día de la fecha UTC y nunca antes del último día marcado). El premio y la insignia solo
+--   con el intento terminado (`status = 'done'`, lo pone `challenge_try_finish`) y se recuentan en `award_points`.
+-- · La tabla `challenges` completa solo la lee el Dueño; el usuario ve sus columnas públicas con `challenge_list()`.
 -- · El admin (solo el Dueño) ve SOLO totales (se unieron, terminaron, salieron). La tabla del grupo solo muestra nombre
 --   corto y días cumplidos de quien la activó, y solo a quien está en ese reto.
 
@@ -82,18 +85,26 @@ create table if not exists public.challenge_marks (
 create index if not exists challenge_marks_user on public.challenge_marks(user_id, day);
 
 -- ───────────── Funciones de apoyo ─────────────
--- Hoy en la zona horaria de una persona (una zona inválida cae a Sydney, como en la app). Solo para otras funciones.
-create or replace function public.challenge_today_of(p_user uuid) returns date
-language plpgsql stable security definer set search_path = public as $$
-declare tz text;
+-- Hoy en una zona horaria (una zona inválida cae a Sydney, como en la app). Acotado a [fecha UTC − 1, fecha UTC + 1]:
+-- ninguna zona real se sale de ahí, así que cambiar la zona del perfil no deja marcar días de más (ni adelantar ni
+-- volver atrás más de un día). Sin consultas: sirve para recorrer muchas filas (challenge_info) sin N+1.
+create or replace function public.challenge_local_today(p_tz text) returns date
+language plpgsql stable set search_path = public as $$
+declare utc date := (now() at time zone 'utc')::date; d date;
 begin
-  select timezone into tz from public.profiles where id = p_user;
   begin
-    return (now() at time zone coalesce(nullif(tz, ''), 'Australia/Sydney'))::date;
+    d := (now() at time zone coalesce(nullif(p_tz, ''), 'Australia/Sydney'))::date;
   exception when others then
-    return (now() at time zone 'Australia/Sydney')::date;
+    d := (now() at time zone 'Australia/Sydney')::date;
   end;
+  return least(greatest(d, utc - 1), utc + 1);
 end $$;
+
+-- Hoy en la zona horaria de una persona. Solo para otras funciones.
+create or replace function public.challenge_today_of(p_user uuid) returns date
+language sql stable security definer set search_path = public as $$
+  select public.challenge_local_today((select timezone from public.profiles where id = p_user));
+$$;
 
 -- Hoy para quien llama (lo usan las políticas).
 create or replace function public.challenge_today() returns date
@@ -144,13 +155,11 @@ language sql stable security definer set search_path = public as $$
   select count(*)::int from public.challenge_marks where member_id = p_member and state in ('yes','auto');
 $$;
 
--- ¿Se puede marcar hoy este intento de check-in? (lo usan las políticas de challenge_marks)
-create or replace function public.challenge_checkin_ok(p_member uuid) returns boolean
+-- Último día marcado en un intento (null si no tiene marcas). Una marca nueva nunca va antes de este día: así, cambiar
+-- la zona horaria del perfil para "volver" a un día ya pasado no deja marcar dos veces el mismo día.
+create or replace function public.challenge_last_mark(p_member uuid) returns date
 language sql stable security definer set search_path = public as $$
-  select exists (select 1 from public.challenge_members m join public.challenges c on c.id = m.challenge_id
-    where m.id = p_member and m.user_id = auth.uid() and m.status = 'active' and c.measure = 'checkin'
-      and public.challenge_today() between m.start_on and m.start_on + c.days - 1
-      and public.challenge_can_go(c.id, m.user_id));
+  select max(day) from public.challenge_marks where member_id = p_member;
 $$;
 
 -- Si llegó a la meta, el intento queda terminado. Devuelve true solo la vez que lo termina.
@@ -171,24 +180,10 @@ end $$;
 -- función cuando escribe una función `security definer` (unirse, check-in, contar, terminar).
 create or replace function public.protect_challenge_member() returns trigger
 language plpgsql set search_path = public as $$
-declare c record;
 begin
   if current_user <> 'authenticated' then return new; end if;
-  if tg_op = 'INSERT' then
-    select * into c from public.challenges where id = new.challenge_id;
-    if not found then raise exception 'not_found'; end if;
-    if c.starts_on is not null and public.challenge_today() > c.starts_on + c.days - 1 then raise exception 'ended'; end if;
-    if exists (select 1 from public.challenge_members x where x.user_id = auth.uid() and x.challenge_id = new.challenge_id and x.status = 'done') then
-      raise exception 'already_done';                     -- un reto terminado no se repite (ni su premio)
-    end if;
-    new.user_id := auth.uid();
-    new.status := 'active';
-    new.start_on := coalesce(c.starts_on, public.challenge_today());
-    new.joined_at := now();
-    new.done_at := null;
-    new.left_at := null;
-    return new;
-  end if;
+  -- Nadie entra a un reto escribiendo directo (no hay política de inserción): solo con `challenge_join`.
+  if tg_op = 'INSERT' then raise exception 'forbidden'; end if;
   -- UPDATE: solo "aparecer en la tabla" y salir (activo → salió). Lo demás queda como estaba.
   new.id := old.id;
   new.user_id := old.user_id;
@@ -209,37 +204,57 @@ drop trigger if exists protect_challenge_member on public.challenge_members;
 create trigger protect_challenge_member before insert or update on public.challenge_members
   for each row execute function public.protect_challenge_member();
 
+-- Las reglas de un reto (cómo se mide, qué cuenta, días, comodines, para quién) no cambian si ya tiene gente adentro: la
+-- meta y el premio de quien ya entró se calcularon con ellas. El panel ya las conserva al editar uno publicado; esto lo
+-- impone también para cualquier otra escritura.
+create or replace function public.protect_challenge_rules() returns trigger
+language plpgsql set search_path = public as $$
+begin
+  if (new.measure, new.action, new.days, new.wildcards, new.audience) is distinct from (old.measure, old.action, old.days, old.wildcards, old.audience)
+     and exists (select 1 from public.challenge_members m where m.challenge_id = old.id) then
+    raise exception 'locked';
+  end if;
+  return new;
+end $$;
+drop trigger if exists protect_challenge_rules on public.challenges;
+create trigger protect_challenge_rules before update on public.challenges
+  for each row execute function public.protect_challenge_rules();
+
 -- ───────────── Permisos ─────────────
+-- Toda escritura del usuario va por las funciones `security definer` de abajo (unirse, check-in, contar, tabla del grupo).
+-- Por la API (rol `authenticated`) el usuario solo LEE lo suyo y puede salir de un intento (`own_update` de members,
+-- limitado por `protect_challenge_member`). Nunca inserta ni borra intentos ni marcas.
 alter table public.challenges enable row level security;
--- El usuario lee los retos publicados que son para él y aquellos en los que estuvo (aunque ya no sean para él: Terminados);
--- el Dueño, todos (también borradores).
-create policy read_live on public.challenges for select to authenticated using (
-  (select public.is_admin_owner()) or (status = 'published' and public.challenge_for_me(id))
-  or exists (select 1 from public.challenge_members m where m.challenge_id = challenges.id and m.user_id = auth.uid()));
+-- La tabla completa (creador, código de acceso, grupo, automatizaciones, legacy_key) solo la lee el Dueño. El usuario ve
+-- las columnas públicas de los retos que son para él (o en los que estuvo) con `challenge_list()`.
+drop policy if exists read_live on public.challenges;
+drop policy if exists owner_read on public.challenges;
+create policy owner_read on public.challenges for select to authenticated using ((select public.is_admin_owner()));
+drop policy if exists owner_insert on public.challenges;
 create policy owner_insert on public.challenges for insert to authenticated with check ((select public.is_admin_owner()));
+drop policy if exists owner_update on public.challenges;
 create policy owner_update on public.challenges for update to authenticated using ((select public.is_admin_owner())) with check ((select public.is_admin_owner()));
 -- (Sin política de borrado: un reto con gente adentro nunca se borra desde la app.)
 
 alter table public.challenge_members enable row level security;
+drop policy if exists own_select on public.challenge_members;
 create policy own_select on public.challenge_members for select to authenticated using (user_id = auth.uid());
-create policy own_insert on public.challenge_members for insert to authenticated with check (
-  user_id = auth.uid() and public.can_write() and status = 'active' and public.challenge_can_go_me(challenge_id));
+-- Salir (activo → salió). "Aparecer en la tabla" va por `challenge_set_board` (apagarlo funciona también en solo lectura).
+drop policy if exists own_update on public.challenge_members;
 create policy own_update on public.challenge_members for update to authenticated
   using (user_id = auth.uid() and public.can_write()) with check (user_id = auth.uid());
--- Un intento terminado no se borra por la API: borrarlo y volver a entrar pagaría el premio otra vez.
-create policy own_delete on public.challenge_members for delete to authenticated using (user_id = auth.uid() and public.can_write() and status <> 'done');
+-- Sin own_insert (se entra con `challenge_join`) ni own_delete (borrar un intento terminado y volver a entrar pagaría el
+-- premio otra vez).
+drop policy if exists own_insert on public.challenge_members;
+drop policy if exists own_delete on public.challenge_members;
 
 alter table public.challenge_marks enable row level security;
+drop policy if exists own_select on public.challenge_marks;
 create policy own_select on public.challenge_marks for select to authenticated using (user_id = auth.uid());
--- Solo check-in de HOY (en su zona) en un intento activo y vigente. Las marcas de la app las pone `challenge_count`.
-create policy own_insert on public.challenge_marks for insert to authenticated with check (
-  user_id = auth.uid() and public.can_write() and state in ('yes','no') and day = public.challenge_today() and key = day::text
-  and public.challenge_checkin_ok(member_id));
-create policy own_update on public.challenge_marks for update to authenticated
-  using (user_id = auth.uid() and public.can_write() and state in ('yes','no') and day = public.challenge_today())
-  with check (user_id = auth.uid() and state in ('yes','no') and day = public.challenge_today() and key = day::text and public.challenge_checkin_ok(member_id));
-create policy own_delete on public.challenge_marks for delete to authenticated
-  using (user_id = auth.uid() and public.can_write() and state in ('yes','no') and day = public.challenge_today());
+-- Sin políticas de escritura: las marcas las ponen solo `challenge_checkin` (hoy, en su zona) y `challenge_count`.
+drop policy if exists own_insert on public.challenge_marks;
+drop policy if exists own_update on public.challenge_marks;
+drop policy if exists own_delete on public.challenge_marks;
 
 -- ───────────── Unirse ─────────────
 -- Devuelve el id del intento (el activo si ya estaba). Errores: forbidden, not_available, ended, already_done.
@@ -286,6 +301,8 @@ begin
   today := public.challenge_today_of(uid);
   if today < m.start_on then raise exception 'not_started'; end if;
   if today > m.start_on + c.days - 1 then raise exception 'ended'; end if;
+  -- Nunca un día anterior al último marcado (cambiar la zona horaria no deja volver a un día ya pasado).
+  if today < coalesce(public.challenge_last_mark(p_member), today) then raise exception 'day_passed'; end if;
 
   select count(*) into yes_before from public.challenge_marks
    where member_id = p_member and state = 'yes' and day < today;
@@ -333,9 +350,19 @@ begin
       when 'closure' then exists (select 1 from public.month_closures mc where mc.user_id = uid and mc.reopened_at is null
                             and (mc.year::text || '-' || lpad(mc.month::text, 2, '0')) = p_ref and mc.closed_at >= r.joined_at
                             -- solo el mes anterior al inicio en adelante: cerrar meses viejos de una sentada no termina el reto
-                            and make_date(mc.year, mc.month, 1) >= (date_trunc('month', r.start_on) - interval '1 month')::date)
+                            and make_date(mc.year, mc.month, 1) >= (date_trunc('month', r.start_on) - interval '1 month')::date
+                            -- y solo meses ya terminados (en su zona): cerrar por adelantado los meses que vienen no cuenta
+                            and make_date(mc.year, mc.month, 1) < date_trunc('month', today)::date)
       else true end;                                             -- open_app: basta con abrirla (una vez al día)
     if not fact then continue; end if;
+    perform 1 from public.challenge_members where id = r.id for update;   -- dos llamadas a la vez no se saltan los topes
+    -- Nunca un día anterior al último marcado en este intento (cambiar la zona horaria no deja volver a un día pasado).
+    if today < coalesce(public.challenge_last_mark(r.id), today) then continue; end if;
+    -- Clases: máximo 2 por día en cada intento (terminar 10 de una sentada no termina un reto de 10 días).
+    if p_action = 'lesson' and (select count(*) from public.challenge_marks k
+                                 where k.member_id = r.id and k.key like 'lesson:%' and k.day = today) >= 2 then
+      continue;
+    end if;
     v_key := case p_action when 'lesson' then 'lesson:' || p_ref when 'closure' then 'closure:' || p_ref else today::text end;
     insert into public.challenge_marks (member_id, user_id, key, day, state) values (r.id, uid, v_key, today, 'auto')
     on conflict (member_id, key) do nothing;
@@ -349,21 +376,50 @@ begin
   return v_out;
 end $$;
 
--- ───────────── Lo que el usuario ve de los demás (sin montos, sin ids de personas) ─────────────
--- Para cada reto visible (o en el que estuvo): nombre del grupo, quién lo creó (nombre de pila), cuántos siguen adentro y
--- si quien pregunta puede seguir en él (`for_me`: grupo, código y acceso vigentes).
-create or replace function public.challenge_info() returns table (challenge_id uuid, group_name text, creator text, people int, for_me boolean)
+-- ───────────── Lo que el usuario ve de los retos (solo columnas públicas) ─────────────
+-- Los retos publicados que son para quien llama y aquellos en los que estuvo (aunque ya no sean para él: Terminados).
+-- Nunca quién lo creó (id), el código de acceso, el grupo (id), las automatizaciones ni legacy_key.
+create or replace function public.challenge_list() returns table (
+  id uuid, title text, description text, image text, measure text, action text, wildcards int, days int, starts_on date,
+  audience text, points int, badge_name text, show_board boolean, status text, target int, published_at timestamptz)
 language sql stable security definer set search_path = public as $$
-  select c.id,
-         (select g.name from public.groups g where g.id = c.group_id),
-         (select split_part(trim(p.name), ' ', 1) from public.profiles p where p.id = c.created_by),
-         (select count(distinct m.user_id)::int from public.challenge_members m where m.challenge_id = c.id and m.status = 'active'
-             and public.challenge_today_of(m.user_id) between m.start_on and m.start_on + c.days - 1),
-         public.challenge_can_go(c.id, auth.uid())
+  select c.id, c.title, c.description, c.image, c.measure, c.action, c.wildcards, c.days, c.starts_on,
+         c.audience, c.points, c.badge_name, c.show_board, c.status, c.target, c.published_at
     from public.challenges c
    where auth.uid() is not null and c.status = 'published'
      and (public.challenge_visible(c.id, auth.uid())
-          or exists (select 1 from public.challenge_members m where m.challenge_id = c.id and m.user_id = auth.uid()));
+          or exists (select 1 from public.challenge_members m where m.challenge_id = c.id and m.user_id = auth.uid()))
+   order by c.published_at desc nulls last;
+$$;
+
+-- ───────────── Lo que el usuario ve de los demás (sin montos, sin ids de personas) ─────────────
+-- Para cada reto visible (o en el que estuvo): nombre del grupo, quién lo creó (nombre de pila), cuántos siguen adentro y
+-- si quien pregunta puede seguir en él (`for_me`: grupo, código y acceso vigentes). `people` solo para quien aún puede
+-- seguir en el reto (si ya no es para él, 0). La zona horaria de cada persona sale de un solo join (sin una consulta por
+-- persona) y se acota como en `challenge_local_today`.
+create or replace function public.challenge_info() returns table (challenge_id uuid, group_name text, creator text, people int, for_me boolean)
+language sql stable security definer set search_path = public as $$
+  with mine as (
+    select c.id, c.group_id, c.created_by, c.days, public.challenge_can_go(c.id, auth.uid()) as go
+      from public.challenges c
+     where auth.uid() is not null and c.status = 'published'
+       and (public.challenge_visible(c.id, auth.uid())
+            or exists (select 1 from public.challenge_members m where m.challenge_id = c.id and m.user_id = auth.uid()))
+  ), live as (
+    select m.challenge_id, count(distinct m.user_id)::int as n
+      from public.challenge_members m
+      join mine x on x.id = m.challenge_id and x.go
+      left join public.profiles p on p.id = m.user_id
+     where m.status = 'active'
+       and public.challenge_local_today(p.timezone) between m.start_on and m.start_on + x.days - 1
+     group by m.challenge_id
+  )
+  select x.id,
+         (select g.name from public.groups g where g.id = x.group_id),
+         (select split_part(trim(p.name), ' ', 1) from public.profiles p where p.id = x.created_by),
+         case when x.go then coalesce(l.n, 0) else 0 end,
+         x.go
+    from mine x left join live l on l.challenge_id = x.id;
 $$;
 
 -- Tabla del grupo: solo si el reto la tiene encendida y quien pregunta está en ese reto (activo o terminado, y aún es para
@@ -382,9 +438,26 @@ language sql stable security definer set search_path = public as $$
    where m.challenge_id = p_challenge and c.show_board and m.show_on_board and m.status in ('active','done')
      and exists (select 1 from public.challenge_members x where x.challenge_id = p_challenge and x.user_id = auth.uid() and x.status in ('active','done'))
      and public.challenge_can_go(p_challenge, auth.uid())
+     -- Solo quien aún es del reto (grupo, código y acceso vigentes): quien cambió de grupo no sigue apareciendo.
+     and public.challenge_can_go(p_challenge, m.user_id)
    order by 2 desc, 1
    limit 20;
 $$;
+
+-- "Aparecer en la tabla del grupo": solo la fila propia y solo esa columna. Apagarlo funciona siempre (también en solo
+-- lectura o con el acceso vencido: es retirar sus datos de la vista de otros); prenderlo exige poder escribir.
+create or replace function public.challenge_set_board(p_member uuid, p_on boolean) returns boolean
+language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); n int;
+begin
+  if uid is null or p_on is null then raise exception 'forbidden'; end if;
+  if p_on and not public.can_write() then raise exception 'forbidden'; end if;
+  update public.challenge_members set show_on_board = p_on, updated_at = now()
+   where id = p_member and user_id = uid;
+  get diagnostics n = row_count;
+  if n = 0 then raise exception 'not_found'; end if;
+  return p_on;
+end $$;
 
 -- ───────────── Panel (solo el Dueño): SOLO totales por reto ─────────────
 -- Se unieron = personas distintas · terminaron = con un intento terminado · salieron = su último intento fue "salir".
@@ -455,7 +528,9 @@ begin
   -- Retos: el premio de terminar lo pone el reto (no la configuración).
   if p_kind = 'challenge_done' then
     pts := coalesce((select c.points from public.challenge_members m join public.challenges c on c.id = m.challenge_id
-                      where m.user_id = uid and m.id::text = p_ref), 0);
+                      where m.user_id = uid and m.id::text = p_ref and m.status = 'done'), 0);
+  elsif p_kind = 'challenge_day' then
+    pts := least(pts, 5);                 -- tope aunque alguien suba el valor en la configuración
   end if;
   if uid is null or pts <= 0 then return 0; end if;
   if coalesce((select (value)::text from public.app_config where key = 'gamification_enabled'), 'true') = 'false' then return 0; end if;
@@ -502,9 +577,9 @@ begin
     ok := exists (select 1 from public.challenge_marks k where k.user_id = uid and k.state in ('yes','auto')
                    and k.member_id::text || ':' || k.key = p_ref)
           and not exists (select 1 from public.point_events where user_id = uid and kind = 'challenge_day' and at::date = now()::date);
-  elsif p_kind = 'challenge_done' then    -- ref = id del intento; llegó a la meta del reto (se recuenta aquí, no se confía en el estado)
+  elsif p_kind = 'challenge_done' then    -- ref = id del intento; lo terminó (estado 'done', que solo pone challenge_try_finish) y se recuenta
     ok := exists (select 1 from public.challenge_members m join public.challenges c on c.id = m.challenge_id
-                   where m.user_id = uid and m.id::text = p_ref and public.challenge_progress(m.id) >= c.target);
+                   where m.user_id = uid and m.id::text = p_ref and m.status = 'done' and public.challenge_progress(m.id) >= c.target);
     month_cap := 6;
   end if;
   if not ok then return 0; end if;
@@ -547,7 +622,7 @@ begin
   if not ok and p_badge like 'reto:%' then
     ok := exists (select 1 from public.challenge_members m join public.challenges c on c.id = m.challenge_id
                    where m.user_id = uid and 'reto:' || c.id::text = p_badge and c.badge_name is not null
-                     and public.challenge_progress(m.id) >= c.target);
+                     and m.status = 'done' and public.challenge_progress(m.id) >= c.target);
   end if;
   if not ok then return false; end if;
   insert into public.user_badges (user_id, badge) values (uid, p_badge) on conflict do nothing;
@@ -579,6 +654,10 @@ revoke execute on function public.challenge_idle_members(int) from public, anon,
 revoke execute on function public.challenge_visible(uuid, uuid) from public, anon, authenticated;
 revoke execute on function public.challenge_can_go(uuid, uuid) from public, anon, authenticated;
 revoke execute on function public.challenge_progress(uuid) from public, anon, authenticated;
+revoke execute on function public.challenge_last_mark(uuid) from public, anon, authenticated;
+revoke execute on function public.protect_challenge_rules() from public, anon, authenticated;   -- solo el disparador
+revoke execute on function public.challenge_local_today(text) from public, anon;
+grant execute on function public.challenge_local_today(text) to authenticated, service_role;
 grant execute on function public.challenge_today_of(uuid) to service_role;
 grant execute on function public.challenge_account_ok(uuid) to service_role;
 grant execute on function public.challenge_notice(uuid) to service_role;
@@ -588,7 +667,8 @@ grant execute on function public.challenge_idle_members(int) to service_role;
 revoke execute on function public.challenge_today() from public, anon;
 revoke execute on function public.challenge_for_me(uuid) from public, anon;
 revoke execute on function public.challenge_can_go_me(uuid) from public, anon;
-revoke execute on function public.challenge_checkin_ok(uuid) from public, anon;
+revoke execute on function public.challenge_set_board(uuid, boolean) from public, anon;
+revoke execute on function public.challenge_list() from public, anon;
 revoke execute on function public.challenge_join(uuid) from public, anon;
 revoke execute on function public.challenge_checkin(uuid, boolean) from public, anon;
 revoke execute on function public.challenge_count(text, text) from public, anon;
@@ -598,7 +678,8 @@ revoke execute on function public.admin_challenge_totals() from public, anon;
 grant execute on function public.challenge_today() to authenticated;
 grant execute on function public.challenge_for_me(uuid) to authenticated;
 grant execute on function public.challenge_can_go_me(uuid) to authenticated;
-grant execute on function public.challenge_checkin_ok(uuid) to authenticated;
+grant execute on function public.challenge_set_board(uuid, boolean) to authenticated;
+grant execute on function public.challenge_list() to authenticated;
 grant execute on function public.challenge_join(uuid) to authenticated;
 grant execute on function public.challenge_checkin(uuid, boolean) to authenticated;
 grant execute on function public.challenge_count(text, text) to authenticated;

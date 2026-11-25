@@ -5,7 +5,7 @@ import { AUDIENCE_PRESETS, STAGES, type Audience, type AudiencePreset, type Bloc
 
 // ───────── Errores ─────────
 /** Códigos cortos que lanzan las funciones de @/server/crm (docs/CRM.md) y que la pantalla traduce a un texto. */
-export const CRM_ERRORS = ["invalid", "not_found", "exists", "phone", "not_editable", "legal_incomplete", "in_the_past", "invalid_tag", "suppressed"] as const;
+export const CRM_ERRORS = ["invalid", "not_found", "exists", "phone", "not_editable", "legal_incomplete", "in_the_past", "invalid_tag", "suppressed", "transactional_trigger", "transactional_blocks"] as const;
 export type CrmError = (typeof CRM_ERRORS)[number] | "generic";
 export const crmErrorKey = (e: unknown): CrmError => {
   const msg = e instanceof Error ? e.message : "";

@@ -3,8 +3,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  cleanFields, connectionSlug, connectionUrl, contactPatch, exitFor, formSnippet, guessSystemeColumns, hostAllowed, isConnectionTestEmail, mapSystemeRows, matchesTrigger,
-  mayTransactional, normalizeHost, parseSubmission, renderMarketingEmail, requestOriginAllowed, testEmailFor, thanksUrlOk, TriggerSchema, turnstileOk,
+  cleanFields, ConnectionInput, connectionSlug, connectionUrl, contactPatch, exitFor, formSnippet, guessSystemeColumns, hostAllowed, isConnectionTestEmail, isMoneyKey,
+  isPublicSuffix, looksLikeMoney, mapSystemeRows, matchesTrigger, mayTransactional, normalizeHost, originOk, parseSubmission, renderMarketingEmail, requestOriginAllowed, testEmailFor, thanksUrlOk, TriggerSchema, turnstileOk,
 } from "@/lib/crm";
 import { sectionOf } from "@/app/admin/actividad/roles";
 import { visibleTriggers } from "@/app/admin/automatizaciones/lib";
@@ -92,14 +92,81 @@ describe("lo que llega de un formulario", () => {
     expect(up.ok && up.sub.mode).toBe("upsert");
   });
   it("campos extra: nunca montos, claves limpias, máximo 20", () => {
-    const { fields, dropped } = cleanFields({ "Cómo nos conociste": "Instagram", amount: "10", precio_entrada: "20", total: "5", nota: "$10", pago: "x", ok: "1.000" });
-    expect(fields).toEqual({ como_nos_conociste: "Instagram", ok: "1.000" });
-    expect(dropped).toBe(5);
+    const { fields, dropped } = cleanFields({ "Cómo nos conociste": "Instagram", amount: "10", precio_entrada: "20", total: "5", nota: "$10", pago: "x", ok: "1.000", talla: "M" });
+    expect(fields).toEqual({ como_nos_conociste: "Instagram", talla: "M" });
+    expect(dropped).toBe(6); // "1.000" tiene forma de monto (separador de miles)
     const many = Object.fromEntries(Array.from({ length: 25 }, (_, i) => [`f${i}`, "v"]));
     expect(Object.keys(cleanFields(many).fields)).toHaveLength(20);
-    expect(cleanFields({ feedback: "bien", coffee: "sí" }).fields).toEqual({ feedback: "bien", coffee: "sí" }); // palabras, no pedazos
     const big = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [`campo_${i}`, "x".repeat(200)]));
     expect(JSON.stringify(cleanFields(big).fields).length).toBeLessThanOrEqual(3500); // cabe en el CHECK de la base (4000)
+  });
+});
+
+describe("campos extra: nunca montos (revisión de seguridad)", () => {
+  it("claves que CONTIENEN una palabra de dinero, también camelCase o sin separadores (es/en)", () => {
+    for (const k of ["precio_entrada", "precioEntrada", "precioentrada", "ticketPrice", "ticketprice", "montoTotal", "valorAUD", "entryFee", "salarioMensual",
+      "my-income", "TOTAL", "Precio de la entrada", "deudaActual", "usd", "pagoInicial", "paymentMethod", "presupuesto2026", "dólares"]) {
+      expect(isMoneyKey(k), k).toBe(true);
+    }
+    for (const k of ["ciudad", "partners_name", "partners_phone", "como_nos_conociste", "talla", "empresa", "edad"]) expect(isMoneyKey(k), k).toBe(false);
+    // Costo aceptado (docs/CRM.md): claves inocentes que contienen una palabra de dinero también se pierden.
+    expect(isMoneyKey("feedback")).toBe(true);
+    expect(isMoneyKey("coffee")).toBe(true);
+    expect(cleanFields({ feedback: "bien" }).fields).toEqual({});
+  });
+  it("valores: número puro de 3+ cifras, con separadores de miles o con moneda", () => {
+    for (const v of ["150", "2500", "-2500", "1500.50", "1500,5", "1.500", "1,500,000", "2 500", "1'500", "$10", "€3", "20 AUD", "USD 5", "10 dólares", "5 pesos", "100usd"]) {
+      expect(looksLikeMoney(v), v).toBe(true);
+    }
+    for (const v of ["12", "7", "M", "Sydney", "+61412345678", "+61 412 345 678", "0412 345 678", "2026-09-12", "Grupo 3", "dos"]) expect(looksLikeMoney(v), v).toBe(false);
+  });
+  it("un teléfono o código postal en su clave se guarda aunque sea un número largo", () => {
+    expect(cleanFields({ partners_phone: "0412345678", telefono_casa: "0298765432", postcode: "2000", whatsapp: "+61 400 000 000" }).fields)
+      .toEqual({ partners_phone: "0412345678", telefono_casa: "0298765432", postcode: "2000", whatsapp: "+61 400 000 000" });
+    // ...pero nunca con moneda, y en otra clave un número largo cae
+    expect(cleanFields({ partners_phone: "$100", codigo: "123456" }).fields).toEqual({});
+    expect(cleanFields({ referido: "+61412345678" }).fields).toEqual({ referido: "+61412345678" });
+  });
+});
+
+describe("formularios del navegador: SMS solo con la clave del servidor", () => {
+  it("acepta_sms desde el navegador se ignora; el correo sí", () => {
+    const r = parseSubmission({ correo: "a@b.com", telefono: "+61412345678", acepta_correos: "on", acepta_sms: "on" }, false);
+    expect(r.ok && r.sub.consentEmail).toBe(true);
+    expect(r.ok && r.sub.consentSms).toBe(false);
+    const srv = parseSubmission({ correo: "a@b.com", telefono: "+61412345678", acepta_sms: "true" }, true);
+    expect(srv.ok && srv.sub.consentSms).toBe(true);
+    const nested = parseSubmission({ email: "a@b.com", consent: { sms: true } }, true);
+    expect(nested.ok && nested.sub.consentSms).toBe(true);
+  });
+  it("un país que no es código queda como campo extra, pero nunca un monto", () => {
+    const a = parseSubmission({ correo: "a@b.com", pais: "Australia" }, false);
+    expect(a.ok && a.sub.fields).toEqual({ pais: "Australia" });
+    const m = parseSubmission({ correo: "a@b.com", pais: "2500 AUD" }, false);
+    expect(m.ok && m.sub.fields).toEqual({});
+  });
+  it("los nombres de campo se buscan con Object.hasOwn (nunca 'constructor' ni '__proto__')", () => {
+    const r = parseSubmission(JSON.parse('{"email":"a@b.com","constructor":"x","toString":"y","__proto__":"z","valueOf":"w"}') as Record<string, unknown>, false);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.sub.name).toBe("");
+    expect(r.sub.fields).toEqual({ constructor: "x", tostring: "y" }); // campos extra comunes (valueOf contiene "value": cae)
+  });
+});
+
+describe("páginas permitidas: nunca un comodín sobre un sufijo público", () => {
+  it("hostings gratis y segundos niveles de país", () => {
+    for (const h of ["vercel.app", "github.io", "netlify.app", "pages.dev", "co.uk", "com.au", "com.co", "gov.co", "com"]) expect(isPublicSuffix(h), h).toBe(true);
+    for (const h of ["revoluciondeldinero.com", "mi-sitio.vercel.app", "webinar.com", "x.co.uk", "info.com"]) expect(isPublicSuffix(h), h).toBe(false);
+  });
+  it("se rechaza al escribirlo y al guardarlo; el dominio exacto sí se acepta", () => {
+    for (const h of ["*.vercel.app", "*.github.io", "*.co.uk", "*.com.au", "https://*.netlify.app/"]) expect(normalizeHost(h), h).toBeNull();
+    expect(normalizeHost("mi-sitio.vercel.app")).toBe("mi-sitio.vercel.app");
+    expect(normalizeHost("*.mi-sitio.vercel.app")).toBe("*.mi-sitio.vercel.app");
+    expect(normalizeHost("*.revoluciondeldinero.co.uk")).toBe("*.revoluciondeldinero.co.uk");
+    expect(originOk("*.vercel.app")).toBe(false);
+    expect(ConnectionInput.safeParse({ name: "X", origins: ["*.vercel.app"] }).success).toBe(false);
+    expect(ConnectionInput.safeParse({ name: "X", origins: ["*.revoluciondeldinero.com", "mi-sitio.vercel.app"] }).success).toBe(true);
   });
 });
 
@@ -246,5 +313,20 @@ describe("migración 038: solo agrega y solo el Dueño", () => {
   it("la confirmación guarda el hash del token, nunca el token", () => {
     expect(sql).toMatch(/token_hash text not null unique/);
     expect(sql).not.toMatch(/\btoken text\b/);
+  });
+  it("el slug de una conexión no cambia nunca (disparador)", () => {
+    expect(sql).toMatch(/if new\.slug is distinct from old\.slug then raise exception 'slug_fixed'/);
+    expect(sql).toMatch(/create trigger crm_connection_slug_fixed before update on public\.crm_connections/);
+  });
+  it("'Lo que va llegando' distingue la confirmación frenada por el límite", () => {
+    expect(sql).toMatch(/'pending', 'throttled', 'confirmed'/);
+    expect(sql).toMatch(/'rejected_rate'/);
+  });
+  it("los CHECK nuevos son idempotentes (no fallan si la migración se corre otra vez)", () => {
+    expect(sql).toMatch(/if not exists \(select 1 from pg_constraint where conname = 'crm_automations_transactional_trigger'\)/);
+    expect(sql).toMatch(/if not exists \(select 1 from pg_constraint where conname = 'crm_messages_transactional_source'\)/);
+  });
+  it("cada create policy lleva antes su drop policy if exists", () => {
+    for (const [, name, table] of sql.matchAll(/create policy (\w+) on (public\.\w+)/g)) expect(sql).toContain(`drop policy if exists ${name} on ${table};`);
   });
 });

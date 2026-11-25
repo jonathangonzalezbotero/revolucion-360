@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import {
-  AudienceSchema, BlocksSchema, campaignStartsAt, cleanRef, ExitRulesSchema, findTagByName, legalReady, renderMarketingEmail, StepsSchema, tagRefs, toE164, TriggerSchema,
+  AudienceSchema, BlocksSchema, campaignStartsAt, cleanRef, ExitRulesSchema, findTagByName, legalReady, renderMarketingEmail, StepsSchema, tagRefs, toE164, transactionalProblem, TriggerSchema,
   type Audience, type Block, type ExitRules, type Stage, type Step, type Trigger,
 } from "@/lib/crm";
 import { sendEmailDetailed } from "@/lib/email/send";
@@ -272,15 +272,21 @@ export const AutomationInput = z.object({
   trigger: TriggerSchema,
   steps: StepsSchema,
   exitRules: ExitRulesSchema.default({ onUnsubscribe: true, onCancel: true, goal: null }),
-  /** "De una compra o un acceso (transaccional)": sus correos salen sin consentimiento de marketing (docs/CRM.md). */
+  /**
+   * "De una compra o un acceso (transaccional)": sus correos salen sin consentimiento de marketing (docs/CRM.md). Solo con
+   * los disparadores de TRANSACTIONAL_TRIGGERS y correos con los bloques de TRANSACTIONAL_BLOCKS.
+   */
   transactional: z.boolean().default(false),
+}).superRefine((d, ctx) => {
+  const problem = d.transactional ? transactionalProblem(d.trigger, d.steps) : null;
+  if (problem) ctx.addIssue({ code: "custom", message: problem, path: ["transactional"] });
 });
 export type AutomationDraft = { id?: string; name: string; trigger: Trigger; steps: Step[]; exitRules: ExitRules; transactional?: boolean };
 
 /** Guarda (las inscripciones activas siguen; si un paso donde estaban ya no existe, salen con motivo "deleted_step"). */
 export async function saveAutomation(db: Db, input: unknown): Promise<string> {
   const p = AutomationInput.safeParse(input);
-  if (!p.success) fail("invalid");
+  if (!p.success) fail(p.error.issues.find((i) => i.message.startsWith("transactional_"))?.message ?? "invalid");
   const d = p.data!;
   // "Etiquetar" y "¿Tiene la etiqueta?" solo con etiquetas propias que existan (las de sistema salen de la etapa).
   const refs = tagRefs(d.trigger, d.steps);

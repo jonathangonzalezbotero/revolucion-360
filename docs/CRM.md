@@ -37,11 +37,11 @@ src/app/correo/preferencias                  "Elegir qué correos recibo" por to
 | `crm_messages` | Cola (outbox): contacto, canal (`email` / `sms`), origen (campaña o automatización + paso + inscripción), programado para, estado (`queued`, `sending`, `sent`, `skipped`, `failed`), intentos, id del proveedor, entregado / abierto / clic / rebote / queja con fecha, error técnico sin datos personales. **Único por (origen, contacto).** |
 | `crm_suppressions` | Correos y teléfonos a los que nunca se manda marketing: baja, rebote, queja, STOP o a mano. Sobrevive al contacto. Solo un alta explícita de la persona levanta una baja / STOP / a mano (ver "Reglas de consentimiento"); un rebote o una queja **nunca** se levantan ni cambian de motivo. |
 | `crm_consent_log` | **Constancia** (solo inserción): cada alta, baja o alta rechazada de marketing. Canal, acción `on`/`off`, `applied`, fuente, fecha, `value_hash` (SHA-256 del correo o teléfono en minúsculas, no el dato en claro), `contact_id` informativo **sin llave foránea** (sobrevive al borrado del contacto y de la cuenta) y `evidence` (texto de la casilla, URL, IP, navegador, formulario, fecha de confirmación; solo lo que llegue, máx. 2 KB). El Dueño solo la lee; nadie la cambia ni la borra (permisos revocados + disparador `append_only`). |
-| `crm_connections` (038) | Conexiones web: `slug` (parte final de la dirección, no cambia), nombre, etiquetas que pone (`tag_ids`), estado `active` / `paused`, páginas permitidas (`origins`), página de gracias, "Pedir confirmación por correo" (`double_opt_in`, apagado por defecto) y la **clave secreta** (`rk_live_…`; solo el Dueño la lee, a pedido). |
-| `crm_connection_log` (038) | "Lo que va llegando": un renglón por envío aceptado (creado, actualizado, sin consentimiento, de baja, pendiente, confirmado, prueba) con el id del contacto (sin correos en claro); los rechazos se agrupan por hora en un contador. |
-| `crm_pending_confirmations` (038) | Envíos que esperan el clic de confirmación: hash del token y del correo, lo que llegó (`payload`, se vacía al confirmar o a los 7 días), vencimiento. |
+| `crm_connections` (038) | Conexiones web: `slug` (parte final de la dirección; no cambia nunca: lo impone el disparador `crm_connection_slug_fixed`), nombre, etiquetas que pone (`tag_ids`), estado `active` / `paused`, páginas permitidas (`origins`), página de gracias, "Pedir confirmación por correo" (`double_opt_in`, apagado por defecto) y la **clave secreta** (`rk_live_…`; solo el Dueño la lee, a pedido). |
+| `crm_connection_log` (038) | "Lo que va llegando": un renglón por envío aceptado (creado, actualizado, sin consentimiento, de baja, pendiente de confirmar, confirmación frenada por el límite (`throttled`), confirmado, prueba) con el id del contacto (sin correos en claro); los rechazos (también `rejected_rate`) se agrupan por hora en un contador. |
+| `crm_pending_confirmations` (038) | Envíos que esperan el clic de confirmación: SHA-256 del token, **HMAC-SHA-256 del correo con `CRM_HASH_KEY`** (sin la clave nadie prueba un correo contra la tabla), lo que llegó (`payload`, se vacía al confirmar o a los 7 días), vencimiento. Las filas nunca se borran (regla 0): solo quedan los hashes. |
 | `crm_contacts.fields` (038) | Campos extra que llegan de los formularios (p. ej. `partners_name`, `partners_phone`, `ciudad`): texto corto, máx. 20, **nunca montos**. |
-| `crm_automations.transactional`, `crm_messages.transactional` (038) | Automatización "De una compra o un acceso (transaccional)" y cada mensaje que salió así. |
+| `crm_automations.transactional`, `crm_messages.transactional` (038) | Automatización "De una compra o un acceso (transaccional)" y cada mensaje que salió así. CHECK: transaccional solo con los disparadores `first_month_paid`, `student_code`, `web_connection`, `email_confirmed`, `tag_added`; un mensaje transaccional siempre viene de una automatización (nunca de una campaña). |
 | `crm_inbound_sms` | `MessageSid` de los SMS entrantes ya procesados (sin número ni texto): un reintento de Twilio no se procesa dos veces. |
 
 Funciones:
@@ -87,7 +87,10 @@ así que esa es la única puerta.
 
 Decisiones de Jonathan: los leads de formularios web entran **sin doble confirmación** (la casilla marcada basta) y el
 teléfono que llega con el consentimiento se toma como **verificado** (lo verifican sus formularios; no hay código por SMS).
-El **clic de confirmación por correo** de una conexión con "Pedir confirmación" sí levanta una baja de correo previa (decisión del 25 nov 2026: el clic desde su propio correo demuestra que es suya y que lo quiere); nunca un rebote ni una queja.
+El **clic de confirmación por correo** de una conexión con "Pedir confirmación" sí levanta una baja de correo que **pidió la
+propia persona** (decisión del 25 nov 2026: el clic desde su propio correo demuestra que es suya y que lo quiere): solo una
+supresión `unsubscribe` (o una baja propia del contacto). **Nunca** una baja `manual` (la puso el Dueño), un rebote, una
+queja ni un STOP. Va con la fuente `confirma:<slug>` y `p_lift = true`; `crm_apply_consent` reconoce esa fuente.
 
 **Quién levanta una baja** (`crm_apply_consent(…, p_lift)`): una alta con supresión activa (o con baja propia del contacto)
 solo se aplica si `p_lift = true`, y solo pasan `true` las altas explícitas de la persona. Un rebote o una queja **nunca**
@@ -103,7 +106,8 @@ desde la web (la persona responde START).
 | Preferencias por token › SMS | true | Igual que Perfil |
 | START / UNSTOP de Twilio | true (solo SMS) | Solo si el contacto había dado de baja los SMS (STOP o baja) |
 | Registro confirmado (casilla) | true | Se levanta la baja |
-| Conexiones web (navegador, servidor o clic de confirmación) | false | `suppressed`: no marca nada |
+| Conexiones web (navegador o servidor) | false | `suppressed`: no marca nada |
+| Clic de confirmación de una conexión (`confirma:<slug>`) | true (solo correo) | Se levanta solo una baja que pidió la persona (`unsubscribe`); una baja `manual`, un rebote, una queja o un STOP → `suppressed` |
 | Importar desde systeme.io con constancia | false | `suppressed` (y quien estaba de baja allá entra de baja aquí) |
 | Importar CSV con constancia | false | `suppressed`: cuenta en "omitidos" (también una dirección suprimida **sin contacto todavía**: la supresión se busca por dirección, no por contacto) |
 | Panel (`setContactConsent`) | false | Lanza `suppressed` |
@@ -396,12 +400,12 @@ en el registro sin la clave; "Cambiar clave" la regenera y la anterior deja de s
 | | Desde el navegador (formulario HTML o `fetch`) | Desde un servidor (la web actual) |
 |---|---|---|
 | Autenticación | Comprobante de **Cloudflare Turnstile** (`cf-turnstile-response`) verificado en el servidor con `TURNSTILE_SECRET_KEY`, y que el dominio donde se resolvió sea de las páginas permitidas | `Authorization: Bearer <clave secreta de la conexión>`. Sin Turnstile. Una clave equivocada es **401** (nunca se cae a la forma del navegador) |
-| Origen | `Origin` (o `Referer`) https dentro de las **páginas permitidas** (`revoluciondeldinero.com` = ese dominio y `www.`; `*.revoluciondeldinero.com` = sus subdominios). Si no, 403 | No se revisa |
+| Origen | `Origin` (o `Referer`) https dentro de las **páginas permitidas** (`revoluciondeldinero.com` = ese dominio y `www.`; `*.revoluciondeldinero.com` = sus subdominios; el comodín **no** se acepta sobre un sufijo público donde cualquiera tiene página: `*.vercel.app`, `*.github.io`, `*.netlify.app`, `*.co.uk`, `*.com.au`…, `PUBLIC_SUFFIXES` en `src/lib/crm/connections.ts`). Si no, 403 | No se revisa |
 | Formato | `application/x-www-form-urlencoded` (un `<form>` normal) o JSON. `multipart/form-data` no | JSON |
 | Etiquetas | Solo las de la conexión | Las de la conexión + `tags` (por nombre; se crean si no existen) y `removeTags` (se quitan **antes** de poner) |
 | Datos del contacto | **Solo llena lo vacío** (cualquiera puede escribir cualquier correo en una página pública) | `mode: "upsert"` (por defecto: reemplaza nombre, país y zona) o `"fill"` (solo vacíos: check-in) |
 | Respuesta | 303 a la página de gracias de la conexión (o una página simple "¡Listo!"); JSON `{ "ok": true }` si se mandó JSON o `Accept: application/json` (con CORS para las páginas permitidas, y `OPTIONS`) | JSON `{ "ok": true }` |
-| Límite (en memoria, por instancia) | 30 envíos por minuto por IP | 600 por minuto por conexión; 20 intentos con clave equivocada por minuto por IP |
+| Límite (en memoria, por instancia) | 30 envíos por minuto por IP y 60 por minuto por conexión (todas las IPs; se cuentan después de Turnstile) | 600 por minuto por conexión; 20 intentos con clave equivocada por minuto por IP |
 
 Cuerpo de máximo 8 KB. Errores: 400 `email` / `invalid`, 401 `unauthorized`, 403 `origin` / `antibot` / `paused`, 404, 413,
 429 `rate`, 500 `server`. La respuesta **nunca** dice si el correo ya existía ni si estaba de baja.
@@ -409,10 +413,21 @@ Cuerpo de máximo 8 KB. Errores: 400 `email` / `invalid`, 401 `unauthorized`, 40
 **Campos que se reconocen** (español del mockup, inglés y los de systeme.io): `correo`/`email` (obligatorio), `nombre`/`name`
 o `first_name` + `surname`/`apellido`, `telefono`/`phone`/`phone_number`, `pais`/`country` (código de 2 letras; si llega
 "Australia" queda como campo extra `pais`), `zona`/`timezone`, `idioma`/`locale`, `acepta_correos` y `acepta_sms` (`true`,
-`on`, `1`, `si`). Cualquier otro campo es un **campo extra** del contacto (`crm_contacts.fields`): clave en minúsculas
-`a-z0-9_`, texto de máx. 200, máx. 20; **se rechazan claves de dinero** (`amount`, `monto`, `precio`, `total`, `pago`,
-`saldo`, `valor`…) y valores con forma de monto (`$10`, `20.00 AUD`). Solo desde el servidor: `fields` (objeto), `tags`,
-`removeTags`, `mode`, `consent: { email, sms }` y `evidence: { text, url, ip, userAgent }`.
+`on`, `1`, `si`). **`acepta_sms` desde el navegador se ignora** (decisión de Jonathan, 25 nov 2026): cualquiera puede escribir
+cualquier número en una página pública y el número no se verifica, así que el SMS solo se acepta **con la clave del
+servidor** (`acepta_sms` o `consent.sms`). El correo sí se acepta desde el navegador sin confirmación (la casilla basta).
+Cualquier otro campo es un **campo extra** del contacto (`crm_contacts.fields`): clave en minúsculas `a-z0-9_`, texto de
+máx. 200, máx. 20. **Nunca montos** (`MONEY_WORDS` / `looksLikeMoney`, probado en `tests/conexiones.test.ts`):
+- Se rechaza la clave si **contiene** una palabra de dinero en español o inglés (`amount`, `monto`, `precio`, `price`,
+  `total`, `pago`, `pay`, `fee`, `cost`, `saldo`, `valor`, `value`, `usd`, `aud`…), también en camelCase o sin separadores
+  (`precioEntrada`, `ticketprice`). Costo aceptado: algunas claves inocentes también caen (`feedback` y `coffee` contienen
+  `fee`; `audiencia`, `aud`; `valoracion`, `valor`; `totalmente`, `total`).
+- Se rechaza el valor si es un número puro de 3 o más cifras (`150`, `1500.50`), con separadores de miles (`1.500`,
+  `1,500,000`, `2 500`) o con símbolo o palabra de moneda (`$10`, `20 AUD`, `10 dólares`). Excepción: en claves de teléfono
+  o código postal (`*_phone`, `telefono`, `celular`, `whatsapp`, `postcode`, `zip`…) un número es un número
+  (`partners_phone: "0412345678"` se guarda). En cualquier otra clave, un teléfono va con `+` (`+61412345678`).
+Solo desde el servidor: `fields` (objeto), `tags`, `removeTags`, `mode`, `consent: { email, sms }` y
+`evidence: { text, url, ip, userAgent }`.
 
 ### Reglas que aplica siempre
 
@@ -438,11 +453,16 @@ Si está prendido, **nada se aplica** (ni contacto, ni etiquetas, ni eventos) ha
 datos legales, sin baja de marketing) con el enlace `/api/crm/confirmar?t=…`. El GET muestra un botón (los antivirus
 abren los enlaces: abrirlo no confirma); el POST del botón aplica todo como un envío más y deja **"Confirmó su correo"**
 (`email_confirmed`, con la conexión), que es el disparador para estas conexiones. Contra el abuso: máx. un correo cada 10
-minutos y 3 por día por dirección, nunca a una dirección con rebote o queja, y sin los datos legales completos no sale. El
-enlace vence en 7 días y el motor vacía lo que llegó de quien nunca confirmó.
-**Pendiente de decidir (Jonathan):** el mockup dice "sigue de baja… hasta que confirme de nuevo". Hoy el clic de
-confirmación **no** levanta una baja (`p_lift = false`, como todo ingreso): para que lo haga habría que tratarlo como un
-alta explícita de la persona (igual que preferencias por token) y cambiar la tabla de "Quién levanta una baja".
+minutos y 3 por día por dirección, **máx. 200 correos de confirmación por hora en total** (`CONFIRM_PER_HOUR`, contado en la
+base: vale entre instancias de Vercel), nunca a una dirección con rebote o queja, y sin los datos legales completos no sale.
+"Lo que va llegando" distingue *pendiente de confirmar* (se guardó; el correo sale si están los datos legales y el remitente), *frenada por el límite* (`throttled`) y *no enviada por rebote
+o queja* (`suppressed` sin contacto); en las dos últimas no se guarda nada. La huella del correo para el límite es un
+**HMAC-SHA-256 con `CRM_HASH_KEY`** (variable del servidor, `.env.example`; mín. 32 caracteres): **sin esa variable la
+confirmación no guarda nada ni sale (falla cerrado, responde 500)**: hay que ponerla en Vercel antes de prender "Pedir
+confirmación por correo". El enlace vence en 7 días; el motor vacía lo que llegó de quien nunca confirmó; las filas nunca se borran (regla 0), solo quedan los hashes.
+El clic **sí** levanta una baja de correo que pidió la persona (`unsubscribe`), nunca una `manual`, un rebote, una queja
+ni un STOP (ver "Quién levanta una baja"). El token del enlace nunca sale en el `Referer` ni en un iframe (la página y la
+ruta mandan `Referrer-Policy: no-referrer` y `X-Frame-Options: DENY`).
 
 ### "Enviar contacto de prueba"
 
@@ -569,6 +589,16 @@ de la ley): no necesita consentimiento ni enlace de baja, pero **sí** debe iden
 dirección). Conviene que el abogado lo confirme junto con el borrador legal. Deja de serlo si lleva contenido promocional: por eso
 estos correos **no pueden llevar ofertas, descuentos, "compra también…" ni nada que invite a comprar otra cosa** (el editor
 lo advierte). En la duda, es marketing.
+
+Cuándo se puede prender (decisión de Jonathan, 25 nov 2026; lo valida `AutomationInput` en el servidor, el editor y un
+CHECK en la base):
+- **Solo con los disparadores** "Pagó su primer mes" (`first_month_paid`), "Entró con código de alumno" (`student_code`),
+  "Llegó por una conexión web" (`web_connection`), "Confirmó su correo" (`email_confirmed`) y "Se le puso una etiqueta"
+  (`tag_added`, el que usan el **acceso a Skool** y la **entrada del evento**). Con otro disparador el interruptor no se
+  puede prender (el editor lo explica).
+- **Solo bloques** título, texto, botón, separador y firma (sin imágenes ni clases de la Academia), también dentro de las
+  ramas de una condición. El editor solo ofrece esos bloques mientras está prendido.
+- Si una automatización guardada no cumple (p. ej. editada a mano), el motor la trata como marketing.
 
 Cómo lo aplica el motor:
 - Al encolar, cada mensaje queda con `transactional = true` si la automatización lo era; al enviar se exige que **siga**

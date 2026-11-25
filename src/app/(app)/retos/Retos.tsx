@@ -109,10 +109,11 @@ export function Retos({ data, m, canEdit }: { data: RetosData; m: RetosMessages;
                   ))}
                 </ol>
               ) : <p className={css.boardSub} style={{ margin: 0 }}>{m.boardEmpty}</p>}
-              {canEdit ? (
+              {/* Apagarlo siempre se puede (también en solo lectura); prenderlo, solo si puede escribir. */}
+              {canEdit || data.board.on ? (
                 <div className={css.boardToggle}>
                   <span>{m.boardToggle}</span>
-                  <Switch checked={data.board.on} label={m.boardToggle} disabled={pending}
+                  <Switch checked={data.board.on} label={m.boardToggle} disabled={pending || (!canEdit && !data.board.on)}
                     onChange={(on) => go(() => setBoard({ memberId: data.board!.memberId, on }))} />
                 </div>
               ) : null}

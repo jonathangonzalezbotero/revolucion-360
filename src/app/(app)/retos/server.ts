@@ -13,11 +13,16 @@ import {
 import { M, type RetosMessages } from "./messages";
 
 /**
- * Tablas y funciones de la migración 20261125000037_retos.sql (challenges, challenge_members, challenge_marks,
- * challenge_join, challenge_checkin, challenge_count, challenge_info, challenge_board). Hasta que se aplique y se
- * regeneren los tipos se consultan sin tipos y cada fila se tipa a mano.
+ * Tablas y funciones de la migración 20261125000037_retos.sql (challenge_members, challenge_marks, challenge_list,
+ * challenge_join, challenge_checkin, challenge_count, challenge_info, challenge_board, challenge_set_board). La tabla
+ * `challenges` completa solo la lee el Dueño: aquí los retos salen de `challenge_list()` (solo columnas públicas). Hasta
+ * que se aplique y se regeneren los tipos se consultan sin tipos y cada fila se tipa a mano.
  */
 export const raw = (s: Session) => s.supabase as unknown as SupabaseClient;
+
+/** Cookie del día en que ya se contó "abrir la app" (fecha local + inicio del id: otra cuenta en el mismo navegador cuenta aparte). */
+export const OPEN_APP_COOKIE = "r360_open";
+export const openAppStamp = (s: Pick<Session, "today" | "userId">) => `${s.today}.${s.userId.slice(0, 8)}`;
 
 /** La migración aún no está aplicada (tabla o función que no existe). */
 export const notReady = (e: { code?: string } | null | undefined) => !!e && ["42P01", "42883", "PGRST202", "PGRST205"].includes(e.code ?? "");
@@ -29,8 +34,6 @@ type ChallengeRow = {
 type MemberRow = { id: string; challenge_id: string; start_on: ISODate; status: "active" | "done" | "left" | "ended"; show_on_board: boolean; joined_at: string };
 type MarkRow = { member_id: string; key: string; day: ISODate; state: "yes" | "no" | "auto" };
 type InfoRow = { challenge_id: string; group_name: string | null; creator: string | null; people: number; for_me: boolean };
-
-const COLS = "id, title, description, image, measure, action, wildcards, days, starts_on, audience, points, badge_name, show_board, status, target";
 
 export type ActiveView = {
   memberId: string; challengeId: string; title: string; who: string; how: string; img: string; progress: string;
@@ -72,7 +75,7 @@ export async function loadRetos(s: Session): Promise<RetosData | null> {
   const m = M[s.locale];
   const db = raw(s);
   const [chRes, memRes, infoRes] = await Promise.all([
-    db.from("challenges").select(COLS).eq("status", "published").order("published_at", { ascending: false }),
+    db.rpc("challenge_list"), // retos publicados para la persona (o en los que estuvo), sin columnas privadas
     db.from("challenge_members").select("id, challenge_id, start_on, status, show_on_board, joined_at").eq("user_id", s.userId).order("joined_at", { ascending: false }),
     db.rpc("challenge_info"),
   ]);
@@ -147,9 +150,12 @@ export async function loadRetos(s: Session): Promise<RetosData | null> {
       prize: prizeText(m, c.points, c.badge_name, s.config.gamification),
     }));
 
-  // Tabla del grupo: el primer reto activo (o terminado) que la tiene encendida.
+  // Tabla del grupo: el primer reto activo (o terminado) que la tiene encendida. Si ya no puede seguir en él (cambió de
+  // grupo, se le venció el acceso o está en solo lectura) pero sigue apareciendo, se muestra igual para que pueda apagarlo
+  // (la base ya no lo lista a otros ni le muestra a nadie: `challenge_board`).
   let board: BoardView | null = null;
-  const withBoard = members.find((x) => (x.status === "active" || x.status === "done") && byId.get(x.challenge_id)?.show_board && stillForMe.has(x.challenge_id));
+  const onBoard = (x: MemberRow) => (x.status === "active" || x.status === "done") && !!byId.get(x.challenge_id)?.show_board;
+  const withBoard = members.find((x) => onBoard(x) && stillForMe.has(x.challenge_id)) ?? members.find((x) => onBoard(x) && x.show_on_board);
   if (withBoard) {
     const c = byId.get(withBoard.challenge_id)!;
     const rows = must(await db.rpc("challenge_board", { p_challenge: c.id })) as { name: string; days: number; me: boolean }[];

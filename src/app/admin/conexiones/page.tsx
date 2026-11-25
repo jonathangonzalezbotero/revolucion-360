@@ -70,8 +70,9 @@ async function load(s: Session, wanted: string | null) {
   const lines: LogLine[] = log.map((l) => ({
     when: activityDate(l.at, now, tz, { today: m.today, yesterday: m.yesterday }, s.locale),
     who: l.count > 1 ? fill(m.many, { n: l.count.toLocaleString("en-AU") }) : l.email ?? m.noEmail,
-    what: (l.count > 1 ? m.rejectedMany[l.result] : undefined) ?? m.results[l.result] ?? l.result,
-    bad: l.result.startsWith("rejected_") || l.result === "no_consent" || l.result === "suppressed",
+    // Un "de baja" sin contacto es una confirmación que no salió (rebote o queja): no se guardó nada.
+    what: (l.count > 1 ? m.rejectedMany[l.result] : undefined) ?? (l.result === "suppressed" && !l.email ? m.results.suppressed_confirm : undefined) ?? m.results[l.result] ?? l.result,
+    bad: l.result.startsWith("rejected_") || l.result === "no_consent" || l.result === "suppressed" || l.result === "throttled",
   }));
   const base = publicAppUrl();
   return {

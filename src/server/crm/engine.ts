@@ -3,7 +3,7 @@ import {
   advance, AudienceSchema, automationSourceKey, BlocksSchema, campaignSendAt, campaignSourceKey, campaignStartsAt, chargeRef, chargeWindow, compile,
   enrollmentRef, exitFor, ExitRulesSchema, inactiveRef, inactiveWindow, isUpcomingCharge, legalReady, matchesTrigger, mayMarket, renderMarketingEmail,
   maySms, parseTestNumbers, renderSms, resolveTz, retryAt, smsSendAt, smsTz, sourceBlocked, stageFor, StepsSchema, TriggerSchema, unsubscribeHeaders, unsubscribeUrl, TRIGGER_KINDS,
-  isConnectionTestEmail, mayTransactional,
+  isConnectionTestEmail, mayTransactional, transactionalProblem,
   type ExitRules, type Facts, type LeafStepT, type Program, type Stage, type Step, type Trigger,
 } from "@/lib/crm";
 import { isProduction, sendEmailDetailed } from "@/lib/email/send";
@@ -25,7 +25,7 @@ export type Auto = { id: string; name: string; status: AutomationRow["status"]; 
 export function parseAutomation(r: AutomationRow): Auto | null {
   const t = TriggerSchema.safeParse(r.trigger), s = StepsSchema.safeParse(r.steps), x = ExitRulesSchema.safeParse(r.exit_rules ?? {});
   if (!t.success || !s.success || !x.success) return null;
-  return { id: r.id, name: r.name, status: r.status, trigger: t.data, steps: s.data, program: compile(s.data), exit: x.data, transactional: r.transactional === true };
+  return { id: r.id, name: r.name, status: r.status, trigger: t.data, steps: s.data, program: compile(s.data), exit: x.data, transactional: r.transactional === true && !transactionalProblem(t.data, s.data) };
 }
 
 export type RunReport = Record<string, number | string | boolean | undefined>;
@@ -66,7 +66,10 @@ export async function runCrm(db: Db, opts: { now?: Date; budgetMs?: number } = {
   await stage("email", () => drainEmail(db, left));
   await stage("sms", () => drainSms(db, left));
   await stage("counts", async () => { await refreshCampaigns(db); return {}; });
-  await stage("confirmations", async () => ({ confirmationsCleared: await clearExpiredConfirmations(db) }));
+  await stage("confirmations", async () => {
+    const c = await clearExpiredConfirmations(db);
+    return { confirmationsCleared: c.cleared, confirmationsDeleted: c.deleted };
+  });
   report.ms = Date.now() - started;
   return report;
 }
@@ -383,9 +386,10 @@ async function contentFor(db: Db, msgs: MessageRow[]) {
   if (aids.length) {
     for (const r of must(await db.from("crm_automations").select("*").in("id", aids)) as AutomationRow[]) {
       automationStatus.set(r.id, r.status);
-      if (r.transactional === true) transactionalAutos.add(r.id);
       const a = parseAutomation(r);
       if (!a) continue;
+      // Transaccional solo si además cumple las reglas (disparador y bloques permitidos); si no, sale como marketing.
+      if (a.transactional) transactionalAutos.add(r.id);
       for (const s of a.steps) for (const leaf of s.type === "condition" ? [...s.yes, ...s.no] : [s]) steps.set(`${a.id}:${leaf.id}`, leaf);
     }
   }

@@ -1,11 +1,12 @@
 "use server";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { fill } from "@/i18n";
 import { fail, ok, run, type Result } from "@/server/action";
 import { must } from "@/server/data";
 import { award } from "@/server/rewards";
 import { M } from "./messages";
-import { countChallenge, finishRewards, raw } from "./server";
+import { countChallenge, finishRewards, OPEN_APP_COOKIE, openAppStamp, raw } from "./server";
 
 const PATHS = ["/retos", "/metas"];
 const Id = z.string().uuid();
@@ -18,6 +19,7 @@ function errorText(locale: "es" | "en", message: string | undefined, generic: st
   if (code.includes("already_done")) return m.errDone;
   if (code.includes("not_available") || code.includes("not_eligible") || code.includes("not_active")) return m.errGone;
   if (code.includes("not_started")) return m.errNotStarted;
+  if (code.includes("day_passed")) return m.errDayPassed;
   return generic;
 }
 
@@ -26,7 +28,8 @@ export async function joinChallenge(input: unknown): Promise<Result<{ memberId: 
   return run<{ memberId: string; text: string }>({ feature: "metas", revalidate: PATHS }, async (s) => {
     const p = z.object({ challengeId: Id }).safeParse(input);
     if (!p.success) return fail(s.t.errors.generic);
-    const ch = must(await raw(s).from("challenges").select("id, title").eq("id", p.data.challengeId).maybeSingle()) as { id: string; title: string } | null;
+    // Solo columnas públicas (la tabla completa solo la lee el Dueño).
+    const ch = must(await raw(s).rpc("challenge_list").select("id, title").eq("id", p.data.challengeId).maybeSingle()) as { id: string; title: string } | null;
     if (!ch) return fail(M[s.locale].errGone);
     const r = await raw(s).rpc("challenge_join", { p_challenge: ch.id });
     if (r.error) return fail(errorText(s.locale, r.error.message, s.t.errors.generic));
@@ -68,12 +71,30 @@ export async function checkIn(input: unknown): Promise<Result<{ text: string }>>
   });
 }
 
-/** "Aparecer en la tabla del grupo" (solo la persona lo decide; por defecto no aparece). */
+/**
+ * "Aparecer en la tabla del grupo" (solo la persona lo decide; por defecto no aparece). Apagarlo funciona siempre, también
+ * en solo lectura (es retirar sus datos de la vista de otros); prenderlo exige poder escribir. La base lo impone
+ * (`challenge_set_board`: solo la fila propia y solo esa columna).
+ */
 export async function setBoard(input: unknown): Promise<Result<{ text: string }>> {
-  return run<{ text: string }>({ feature: "metas", revalidate: ["/retos"] }, async (s) => {
+  return run<{ text: string }>({ write: false, feature: "metas", revalidate: ["/retos"] }, async (s) => {
     const p = z.object({ memberId: Id, on: z.boolean() }).safeParse(input);
     if (!p.success) return fail(s.t.errors.generic);
-    must(await raw(s).from("challenge_members").update({ show_on_board: p.data.on }).eq("id", p.data.memberId).eq("user_id", s.userId).select("id"));
+    if (p.data.on && !s.canEdit) return fail(s.t.errors.readOnly);
+    const r = await raw(s).rpc("challenge_set_board", { p_member: p.data.memberId, p_on: p.data.on });
+    if (r.error) return fail(s.t.errors.generic);
     return ok({ text: p.data.on ? M[s.locale].tBoardOn : M[s.locale].tBoardOff });
+  });
+}
+
+/**
+ * Retos que miden "abrir la app": lo llama `OpenAppPing` (en el layout) una vez al día por navegador. Deja la cookie del
+ * día para no volver a llamar en cada pantalla (la base igual lo cuenta una sola vez al día). Nunca lanza ni avisa.
+ */
+export async function pingOpenApp(): Promise<Result<undefined>> {
+  return run<undefined>({ feature: "metas" }, async (s) => {
+    await countChallenge(s, "open_app");
+    (await cookies()).set(OPEN_APP_COOKIE, openAppStamp(s), { path: "/", maxAge: 60 * 60 * 36, sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production" });
+    return ok(undefined);
   });
 }

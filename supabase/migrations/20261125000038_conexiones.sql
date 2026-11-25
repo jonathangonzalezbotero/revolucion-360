@@ -35,7 +35,8 @@ create table if not exists public.crm_connections (
 );
 
 -- ───────────────────────── Lo que va llegando ─────────────────────────
--- Un renglón por envío aceptado (creado, actualizado, sin consentimiento, pendiente de confirmar, confirmado, prueba).
+-- Un renglón por envío aceptado (creado, actualizado, sin consentimiento, de baja, pendiente de confirmar, confirmación
+-- frenada por el límite de frecuencia, confirmado, prueba).
 -- Los rechazos (bot, sin correo, origen no permitido, pausada…) se agrupan por hora en un contador (`bucket` =
 -- 'YYYY-MM-DDTHH'): una ráfaga de bots no llena la tabla. Sin correos en claro: el contacto se lee por su id (y si se
 -- borra el contacto, queda null).
@@ -45,7 +46,7 @@ create table if not exists public.crm_connection_log (
   at timestamptz not null default now(),
   via text not null check (via in ('browser', 'server', 'test', 'confirm')),
   result text not null check (result in (
-    'created', 'updated', 'no_consent', 'suppressed', 'pending', 'confirmed', 'test',
+    'created', 'updated', 'no_consent', 'suppressed', 'pending', 'throttled', 'confirmed', 'test',
     'rejected_turnstile', 'rejected_origin', 'rejected_email', 'rejected_paused', 'rejected_invalid', 'rejected_key', 'rejected_rate'
   )),
   contact_id uuid references public.crm_contacts(id) on delete set null,
@@ -58,8 +59,10 @@ create index if not exists crm_connection_log_contact on public.crm_connection_l
 
 -- ───────────────────────── Confirmación por correo (pendientes) ─────────────────────────
 -- Envíos de conexiones con "Pedir confirmación por correo": guardan lo que llegó (`payload`) hasta que la persona hace
--- clic en el correo de confirmación (transaccional). Se guarda el SHA-256 del token, nunca el token. Al confirmar o
--- vencer (7 días), el motor vacía `payload` (no quedan datos personales de quien nunca confirmó).
+-- clic en el correo de confirmación (transaccional). Se guarda el SHA-256 del token, nunca el token, y el HMAC-SHA-256 del
+-- correo con la clave del servidor CRM_HASH_KEY (sin la clave no se puede probar un correo contra la tabla). Al confirmar
+-- o vencer (7 días), el motor vacía `payload` (no quedan datos personales de quien nunca confirmó), y a los 30 días borra
+-- la fila (desde la app: src/server/crm/connections.ts › clearExpiredConfirmations; esta migración no borra nada).
 create table if not exists public.crm_pending_confirmations (
   id uuid primary key default gen_random_uuid(),
   connection_id uuid not null references public.crm_connections(id) on delete cascade,
@@ -83,6 +86,32 @@ alter table public.crm_contacts add column if not exists fields jsonb not null d
 alter table public.crm_automations add column if not exists transactional boolean not null default false;
 -- Cada mensaje queda registrado como transaccional o de marketing (se fija al encolar).
 alter table public.crm_messages add column if not exists transactional boolean not null default false;
+
+-- Transaccional solo con disparadores de una compra, un acceso o una confirmación que pidió la persona (decisión de
+-- Jonathan, 25 nov 2026; `tag_added` es el que usan el acceso a Skool y la entrada del evento). Lo valida también el
+-- panel (src/server/crm/admin.ts › AutomationInput). Un mensaje transaccional siempre sale de una automatización.
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'crm_automations_transactional_trigger') then
+    alter table public.crm_automations add constraint crm_automations_transactional_trigger
+      check (not transactional or trigger->>'kind' in ('first_month_paid', 'student_code', 'web_connection', 'email_confirmed', 'tag_added'));
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'crm_messages_transactional_source') then
+    alter table public.crm_messages add constraint crm_messages_transactional_source
+      check (not transactional or (automation_id is not null and campaign_id is null));
+  end if;
+end $$;
+
+-- La parte final de la dirección de una conexión nunca cambia (rompería los formularios ya pegados en las páginas).
+create or replace function public.crm_connection_slug_fixed() returns trigger
+language plpgsql set search_path = public as $$
+begin
+  if new.slug is distinct from old.slug then raise exception 'slug_fixed'; end if;
+  return new;
+end $$;
+drop trigger if exists crm_connection_slug_fixed on public.crm_connections;
+create trigger crm_connection_slug_fixed before update on public.crm_connections
+  for each row execute function public.crm_connection_slug_fixed();
 
 -- ───────────────────────── Permisos: solo el Dueño ─────────────────────────
 alter table public.crm_connections enable row level security;
@@ -125,5 +154,6 @@ $$;
 
 revoke execute on function public.crm_connection_reject(uuid, text, text) from public, anon, authenticated;
 grant execute on function public.crm_connection_reject(uuid, text, text) to service_role;
+revoke execute on function public.crm_connection_slug_fixed() from public, anon, authenticated;   -- solo el disparador
 revoke execute on function public.crm_connection_stats() from public, anon;
 grant execute on function public.crm_connection_stats() to authenticated, service_role;

@@ -14,8 +14,10 @@ export type LessonOption = { href: string; title: string; course: string };
  * Bloques de contenido de un correo ("Contenido" del mockup): cada bloque se ve como su resumen; al tocarlo se edita.
  * Lo usan Campañas y los pasos de correo de Automatizaciones.
  */
-export function BlocksEditor({ id, blocks, onChange, m, lessons, appUrl, disabled }: {
+export function BlocksEditor({ id, blocks, onChange, m, lessons, appUrl, disabled, only }: {
   id: string; blocks: Block[]; onChange: (b: Block[]) => void; m: BlocksText; lessons: LessonOption[]; appUrl: string; disabled?: boolean;
+  /** Solo estos tipos de bloque se pueden agregar (correo transaccional: sin imágenes ni clases). */
+  only?: readonly Block["type"][];
 }) {
   const [open, setOpen] = useState<number | null>(null);
   const set = (i: number, b: Block) => onChange(blocks.map((x, j) => (j === i ? b : x)));
@@ -24,7 +26,8 @@ export function BlocksEditor({ id, blocks, onChange, m, lessons, appUrl, disable
     onChange(next);
     setOpen(kind === "divider" ? null : next.length - 1);
   };
-  const ADD: [NewBlockKind, string][] = [["text", m.addText], ["image", m.addImage], ["button", m.addButton], ["lesson", m.addLesson], ["divider", m.addDivider]];
+  const ADD = ([["text", m.addText], ["image", m.addImage], ["button", m.addButton], ["lesson", m.addLesson], ["divider", m.addDivider]] as [NewBlockKind, string][])
+    .filter(([k]) => !only || only.includes(k));
   const name = (b: Block) => m[b.type];
 
   return (

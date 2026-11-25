@@ -1,5 +1,7 @@
 // Retos: cálculos puros (src/app/(app)/retos/lib.ts) y los disparadores del CRM. Las mismas reglas las impone la base
 // (supabase/migrations/20261125000037_retos.sql). No toca la base.
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   adminStatus, ChallengeInput, challengeProblem, dayNumber, dotsFor, goalShown, isDaily, joinable, lastDay, normalizeChallenge,
@@ -9,6 +11,7 @@ import { CHALLENGE_IDLE_DAYS, challengeIdleRef, matchesTrigger } from "@/lib/crm
 import { TriggerSchema, TRIGGER_KINDS } from "@/lib/crm/schema";
 import { TRIGGER_LABELS, triggerLabel } from "@/lib/crm/labels";
 import { ADMIN_SECTIONS, ROLE_SECTIONS, canUse, sectionOf, RETOS_PATH } from "@/app/admin/actividad/roles";
+import { findDangers } from "../scripts/check-migrations";
 
 const base = {
   id: null, title: "Tu fondo de emergencia en 30 días", description: "", image: "meta-emergencia", measure: "checkin", action: null, wildcards: 1,
@@ -161,5 +164,85 @@ describe("panel: Retos es solo del Dueño", () => {
     expect(ROLE_SECTIONS.content).not.toContain("retos");
     expect(ROLE_SECTIONS.support).not.toContain("retos");
     expect(sectionOf(RETOS_PATH)).toBe("retos");
+  });
+});
+
+describe("migración 037: seguridad de los retos (revisión del 25 nov 2026)", () => {
+  const raw = readFileSync(path.join(import.meta.dirname, "..", "supabase", "migrations", "20261125000037_retos.sql"), "utf8");
+  const sql = raw.replace(/--[^\n]*/g, "");
+  const fn = (name: string) => new RegExp(`create or replace function public\\.${name}\\([\\s\\S]*?\\n(end )?\\$\\$;`).exec(sql)?.[0] ?? "";
+  it("pasa la revisión de migraciones (no borra, no vacía, no renombra)", () => {
+    expect(findDangers(raw)).toEqual([]);
+    // (y las funciones que revisan las pruebas de abajo se encuentran: nada pasa en vacío)
+    for (const n of ["award_points", "award_badge", "challenge_count", "challenge_checkin", "challenge_local_today", "challenge_board", "challenge_set_board",
+      "challenge_list", "challenge_info", "protect_challenge_member", "protect_challenge_rules"]) expect(fn(n).length, n).toBeGreaterThan(80);
+    expect(fn("challenge_list")).toContain("c.title");
+  });
+  it("premio e insignia solo con el intento terminado (status = 'done'), nunca solo por contar marcas", () => {
+    const ap = fn("award_points");
+    expect(ap).toMatch(/where m\.user_id = uid and m\.id::text = p_ref and m\.status = 'done'\), 0\)/); // el monto del premio
+    expect(ap).toMatch(/m\.id::text = p_ref and m\.status = 'done' and public\.challenge_progress\(m\.id\) >= c\.target/); // la condición
+    expect(fn("award_badge")).toMatch(/m\.status = 'done' and public\.challenge_progress\(m\.id\) >= c\.target/);
+  });
+  it("el punto del día tiene tope de 5 aunque cambien la configuración", () => {
+    expect(fn("award_points")).toMatch(/elsif p_kind = 'challenge_day' then\s+pts := least\(pts, 5\);/);
+  });
+  it("el usuario no escribe marcas ni intentos por la API: solo lee lo suyo y sale", () => {
+    for (const t of ["challenge_marks", "challenge_members"]) {
+      expect(sql).not.toMatch(new RegExp(`create policy own_(insert|delete) on public\\.${t}`));
+      expect(sql).toMatch(new RegExp(`drop policy if exists own_insert on public\\.${t};`));
+      expect(sql).toMatch(new RegExp(`drop policy if exists own_delete on public\\.${t};`));
+    }
+    expect(sql).not.toMatch(/create policy own_update on public\.challenge_marks/);
+    expect(sql).toMatch(/create policy own_update on public\.challenge_members/); // salir, limitado por protect_challenge_member
+    expect(fn("protect_challenge_member")).toMatch(/if tg_op = 'INSERT' then raise exception 'forbidden'/);
+  });
+  it("cada create policy lleva antes su drop policy if exists", () => {
+    const creates = [...sql.matchAll(/create policy (\w+) on (public\.\w+)/g)];
+    expect(creates.length).toBeGreaterThan(4);
+    for (const [, name, table] of creates) expect(sql).toContain(`drop policy if exists ${name} on ${table};`);
+  });
+  it("cierres: solo meses ya terminados (nunca el mes en curso ni uno futuro)", () => {
+    expect(fn("challenge_count")).toMatch(/and make_date\(mc\.year, mc\.month, 1\) < date_trunc\('month', today\)::date\)/);
+  });
+  it("zona horaria: hoy acotado a ±1 día de la fecha UTC y nunca antes del último día marcado", () => {
+    expect(fn("challenge_local_today")).toMatch(/return least\(greatest\(d, utc - 1\), utc \+ 1\);/);
+    expect(fn("challenge_checkin")).toMatch(/if today < coalesce\(public\.challenge_last_mark\(p_member\), today\) then raise exception 'day_passed'/);
+    expect(fn("challenge_count")).toMatch(/if today < coalesce\(public\.challenge_last_mark\(r\.id\), today\) then continue;/);
+  });
+  it("clases: máximo 2 por día en cada intento", () => {
+    expect(fn("challenge_count")).toMatch(/p_action = 'lesson'[\s\S]*?k\.key like 'lesson:%' and k\.day = today\) >= 2 then\s+continue;/);
+  });
+  it("tabla del grupo: solo quien aún es del reto; apagar 'aparecer' funciona siempre, prender exige poder escribir", () => {
+    expect(fn("challenge_board")).toMatch(/and public\.challenge_can_go\(p_challenge, m\.user_id\)/);
+    const sb = fn("challenge_set_board");
+    expect(sb).toMatch(/security definer/);
+    expect(sb).toMatch(/if p_on and not public\.can_write\(\) then raise exception 'forbidden'/);
+    expect(sb).toMatch(/update public\.challenge_members set show_on_board = p_on, updated_at = now\(\)\s+where id = p_member and user_id = uid;/);
+  });
+  it("el usuario no lee la tabla challenges: usa challenge_list() sin columnas privadas", () => {
+    expect(sql).toMatch(/create policy owner_read on public\.challenges for select to authenticated using \(\(select public\.is_admin_owner\(\)\)\)/);
+    expect(sql).not.toMatch(/create policy read_live/);
+    const list = fn("challenge_list");
+    for (const col of ["created_by", "invite_code", "group_id", "reminder_automation_id", "done_automation_id", "legacy_key"]) expect(list).not.toContain(col);
+  });
+  it("challenge_info: personas solo si quien pregunta puede seguir; la zona de cada quien sale de un join", () => {
+    const info = fn("challenge_info");
+    expect(info).toMatch(/case when x\.go then coalesce\(l\.n, 0\) else 0 end/);
+    expect(info).toMatch(/left join public\.profiles p on p\.id = m\.user_id/);
+    expect(info).not.toMatch(/challenge_today_of\(m\.user_id\)/);
+  });
+  it("las reglas de un reto con gente adentro no cambian (disparador)", () => {
+    expect(fn("protect_challenge_rules")).toMatch(/\(new\.measure, new\.action, new\.days, new\.wildcards, new\.audience\) is distinct from/);
+    expect(sql).toMatch(/create trigger protect_challenge_rules before update on public\.challenges/);
+  });
+  it("cada función nueva tiene su revoke y las de la app se dan a authenticated", () => {
+    const created = [...sql.matchAll(/create or replace function public\.(\w+)\(/g)].map(([, n]) => n)
+      .filter((n) => !["award_points", "award_badge", "protect_challenge_member"].includes(n)); // ya existían o solo son disparador
+    const revoked = new Set([...sql.matchAll(/revoke execute on function public\.(\w+)\(/g)].map(([, n]) => n));
+    expect(created.filter((n) => !revoked.has(n))).toEqual([]);
+    for (const n of ["challenge_set_board(uuid, boolean)", "challenge_list()", "challenge_join(uuid)", "challenge_checkin(uuid, boolean)", "challenge_count(text, text)"]) {
+      expect(sql).toContain(`grant execute on function public.${n} to authenticated;`);
+    }
   });
 });

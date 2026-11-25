@@ -447,6 +447,9 @@ end $$;
 --   · Otra supresión activa (baja, a mano) o una baja propia del contacto: solo se levanta con p_lift = true, que pasan
 --     únicamente las altas explícitas de la persona: Perfil, preferencias por token, START de Twilio y el registro
 --     confirmado. Ingreso de leads, importar CSV y el panel pasan false → 'suppressed' sin marcar nada.
+--   · El clic de confirmación de una Conexión web (p_source = 'confirma:<slug>', con p_lift = true) solo levanta una baja
+--     que pidió la propia persona (supresión 'unsubscribe' o baja propia del contacto sin supresión); nunca una baja
+--     'manual' (la puso el Dueño), ni rebote, queja o STOP → 'suppressed'.
 -- Baja (p_on = false): apaga, deja la supresión (sin pisar un rebote, una queja ni un STOP activo) y el evento.
 -- p_source: 'registro' | 'perfil' | 'preferencias' | 'baja_un_clic' | 'sms_stop' | 'sms_start' | 'queja' | 'form:<origen>' | 'import:…' | 'admin'
 create or replace function public.crm_apply_consent(p_contact uuid, p_channel text, p_on boolean, p_source text,
@@ -458,6 +461,7 @@ declare
   v_reason text;
   v_unsub timestamptz;
   v_consent boolean;
+  v_confirm boolean := coalesce(p_source like 'confirma:%', false);   -- clic de confirmación: solo levanta bajas propias
 begin
   if p_channel not in ('email', 'sms') then raise exception 'channel'; end if;
   select id, email, phone, email_consent, sms_consent, email_unsubscribed_at, sms_unsubscribed_at into c
@@ -469,7 +473,8 @@ begin
   if p_on then
     if p_channel = 'sms' and c.phone is null then raise exception 'phone'; end if;
     select reason into v_reason from public.crm_suppressions where channel = p_channel and value = v_value and lifted_at is null;
-    if (v_reason is not null and (v_reason in ('bounce', 'complaint') or (v_reason = 'stop' and p_source <> 'sms_start') or not p_lift))
+    if (v_reason is not null and (v_reason in ('bounce', 'complaint') or (v_reason = 'stop' and p_source <> 'sms_start') or not p_lift
+                                  or (v_confirm and v_reason <> 'unsubscribe')))
        or (not p_lift and not v_consent and v_unsub is not null) then
       perform public.crm_log_consent(p_contact, p_channel, v_value, 'on', false, p_source, p_evidence);
       return 'suppressed';
@@ -484,7 +489,7 @@ begin
     if p_lift then
       update public.crm_suppressions set lifted_at = now()
        where channel = p_channel and value = v_value and lifted_at is null
-         and (reason in ('unsubscribe', 'manual') or (reason = 'stop' and p_source = 'sms_start'));
+         and (reason = 'unsubscribe' or (reason = 'manual' and not v_confirm) or (reason = 'stop' and p_source = 'sms_start'));
     end if;
     perform public.crm_log_consent(p_contact, p_channel, v_value, 'on', true, p_source, p_evidence);
     if not v_consent then

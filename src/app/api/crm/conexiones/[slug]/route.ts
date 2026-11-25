@@ -17,10 +17,13 @@ export const dynamic = "force-dynamic";
  *    `tags`, `removeTags`, `fields`, `mode` ("upsert" | "fill"), `consent` y `evidence`. Siempre JSON.
  * Una clave equivocada es 401 (nunca se cae a la forma del navegador).
  *
- * Límites en memoria por instancia de Vercel: 30 envíos por minuto por IP desde el navegador; 20 intentos con clave
- * equivocada por minuto por IP; 600 envíos por minuto por conexión con la clave. Cuerpo de máx. 8 KB.
+ * Límites en memoria por instancia de Vercel: 30 envíos por minuto por IP desde el navegador y 60 por minuto por
+ * conexión desde el navegador (todas las IPs juntas, contados después de Turnstile: frena una red de bots); 20 intentos con clave equivocada por minuto
+ * por IP; 600 envíos por minuto por conexión con la clave. Los correos de confirmación tienen además un tope global por
+ * hora en la base (CONFIRM_PER_HOUR). Cuerpo de máx. 8 KB.
  */
 const BROWSER_PER_IP = { limit: 30, windowMs: 60_000 };
+const BROWSER_PER_CONNECTION = { limit: 60, windowMs: 60_000 };
 const KEY_FAILS_PER_IP = { limit: 20, windowMs: 60_000 };
 const PER_CONNECTION = { limit: 600, windowMs: 60_000 };
 const hits: RateStore = new Map();
@@ -105,7 +108,10 @@ export async function POST(request: Request, { params }: Params) {
         await logReject(db, conn.id, "server", "rejected_key");
         return reply(401, "unauthorized");
       }
-      if (!rateLimit(hits, `conn:${conn.id}`, now, PER_CONNECTION.limit, PER_CONNECTION.windowMs)) return reply(429, "rate");
+      if (!rateLimit(hits, `conn:${conn.id}`, now, PER_CONNECTION.limit, PER_CONNECTION.windowMs)) {
+        await logReject(db, conn.id, "server", "rejected_rate");
+        return reply(429, "rate");
+      }
     } else {
       const o = requestOriginAllowed(h.get("origin"), h.get("referer"), conn.origins);
       if (!o.ok) {
@@ -128,6 +134,11 @@ export async function POST(request: Request, { params }: Params) {
       if (!turnstileOk(await verifyTurnstile(token, ip), conn.origins)) {
         await logReject(db, conn.id, "browser", "rejected_turnstile");
         return reply(403, "antibot");
+      }
+      // Tope por conexión (todas las IPs), contado solo con un comprobante válido: basura con un Origin falso no lo gasta.
+      if (!rateLimit(hits, `bconn:${conn.id}`, now, BROWSER_PER_CONNECTION.limit, BROWSER_PER_CONNECTION.windowMs)) {
+        await logReject(db, conn.id, "browser", "rejected_rate");
+        return reply(429, "rate");
       }
     }
     const parsed = parseSubmission(body, trusted);

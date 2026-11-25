@@ -9,19 +9,44 @@ import { isValidTz } from "./time";
 // ───────── Forma de una conexión (panel) ─────────
 /** "revoluciondeldinero.com", "webinar.revoluciondeldinero.com" o "*.revoluciondeldinero.com" (sus subdominios). */
 export const HOST_RE = /^(\*\.)?([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+/**
+ * Sufijos públicos: dominios donde CUALQUIERA puede tener un subdominio (hostings gratis, segundos niveles de país). Un
+ * comodín sobre ellos ("*.vercel.app", "*.co.uk") dejaría enviar desde la página de cualquier persona. Lista corta de los
+ * comunes (no es la Public Suffix List completa) + la regla de segundo nivel de país ("co.uk", "com.au", "gov.co"…).
+ */
+export const PUBLIC_SUFFIXES = new Set([
+  "vercel.app", "now.sh", "netlify.app", "netlify.com", "github.io", "gitlab.io", "pages.dev", "workers.dev", "herokuapp.com", "web.app",
+  "firebaseapp.com", "appspot.com", "azurewebsites.net", "azurestaticapps.net", "cloudfront.net", "amazonaws.com", "amplifyapp.com",
+  "onrender.com", "fly.dev", "railway.app", "glitch.me", "repl.co", "replit.app", "replit.dev", "blogspot.com", "wordpress.com",
+  "wixsite.com", "squarespace.com", "myshopify.com", "webflow.io", "framer.app", "framer.website", "carrd.co", "ngrok.io",
+  "ngrok-free.app", "ngrok.app", "trycloudflare.com", "surge.sh", "neocities.org", "systeme.io", "hubspotpagebuilder.com",
+  "godaddysites.com", "weebly.com", "jimdosite.com", "site123.me", "strikingly.com", "notion.site", "super.site", "translate.goog",
+]);
+const SECOND_LEVEL = new Set(["co", "com", "net", "org", "gov", "gob", "edu", "ac", "mil", "nom", "ltd", "plc", "or", "ne", "go", "id", "asn", "info"]);
+/** ¿Este dominio es un sufijo público (no se le puede poner "*.")? */
+export function isPublicSuffix(host: string): boolean {
+  const h = host.trim().toLowerCase().replace(/\.$/, "");
+  if (PUBLIC_SUFFIXES.has(h)) return true;
+  const parts = h.split(".");
+  return parts.length === 1 || (parts.length === 2 && parts[1].length === 2 && SECOND_LEVEL.has(parts[0])); // "co.uk", "com.au", "gov.co"
+}
+/** ¿Sirve como página permitida? Forma válida y, si es comodín, nunca sobre un sufijo público. */
+export const originOk = (host: string) => HOST_RE.test(host) && host.length <= 253 && !(host.startsWith("*.") && isPublicSuffix(host.slice(2)));
+
 /** Lo que escribe el Dueño en "+ Página" → nombre de dominio limpio ("https://www.x.com/bootcamp" → "www.x.com"). null si no sirve. */
 export function normalizeHost(input: string): string | null {
   let v = input.trim().toLowerCase();
   if (!v) return null;
   v = v.replace(/^[a-z][a-z0-9+.-]*:\/\//, "").replace(/[/?#].*$/, "").replace(/:\d+$/, "").replace(/\.$/, "");
-  return HOST_RE.test(v) && v.length <= 253 ? v : null;
+  return originOk(v) ? v : null;
 }
 
 export const ConnectionInput = z.object({
   id: z.string().uuid().optional(),
   name: z.string().trim().min(1).max(80),
   tagIds: z.array(z.string().uuid()).max(10).default([]),
-  origins: z.array(z.string().trim().toLowerCase().regex(HOST_RE)).max(20).default([]),
+  // Nunca un comodín sobre un sufijo público ("*.vercel.app", "*.co.uk"): dejaría enviar desde la página de cualquiera.
+  origins: z.array(z.string().trim().toLowerCase().refine(originOk, "origin")).max(20).default([]),
   thanksUrl: z.string().trim().max(500).nullable().default(null),
   doubleOptIn: z.boolean().default(false),
 });
@@ -95,11 +120,41 @@ const ALIASES: Record<string, string> = {
 };
 /** Nunca se guardan como campo extra (controles del formulario, anti-bots, campos estructurados del servidor). */
 const RESERVED = new Set([TURNSTILE_FIELD, "g-recaptcha-response", "h-captcha-response", "tags", "removetags", "remove_tags", "fields", "mode", "consent", "evidence", "submit", "_next", "redirect"]);
-/** Claves de dinero: el CRM nunca guarda montos (CLAUDE.md regla 4). */
-const MONEY_WORDS = new Set(["amount", "monto", "montos", "importe", "precio", "price", "total", "pago", "pagos", "payment", "paid", "cost", "costo", "salario", "salary",
-  "ingreso", "ingresos", "income", "deuda", "deudas", "debt", "saldo", "balance", "valor", "value", "cents", "centavos", "dinero", "money", "tarifa", "fee", "fees", "cuota", "cuotas", "aud", "usd"]);
-/** ¿La clave habla de dinero? Por palabras separadas por "_" ("precio_entrada" sí; "feedback" o "coffee" no). */
-const isMoneyKey = (key: string) => key.split("_").some((w) => MONEY_WORDS.has(w));
+/**
+ * Palabras de dinero (es/en): el CRM nunca guarda montos (CLAUDE.md regla 4). Se buscan como SUBCADENA de la clave ya
+ * compactada (sin separadores, sin acentos, en minúsculas): "precio_entrada", "precioEntrada", "precioentrada",
+ * "montoTotal" y "ticketPrice" se rechazan. Costo aceptado: algunas claves inocentes también caen ("feedback" y "coffee"
+ * contienen "fee"; "audiencia" contiene "aud"): mejor perder un campo que guardar un monto.
+ */
+export const MONEY_WORDS = [
+  "amount", "monto", "importe", "precio", "price", "total", "pago", "payment", "paid", "pay", "cost", "salario", "salary", "sueldo",
+  "ingreso", "income", "deuda", "debt", "saldo", "balance", "valor", "value", "cents", "centavo", "dinero", "money",
+  "tarifa", "fee", "cuota", "presupuesto", "budget", "ahorro", "saving", "dolar", "dollar", "euro", "peso", "usd", "aud", "mxn",
+  "abono", "deposito", "deposit", "invest", "inversion", "cash", "efectivo",
+] as const;
+const compactKey = (key: string) => key.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+/** ¿La clave habla de dinero? (subcadena, también camelCase y sin separadores). */
+export const isMoneyKey = (key: string) => {
+  const k = compactKey(key);
+  return MONEY_WORDS.some((w) => k.includes(w));
+};
+/** Claves de teléfono o código postal: ahí un número largo es un teléfono o un código, no un monto. */
+const NUMERIC_OK_KEY = /(^|_)(phone|telefono|tel|celular|cel|movil|mobile|whatsapp|postal|postcode|zip)/;
+/**
+ * ¿El valor tiene forma de monto? Un número puro de 3 o más cifras ("150", "-2500", "1500.50"), con separadores de miles
+ * ("1.500", "1,500,000", "2 500", "1'500"), o cualquier cifra con símbolo o palabra de moneda ("$10", "20 AUD", "USD 5",
+ * "10 dólares", "€3", "5k pesos"). Un teléfono con "+" o con espacios por bloques ("+61 412 345 678") no es un monto.
+ */
+export function looksLikeMoney(value: string): boolean {
+  const v = value.trim();
+  if (!v) return false;
+  if (/[$€£¥]/.test(v)) return true;
+  const plain = v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (/\d/.test(plain) && /(^|[^a-z])(usd|aud|eur|cop|mxn|ars|clp|pen|nzd|cad|gbp|dolar(es)?|dollars?|euros?|pesos?|bucks)([^a-z]|$)/.test(plain)) return true;
+  if (/^-?\d{3,}([.,]\d{1,2})?$/.test(v)) return true; // 150 · 2500 · 1500.50
+  if (/^-?\d{1,3}([.,' \u00a0]\d{3})+([.,]\d{1,2})?$/.test(v)) return true; // 1.500 · 1,500,000 · 2 500 · 1'500
+  return false;
+}
 /** Tope del total de campos extra (la base acepta hasta 4000 caracteres en crm_contacts.fields). */
 export const FIELDS_MAX_CHARS = 3500;
 
@@ -110,7 +165,8 @@ export function cleanFields(input: Record<string, unknown>): { fields: Record<st
   for (const [k, v] of Object.entries(input)) {
     const key = formKey(k).replace(/-/g, "_").slice(0, 40);
     const val = str(v, 200);
-    if (!key || !/^[a-z][a-z0-9_]*$/.test(key) || isMoneyKey(key) || /^[$€£]|\d[.,]\d{2}\s*(aud|usd|cop|eur|mxn)?$/i.test(val)) { dropped++; continue; }
+    const moneyValue = looksLikeMoney(val) && !(NUMERIC_OK_KEY.test(key) && /^[+\d\s().-]+$/.test(val));
+    if (!key || !/^[a-z][a-z0-9_]*$/.test(key) || isMoneyKey(k) || isMoneyKey(key) || moneyValue) { dropped++; continue; }
     if (!val) continue;
     if (Object.keys(fields).length >= 20 || JSON.stringify({ ...fields, [key]: val }).length > FIELDS_MAX_CHARS) { dropped++; continue; }
     fields[key] = val;
@@ -144,7 +200,7 @@ export function parseSubmission(body: Record<string, unknown>, trusted: boolean)
   const extra: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(body)) {
     const lk = k.trim().toLowerCase();
-    const alias = ALIASES[lk];
+    const alias = Object.hasOwn(ALIASES, lk) ? ALIASES[lk] : undefined; // nunca "constructor", "__proto__"…
     if (alias) known[alias] = v;
     else if (!RESERVED.has(lk) && (typeof v === "string" || typeof v === "number" || typeof v === "boolean")) extra[k] = v;
   }
@@ -155,7 +211,8 @@ export function parseSubmission(body: Record<string, unknown>, trusted: boolean)
 
   const rawCountry = str(known.country, 60);
   const country = /^[A-Za-z]{2}$/.test(rawCountry) ? rawCountry.toUpperCase() : null;
-  if (rawCountry && !country && !fields.pais) fields.pais = rawCountry; // "Australia" no es un código: queda como campo extra
+  // "Australia" no es un código: queda como campo extra (nunca un monto: "2500 AUD" no se guarda).
+  if (rawCountry && !country && !fields.pais && !looksLikeMoney(rawCountry)) fields.pais = rawCountry;
   const name = (str(known.name, 120) || [str(known.firstName, 60), str(known.surname, 60)].filter(Boolean).join(" ")).slice(0, 120);
   const rawPhone = str(known.phone, 30);
   const phone = rawPhone ? toE164(rawPhone, country) : null;
@@ -170,7 +227,9 @@ export function parseSubmission(body: Record<string, unknown>, trusted: boolean)
     sub: {
       email: email.data, name, phone, country, timezone: tz && isValidTz(tz) ? tz : null, locale: loc === "es" || loc === "en" ? loc : null,
       consentEmail: yes(known.consentEmail) || yes(consent.email),
-      consentSms: yes(known.consentSms) || yes(consent.sms),
+      // El SMS solo se acepta con la clave del servidor: desde el navegador `acepta_sms` se IGNORA (cualquiera puede escribir
+      // cualquier número en una página pública y el número no se verifica). El correo sí (decisión de Jonathan).
+      consentSms: trusted && (yes(known.consentSms) || yes(consent.sms)),
       tags: trusted ? tagList(body.tags) : [],
       removeTags: trusted ? tagList(body.removeTags ?? body.remove_tags) : [],
       fields, mode,

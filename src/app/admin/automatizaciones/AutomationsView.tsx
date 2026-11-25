@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { fill } from "@/i18n";
 import { EVENT_LABELS, STAGE_LABELS, triggerLabel } from "@/lib/crm/labels";
-import { TRIGGER_KINDS, type Block, type Check, type ConditionStepT, type EventKind, type ExitRules, type LeafStepT, type Step, type Trigger } from "@/lib/crm/schema";
+import { TRANSACTIONAL_BLOCKS, TRIGGER_KINDS, transactionalProblem, transactionalTriggerOk, type Block, type Check, type ConditionStepT, type EventKind, type ExitRules, type LeafStepT, type Step, type Trigger } from "@/lib/crm/schema";
 import { Empty } from "@/components/ui/basics";
 import { Modal, Switch, useToast } from "@/components/ui/client";
 import { Icon } from "@/components/ui/Icon";
@@ -23,7 +23,7 @@ export type AutoDraft = { id: string; name: string; status: "draft" | "active" |
 type TagOpt = { id: string; name: string; system: boolean };
 type ConnOpt = { id: string; name: string };
 type R<T> = { ok: true; data: T } | { ok: false; error: string };
-type Shared = { m: AutoText; mc: CampanasText; ctx: Ctx; ownTags: TagOpt[]; lessons: LessonOption[]; appUrl: string; heading: string; allIds: () => string[] };
+type Shared = { m: AutoText; mc: CampanasText; ctx: Ctx; ownTags: TagOpt[]; lessons: LessonOption[]; appUrl: string; heading: string; allIds: () => string[]; transactional: boolean };
 
 export function AutomationsView({ m, mc, locale, initial, drafts, tags, lessons, appUrl, heading, connections = [] }: {
   m: AutoText; mc: CampanasText; locale: "es" | "en"; initial: string | null; drafts: AutoDraft[]; tags: TagOpt[]; lessons: LessonOption[]; appUrl: string; heading: string;
@@ -73,7 +73,10 @@ function Editor({ m, mc, locale, draft, isNew, tags, lessons, appUrl, heading, t
   const patch = (p: Partial<AutoDraft>) => { setError(null); setDirty(true); setD((x) => ({ ...x, ...p })); };
   const ownTags = tags.filter((t) => !t.system);
   const ctx: Ctx = { t: m.sum, events: EVENT_LABELS[locale], stages: STAGE_LABELS[locale], tagName };
-  const shared: Shared = { m, mc, ctx, ownTags, lessons, appUrl, heading, allIds: () => stepIds(d.steps) };
+  const shared: Shared = { m, mc, ctx, ownTags, lessons, appUrl, heading, allIds: () => stepIds(d.steps), transactional: d.transactional };
+  // Transaccional: solo con ciertos disparadores y bloques (la base y el servidor también lo imponen).
+  const txProblem = d.transactional ? transactionalProblem(d.trigger, d.steps) : null;
+  const txAllowed = transactionalTriggerOk(d.trigger.kind);
 
   const payload = () => ({ id: d.id || null, name: d.name, trigger: d.trigger, steps: d.steps, exitRules: d.exitRules, transactional: d.transactional });
   const go = (id: string | null) => { if (id && id !== d.id) router.replace(`/admin/automatizaciones?a=${id}`, { scroll: false }); router.refresh(); };
@@ -98,7 +101,10 @@ function Editor({ m, mc, locale, draft, isNew, tags, lessons, appUrl, heading, t
     toast(done);
     after(id);
   });
-  const save = () => run([() => saveAuto(payload())], m.saved, go);
+  const save = () => {
+    if (txProblem) { setError(m.errors[txProblem]); toast(m.errors[txProblem]); return; }
+    run([() => saveAuto(payload())], m.saved, go);
+  };
   const toggle = () => {
     const status = d.status === "active" ? "paused" : "active";
     const steps: (() => Promise<R<unknown>>)[] = [];
@@ -189,9 +195,12 @@ function Editor({ m, mc, locale, draft, isNew, tags, lessons, appUrl, heading, t
           <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <strong style={{ fontSize: 14, fontWeight: 600 }}>{m.transactional}</strong>
             <span className={c.hint}>{m.transactionalSub}</span>
+            <span className={c.hint}>{m.transactionalOnly}</span>
           </span>
-          <Switch checked={d.transactional} label={m.transactional} onChange={(v) => patch({ transactional: v })} />
+          {/* Solo se prende con un disparador permitido; si ya está prendido, siempre se puede apagar. */}
+          <Switch checked={d.transactional} label={m.transactional} disabled={!d.transactional && !txAllowed} onChange={(v) => patch({ transactional: v })} />
         </div>
+        {txProblem ? <p role="alert" className={c.hint} style={{ color: "var(--rojo-texto)", background: "var(--rojo-fondo)", borderRadius: "var(--r-md)", padding: "10px 12px", fontSize: 13 }}>{m.errors[txProblem]}</p> : null}
         {d.transactional ? <p role="note" className={c.hint} style={{ color: "var(--ambar-texto)", background: "var(--ambar-fondo)", borderRadius: "var(--r-md)", padding: "10px 12px", fontSize: 13 }}>{m.transactionalWarn}</p> : null}
       </div>
 
@@ -306,7 +315,8 @@ function StepFields({ st, set, s }: { st: Step; set: (x: Step) => void; s: Share
           <div className="field"><label htmlFor={`${id}-s`}>{m.fSubject}</label><input id={`${id}-s`} className="input" maxLength={200} value={st.subject} onChange={(e) => set({ ...st, subject: e.target.value })} /></div>
           <div className="field"><label htmlFor={`${id}-p`}>{m.fPreheader}</label><input id={`${id}-p`} className="input" maxLength={200} value={st.preheader} onChange={(e) => set({ ...st, preheader: e.target.value })} /></div>
           <div className="field"><span className="label">{m.fContent}</span>
-            <BlocksEditor id={id} blocks={st.blocks} onChange={(blocks) => set({ ...st, blocks })} m={s.mc.blocks} lessons={s.lessons} appUrl={s.appUrl} /></div>
+            <BlocksEditor id={id} blocks={st.blocks} onChange={(blocks) => set({ ...st, blocks })} m={s.mc.blocks} lessons={s.lessons} appUrl={s.appUrl} only={s.transactional ? TRANSACTIONAL_BLOCKS : undefined} />
+            {s.transactional ? <span className={c.hint}>{s.m.transactionalBlocks}</span> : null}</div>
           <div><button type="button" className="btn btn-secondary btn-sm" onClick={() => setPreview(true)}>{m.previewOpen}</button></div>
           <Modal open={preview} onClose={() => setPreview(false)} title={m.previewTitle} labelClose={m.close}>
             {preview ? <StepPreview mc={s.mc} subject={st.subject} preheader={st.preheader} blocks={st.blocks} /> : null}

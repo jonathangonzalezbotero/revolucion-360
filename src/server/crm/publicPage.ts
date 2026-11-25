@@ -53,5 +53,9 @@ h1{margin:0 0 10px;font-size:24px;font-weight:600}p{margin:0 0 14px;font-size:15
 button{font:inherit;font-size:15px;font-weight:600;min-height:46px;padding:0 20px;border:0;border-radius:12px;background:${C.tinta};color:${C.blanco};cursor:pointer}
 a{color:${C.tinta};text-decoration-color:${C.amarillo};text-decoration-thickness:2px;text-underline-offset:3px}:focus-visible{outline:2px solid ${C.tinta};outline-offset:2px}</style></head>
 <body><main><h1>${escapeHtml(o.title)}</h1><p>${escapeHtml(o.text)}</p>${form}${back}</main></body></html>`;
-  return new Response(html, { status: o.status ?? 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } });
+  return new Response(html, { status: o.status ?? 200, headers: {
+    "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex",
+    // El enlace de confirmación lleva el token en la URL: nunca se manda a otra página (Referer) ni se mete en un iframe.
+    "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY", "X-Content-Type-Options": "nosniff",
+  } });
 }

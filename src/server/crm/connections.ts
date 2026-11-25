@@ -1,5 +1,5 @@
 import "server-only";
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import {
   cleanRef, connectionSlug, ConnectionInput, contactPatch, DEFAULT_CONSENT_TEXT, findTagByName, ingestSmsDecision, isSecretFormat, legalReady, mayTransactional,
@@ -17,6 +17,16 @@ import { addTag, recordEvent, removeTag } from "./events";
 const fail = (code: string): never => { throw new Error(code); };
 const stamp = () => new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14);
 const sha256 = (v: string) => createHash("sha256").update(v.trim().toLowerCase(), "utf8").digest("hex");
+/**
+ * Huella del correo en `crm_pending_confirmations.email_hash`: HMAC-SHA-256 con la clave del servidor CRM_HASH_KEY (ver
+ * .env.example). Sin la clave nadie puede probar un correo contra la tabla (un SHA-256 simple se adivina con una lista
+ * de correos). Sin la clave configurada NO se guarda nada (falla cerrado: la confirmación no sale).
+ */
+export function emailHmac(email: string): string {
+  const key = (process.env.CRM_HASH_KEY ?? "").trim();
+  if (key.length < 32) throw new Error("crm_hash_key");
+  return createHmac("sha256", key).update(email.trim().toLowerCase(), "utf8").digest("hex");
+}
 
 export type ConnectionRow = {
   id: string; slug: string; name: string; tag_ids: string[]; status: "active" | "paused"; origins: string[]; thanks_url: string | null;
@@ -26,8 +36,8 @@ export type ConnectionRow = {
 export const CONNECTION_COLS = "id, slug, name, tag_ids, status, origins, thanks_url, double_opt_in, created_at, updated_at";
 
 export type Via = "browser" | "server" | "test" | "confirm";
-export type ReceiveResult = "created" | "updated" | "no_consent" | "suppressed" | "pending" | "confirmed" | "test";
-export type RejectResult = "rejected_turnstile" | "rejected_origin" | "rejected_email" | "rejected_paused" | "rejected_invalid" | "rejected_key";
+export type ReceiveResult = "created" | "updated" | "no_consent" | "suppressed" | "pending" | "throttled" | "confirmed" | "test";
+export type RejectResult = "rejected_turnstile" | "rejected_origin" | "rejected_email" | "rejected_paused" | "rejected_invalid" | "rejected_key" | "rejected_rate";
 
 // ───────── Recibir (clave de servicio) ─────────
 /** La conexión con su clave (solo para comparar en el servidor). */
@@ -69,7 +79,7 @@ type Existing = { id: string; name: string; phone: string | null; country: strin
  * marca el consentimiento SOLO si llegó `acepta_correos` (con su constancia; nunca levanta una baja) y deja "Llegó por una
  * conexión web" (y "Confirmó su correo" si viene de la confirmación). Lo que se ponga dispara "Se le puso una etiqueta".
  */
-export async function receiveSubmission(db: Db, conn: Pick<ConnectionRow, "id" | "slug" | "name" | "tag_ids">, sub: Submission, via: Via, opts: { confirmedAt?: string } = {}):
+export async function receiveSubmission(db: Db, conn: Pick<ConnectionRow, "id" | "slug" | "name" | "tag_ids">, sub: Submission, via: Via, opts: { confirmedAt?: string; depth?: number } = {}):
   Promise<{ result: ReceiveResult; contactId: string }> {
   const existing = must(await db.from("crm_contacts").select("id, name, phone, country, timezone, user_id, fields, email_consent").eq("email", sub.email).maybeSingle()) as Existing | null;
   let id: string;
@@ -83,7 +93,11 @@ export async function receiveSubmission(db: Db, conn: Pick<ConnectionRow, "id" |
       email: sub.email, name: sub.name, phone: sub.phone, country: sub.country, timezone: sub.timezone, locale: sub.locale ?? "es",
       source: "web", source_detail: conn.name.slice(0, 80), fields: sub.fields,
     }).select("id").single();
-    if (r.error?.code === "23505") return receiveSubmission(db, conn, sub, via, opts); // otro envío del mismo correo llegó a la vez
+    // Otro envío del mismo correo llegó a la vez: se vuelve a leer (una sola vez; si se repite, es otro problema).
+    if (r.error?.code === "23505") {
+      if ((opts.depth ?? 0) >= 1) fail("conflict");
+      return receiveSubmission(db, conn, sub, via, { ...opts, depth: (opts.depth ?? 0) + 1 });
+    }
     id = (must(r) as { id: string }).id;
     created = true;
   }
@@ -106,12 +120,13 @@ export async function receiveSubmission(db: Db, conn: Pick<ConnectionRow, "id" |
   for (const tagId of toAdd) await addTag(db, id, tagId, "ingest");
 
   // Consentimiento: solo con la casilla marcada. Un envío normal nunca levanta una baja (p_lift = false).
-  // El clic de confirmación desde el propio correo sí levanta una baja de correo (decisión de Jonathan, 25 nov 2026):
-  // demuestra que la dirección es suya y que lo quiere. Rebotes y quejas nunca se levantan (crm_apply_consent).
+  // El clic de confirmación desde el propio correo sí levanta una baja de correo que pidió la persona (decisión de
+  // Jonathan, 25 nov 2026): demuestra que la dirección es suya y que lo quiere. Va con la fuente `confirma:<slug>`, así
+  // crm_apply_consent solo levanta una supresión 'unsubscribe' (nunca 'manual', rebote, queja ni STOP).
   let result: ReceiveResult = via === "test" ? "test" : via === "confirm" ? "confirmed" : created ? "created" : "updated";
   if (via !== "test") {
     const evidence = { text: sub.evidence.text || DEFAULT_CONSENT_TEXT, url: sub.evidence.url, ip: sub.evidence.ip, userAgent: sub.evidence.userAgent, form: `conexion:${conn.slug}`, confirmedAt: opts.confirmedAt };
-    const source = `conexion:${conn.slug}`.slice(0, 60);
+    const source = `${via === "confirm" ? "confirma" : "conexion"}:${conn.slug}`.slice(0, 60);
     if (sub.consentEmail) {
       const r = must(await db.rpc("crm_apply_consent", { p_contact: id, p_channel: "email", p_on: true, p_source: source, p_lift: via === "confirm", p_evidence: evidence })) as string;
       if (r === "suppressed") result = "suppressed";
@@ -146,22 +161,32 @@ const CONFIRM_TEXT = {
 } as const;
 export const confirmUrl = (token: string) => `${appUrl()}/api/crm/confirmar?t=${token}`;
 
+/** Tope global de correos de confirmación por hora (todas las conexiones juntas): frena una ráfaga con correos distintos. */
+export const CONFIRM_PER_HOUR = 200;
+
 /**
  * "Pedir confirmación por correo": nada se aplica (ni contacto, ni etiquetas, ni eventos) hasta el clic. Guarda lo que
  * llegó y manda un correo transaccional con el enlace. Para que nadie use el formulario para bombardear una dirección:
- * máximo un correo cada 10 minutos y 3 por día por dirección, y nunca a una dirección que rebotó o se quejó.
- * Sin los datos legales completos el correo no sale (como todo correo del CRM).
+ * máximo un correo cada 10 minutos y 3 por día por dirección, CONFIRM_PER_HOUR por hora en total, y nunca a una
+ * dirección que rebotó o se quejó. Sin los datos legales completos el correo no sale (como todo correo del CRM).
+ * "Lo que va llegando" distingue pendiente (salió el correo), frenado por el límite y de baja (no salió).
  */
 export async function requestConfirmation(db: Db, conn: Pick<ConnectionRow, "id" | "slug">, sub: Submission, via: "browser" | "server"): Promise<"sent" | "throttled" | "suppressed" | "not_sent"> {
-  const emailHash = sha256(sub.email);
+  const emailHash = emailHmac(sub.email); // sin CRM_HASH_KEY lanza: no se guarda nada
+  const log = async (result: "pending" | "throttled" | "suppressed") => {
+    const r = await db.from("crm_connection_log").insert({ connection_id: conn.id, via, result });
+    if (r.error) console.error("[crm-conexion] registro", r.error.code ?? "");
+  };
   const supp = must(await db.from("crm_suppressions").select("reason").eq("channel", "email").eq("value", sub.email).is("lifted_at", null).maybeSingle()) as { reason: string } | null;
-  const log = async () => { await db.from("crm_connection_log").insert({ connection_id: conn.id, via, result: "pending" }); };
-  if (!mayTransactional(sub.email, supp?.reason ?? null).ok) { await log(); return "suppressed"; }
+  if (!mayTransactional(sub.email, supp?.reason ?? null).ok) { await log("suppressed"); return "suppressed"; }
   const recent = must(await db.from("crm_pending_confirmations").select("created_at").eq("email_hash", emailHash).gte("created_at", new Date(Date.now() - 86_400_000).toISOString())) as { created_at: string }[];
-  if (recent.length >= 3 || recent.some((r) => Date.parse(r.created_at) > Date.now() - 10 * 60_000)) { await log(); return "throttled"; }
+  if (recent.length >= 3 || recent.some((r) => Date.parse(r.created_at) > Date.now() - 10 * 60_000)) { await log("throttled"); return "throttled"; }
+  const hour = await db.from("crm_pending_confirmations").select("id", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 3_600_000).toISOString());
+  if (hour.error) throw new Error(`db: ${hour.error.code ?? ""}`);
+  if ((hour.count ?? 0) >= CONFIRM_PER_HOUR) { await log("throttled"); return "throttled"; }
   const token = randomBytes(32).toString("hex");
   must(await db.from("crm_pending_confirmations").insert({ connection_id: conn.id, token_hash: sha256(token), email_hash: emailHash, payload: sub }).select("id"));
-  await log();
+  await log("pending");
   const legal = await loadLegal(db);
   if (!legalReady(legal) || !crmFrom()) return "not_sent";
   const locale = sub.locale ?? "es";
@@ -201,14 +226,21 @@ export async function confirmPending(db: Db, token: unknown): Promise<{ ok: true
   return { ok: true, locale: p.data.locale ?? "es", thanksUrl: conn!.thanks_url };
 }
 
-/** El motor vacía lo que llegó en las confirmaciones vencidas (nadie confirmó: no quedan sus datos). */
-export async function clearExpiredConfirmations(db: Db): Promise<number> {
+/** Días que se guarda una fila de confirmación (ya vacía) antes de borrarla: más que la ventana del límite (24 h). */
+
+/**
+ * El motor vacía lo que llegó en las confirmaciones vencidas (nadie confirmó: no quedan sus datos). Las filas NO se
+ * borran (CLAUDE.md regla 0, decisión de Jonathan: nunca se borra en la base): quedan solo el hash del token y la huella
+ * HMAC del correo, sin datos personales legibles.
+ */
+export async function clearExpiredConfirmations(db: Db): Promise<{ cleared: number; deleted: number }> {
+  const notReady = (e: { code?: string; message?: string }) => /PGRST20[25]|42P01/.test(`${e.code} ${e.message}`); // migración 038 sin aplicar
   const r = await db.from("crm_pending_confirmations").update({ payload: {} }).lt("expires_at", new Date().toISOString()).neq("payload", "{}").select("id");
   if (r.error) {
-    if (/PGRST20[25]|42P01/.test(`${r.error.code} ${r.error.message}`)) return 0; // la migración 038 aún no está aplicada
+    if (notReady(r.error)) return { cleared: 0, deleted: 0 };
     throw new Error(`db: ${r.error.code ?? ""} ${r.error.message}`);
   }
-  return (r.data ?? []).length;
+  return { cleared: (r.data ?? []).length, deleted: 0 };
 }
 
 // ───────── Panel (sesión del Dueño) ─────────
