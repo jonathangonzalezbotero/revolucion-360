@@ -17,6 +17,8 @@
     "db:types": "supabase gen types typescript --remote > /tmp/r360-types.ts && mv /tmp/r360-types.ts src/lib/supabase/database.types.ts"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^3.11.0",
+    "@stripe/stripe-js": "^7.10.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.119.2",
     "next": "16.4.6",
